@@ -1,0 +1,167 @@
+#TouhouDanmakufu[Single]
+#ScriptVersion[3]
+#Title["Identity \"Love Cage\""]
+#Text["..."] 
+#BGM["./bgm/bgm - CC-CGR-loop.ogg"]
+#System["./system/Default_System.txt"]
+#Background["./system/Background_Sky.txt"]
+
+#include "./Index.txt"
+
+let timer = 37; //37
+
+@Event
+{
+	alternative(GetEventType())
+	case(EV_REQUEST_LIFE)
+	{
+		SetScriptResult(2000);
+	}
+	case(EV_REQUEST_SPELL_SCORE){
+        SetScriptResult(5000000);
+    }
+	case(EV_REQUEST_IS_DURABLE_SPELL) {
+		SetScriptResult(true);
+	}
+	
+	case(EV_REQUEST_TIMER) { SetScriptResult(timer*60); }
+}
+@Initialize
+{
+	SetCommonData("CurrentSC","Identity \"Love Cage\"");
+	SetCommonData("Difficulty","Normal");
+	
+	boss = spawnBoss();
+	
+	ObjEnemy_SetDamageRate(boss,0,0);
+	SetShotAutoDeleteClip(16,16,16,16);
+	
+	MainTask;
+	
+
+}
+@MainLoop
+{
+
+	if(ObjEnemy_GetInfo(boss, INFO_LIFE) <= 0 && !finishing)
+	{
+		finishing = true;
+		TBreakSpell([]);
+	}
+	else {
+		SetBossHitbox(boss,ex,ey);
+	}
+	frame++;
+	yield;
+}
+
+
+task MainTask {
+	ObjEnemy_SetDamageRate(boss,0,0);
+	ObjMove_SetDestAtFrame(boss, cx, cy-120, 60);
+	
+	SetSpellCard;
+	MCircNextAlpha = 80;
+	Obj_SetValue(objSpellCircle,"MaxAlpha",64);
+	
+	ObjEnemyBossScene_StartSpell(objScene);
+	ObjEnemyBossScene_SetSpellTimer(objScene,timer*60); //5760
+	
+	//SetCaution;
+	//SetBossBlur(true);
+	AuraRainbow(boss,255,255,255);
+	TSpellImmune;
+
+	//ConcentrationA2(boss,"HEXAGON",90,3,10,[255,0,255]);
+		
+	wait(90);
+	Tmovement(cx-120,cx+120, cy-90,cy-60, 60,240, [MOVE_PLAYERBIAS,2,0,MOVE_MAXSPEED,1.5] );
+	ObjEnemy_SetDamageRate(boss,24,8);
+	frame = 0;
+	
+	
+	//TShoot;
+	THeartShots;
+	//TRose;
+}
+
+
+
+
+
+
+task THeartShots{
+	let shot0; let shot;
+
+	let N = 30;
+	let a0;
+
+	while(!Obj_IsDeleted(boss)){	
+		wait(120);
+		
+		shot0 = CreateShotA2(swdx,swdy,3,atan2(py-swdy,px-swdx),-10.25,5, HEART_RED+500,20);
+		ObjMove_SetDestAtWeight(shot0,px,py,60,10);
+		ObjRender_SetColor(shot0,255,128,230);
+		SE_Play(se_chime2,100);
+		a0=atan2(py-swdy,px-swdx);
+		wait(60);
+		let x0 = getx(shot0); let y0 = gety(shot0); 
+		
+		ShootHeart(x0,y0,a0,50,50);
+
+		SE_Play(se_chime2,100);
+		ObjMove_SetAngle(shot0,a0);
+		ObjMove_Still(shot0,15);
+		Obj_FadeDelete(shot0);
+		
+		
+	}
+}
+
+//Creates shot objects
+function Heart(hx,hy,ha, rad,num){
+	let x; let y; let a; let shot; let shots=[]; let pos;	
+	let a0 = ha+180; let a1 = ha;
+	
+	let dt = 180/num; let t; let s;
+	descent(i in 0..num) {
+		t = i*dt;
+		loop(2){
+			x = rad/10*(16*sin(t)^3);
+			y = rad/10*(13*cos(t) - 5*cos(2*t) - 2*cos(3*t) - cos(4*t));
+			pos = rotate(x,y,90+ha);
+			x = hx+pos[0]; y=hy+pos[1];
+			a = atan2(y-hy,x-hx);
+			s = getdist(hx,hy,x,y)/rad;
+			
+			shot = PrepareShotA2(x,y,0,a, 0.015*s,2*s, BALL_MAGENTA+500-randBin*2);
+			shots=shots~[shot];
+			
+			t*=-1;
+		}
+	}
+	return shots;
+}
+
+//Registers shots
+task ShootHeart(hx,hy,ha, rad,num){
+	let shot;
+	let shots = Heart(hx,hy,ha, rad,num);
+	let seobj = ObjSound_Create;
+	descent(i in 0..length(shots)){
+		shot = shots[i];
+		ObjShot_Regist(shot);
+		MyWrap(shot);
+		
+		if(i%3==0){
+			SE_PlayA2(se_kira02,100,seobj,30);
+			yield;
+		}
+	}
+}
+task MyWrap(shot){
+	while(!isOffScreen(shot)){yield;}	
+	wrap(shot);
+}
+
+

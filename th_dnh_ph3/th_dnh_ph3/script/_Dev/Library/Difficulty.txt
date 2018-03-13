@@ -1,0 +1,156 @@
+//DIFFICULTY SYSTEM
+//Todo: Basically all of this should definitely be somewhere else.
+/*
+//An explanation of each difficulty
+//The ones we're mainly concerned with are:
+//EASY:		You can dodge without issue.	I can dodge without looking.
+//NORMAL:	You can reasonably dodge.		I can dodge without issue.
+//HARD:		You struggle to dodge.			I can reasonably dodge.
+//LUNATIC:	You cannot dodge.				I struggle to dodge.
+//This estimation is based on, oh, stage 3 or so.
+
+//The Extra stage is about Hard-level in intensity.
+//However, few resources are available and you can't continue,
+//so there's very little margin of error.
+//EXTRA:	You... don't worry about it.	I can clear, with practice.
+
+
+//A brief explanation of each stage:
+//Stage 1:	Quite easy, not many bullets. On higher difficulties, 
+//			  there are a few more shots, which may go faster.
+//Stage 2:	Warming up. Still pretty easy, but may need to pay attention.
+//			  You usually reach full Power somewhere around here.
+//Stage 3:	End of warm-up. Often a few tricky parts, and more shots overall.
+//			  This is where the term "bullet curtain" begins to be accurate.
+//Stage 4:	At this point, the game is hard. Usually the longest stage.
+//			  In some ways, often the hardest of the six main stages.
+//			  Boss may use different attacks based on selected player/etc,
+//			  or be two/three characters attacking alternately or at once.
+//Stage 5:	Only a little more intense than Stage 4, usually.
+//			  Usually medium in length, closer to Stage 3 than 4.
+//			  Boss may use some gimmick like stopping time.
+//Stage 6:	(Final): The stage is usually short, reaching the boss quickly.
+//			  As for the boss, well... Every end boss is different, really.
+//			  Tends to have a fair number of spellcards,
+//			  and might have a "final" card (Yuyuko's Resurrection Butterfly)
+//Stage EX:	Unlocked by clearing on Normal or above without using a continue.
+//			 One long stage culminating in a very long boss fight.
+//			 Requires quite a bit of practice to get through just the
+//			 first ~half of the fight, by which point you probably
+//			 know the stage well enough to do it largely by muscle memory.
+//			 Then it's a matter of getting the first ~half down well enough
+//			 to make it to the second ~half taking minimal (0-1) hits
+//			 as well as optimizing play on the stage to earn
+//			 as many Extends (extra lives) as possible.
+//			 Then, on each run making it past the first ~half,
+//			 practicing the second ~half as far as you can make it.
+//			...In other words, you don't need to worry about this mode.
+//			I'll take care of it myself.
+
+
+//Other difficulties: These will not appear in our game.
+
+//Phantasm is unique to Yukari, and is the next level beyond Extra.
+//This is inappropriate outside of an actual Phantasm stage
+//or a script featuring Yukari, so please stop using it.
+//PHANTASM: Very quickly, you cannot dodge.	I can clear semireliably.
+
+//Last Word is unique to Imperishable Night, and refers to
+//the bonus spellcards unlockable in the Last Word section of Spell Practice.
+//Since it's only in Spell Practice, 
+//these cards must be cleared without dying or bombing at all.
+//Far greater difficulty than any standard mode.
+//LAST_WORD: You cannot dodge.				In many cases, I cannot dodge.
+
+//AFTEREXTRA:	This is not a real difficulty.
+//OVERDRIVE:	This is not a real difficulty.
+//Someone just put them on the spritesheet for some reason,
+//so I've been using Overdrive as a debug difficulty
+//to make sure I notice if something fucks up and it doesn't get set.
+
+*/
+
+
+//Difficulty constants
+//Standard difficulties
+let EASY=1;			//For small children.
+let NORMAL=2;		//For most people.
+let HARD=3;			//For experienced players.
+let LUNATIC=4;		//For weird people.
+let EXTRA=3.01;		//Now challenge Extra Stage...
+//Other difficulties
+let PHANTASM=4.01;	//Now challenge next phantasm... Yukari only.
+let LAST_WORD=5;	//Spell Practice-only cards with very high challenge.
+let AFTEREXTRA=4.02; let OVERDRIVE=10;	//Someone just made these up.
+
+//Rank constants (since some difficulties are about as hard as each other)
+let RANK_EASY = 1; //You guys should be able to dodge without issue.
+let RANK_NORM = 2; //You guys should reasonably be able to dodge. I should be able to dodge without issue.
+let RANK_HARD = 3;
+let RANK_LUNA = 4; 
+let RANK_LAST=5;let RANK_OVER=10;
+
+
+// SetDifficulty(NORMAL); //default value
+DifficultyDisplay; //this really shouldn't go here tbh
+
+
+
+
+
+
+//Use this to set difficulty - strings are for spellcard history, row is for display
+function SetDifficulty(diff){
+	let rank; let str; let row;
+	alternative(diff)
+	case(EASY){			rank = RANK_EASY; row=0; str="Easy"; 		}
+	case(NORMAL){		rank = RANK_NORM; row=1; str="Normal"; 		}
+	case(HARD){			rank = RANK_HARD; row=2; str="Hard"; 		}
+	case(LUNATIC){		rank = RANK_LUNA; row=3; str="Lunatic"; 	}
+	case(EXTRA){		rank = RANK_HARD; row=4; str="Extra"; 		}
+	case(PHANTASM){		rank = RANK_LUNA; row=6; str="Phantasm"; 	}
+	case(LAST_WORD){	rank = RANK_LAST; row=8; str="Last Word"; 	}
+	case(AFTEREXTRA){	rank = RANK_LUNA; row=5; str="Afterextra"; 	}
+	case(OVERDRIVE){	rank = RANK_OVER; row=7; str="Overdrive"; 	}
+	others{rank=RANK_OVER;row=7;str="Overdrive";}
+	SetCommonData("Rank",rank);
+	SetCommonData("Diff",diff);
+	SetCommonData("Difficulty",str);
+	SetCommonData("DifficultyRow",row);
+}
+//Allows overriding with a default difficulty, e.g. for testing
+function SetDifficultyD(diff){
+	diff = getdiff;	//DEBUG VALUE
+	SetDifficulty(diff);
+}
+
+//Get rank/difficulty
+function rank   {return GetCommonData("Rank",RANK_OVER);}
+function getrank{return GetCommonData("Rank",RANK_OVER);}
+function getdiff{return GetCommonData("Diff",OVERDRIVE);}
+
+//makes it easier to nerf things on easy
+function isEasy{
+	if(rank==RANK_EASY){return 1;}else{return 0;}
+}
+
+
+//Task to display difficulty
+task DifficultyDisplay(){
+	loop(10){yield;} //make sure whatever's going to set it has
+	while(GetCommonData("SelectingDifficulty",false)){yield;} //future-proofing
+	let row = GetCommonData("DifficultyRow",1);	
+	let objText = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjPrim_SetTexture(objText, dirimg~"Difficulty.png");
+	ObjSprite2D_SetSourceRect(objText, 0,0+32*row,256,32+32*row);
+	ObjSprite2D_SetDestCenter(objText);
+	ObjRender_SetScaleXYZ(objText, 0.75, 0.75, 0);
+	Obj_SetRenderPriority(objText, 0.95);
+	ObjRender_SetX(objText, sx + 150); //todo: this should be a literal
+	ObjRender_SetY(objText, 24);
+	ascent(i in 0..51){
+		ObjRender_SetAlpha(objText, i*5);
+		yield;
+	}
+}
+

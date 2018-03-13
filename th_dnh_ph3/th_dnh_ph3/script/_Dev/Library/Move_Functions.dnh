@@ -1,0 +1,150 @@
+//Border reflectors (Python)
+task ObjMove_ReflectCeiling(obj, limit){
+	let count = 0;
+	while(!Obj_IsDeleted(obj)){
+		if(ObjMove_GetY(obj) <= 0 && ObjMove_GetY(obj) >= -20 && count < limit){
+			ObjMove_SetAngle(obj, -ObjMove_GetAngle(obj));
+			count++;
+		}
+		yield;
+	}
+}
+task ObjMove_ReflectBottom(obj, limit){
+	let count = 0;
+	while(!Obj_IsDeleted(obj)){
+		if(ObjMove_GetY(obj) >= GetClipMaxY && ObjMove_GetY(obj) <= GetClipMaxY + 20 && count < limit){
+			ObjMove_SetAngle(obj, -ObjMove_GetAngle(obj));
+			count++;
+		}
+		yield;
+	}
+}
+task ObjMove_ReflectWalls(obj, limit){
+	let count = 0;
+	while(!Obj_IsDeleted(obj)){
+		if(ObjMove_GetX(obj) <= 0 && ObjMove_GetX(obj) >= -20 && count < limit){
+			ObjMove_SetAngle(obj, -ObjMove_GetAngle(obj) + 180);
+			count++;
+		}
+
+		if(ObjMove_GetX(obj) >= GetClipMaxX && ObjMove_GetX(obj) <= GetClipMaxX + 20 && count < limit){
+			ObjMove_SetAngle(obj, -ObjMove_GetAngle(obj) + 180);
+			count++;
+		}
+		yield;
+	}
+}
+
+//Warp functions
+task ObjMove_WarpHorizontal(obj, limit){
+	let count = 0;
+	while(!Obj_IsDeleted(obj)){
+		if(ObjMove_GetX(obj) <= -32 && count < limit){
+			ObjMove_SetX(obj, GetClipMaxX + 30);
+			count++;
+		}
+
+		if(ObjMove_GetX(obj) >= GetClipMaxX + 32 && count < limit){
+			ObjMove_SetX(obj, -30);
+			count++;
+		}
+		yield;
+	}
+}
+task ObjMove_WarpVertical(obj, limit){
+	let count = 0;
+	while(!Obj_IsDeleted(obj)){
+		if(ObjMove_GetY(obj) <= -32 && count < limit){
+			ObjMove_SetY(obj, GetClipMaxY + 30);
+			count++;
+		}
+
+		if(ObjMove_GetY(obj) >= GetClipMaxY + 32 && count < limit){
+			ObjMove_SetY(obj, -30);
+			count++;
+		}
+		yield;
+	}
+}
+
+task ObjMove_SetDestAtWarp(obj, destX, destY){
+	let xscale = ObjRender_GetScaleX(obj);
+	let yscale = ObjRender_GetScaleY(obj);
+
+	let ori = [xscale, yscale];
+
+	Obj_SetValue(obj, "Warping", true);
+	Obj_SetValue(obj, "Destination", [destX, destY]);
+
+	loop(20){
+		ObjRender_SetScaleXYZ(obj, xscale, yscale, 0);
+		xscale += ori[0]/20;
+		yscale -= ori[1]/20;
+		yield;
+	}
+	ObjRender_SetPosition(obj, destX, destY, 0);
+	loop(20){
+		ObjRender_SetScaleXYZ(obj, xscale, yscale, 0);
+		xscale -= ori[0]/20;
+		yscale += ori[1]/20;
+		yield;
+	}
+	Obj_SetValue(obj, "Warping", false);
+	ObjRender_SetScaleXYZ(obj, ori[0], ori[1], 0);
+}
+
+function AddPatternA1(obj, f, v, a){
+	if(Obj_GetType(obj) == OBJ_SHOT){ //because the actual delay effect occurs after the bullet has already spawned, it's automatically accounted for here
+		ObjMove_AddPatternA1(obj, f + Obj_GetValueD(obj, "ShotDelay", ObjShot_GetDelay(obj)), v, a);
+	}else{
+		ObjMove_AddPatternA1(obj, f, v, a);
+	}
+}
+
+function AddPatternA2(obj, f, v, a, acc, av, max){
+	if(Obj_GetType(obj) == OBJ_SHOT){ //because the actual delay effect occurs after the bullet has already spawned, it's automatically accounted for here
+		ObjMove_AddPatternA2(obj, f + Obj_GetValueD(obj, "ShotDelay", ObjShot_GetDelay(obj)), v, a, acc, av, max);
+	}else{
+		ObjMove_AddPatternA2(obj, f, v, a, acc, av, max);
+	}
+}
+
+function AddPatternA3(obj, f, v, a, acc, av, max, g){
+	if(Obj_GetType(obj) == OBJ_SHOT){ //because the actual delay effect occurs after the bullet has already spawned, it's automatically accounted for here
+		ObjMove_AddPatternA3(obj, f + Obj_GetValueD(obj, "ShotDelay", ObjShot_GetDelay(obj)), v, a, acc, av, max, g);
+	}else{
+		ObjMove_AddPatternA3(obj, f, v, a, acc, av, max, g);
+	}
+}
+
+function AddPatternA4(obj, f, v, a, acc, av, max, t_obj, g){
+	if(Obj_GetType(obj) == OBJ_SHOT){ //because the actual delay effect occurs after the bullet has already spawned, it's automatically accounted for here
+		ObjMove_AddPatternA4(obj, f + Obj_GetValueD(obj, "ShotDelay", ObjShot_GetDelay(obj)), v, a, acc, av, max, t_obj, g);
+	}else{
+		ObjMove_AddPatternA4(obj, f, v, a, acc, av, max, t_obj, g);
+	}
+}
+
+function AddPatternB1(obj, f, xv, yv){
+	if(Obj_GetType(obj) == OBJ_SHOT){ //because the actual delay effect occurs after the bullet has already spawned, it's automatically accounted for here
+		ObjMove_AddPatternB1(obj, f + Obj_GetValueD(obj, "ShotDelay", ObjShot_GetDelay(obj)), xv, yv);
+	}else{
+		ObjMove_AddPatternB1(obj, f, xv, yv);
+	}
+}
+
+function AddPatternB2(obj, f, xv, yv, xacc, yacc, xmax, ymax){
+	if(Obj_GetType(obj) == OBJ_SHOT){ //because the actual delay effect occurs after the bullet has already spawned, it's automatically accounted for here
+		ObjMove_AddPatternB2(obj, f + Obj_GetValueD(obj, "ShotDelay", ObjShot_GetDelay(obj)), xv, yv, xacc, yacc, xmax, ymax);
+	}else{
+		ObjMove_AddPatternB2(obj, f, xv, yv, xacc, yacc, xmax, ymax);
+	}
+}
+
+function AddPatternB3(obj, f, xv, yv, xacc, yacc, xmax, ymax, g){
+	if(Obj_GetType(obj) == OBJ_SHOT){ //because the actual delay effect occurs after the bullet has already spawned, it's automatically accounted for here
+		ObjMove_AddPatternB3(obj, f + Obj_GetValueD(obj, "ShotDelay", ObjShot_GetDelay(obj)), xv, yv, xacc, yacc, xmax, ymax, g);
+	}else{
+		ObjMove_AddPatternB3(obj, f, xv, yv, xacc, yacc, xmax, ymax, g);
+	}
+}

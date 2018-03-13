@@ -1,0 +1,41 @@
+#UserItemData
+
+item_image = "./img/Item.png"
+
+//Shot delete item
+ItemData{
+	id = 1
+	rect = (97,  3, 108, 14)
+	// out  = (96, 19, 109, 32)
+	render = ALPHA
+	alpha = 128
+}
+
+
+
+//Point item (small)
+ItemData{
+	id = 10
+	rect = ( 1, 19, 12, 30)
+	// out  = (15, 34, 30, 49)
+	render = ALPHA
+	alpha = 255
+}
+
+//Point item (normal)
+ItemData{
+	id = 11
+	rect = ( 17,  3, 28, 14)
+	// out  = ( 96, 19,109, 32)
+	render = ALPHA
+	alpha = 255
+}
+
+//Power item (normal)
+ItemData{
+	id = 20
+	rect = ( 1,  3, 12, 14)
+	// out  = (96, 19,109, 32)
+	render = ALPHA
+	alpha = 255
+}

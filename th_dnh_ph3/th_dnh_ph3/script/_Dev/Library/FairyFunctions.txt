@@ -1,0 +1,309 @@
+let MainSTG2 = GetMainStgScriptDirectory;
+let GCSD = GetCurrentScriptDirectory;
+let img_fairy = GCSD~"./enemy/enemy.png"; // Fairy Sheet
+let img_effect = GCSD~"./enemy/effect.png"; // Effect Sheet
+let img_effect2 = GCSD~"./enemy/effect2.png"; // Effect 2 Sheet
+let img_effect3 = GCSD~"./enemy/effect3.png"; // Effect 3 Sheet
+let img_fam = GCSD~"./enemy/INenemy.png"; // Fam Sheet
+let quality = GetCommonData("quality", 2); //2
+let TotalEffectMax = 24*quality;
+let TotalEffect = 0;
+
+// task LoadAllImg2{
+	// LoadTexture("./enemy/INenemy1.png");
+	// LoadTexture("./enemy/INenemy2.png");
+	// LoadTexture("./enemy/INenemy.png");
+	// LoadTexture("./enemy/fairy.png");
+	// LoadTexture("./enemy/fairy2.png");
+	// LoadTexture("./enemy/FairyB.png");
+	// LoadTexture("./enemy/fairy3.png");
+	// LoadTexture("./enemy/fairy4.png");
+	// LoadTexture("./enemy/fairy5.png");
+	// LoadTexture("./enemy/enemy.png");
+// }LoadAllImg2; //TEMP
+
+function CheckDirection(checkid, direc){
+	let direction = false;
+	let enemyang = absolute(ObjMove_GetAngle(checkid));
+	let enemyspd = absolute(ObjMove_GetSpeed(checkid));
+	
+	
+	while(enemyang>360){
+		enemyang = enemyang-360;
+	}
+
+	if(enemyspd > 0){
+		if(direc=="right"){
+			if(enemyang > 270 || enemyang-270 < 90){
+				direction=true;
+			}
+		}
+		if(direc=="left"){
+			if(enemyang < 270 && enemyang > 90){
+				direction=true;
+			}
+		}
+	}
+	if(direc=="none"){
+		if(enemyspd == 0){
+			direction=true;
+		}
+	}
+	
+	return direction;
+}
+
+function CheckOutsideScreen(objectID, distance){
+	return ObjRender_GetX(objectID)>GetStgFrameWidth+distance||ObjRender_GetX(objectID)<GetStgFrameLeft-distance||
+		ObjRender_GetY(objectID)>GetStgFrameHeight+distance||ObjRender_GetY(objectID)<GetStgFrameTop-distance;
+}
+
+function CheckOutsideScreenA2(x, y, distance){
+	return x>GetStgFrameWidth+distance||x<-distance||y>GetStgFrameHeight+distance||y<-distance;
+}
+
+//circles
+task FExplosionB1(deX, deY, presetColor, angX, angY, angZ, expscale){
+	
+	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjRender_SetBlendType(obj, BLEND_ADD_ARGB ); //BLEND_ALPHA
+	Obj_SetRenderPriority(obj, 0.50);
+	ObjPrim_SetTexture(obj, img_effect);
+	if(presetColor=="red"){ObjSprite2D_SetSourceRect(obj, 129, 17, 191, 79);}else
+	if(presetColor=="blue"){ObjSprite2D_SetSourceRect(obj, 192, 17, 259, 79);}else
+	if(presetColor=="yellow"){ObjSprite2D_SetSourceRect(obj, 0, 81, 65, 145);}else
+	if(presetColor=="green"){ObjSprite2D_SetSourceRect(obj, 64, 81, 129, 145);}
+	ObjSprite2D_SetDestRect(obj, -32, -32, 32, 32);
+	ObjRender_SetAngleXYZ(obj, angX, angY, angZ);
+	ObjRender_SetPosition(obj, deX, deY, 0);
+	
+	let alpha = 155; //155
+	let scale = 0;
+	let expo = 0.4;
+	let RandZ = rand(-170,170);
+	while(Obj_IsDeleted(obj)==false){
+	
+		scale += expo/2;
+		alpha -= 6.2;
+		if(expo>0){expo = expo^1.07;}
+		
+		ObjRender_SetAlpha(obj, alpha);
+		ObjRender_SetScaleXYZ(obj, scale*1.1*expscale, scale*1.1*expscale, 1);
+		
+		if(alpha<0){Obj_Delete(obj)}
+		yield;
+	}
+	Obj_Delete(obj);
+}
+
+//cherry particles
+task FExplosionB2(deX, deY, colorR, colorG, colorB, deScale){
+	if(TotalEffect>TotalEffectMax){return;}
+	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	let angX = rand(-360, 360);
+	let angY = rand(-360, 360);
+	let angZ = rand(-360, 360);
+	ObjRender_SetBlendType(obj, BLEND_ALPHA);
+	// ObjRender_SetBlendType(obj, BLEND_ADD_ARGB);
+	Obj_SetRenderPriority(obj, 0.60);
+	ObjPrim_SetTexture(obj, img_effect);
+	ObjSprite2D_SetSourceRect(obj, 0, 228, 33, 251);
+	ObjSprite2D_SetDestRect(obj, -16, -12, 16, 12);
+	ObjRender_SetAngleXYZ(obj, angX, angY, angZ);
+	ObjRender_SetPosition(obj, deX, deY, 0);
+	ObjRender_SetColor(obj, colorR, colorG, colorB);
+	
+	let alpha = 105; //105
+	let scale = deScale;
+	let randX = rand(-500, 500);
+	let randY = rand(-500, 500);
+	let RandZ = rand(-170,170);
+	//atan2(randY - deX, randX - deY);
+	TotalEffect++;
+	while(Obj_IsDeleted(obj)==false){
+		scale += -0.05;
+		alpha += -0.1;
+		deX += randX/100;
+		deY += randY/100;
+		angX += randX/85;
+		angY += randY/85;
+		angZ += randX/135+randY/135;
+		
+		ObjRender_SetPosition(obj, deX, deY, 0);
+		ObjRender_SetAngleXYZ(obj, angX, angY, angZ);
+		ObjRender_SetAlpha(obj, alpha);
+		ObjRender_SetScaleXYZ(obj, scale, scale, scale);
+		
+		if(scale<0.01){Obj_Delete(obj)}
+		yield;
+	}
+	TotalEffect--;
+	Obj_Delete(obj);
+}
+
+task FFlash(x,y){
+	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjPrim_SetTexture(obj, img_effect2);
+	ObjSprite2D_SetSourceRect(obj,0,128,63,191);
+	ObjSprite2D_SetDestCenter(obj);
+	Obj_SetRenderPriorityI(obj,63);
+	ObjRender_SetPosition(obj,x,y,0);
+	
+	ObjRender_SetBlendType(obj,BLEND_ADD_ARGB);
+	descent(i in 0..15){
+		ObjRender_SetAlpha(obj,128*i/15);
+		ObjRender_SetScaleXYZ(obj,0.75*i/15,0.75*i/15,1);
+		yield;
+	}
+	Obj_Delete(obj);
+}
+
+
+
+
+
+/*
+//a little burst to make enemy appearing look more natural
+//This is too intensive, use something else
+task FFlashIn(x,y,s,a,color){
+	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjPrim_SetTexture(obj, img_fam);
+	ObjRender_SetPosition(obj,x,y,0);
+	Obj_SetRenderPriorityI(obj, 69); //73 //63 //0.50
+	ObjRender_SetBlendType(obj, BLEND_ADD_ARGB );
+		
+	let yi;
+	alternative(color)
+	case("red"){ 	yi=0;  }
+	case("green"){ 	yi=32; }
+	case("blue"){ 	yi=64; }
+	case("yellow"){	yi=96; }
+	others{			yi=0;  }
+	
+	let alpha = 160; let scale = 1.1; let dx = s*cos(a); let dy = s*sin(a);
+	descent(i in 4..8){
+		ObjSprite2D_SetSourceRect(obj,256+32*i,128+yi,256+32*(i+1),128+32+yi);
+		ObjSprite2D_SetDestCenter(obj);
+		loop(4){
+			ObjRender_SetAlpha(obj,alpha);
+			ObjRender_SetScaleXYZ(obj,scale,scale,1);
+			alpha-=10;
+			scale*=1.05;
+			x+=dx; y+=dy;
+			ObjRender_SetPosition(obj,x,y,0);
+			yield;
+		}
+	}
+	Obj_Delete(obj);
+}
+*/
+
+
+function CreateFairyObject(CEOlife){
+	let cfofairy = ObjEnemy_Create(OBJ_ENEMY);
+	ObjEnemy_Regist(cfofairy);
+	// ObjPrim_SetTexture(cfofairy, img_fairy); //yeah no
+	ObjEnemy_SetLife(cfofairy, CEOlife);
+	return cfofairy;
+}
+
+/*
+//NOT CURRENTLY USED - USE AnimateFairy IN EneAnim.dnh INSTEAD
+task AnimateFairyA1(objID, presetColor){
+
+	let anim_count = 0;
+	let anim_type = 0;
+	
+	let xoffset = 0;
+	let yoffset = 0;
+	
+	if(presetColor=="blue"){yoffset = 321}
+	if(presetColor=="red"){yoffset = 353}
+	if(presetColor=="green"){yoffset = 385}
+	if(presetColor=="yellow"){yoffset = 417}
+	
+	loop{
+		if(ObjMove_GetSpeed(objID) == 0){
+			if(anim_type == 1){
+				anim_type=2;
+				anim_count = 0;
+			}
+		}
+		if(ObjMove_GetSpeed(objID) > 3){
+			if(anim_type != 1){
+				anim_count = 0;
+				anim_type = 1;
+			}
+		}
+		if(CheckDirection(objID, "right") == true){ObjRender_SetScaleXYZ(objID, 1, 1, 1)}
+		if(CheckDirection(objID, "left") == true){ObjRender_SetScaleXYZ(objID, -1, 1, 1)}
+		//if(CheckDirection(objID, "none") == true){ObjRender_SetScaleXYZ(objID, 1, 1, 1)}
+		
+		if(anim_type==0){
+			alternative(anim_count)
+			case(0){ObjSprite2D_SetSourceRect(objID, 0, yoffset, 32, yoffset+32);}
+			case(5){ObjSprite2D_SetSourceRect(objID, 32, yoffset, 64, yoffset+32);}
+			case(10){ObjSprite2D_SetSourceRect(objID, 64, yoffset, 96, yoffset+32);}
+			case(15){ObjSprite2D_SetSourceRect(objID, 96, yoffset, 128, yoffset+32);}
+			case(20){ObjSprite2D_SetSourceRect(objID, 64, yoffset, 96, yoffset+32);}
+			case(25){ObjSprite2D_SetSourceRect(objID, 32, yoffset, 64, yoffset+32);}
+			case(29){anim_count = 4;}
+		}
+		if(anim_type==1){
+			alternative(anim_count)
+			case(0){ObjSprite2D_SetSourceRect(objID, 128, yoffset, 160, yoffset+32);}
+			case(4){ObjSprite2D_SetSourceRect(objID, 160, yoffset, 192, yoffset+32);}
+			case(8){ObjSprite2D_SetSourceRect(objID, 192, yoffset, 224, yoffset+32);}
+			case(12){ObjSprite2D_SetSourceRect(objID, 224, yoffset, 256, yoffset+32);}
+			case(16){ObjSprite2D_SetSourceRect(objID, 256, yoffset, 288, yoffset+32);}
+			case(20){ObjSprite2D_SetSourceRect(objID, 288, yoffset, 320, yoffset+32);}
+			case(24){ObjSprite2D_SetSourceRect(objID, 320, yoffset, 352, yoffset+32);}
+			case(28){ObjSprite2D_SetSourceRect(objID, 352, yoffset, 384, yoffset+32);}
+			case(31){anim_count = 11;}
+		}
+		if(anim_type==2){
+			alternative(anim_count)
+			case(0){ObjSprite2D_SetSourceRect(objID, 224, yoffset, 256, yoffset+32);}
+			case(3){ObjSprite2D_SetSourceRect(objID, 192, yoffset, 224, yoffset+32);}
+			case(6){ObjSprite2D_SetSourceRect(objID, 160, yoffset, 192, yoffset+32);}
+			case(9){ObjSprite2D_SetSourceRect(objID, 128, yoffset, 160, yoffset+32);}
+			case(12){anim_count = 0;anim_type=0;}
+		}
+		
+	
+		ObjSprite2D_SetDestCenter(objID);
+		anim_count++;
+		yield;
+	}
+}
+//END OF UNUSED
+*/
+
+task FinalizeFairy(objID,FinalX, FinalY, expcolor, expscale){
+	if(CheckOutsideScreenA2(FinalX, FinalY, 64)){return;}
+	let r = 255;
+	let g = 255;
+	let b = 255;
+	if(expcolor=="blue"){r=50;g=84;b=255}else
+	if(expcolor=="green"){r=0;g=238;b=0}else
+	if(expcolor=="red"){r=255;g=102;b=0}else
+	if(expcolor=="yellow"){r=255;g=238;b=0}
+	loop(max(1,quality)){FExplosionB1(GetObjX(objID),GetObjY(objID), expcolor, rand(-70, 70), rand(-70, 70), rand(-40, 40), expscale);}
+	loop(quality*2){FExplosionB2(GetObjX(objID),GetObjY(objID), r, g, b, rand(1, 3));}
+	loop(2){yield;}
+	Obj_Delete(objID);
+	SE_Play(paf,85);
+}
+
+function GetObjX(obj){
+	if(ObjMove_GetX(obj)!=0){return ObjMove_GetX(obj);}
+	else{return -1000;}
+}
+
+function GetObjY(obj){
+	if(ObjMove_GetY(obj)!=0){return ObjMove_GetY(obj);}
+	else{return -1000;}
+}
+
+
+

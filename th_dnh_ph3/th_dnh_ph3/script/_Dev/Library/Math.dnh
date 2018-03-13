@@ -1,0 +1,243 @@
+let e = 2.71828;
+
+function GetLinearBezierPoint(start,end,t) 
+{
+	//Does not always equal the ending value when t = 1
+	return start + t * (end - start)
+}
+
+function rebuild_if_deleted(arr)
+{
+	let temparr = [];
+	
+	ascent(i in 0..length(arr))
+	{
+		if(!Obj_IsDeleted(arr[i]))
+		{
+			temparr = append(temparr,arr[i]);
+		}
+	}
+	
+	return temparr;
+}
+
+
+function GetQuadraticBezierPoint(start,control,end,t)
+{
+	return (1 - t) ^ 2 * start + 2 * (1 - t) * t * control + t ^ 2 * end
+}
+// pow((1 - t), 2) * start + 2 * (1 - t) * t * control + pow(t, 2) * end
+function GetCubicBezierPoint(start,control,control2,end,t)
+{
+	return (1 - t) ^ 3 * start + 3 * (1-t) ^ 2 * t * control + 3 * (1-t) * t ^ 2 * control2 + t ^ 3 * end
+}
+
+function GetFifthOrderBezierPoint(start,CP,end,t)
+{
+	return (1 - t) ^ 5 * start + 5 * t * (1 - t) ^ 4 * CP[0] + 10 * t ^ 2 * (1-t) ^ 3 * CP[1] + 10 * t ^ 3 * (1-t) ^ 2 * CP[2] + 5 * t ^ 4 * (1 - t) * CP[3] + t ^ 5 * end
+}
+
+function Distance(x1,y1,x2,y2)
+{
+	return ((x2 - x1) ^ 2 + (y2 - y1) ^ 2) ^ 0.5
+}
+
+function DistanceSQ(x1,y1,x2,y2)
+{
+	return ((x2 - x1) ^ 2 + (y2 - y1) ^ 2)
+}
+
+
+function GetDistToPlayer(obj)
+{
+	return Distance(ObjMove_GetX(obj),ObjMove_GetY(obj),GetPlayerX,GetPlayerY)
+}
+
+function GetDistToObject(obj,obj2)
+{
+	return Distance(ObjMove_GetX(obj),ObjMove_GetY(obj),ObjMove_GetX(obj2),ObjMove_GetY(obj2))
+}
+
+
+function GetDistToPlayer2(x,y)
+{
+	return Distance(x,y,GetPlayerX,GetPlayerY)
+}
+function lerp(start,end,t)
+{
+	//Will always equal the ending value when t = 1
+	return (1 - t) * start + t * end
+}
+
+function abs(num)
+{
+	return (|num|)
+}
+
+function sec(x)
+{
+	return 1/cos(x)
+}
+
+function csc(x)
+{
+	return 1/sin(x)
+}
+
+function cot(x)
+{
+	return 1/tan(x)
+}
+
+function sinH(x)
+{
+	return (exp(x) - exp(-x)) / 2
+}
+
+function cosH(x)
+{
+	return (exp(x) + exp(-x)) / 2
+}
+
+function tanH(x)
+{
+	return sinH(x) / cosH(x)
+}
+
+function secH(x)
+{
+	return 1/cosH(x)
+}
+
+function cscH(x)
+{
+	return 1/sinH(x)
+}
+
+function cotH(x)
+{
+	return 1/tanH(x)
+}
+
+function exp(x)
+{
+	real e = 2.71828;
+	return e ^ x
+}
+function sqrt(value)
+{
+	return value^0.5
+}
+
+
+
+function GetEllipsePosition(x,y,angle1,angle2,radius1,width)
+{
+	let ex = x + ( radius1 * ( width * cos(angle1) * cos(angle2) - 2 * sin(angle1) * sin(angle2)) );
+	let ey = y + ( radius1 * ( width * cos(angle1) * sin(angle2) + 2 * sin(angle1) * cos(angle2)) );
+	
+	return [ex,ey]
+}
+
+function rand_int(value1,value2)
+{
+	return round(rand(value1,value2))
+}
+
+function rand_or(outcome,outcome2)
+{
+	let decide = round(rand(0,1));
+	
+	if(decide==0)
+	{
+		return outcome;
+	}
+	else if(decide==1)
+	{
+		return outcome2;
+	}
+	else
+	{
+		RaiseError("Choice Failed");
+	}
+}
+function rand_or2(outcome,outcome2,outcome3)
+{
+	let decide = round(rand(0,2));
+	
+	alternative(decide)
+	case(0)
+	{
+		return outcome;
+	}
+	case(1)
+	{
+		return outcome2;
+	}
+	case(2)
+	{
+		return outcome3;
+	}
+	others
+	{
+		RaiseError("Choice Failed");
+	}
+}
+function GetAngleToPoint(x1,y1,x2,y2)
+{
+	return atan2(y2-y1,x2-x1)
+}
+
+function GetPointOnLine(x,y,distance,angle)
+{
+	return [x+distance*cos(angle),y+distance*sin(angle)]
+}
+
+function GetAngle(obj)
+{
+	return NormalizeAngle(ObjMove_GetAngle(obj))
+}
+
+function SetAngle(obj,angle)
+{
+	ObjMove_SetAngle(obj,NormalizeAngle(angle));
+}
+
+function NormalizeAngle(angle)
+{
+	angle %= 360;
+	
+	if(angle<0)
+	{
+		angle += 360;
+	}
+	
+	return angle
+}
+
+function ToRadian(angle)
+{
+	return (pi/180) * angle
+}
+
+function ToDegree(angle)
+{
+	return angle * (180/pi)
+}
+
+function TriangleWave(x,range,rate)
+{
+	return range * 2 * abs(round(x/rate) - (x/rate));
+}
+
+function CubicHermiteSpline(start,end,distance,angle,t)
+{
+	real scale = t / 1;
+	real h1 = 2 * scale ^ 3 - 3 * scale ^ 2 + 1;
+	real h2 = -2 * scale ^ 3 + 3 * scale ^ 2;
+	real h3 = scale ^ 3 - 2 * scale ^ 2 + scale;
+	real h4 = scale ^ 3 - scale ^ 2;
+	
+	return h1 * start + h2 * end + h3 * distance + h4 * angle;
+}
+

@@ -1,0 +1,184 @@
+
+//////////////////////////////////////////////////////////
+//CONVENIENCE FUNCTIONS
+//////////////////////////////////////////////////////////
+function getang(x0,y0,x1,y1){return atan2(y1-y0,x1-x0);}
+function getdist(x0,y0,x1,y1){return ((x0-x1)^2 + (y0-y1)^2)^0.5;}
+
+
+
+
+
+
+
+//Lazy getters for xysa
+function xof(obj){return ObjMove_GetX(obj);}
+function yof(obj){return ObjMove_GetY(obj);}
+function aof(obj){return ObjMove_GetAngle(obj);}
+function sof(obj){return ObjMove_GetSpeed(obj);}
+function getx(obj){return ObjMove_GetX(obj);}
+function gety(obj){return ObjMove_GetY(obj);}
+function geta(obj){return ObjMove_GetAngle(obj);}
+function getsp(obj){return ObjMove_GetSpeed(obj);}
+function getrx(obj){return ObjRender_GetX(obj);}
+function getry(obj){return ObjRender_GetY(obj);}
+function getra(obj){return ObjRender_GetAngleZ(obj);}
+//Lazy setters for xysa
+function setx(obj,x){ObjMove_SetX(obj,x);}
+function sety(obj,y){ObjMove_SetY(obj,y);}
+function seta(obj,a){ObjMove_SetAngle(obj,a);}
+function setsp(obj,s){ObjMove_SetSpeed(obj,s);}
+function setpos(obj,x,y){ObjMove_SetPosition(obj,x,y);}
+function setrpos(obj,x,y,z){ObjRender_SetPosition(obj,x,y,z);}
+//Lazy object dictionary
+function getval(obj,k){return Obj_GetValue(obj,k);}
+function getvald(obj,k,d){return Obj_GetValueD(obj,k,d);}
+function isval(obj,k){return Obj_IsValueExists(obj,k);}
+function setval(obj,k,v){if(!Obj_IsDeleted(obj)){Obj_SetValue(obj,k,v);}}
+function addval(obj,k,v){Obj_SetValue(obj,k,Obj_GetValueD(obj,k,0)+v);}
+function catval(obj,k,v){Obj_SetValue(obj,k,Obj_GetValueD(obj,k,[])~v);}
+function remval(obj,k){Obj_DeleteValue(obj,k);}
+//Lazy common data
+function getdat(k){return GetCommonData(k,NULL);}
+function getdatd(k,d){return GetCommonData(k,d);}
+function setdat(k,v){SetCommonData(k,v);}
+function adddat(k,v){SetCommonData(k,GetCommonData(k,0)+v);}
+function catdat(k,v){SetCommonData(k,GetCommonData(k,[])~v);}
+function isdat(k){return !isnull(GetCommonData(k,NULL));}
+function remdat(k){DeleteCommonData(k);}
+
+function getadat(a,k){return GetAreaCommonData(a,k,NULL);}
+function getadatd(a,k,d){return GetAreaCommonData(a,k,d);}
+function setadat(a,k,v){SetAreaCommonData(a,k,v);}
+function addadat(a,k,v){SetAreaCommonData(a,k,GetAreaCommonData(a,k,0)+v);}
+function catadat(a,k,v){SetAreaCommonData(a,k,GetAreaCommonData(a,k,[])~v);}
+function isdaat(a,k){return !isnull(GetAreaCommonData(a,k,NULL));}
+function remadat(a,k){DeleteAreaCommonData(a,k);}
+function listadat(a){GetCommonDataValueKeyList(a);}
+
+function createarea(a){if(!IsCommonDataAreaExists(a)){CreateCommonDataArea(a);}}
+function copyarea(a,b){CopyCommonDataArea(b,a);}
+function cleararea(a){ClearAreaCommonData(a);}
+function savearea(a){SaveCommonDataAreaA1(a);}
+function loadarea(a){LoadCommonDataAreaA1(a);}
+function listareas(a){GetCommonDataAreaKeyList;}
+
+function setvals(obj,keys,vals){
+	while(length(keys)>length(vals)){vals=vals~[NULL];}
+	ascent(i in 0..length(keys)){
+		if(vals[i]!=NO_CHANGE || !isval(obj,keys[i])){
+			setval(obj,keys[i],vals[i]);
+		}
+	}
+}
+
+function getmspd(obj){return getvald(obj,"MaxSpeed",5);}
+function setmspd(obj,v){
+	ObjMove_SetMaxSpeed(obj,v);
+	setval(obj,"MaxSpeed",v);
+}
+
+function getacc(obj){return getvald(obj,"Acceleration",0);}
+function setacc(obj,v){
+	ObjMove_SetAcceleration(obj,v);
+	setval(obj,"Acceleration",v);
+}
+
+function getangv(obj){return getvald(obj,"AngularVelocity",0);}
+function setangv(obj,v){
+	ObjMove_SetAngularVelocity(obj,v);
+	setval(obj,"AngularVelocity",v);
+}
+
+
+function setcolor(obj,color){
+	ObjRender_SetColor(obj,color[0],color[1],color[2]);
+	setval(obj,"Color",color);
+	if(length(color)>3){ObjRender_SetAlpha(obj,color[3]);setval(obj,"Alpha",color[3]);}
+}
+function getcolor(obj){return getvald(obj,"Color",GetDelayColor(obj));}
+
+function setalpha(obj,alpha){
+	ObjRender_SetAlpha(obj,alpha);
+	setval(obj,"Alpha",alpha);
+}
+function getalpha(obj){return getvald(obj,"Alpha",255);}
+
+
+
+
+
+// function altsign(i) { return 2*(i%2-0.5); }
+// function randsign() { return (round(rand(0,1)))*2-1; }
+
+
+
+
+function setblife(v){ObjEnemy_SetLife(boss,v);}
+function getblife{return ObjEnemyBossScene_GetInfo(objScene,INFO_CURRENT_LIFE);}
+function addblife(v){ObjEnemy_AddLife(boss,v);}
+function addscore(v){AddScore(v);}
+
+////////////////////////////////////////////////////////////////
+//Functions to do extremely trivial things
+////////////////////////////////////////////////////////////////
+
+function avg(a,b){return (a+b)/2;}
+
+function rx{return rand(0,sx);}
+function ry{return rand(0,sy);}
+function ra{return rand(0,360);}
+
+
+//2D arrays
+function Get2DArr(arr,x,y){
+	let row = arr[x];
+	if(length(row)>y){ return row[y]; } else { return -1; }
+}
+function Set2DArr(arr,x,y,val){
+	let row = arr[x];
+	row[y] = val;
+	if(length(row)>y){ let tmp=row[y]; row[y] = val; return tmp; } 
+	else { return -1; }
+}
+//For when you want to do something with it without needing a temp
+function Get2DRow(arr,x){
+	return arr[x];
+}
+
+////////////////////////////////////////////////////////////////
+//Weird niche functions that I'm no longer sure what they're for
+////////////////////////////////////////////////////////////////
+
+function randrngarr(arr){
+	return rand(arr[0],arr[1]);
+}
+
+function CO_GetAngleToObjectMove(x,y,obj){ //never used
+	let angle = atan2(ObjMove_GetY(obj)-y,ObjMove_GetX(obj)-x);
+	return angle;
+}
+
+//Get the speed S at which to fire a shot at angle A as part of a wedge with overall speed S0 and overall angle A0
+function wedgespd(s0,a0,a){
+	return s0/cos(a-a0);
+}
+
+////////////////////////////////////////////////////////////////
+//Functions that do the same thing as another function
+//and are only kept around in case something is still using them
+////////////////////////////////////////////////////////////////
+
+function addalpha(obj,dA){ObjRender_SetTrueAlpha(obj,ObjRender_GetAlpha(obj)+dA);}
+
+
+function angleFrom(x,y) {
+//	let px = GetPlayerX(); let py = GetPlayerY();
+	return atan2(py - y, px - x);
+}
+function angleBetween(ax,ay,bx,by) {
+	return atan2(by - ay, bx - ax);
+}
+
+
+

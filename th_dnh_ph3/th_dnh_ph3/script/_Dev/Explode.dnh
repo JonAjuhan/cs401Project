@@ -1,0 +1,87 @@
+//#TouhouDanmakufu[Single]
+#ScriptVersion[3]
+#Title["Explode"]
+#Text["..."] 
+#BGM["./bgm/bgm - A Maiden's Illusionary Funeral ~ Necro-Fantasy.ogg"]						//"./bgm/bgm - Bhava-Agra As Seen Through a Child's Mind.mp3"]
+#System["./system/Default_System.txt"]
+#Background["./system/Background_Sky.txt"]
+
+#include "./Index.txt"
+
+
+
+
+//let timer = 57; //30
+
+@Event
+{
+	alternative(GetEventType())
+	case(EV_REQUEST_LIFE)
+	{
+		SetScriptResult(20);
+	}
+//	case(EV_REQUEST_SPELL_SCORE){
+//      SetScriptResult(5000000);
+//    }
+//	case(EV_REQUEST_IS_DURABLE_SPELL) {
+//		SetScriptResult(true);
+//	}
+//	case(EV_REQUEST_IS_LAST_SPELL){
+//		SetScriptResult(true);
+//	}
+	
+//	case(EV_REQUEST_TIMER) { SetScriptResult(timer*60); } //4500
+}
+@Initialize
+{
+	SetCommonData("CurrentSC","");
+	//SetCommonData("Difficulty","Phantasm");
+	
+	boss = spawnBoss();
+	
+	ObjEnemy_SetDamageRate(boss,0,0);
+	SetShotAutoDeleteClip(64,96,64,64);
+	
+	MainTask;
+	
+
+}
+@MainLoop
+{
+
+	if(ObjEnemy_GetInfo(boss, INFO_LIFE) <= 0 && !finishing)
+	{
+		finishing = true;
+		TBreakNonspell([NULL]);
+	}
+	else {
+		//SetBossHitbox(boss,ex,ey);
+	}
+	frame++;
+	yield;
+}
+
+
+task MainTask {
+	
+	ObjEnemy_SetDamageRate(boss,0,0);
+
+	ExplosionB2(boss,"CHERRY",[255,0,200],[255,0,200]);
+	
+	ascent(i in 0..150){
+		ObjRender_SetAlpha(boss,255-i*255/150);
+		yield;
+	}
+	wait(60);
+	
+	ObjEnemy_SetLife(boss,0);
+	//CloseScript(GetOwnScriptID);
+
+}
+
+
+
+
+
+	
+

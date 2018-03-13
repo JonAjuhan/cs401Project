@@ -1,0 +1,236 @@
+#TouhouDanmakufu[Plural]
+#ScriptVersion[3]
+#Title["Plural-6"]
+#Text["A test plural. By Andi."]
+
+#include "./Index.txt"
+#System["./system/Default_System.txt"]
+#Background["./system/Background_Sky.txt"]
+
+#BGM["./bgm/bgm - CC-CGR-loop.ogg"]	
+
+//let misses=0; let bombs=0; let captures=0; let bombsLost=0; let deathbombs=0;
+
+let music = ObjSound_Create;
+
+@Loading {
+	//let music = ObjSound_Create;
+	//ObjSound_Load(music,CSD ~ "./bgm/bgm - CC-CGR-loop.ogg");
+	//ObjSound_SetLoopEnable(music,true);
+	// InstallFont(GetCurrentScriptDirectory() ~ "img/Helvetica.otf"); //.otf for One True Font
+}
+
+@Event{
+	/*
+	alternative(GetEventType())
+	//To spawn an extend:
+	//NotifyEventAll(EV_USER_STAGE+1, [ex, ey, ITEM_1UP]);
+	case(EV_USER_STAGE+1){
+		let arg = GetEventArgument(0); //x, y, item
+		let px = GetPlayerX(); let py = GetPlayerY()-200;
+		CreateItemA2(arg[2], arg[0], arg[1], px, py, 1500);
+		let r = 15; //radius in which to create point items
+		ascent(i in 0..15) {
+			CreateItemA2(ITEM_POINT_S,arg[0]+r*cos(24*i),arg[1]+r*sin(24*i),px+r*cos(24*i),py+r*sin(24*i),10000+GetGraze());
+		}
+		r = 25;
+		ascent(i in 0..30) {
+			CreateItemA2(ITEM_POINT_S,arg[0]+r*cos(12*i),arg[1]+r*sin(12*i),px+r*cos(12*i),py+r*sin(12*i),10000+GetGraze());
+		}
+	}
+	case(EV_PLAYER_SHOOTDOWN) { 
+		misses++;
+		bombsLost+=GetPlayerSpell();
+	}
+	case(EV_PLAYER_SPELL) { 
+		bombs++;
+	}
+	case(EV_GAIN_SPELL) { 
+		captures++; 
+	}
+	case(EV_SET_SONG) {	//EV_SET_SONG	+7
+		let arg = GetEventArgument(0);
+		ObjSound_Load(music,CSD ~ arg[0]);
+		ObjSound_SetLoopEnable(music,true);
+		ObjSound_SetRestartEnable(music,true);
+		//ObjSound_Play(music);
+	}
+	case(EV_START_SONG) {	//EV_START_SONG	+4
+		ObjSound_Play(music);
+	}
+	case(EV_STOP_SONG) {	//EV_STOP_SONG	+5
+		ObjSound_Stop(music);
+	}
+	case(EV_PAUSE_ENTER) // dmf event
+	{
+		ObjSound_Stop(music);
+	}
+	case(EV_PAUSE_LEAVE) // dmf event
+	{
+		ObjSound_Play(music);
+	}
+	
+	*/
+
+}
+
+@Initialize{
+	//ObjSound_Load(music,CSD ~ "./bgm/bgm - CC-CGR-loop.ogg");
+	//ObjSound_SetLoopEnable(music,true);
+	//ObjSound_Play(music);
+	SetCommonData("IsPlural",true);
+	TPlural;
+}
+@MainLoop{
+	yield;
+}
+
+
+task TPlural {
+	let dir = GetCurrentScriptDirectory()~"./";
+    let obj = ObjEnemyBossScene_Create();
+	
+	
+	//SetPlayerLife(99);
+	//SetPlayerAutoItemCollectLine(150);
+	
+	//SetSkipModeKey(KEY_INVALID);
+	
+	// function spell(bar,spel){ 
+		// ObjEnemyBossScene_Add(obj, bar, dir ~ "./" ~ spel); 
+	// }
+	// function spellw(bar,spel){ 
+		// ObjEnemyBossScene_Add(obj, bar, dir ~ "./Wait.dnh");
+		// ObjEnemyBossScene_Add(obj, bar, dir ~ "./" ~ spel); 
+	// }
+	// function nonsp(bar,spel){spell(bar,spel);} //for the sake of being able to tell what things are
+	
+	//let i = 0;
+	
+	//spell(i,"Single-6-14.dnh"); i++;	//Ribbon "Butterfly Dream Box"
+	//spell(i,"Single-6-11.dnh"); i++;	//Heaven's Sea "Blink of the Cosmos"
+	//spell(i,"Single-6-02.dnh"); i++;	//Identity "Fantasy Aria"	
+	//spell(i,"Single-6-08.dnh"); i++;	//"The Great Lever that Moves All Gensokyo"
+	//spell(i,"Single-6-05.dnh");		//"The Unfiltered World"
+	//spell(i,"Single-6-13.dnh");		//Ribbon "All Souls Jointly Under Heaven"
+	//spell(i,"Explode.dnh");
+	
+	
+	
+	
+	ObjEnemyBossScene_Add(obj,0,dir~"Single-6-14.dnh"); //i++;
+	ObjEnemyBossScene_Add(obj,1,dir~"Single-6-11.dnh"); //i++;
+	ObjEnemyBossScene_Add(obj,1,dir~"Single-6-12.dnh"); //i++;
+	ObjEnemyBossScene_Add(obj,2,dir~"Single-6-02.dnh"); //i++;
+	ObjEnemyBossScene_Add(obj,3,dir~"Single-6-08.dnh"); //i++;
+	ObjEnemyBossScene_Add(obj,3,dir~"Single-6-05.dnh");
+	ObjEnemyBossScene_Add(obj,4,dir~"Single-6-13.dnh");
+	
+	ObjEnemyBossScene_LoadInThread(obj);
+	ObjEnemyBossScene_Regist(obj);
+	
+	while(!Obj_IsDeleted(obj)){yield;}
+	CloseScript(GetOwnScriptID());
+	
+	
+	
+	// ObjEnemyBossScene_LoadInThread(obj); //WriteLog("Main: Scenes loaded, registering scenes");
+	
+	//WriteLog("Main: Scenes added, attempting to load in thread");
+	
+	
+	// NotifyEventAll(EV_SET_SONG,["./bgm/bgm - CC-CGR-loop.ogg"]);
+	// NotifyEventAll(EV_START_SONG,[]);
+	
+	// ObjSound_Load(music,CSD ~ "./bgm/bgm - A Maiden's Illusionary Funeral ~ Necro-Fantasy.ogg");
+	// ObjSound_SetLoopEnable(music,true);
+	// ObjSound_SetRestartEnable(music,true);
+	// ObjSound_Play(music);
+	
+	//WriteLog("Main: Scenes registered, waiting for game to end");
+	
+//	SetCommonData("done",false);
+		
+	//Wait for game to end
+	// while(!Obj_IsDeleted(obj)){  // && GetPlayerState()!=STATE_END){ //%%!finishing
+		// // if(GetPlayerState()==STATE_HIT) {
+			// // loop(GetPlayerRebirthFrame()) { yield; }
+			// // if(IsPlayerSpellActive()) { deathbombs++; }
+		// // }	
+        // yield;
+    // }
+//	WriteLog("Main: All done, finishing up");
+//	if(finishing) { yield; }
+//	finishing = true;
+	//If player won
+	// if(GetPlayerState()!=STATE_END) {
+		// TAllClear;
+	// }
+	// else {
+		// CloseScript(GetOwnScriptID());
+		// //CloseStgScene(); //I've been told not to use this in a plural
+	// }
+	
+}
+
+
+
+
+// task TAllClear {
+	// wait(30);
+	// let sx = GetStgFrameWidth(); let sy = GetStgFrameHeight();
+	// let text = [ObjText_Create(),ObjText_Create(),ObjText_Create(),ObjText_Create()];
+	// //"All Clear", statistic labels, statistics, PC-98-style "fortune"
+	// ascent(i in 0..4) {
+		// ObjRender_SetX(text[i], 50);
+		// ObjText_SetMaxWidth(text[i], 250);
+		// ObjText_SetFontType(text[i], "Helvetica");
+		// ObjText_SetFontColorTop(text[i], 255, 255, 255);
+		// ObjText_SetFontColorBottom(text[i], 255, 255, 255);
+		// ObjText_SetFontBorderType(text[i], BORDER_FULL);
+		// ObjText_SetFontBorderColor(text[i], 224, 64, 192);
+		// ObjText_SetFontBorderWidth(text[i], 1);
+		// ObjText_SetLinePitch(text[i],1);
+	// }
+	// ObjText_SetHorizontalAlignment(text[0], ALIGNMENT_CENTER);
+	// ObjRender_SetY(text[0], 40);
+	// ObjText_SetFontSize(text[0], 40);
+	// ObjText_SetFontBold(text[0], true);
+	// ObjText_SetText(text[0], "All clear!");
+	
+	// ObjText_SetHorizontalAlignment(text[1], ALIGNMENT_LEFT);
+	// ObjRender_SetY(text[1], 95);
+	// ObjText_SetFontSize(text[1], 24);
+	// ObjText_SetText(text[1],"Clear Bonus[r]Total Score[r]Difficulty[r]Game Completed[r]Continues Used[r]Misses[r]Bombs Used[r]Spell Cards Captured[r]Bombs Lost In Stock[r]Counter Bombs[r]Your Skill");
+	
+	// ObjText_SetHorizontalAlignment(text[2], ALIGNMENT_RIGHT);
+	// ObjRender_SetY(text[2], 95);
+	// ObjText_SetFontSize(text[2], 24);
+	// let skill = 100*deathbombs/bombs;
+	// let continues = 0;
+	// if(misses > 7) { 
+		// skill *= 1/(misses-6);
+		// continues = floor(misses/8);
+	// }
+	// ObjText_SetText( text[2], "1000000[r]"~IntToString(GetScore()+1000000)~"[r]Phantasm[r]100%[r]"~IntToString(continues)~"[r]"~IntToString(misses)~"[r]"~IntToString(bombs)~"[r]"~IntToString(captures)~"[r]"~IntToString(bombsLost)~"[r]"~IntToString(deathbombs)~"[r]"~IntToString(skill) ); //“_
+	
+	// ObjText_SetHorizontalAlignment(text[3], ALIGNMENT_CENTER);
+	// ObjRender_SetY(text[3], 380);
+	// ObjText_SetFontSize(text[3], 14);
+	// ObjText_SetFontBold(text[3],true);
+	// let fortune;
+	// if(misses == 0) { fortune="Pure being[r]Congratulations! No Miss Clear"; }
+	// else if(misses > 7) { fortune="Try to clear without[r]using a continue!"; }
+	// else if(misses < 5 && bombsLost < 2*misses) { fortune = "Good at shooting games[r]Use bombs to survive"; }
+	// else { fortune = "Probably done[r]Use bombs to survive"; }
+	// ObjText_SetText(text[3], fortune);
+	
+	// loop(180) { AddScore(5550); yield; }
+	// AddScore(1000);
+	
+	// let i = 0;
+	// while(!(GetVirtualKeyState(VK_SHOT)==KEY_PUSH) || i < 60) { i++; yield; }
+	
+	// CloseScript(GetOwnScriptID());
+	// //CloseStgScene(); //I've been told not to use this in a plural
+// }

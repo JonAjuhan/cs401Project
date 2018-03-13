@@ -1,0 +1,140 @@
+let csd = GetCurrentScriptDirectory;
+let sed = csd~"../se/";
+
+//let shot =  csd~"../se/shot.wav";
+//let chime =  csd~"../se/chime.wav";
+
+let se_shot =  csd~"../se/shot.wav";
+let se_chime = csd~"../se/chime.wav";
+let se_chime2 = csd~"../se/chime2.wav";
+let se_exshot = sed~"exattack.wav";
+
+let spellcard =  csd~"../se/spellcard.wav";
+let spellbreak = csd~"../se/spellbreak.wav";
+let se_charge = csd~"../se/charge.wav";
+let se_charge2 = csd~"../se/charge2.wav";
+let se_charge3 = csd~"../se/charge3.wav";
+let se_charge3b = csd~"../se/charge3-2.wav";
+
+let se_caution = csd~"../se/caution.wav";
+
+let se_defeated = csd~"../se/defeated.wav"; let defeated=se_defeated;
+
+let time1 = csd~"../se/se_timeout1.wav";
+let time2 = csd~"../se/se_timeout2.wav";
+
+let se_extend = csd~"../se/extend.wav";
+
+let se_laser  = csd~"../se/se_lazer00.wav";
+let se_laser1 = csd~"../se/laser1.wav";
+let se_laser2 = csd~"../se/laser2.wav";
+let se_laser8 = csd~"../se/laser8.wav";
+
+let se_seal = csd~"../se/se_gun00.wav";
+let se_spark = csd~"../se/spark.wav";
+
+let bom_00 = csd~"../se/Hina/bom_00.wav";
+let se_smite = csd~"../se/smite.wav";
+let se_thunder = csd~"../se/thunder.wav";
+
+let se_swrlaser = csd~"../se/swrlaser.wav";
+let se_swrbeam = csd~"../se/swrbeam.wav";
+
+let se_explode = csd~"../se/explode.wav"; let explode = se_explode;
+let se_horn = csd~"../se/se_horn.wav"; let horn = se_horn;
+let se_hornshort = csd~"../se/se_hornshort.wav";
+
+let nyaa = csd~"../se/orin.wav";
+let awoo = csd~"../se/wolf.wav";
+let se_laugh = sed~"se_laugh.wav";
+
+let se_gap = csd~"../se/gap.wav";
+let se_gap2 = csd~"../se/gap2.wav";
+let se_gapshot = csd~"../se/gapshot.wav";
+
+let se_warp = csd~"../se/se_warp_n.wav";
+let se_warp_l = csd~"../se/se_warp_l.wav";
+let se_warp_r = csd~"../se/se_warp_r.wav";
+
+let se_vanish = sed~"vanish.wav";
+let se_sukima = sed~"se_sukima.wav";
+let se_shift = sed~"se_shift.wav";
+let se_split = sed~"split.wav";
+let se_glint = sed~"glint.wav";
+
+let splash = csd~"../se/se_water.wav";
+let se_anchor = csd~"../se/se_anchor.wav";
+
+let se_fam = csd~"../se/se_option.wav";
+let se_fam2 = csd~"../se/se_option_short.wav";
+let se_slash = csd~"../se/se_slash.wav";
+let se_ice = csd~"../se/ice.wav";
+
+let damage1 = csd~"../se/se_damage00.wav";
+let damage2 = csd~"../se/se_damage01.wav";
+let nodamage = csd~"../se/se_nodamage.wav";
+
+//variations of spellbreak se
+let se_tan00 = csd~"../se/se_tan00.wav";
+let se_tan01 = csd~"../se/se_tan01.wav";
+let se_tan02 = csd~"../se/se_tan02.wav";
+
+
+//variations of shot se
+let se_shot1 = csd~"../se/Shot1.wav";
+let se_shot2 = csd~"../se/Shot2.wav";
+let se_shot3 = csd~"../se/Shot3.wav";
+let se_shot4 = csd~"../se/Shot4.wav";
+let se_shot5 = csd~"../se/Shot5.wav";
+let se_shot6 = csd~"../se/Shot6.wav";
+let se_shot7 = csd~"../se/Shot7.wav";
+let se_shot8 = csd~"../se/Shot8.wav";
+function se_shotrand{ return sed~"shot"~itoa(rand(1,8))~".wav";}
+
+
+//variations of chime se
+let se_kira01 = csd~"../se/se_kira01.wav";	//koish wave hi
+let se_kira02 = csd~"../se/se_kira02.wav";	//
+
+
+let se_train = csd~"../se/train1.wav";
+let se_tracks= csd~"../se/train2.wav";
+
+let se_timestop = sed~"timestop.wav";
+let se_timestall= sed~"timestopshrink.wav";
+let se_timeunstall= sed~"timereversegrow.wav";
+
+let se_theworld = sed~"TrollSounds/za warudo.wav";
+
+let paf = csd~"../se/se_enep00.wav";
+let se_bubble = sed~"bubble.wav";
+
+let se_playershot = csd~"../se/playershot.wav";
+
+
+task SE_Play(let path, let vl){
+	let seobj = ObjSound_Create;
+	ObjSound_Load(seobj,path);
+	ObjSound_Play(seobj);
+	ObjSound_SetVolumeRate(seobj,vl);
+	loop(120){yield;}
+	RemoveSound(path);
+}
+
+
+function SE_PlayA1(let path, let vl){ SE_Play(path,vl); }
+
+//specify se obj and duration
+task SE_PlayA2(let path, let vl, let seobj, dur) {
+	ObjSound_Load(seobj,path);
+	ObjSound_Play(seobj);
+	ObjSound_SetVolumeRate(seobj,vl);
+	loop(dur){yield;}
+	RemoveSound(path);
+}
+
+
+task SE_Play_Del(let path, let vl, let del) {
+	wait(del);
+	SE_Play(path,vl);
+}

@@ -1,0 +1,328 @@
+//AJS
+let CSD = GetCurrentScriptDirectory;
+let objScene = GetEnemyBossSceneObjectID;
+let cameracount = 0;
+let OnSpell = false;
+
+@Initialize{
+	SetCameraFocusX(0);
+	SetCameraFocusY(00);
+	SetCameraFocusZ(0);
+	SetCameraRadius(300);
+    SetCameraElevationAngle(10);
+	SetCameraAzimuthAngle(90);
+	SetAutoDeleteObject(true);
+  /*SetFogEnable(true);
+  SetFogParam(500, 800, 250, 80, 0);*/
+
+	Background;
+	SpellBackgroundMokou;
+  SpellBackgroundKeine;
+}
+ 
+
+
+
+@MainLoop{
+     //SetCameraAzimuthAngle(90 + 15*sin(cameracount));
+
+OnSpell = (GetEnemyBossSceneObjectID != ID_INVALID && ObjEnemyBossScene_GetInfo(GetEnemyBossSceneObjectID, INFO_IS_SPELL)); 
+  cameracount++;
+	yield;
+	}
+
+function SpriteCreate{
+  let obj = ObjPrim_Create(OBJ_SPRITE_3D);
+  ObjPrim_SetTexture(obj, CSD~"stbg1.png");
+  Obj_SetRenderPriorityI(obj, 20);
+  ObjSprite3D_SetSourceDestRect(obj, 0, 0, 512, 512);
+  ObjSprite3D_SetBillboard(obj, true);
+  ObjRender_SetAngleZ(obj, 180);
+  ObjRender_SetBlendType(obj, BLEND_ALPHA);
+  return obj;
+}
+
+function Bamboo(p){
+  let obj = ObjPrim_Create(OBJ_SPRITE_3D);
+  ObjPrim_SetTexture(obj, CSD~"stbg2.png");
+  ObjSprite3D_SetSourceDestRect(obj, 0, 0, 17, 512);
+  ObjRender_SetScaleY(obj, 5);
+  ObjRender_SetBlendType(obj, BLEND_ALPHA);
+  Obj_SetRenderPriority(obj, p);
+  return obj;
+}
+
+task Leaves{
+  let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+  ObjPrim_SetTexture(obj, CSD~"stbg3.png");
+  Obj_SetRenderPriorityI(obj, 24);
+  ObjSprite2D_SetSourceRect(obj, 275, 0, 512, 256);
+  ObjSprite2D_SetDestCenter(obj);
+  ObjRender_SetScaleY(obj, 1.5);
+  ObjRender_SetPosition(obj, rand(-50, GetStgFrameWidth + 50), rand(50, -50), 0);
+
+  let y = 0;
+  let c = 0;
+  let a = 255;
+  while(!IsCloseScript(GetOwnScriptID())){
+    if(GetCommonData("LASTSPELL", false)){
+      ObjRender_SetAlpha(obj, a);
+      a--;
+    }
+    ObjRender_SetAngleY(obj, y);
+    y += cos(c*2);
+    c++;
+    yield;
+  }
+}
+
+task Background{
+
+  let background = [SpriteCreate];
+  ObjRender_SetAlpha(background[0],255);
+  ObjRender_SetPosition(background[0], 0, -50, 0);
+  let focus = 0;
+
+    let x = 150;
+  let x2 = -150;
+  let z = 0;
+  let a = 0;
+  let c = 0;
+
+  let obj1;
+  let obj2;
+  let obj3;
+  let obj4;
+  let obj5;
+  let obj6;
+  let obj7;
+  let obj8;
+  loop(8){
+    Leaves;
+  }
+loop(15){
+
+  /*obj1 = Bamboo(0.210);
+  ObjRender_SetPosition(obj1, x + 220, 0, z);
+  ObjRender_SetAngleZ(obj1, 1);
+
+  obj2 = Bamboo(0.210);
+  ObjRender_SetPosition(obj2, x2 - 230, 0, z);
+  ObjRender_SetAngleZ(obj2, -3);*/
+
+  obj3 = Bamboo(0.211);
+  ObjRender_SetPosition(obj3, x + 200, 0, z);
+  ObjRender_SetAngleZ(obj3, 5);
+
+  obj4 = Bamboo(0.211);
+  ObjRender_SetPosition(obj4, x2 - 180, 0, z);
+  ObjRender_SetAngleZ(obj4, -5);
+
+  obj5 = Bamboo(0.211);
+  ObjRender_SetPosition(obj5, x + 90, 0, z);
+  ObjRender_SetAngleZ(obj5, 0);
+
+  obj6 = Bamboo(0.212);
+  ObjRender_SetPosition(obj6, x2 - 50, 0, z);
+  ObjRender_SetAngleZ(obj6, -7);
+
+  obj7 = Bamboo(0.213);
+  ObjRender_SetPosition(obj7, x, 0, z);
+  ObjRender_SetAngleZ(obj7, 3);
+
+  obj8 = Bamboo(0.213);
+  ObjRender_SetPosition(obj8, x2, 0, z);
+  ObjRender_SetAngleZ(obj8, -4);
+
+  x += cos(c*10);
+  x2 -= cos(c*10);
+  z -= 200;
+  c++;           
+}
+x = 125;
+x2 = -125;
+z = 0;
+a = 255;
+c = 0;
+
+while(!GetCommonData("LASTSPELL", false)){
+  SetCameraFocusZ(focus);
+  ObjRender_SetPosition(background[0], 0, -50, focus - 100);
+  focus -= 6;
+
+  if(focus < -400){focus = 0;}
+  yield;
+}
+loop{
+ // if(focus > -800){
+    SetCameraFocusZ(focus);
+    ObjRender_SetPosition(background[0], 0, -50, focus - 100);
+    focus -= 12;
+    yield;
+//}
+}
+}
+
+
+task SpellBackgroundMokou{
+        let GetCenterY = GetStgFrameHeight() / 2;
+       	let GetCenterX = GetStgFrameWidth() / 2;
+        let alpha = 0;
+        let alpha2 = 255;
+        let m = 0;
+        let m2 = 0.5;
+        let mm = 0;
+        let mm2 = 10;
+
+
+	let path = CSD ~ "cdbg1.png";
+	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjRender_SetBlendType(obj, BLEND_ALPHA);
+	Obj_SetRenderPriorityI(obj, 25);
+	ObjPrim_SetTexture(obj, path);
+	ObjSprite2D_SetDestRect(obj, 0, 0, 512, 512);
+
+
+let path2 = CSD ~ "cdbg2.png";
+	let obj2 = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjRender_SetBlendType(obj2, BLEND_ALPHA);
+	Obj_SetRenderPriorityI(obj2, 25);
+	ObjPrim_SetTexture(obj2, path2);
+	ObjSprite2D_SetSourceRect(obj2, 0, 0, 256, 256);
+//	ObjSprite2D_SetDestRect(obj2, 0, 0, 256, 256);
+        ObjSprite2D_SetDestCenter(obj2);
+        ObjRender_SetScaleXYZ(obj2,2.3,2.3,2.3);
+
+
+	loop
+	{
+		if(OnSpell && GetCommonData("WhoSpell", "Mokou") == "Mokou")
+		{
+
+
+
+
+
+
+                        alpha += 4;
+			alpha2 -=4;
+		}
+		else
+		{
+		alpha2 +=4;
+			alpha -= 4;
+		}
+
+               if(alpha<=0){
+               alpha = 0;
+               }
+               if(alpha>=255){
+               alpha = 255;
+               }
+               if(alpha2>=255){
+               alpha2 = 255;
+               }
+               if(alpha2<=0){
+               alpha2 = 0;
+               }
+
+
+
+                ObjRender_SetAlpha(obj, alpha);
+		Obj_SetVisible(obj, 255 > 0);
+		ObjSprite2D_SetSourceRect(obj, 0, 0, 256, 256);
+                ObjRender_SetPosition(obj,0,0,0);
+                ObjRender_SetAngleXYZ(obj,0,0,0);
+
+               ObjRender_SetAlpha(obj2, alpha/3);
+		Obj_SetVisible(obj2, 255 > 0);
+		ObjSprite2D_SetSourceRect(obj2, 0, 0, 256, 256);
+                ObjRender_SetPosition(obj2,GetStgFrameWidth/2,GetStgFrameHeight/2,0);
+                ObjRender_SetAngleXYZ(obj2,0,0,-m);
+
+
+                mm+=mm2;
+                m+=m2;
+                yield;
+                }
+
+  }
+
+task SpellBackgroundKeine{
+        let GetCenterY = GetStgFrameHeight() / 2;
+        let GetCenterX = GetStgFrameWidth() / 2;
+        let alpha = 0;
+        let alpha2 = 255;
+        let m = 0;
+        let m2 = 0;
+
+
+  let path = CSD ~ "cdbgb1.png";
+  let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+  ObjRender_SetBlendType(obj, BLEND_ALPHA);
+  Obj_SetRenderPriorityI(obj, 25);
+  ObjPrim_SetTexture(obj, path);
+  ObjSprite2D_SetDestRect(obj, 0, 0, 512, 512);
+
+
+let path2 = CSD ~ "cdbgb2.png";
+  let obj2 = ObjPrim_Create(OBJ_SPRITE_2D);
+  ObjRender_SetBlendType(obj2, BLEND_ALPHA);
+  Obj_SetRenderPriorityI(obj2, 25);
+  ObjPrim_SetTexture(obj2, path2);
+  ObjSprite2D_SetSourceRect(obj2, 0, 0, 256, 256);
+  ObjSprite2D_SetDestRect(obj2, 0, 0, 512, 512);
+        ObjRender_SetScaleXYZ(obj2,1,1,1);
+
+
+  loop
+  {
+    if(OnSpell && GetCommonData("WhoSpell", "Mokou") == "Keine")
+    {
+
+
+
+
+
+
+                        alpha += 4;
+      alpha2 -=4;
+    }
+    else
+    {
+    alpha2 +=4;
+      alpha -= 4;
+    }
+
+               if(alpha<=0){
+               alpha = 0;
+               }
+               if(alpha>=255){
+               alpha = 255;
+               }
+               if(alpha2>=255){
+               alpha2 = 255;
+               }
+               if(alpha2<=0){
+               alpha2 = 0;
+               }
+
+
+
+                ObjRender_SetAlpha(obj, alpha);
+    Obj_SetVisible(obj, 255 > 0);
+    ObjSprite2D_SetSourceRect(obj, 0, 0, 256, 256);
+                ObjRender_SetPosition(obj,0,0,0);
+                ObjRender_SetAngleXYZ(obj,0,0,0);
+
+               ObjRender_SetAlpha(obj2, alpha/1.5);
+    Obj_SetVisible(obj2, 255 > 0);
+    ObjSprite2D_SetSourceRect(obj2, m, m2, m + 511, m2 + 511);
+
+
+                m++;
+                m2++;
+                yield;
+                }
+
+  }

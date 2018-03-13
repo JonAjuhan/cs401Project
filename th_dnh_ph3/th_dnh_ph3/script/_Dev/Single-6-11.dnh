@@ -1,0 +1,382 @@
+#TouhouDanmakufu[Single]
+#ScriptVersion[3]
+#Title["Heaven's Sea \"Blink of the Cosmos\""]
+#Text["..."] 
+#BGM["./bgm/bgm - SSS Boss6.ogg"] //- Bhava-Agra As Seen Through a Child's Mind.mp3"]
+#System["./system/Default_System.txt"]
+#Background["./system/Background_Sky.txt"]
+
+#include "./Index.txt"
+
+let timer = 37; //37
+
+
+let shoot=true;
+
+@Event
+{
+	alternative(GetEventType())
+	case(EV_REQUEST_LIFE)
+	{
+		SetScriptResult(2000);
+	}
+	case(EV_REQUEST_SPELL_SCORE){
+        SetScriptResult(5000000);
+    }
+	case(EV_REQUEST_IS_DURABLE_SPELL) {
+		SetScriptResult(true);
+	}
+//	case(EV_REQUEST_IS_LAST_SPELL){
+//		SetScriptResult(true);
+//	}
+	
+	case(EV_REQUEST_TIMER) { SetScriptResult(timer*60); }
+}
+@Initialize
+{
+	SetCommonData("CurrentSC","Heaven's Sea \"Blink of the Cosmos\"");
+	SetCommonData("Difficulty","Extra");
+	
+	boss = spawnBoss();
+	
+	ObjEnemy_SetDamageRate(boss,0,0);
+	//SetShotAutoDeleteClip(64,96,64,64);
+	SetShotAutoDeleteClip(16,16,16,16);
+	//SetShotAutoDeleteClip(32,32,32,32);
+	
+	MainTask;
+	
+
+}
+@MainLoop
+{
+
+	if(ObjEnemy_GetInfo(boss, INFO_LIFE) <= 0 && !finishing)
+	{
+		finishing = true;
+		TBreakSpell([]);
+	}
+	else {
+		SetBossHitbox(boss,ex,ey);
+	}
+	frame++;
+	yield;
+}
+
+
+task MainTask {
+	
+	ObjEnemy_SetDamageRate(boss,0,0);
+	ObjMove_SetDestAtFrame(boss, cx, cy-120, 60);
+	
+	SetSpellCard;
+	MCircNextAlpha = 80;
+	Obj_SetValue(objSpellCircle,"MaxAlpha",64);
+	
+	ObjEnemyBossScene_StartSpell(objScene);
+	ObjEnemyBossScene_SetSpellTimer(objScene,timer*60); //5760
+	
+	//SetCaution;
+	//SetBossBlur(true);
+	AuraRainbow(boss,255,255,255);
+	TSpellImmune;
+
+	//ConcentrationA2(boss,"HEXAGON",90,3,10,[255,0,255]);
+		
+//	wait(90);
+//	Tmovement(cx-120,cx+120, cy-90,cy-60, 60,240, [MOVE_PLAYERBIAS,2,0,MOVE_MAXSPEED,1.5] );
+	ObjEnemy_SetDamageRate(boss,24,8);
+	frame = 0;
+
+	wait(90);
+
+	//TTime;
+	TStarShoot;
+//	TShoot;
+	TCenterShots;
+}
+
+
+
+
+
+
+
+
+
+
+function Wall(x0,y0,x1,y1, x2,y2,x3,y3, num, time){
+	let shot; let shots = [];
+	let pos0; let pos1;
+	let ang0 = getangle(x0,y0,x1,y1);
+	let ang1 = getangle(x2,y2,x3,y3);
+	let dist0= getdist(x0,y0,x1,y1);
+	let dist1= getdist(x2,y2,x3,y3);
+	
+	let dist; let ang;
+	
+	ascent(i in 0..num+1){
+		pos0 = blerp(x0,y0,x1,y1, i/num);
+		pos1 = blerp(x2,y2,x3,y3, i/num);
+		dist = getdist(pos0[0],pos0[1],pos1[0],pos1[1]);
+		ang  = getangle(pos0[0],pos0[1],pos1[0],pos1[1]);
+		shot = CreateShotA1(pos0[0],pos0[1],dist/(time+rand(-10,10)),ang, BIGDOT_RED+500+randint(0,3),25);
+		ObjRender_SetAlpha(shot,128);
+		//ObjRender_SetBlendType(shot,BLEND_MULTIPLY);
+		shots = shots ~ [shot];
+	}
+	
+	return shots;
+}
+
+
+
+task TStarShoot{
+	let cnt=0; let arr = [5,6]; //5,6,7,8
+	let lines = []; let line; let pos; let pts; let tmp;
+	let x; let y; let a; let off; let dir=1;
+	let shot;
+	while(!Obj_IsDeleted(boss)){
+	//	Star2(swdx,swdy,6,150,20,frame, SUPP_BLUE+500);
+		//Star(cx,cy,randarr([6,8,5,7,10]),150,20,frame, SUPP_RED+500);
+		pts = arr[cnt%length(arr)];
+		lines = GetStar(cx,cy,pts,150,40,frame);
+		loop(2){
+			ascent(j in 0..length(lines)){
+				line = lines[j];
+				let len = length(line);
+				let angoff = 90; //norma(getangle(anon(line[0])[0],anon(line[0])[1],anon(line[len-1])[0],anon(line[len-1])[1]));
+				ascent(i in 0..length(line)){
+					pos = line[i];
+					x = pos[0]; y = pos[1]; a = pos[2];
+					off = sin(i*length(line)) *dir; 
+					angoff=90*(1+0.25*off) *dir;
+					tmp=randBin;
+					shot = CreateShotA2(x+off*10*cos(a),y+off*10*sin(a),0, a-off + angoff, 0.01,1.5,  OVAL_BLUE+tmp+500, 20);
+					ObjMove_AddPatternA3(shot,rand(15,60),NO_CHANGE,NO_CHANGE,NO_CHANGE,0,1.5, STAR_BLUE+tmp+500);
+					ObjMove_SetAngularVelocity(shot,0.25*off);
+				}
+			}
+			SE_Play(se_shot2,100);
+			dir*=-1;
+			wait(30);
+		}
+		//ShootPoly(cx,cy,7,150,20,frame, SUPP_RED+500);
+		//SE_Play(se_kira01,100);
+		
+		wait(180); cnt++;
+	}
+	
+}
+
+task TShoot{
+	let t=0; let pos; let shot;
+	while(!Obj_IsDeleted(boss)){
+		
+		loop(2){
+			pos = spiral(ex,ey,90,30*sin(frame),t);
+			shot = CreateShotA2(pos[0],pos[1],0,t+90, 0.01,1.5,  BIGDOT_H_BLUE-randBin+500,15);
+			//ObjMove_AddPatternA2(shot,rand(0,time-i),NO_CHANGE,NO_CHANGE,0.05,rand(-0.25,0.25),1.5);
+			t*=-1;
+		}
+		wait(5);  t+=11; //rand(5,15);
+	}
+}
+
+task TCenterShots{
+	let a=0; let pos; let t=0; let shot; let x; let y;
+	while(!Obj_IsDeleted(boss)){
+		
+		loop(3){
+			//pos = spiral(cx,cy,90,30*sin(frame/2),t+a);
+			x = cx+30*(|sin(frame)|)*cos(t+a);
+			y = cy+30*(|sin(frame)|)*sin(t+a);
+			shot = CreateShotA1(x,y,1,t+a, BALL_O_BLUE+randBin+500,0);
+			DelayFadeDelete(shot,5);
+			
+			x = cx+20*(|sin(frame)|)*cos(t+a);
+			y = cy+20*min( (|cos(frame)|),(|sin(frame)|) ) *sin(t+a);
+			pos = rotateC(x,y,cx,cy,t*sin(frame));
+			shot = CreateShotA1(pos[0],pos[1],1,t+a, BALL_O_BLUE+randBin+500,0);
+			ObjShot_SetFadeDeleteFrame(shot,5);
+			a+=120;
+		}
+		yield; t+=rand(5,15);
+	}
+}
+
+
+
+task TTime{
+	let fx; let fy; let gx; let gy; let hx;let hy; let ix;let iy; let jx;let jy; let dist; let ang; let ang1; let ang2; let dist1; let dist2;
+	let ox; let oy;
+	let shots;
+	let off=0;
+	while(!Obj_IsDeleted(boss)){
+		wait(150);
+
+		
+
+		SE_Play(se_charge3b,100);
+		wait(20);
+		ObjAnim_SetFacing(boss  ,sign(getx(boss  )-px)*40);
+		SetAttackPose(40);
+		wait(20);
+		
+		SE_Play(se_seal,60);
+		SE_Play(se_spark,60);
+		
+		off = rand(0,360);
+		
+		ex = px+100*cos(270+off+0  ); ey = py+100*sin(270+off+0  );
+		fx = px+100*cos(270+off+120); fy = py+100*sin(270+off+120);
+		gx = px+100*cos(270+off+240); gy = py+100*sin(270+off+240);
+		dist= getdist(px,py,ex,ey);
+		ang = getangle(px,py,avg(ex,fx),avg(ey,fy));
+		hx = px+dist*cos(ang); hy = py+dist*sin(ang);
+		ang = getangle(px,py,avg(fx,gx),avg(fy,gy));
+		ix = px+dist*cos(ang); iy = py+dist*sin(ang);
+		ang = getangle(px,py,avg(gx,ex),avg(gy,ey));
+		jx = px+dist*cos(ang); jy = py+dist*sin(ang);
+		
+//		Spiral(ex,ey,200); //150
+//		Spiral(fx,fy,200);
+//		Spiral(gx,gy,200);
+		
+		let d = 50;
+		
+		let N = 10; let del = 60; let rot;
+		ascent(i in 0..9){
+			//rot=19*i;
+			rot = i;
+			del = 240/(i+1);
+			//N=floor(i/2);
+			
+			shots=[];
+			shots=shots~ Wall(ex,ey,fx,fy, fx,fy,gx,gy, N, del);
+			shots=shots~ Wall(fx,fy,gx,gy, gx,gy,ex,ey, N, del);		
+			shots=shots~ Wall(gx,gy,ex,ey, ex,ey,fx,fy, N, del);
+
+			shots=shots~ Wall(hx,hy,ix,iy, ix,iy,jx,jy, N, del);
+			shots=shots~ Wall(ix,iy,jx,jy, jx,jy,hx,hy, N, del);		
+			shots=shots~ Wall(jx,jy,hx,hy, hx,hy,ix,iy, N, del);
+			ascent(i in 0..length(shots)){seta(shots[i],geta(shots[i])-rot);} 
+			
+			shots=[];
+			shots=shots~ Wall(fx,fy,gx,gy, ex,ey,fx,fy, N, del);
+			shots=shots~ Wall(gx,gy,ex,ey, fx,fy,gx,gy, N, del);		
+			shots=shots~ Wall(ex,ey,fx,fy, gx,gy,ex,ey, N, del);
+
+			shots=shots~ Wall(ix,iy,jx,jy, hx,hy,ix,iy, N, del);
+			shots=shots~ Wall(jx,jy,hx,hy, ix,iy,jx,jy, N, del);		
+			shots=shots~ Wall(hx,hy,ix,iy, jx,jy,hx,hy, N, del);
+			ascent(i in 0..length(shots)){seta(shots[i],geta(shots[i])+rot);}
+		
+		}
+	
+		wait(60); //120
+		SE_Play(se_kira01,100);
+		shoot=false;
+	
+		wait(90);
+		shoot=true;
+	//	Spiral(swdx,swdy,150);
+	//	Star(swdx,swdy,5,150,20,90,0, BALL_O_MAGENTA);
+		
+		wait(150);
+	}
+}
+
+
+
+
+
+
+function Spiral(x,y,time){
+	let pos; let t=90; let shot;
+	task TSpiral{
+		ascent(i in 0..time){
+			pos = spiral(x,y,90,-20+2*sqrt(t),t);
+			shot = CreateShotA1(pos[0],pos[1],0,t-90,BALL_O_MAGENTA+500,0);
+			ObjMove_AddPatternA2(shot,rand(0,time-i),NO_CHANGE,NO_CHANGE,0.05,rand(-0.25,0.25),1.5); //2
+			
+			pos = spiral(x,y,90,20+-2*sqrt(t),t);
+			shot = CreateShotA1(pos[0],pos[1],0,t-90,BALL_O_BLUE+500,0);
+			ObjMove_AddPatternA2(shot,rand(0,time-i),NO_CHANGE,NO_CHANGE,0.05,rand(-0.25,0.25),1.5); //2
+		
+			SE_Play(dirse~"shot"~itoa(randint(1,8))~".wav",rand(30,rand(50,rand(60,rand(70,100)))));
+			yield; t+=rand(5,15);
+		}
+	}
+	TSpiral;
+}
+
+
+
+
+
+
+
+function ShootPoly(cx,cy,pts,rad,N,a0, type){
+	let shots=[]; 
+	let shot;
+	
+	let dA = -360/pts;
+	
+	//let pos;
+	let x0; let y0; let x1; let y1; let a1;
+	ascent(i in 0..pts){
+		
+		a1 = a0 + dA;
+		x0 = cx + rad*cos(a0); y0 = cy + rad*sin(a0);
+		x1 = cx + rad*cos(a1); y1 = cy + rad*sin(a1);
+		
+		ascent(j in 0..N){
+			//pos = blerp(x0,y0,x1,y1, j/N);
+			shot = CreateShotA2(lerp(x0,x1,j/N),lerp(y0,y1,j/N),0, lerpa(a0,a1,j/N), 0.01,1.5,  type, 10);
+			shots = shots ~ [shot];
+		}
+		
+		a0 = a1;
+	}
+	
+	return shots;
+	
+}
+
+
+
+
+
+
+function Star2(cx,cy,pts,rad,N,a0, type){
+	let shots=[]; 
+	let shot;
+	
+	let dA = 360/pts * ceil(pts/2)-1;
+	
+	//while(pts%2==0 && pts>2){ if(pts%3==0){type=1;if(pts==3){break;}else{ pts/=2; parts++; }}else if(pts==4){type=2;break;}else if(pts==5) {type=1;break;}else{ pts/=2; parts++; } }
+	
+	let pos;
+	let x0; let y0; let x1; let y1; let a1;
+	ascent(i in 0..pts){
+		
+		a1 = a0 + dA;
+		x0 = cx + rad*cos(a0); y0 = cy + rad*sin(a0);
+		x1 = cx + rad*cos(a1); y1 = cy + rad*sin(a1);
+		
+		ascent(j in 0..N){
+			pos = blerp(x0,y0,x1,y1, j/N);
+			shot = CreateShotA2(pos[0],pos[1],0, lerp(a0,a1,j/N), 0.01,1.5,  type, 10);
+			shots = shots ~ [shot];
+		}
+		
+		a0 = a1;
+	}
+	
+	return shots;
+	
+}
+
+
+

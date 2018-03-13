@@ -1,0 +1,283 @@
+#TouhouDanmakufu[Single]
+#ScriptVersion[3]
+#Title["Cascade \"Raw Pathos\""]
+#Text["..."] 
+#BGM["./bgm/Solar Sect of Mystic Wisdom ~ Nuclear Fusion.mp3"]	//#BGM["./bgm - Last Word.ogg"]
+#System["./system/Default_System.txt"]
+#Background["./system/Background_Stars.txt"]
+
+#include "./Index.txt"
+
+
+ 
+
+let type0 = 210;
+let type1 = 212;
+let type2 = 216;
+
+
+
+@Event
+{
+	alternative(GetEventType())
+	case(EV_REQUEST_LIFE)
+	{
+		SetScriptResult(2000);
+	}
+	case(EV_REQUEST_SPELL_SCORE){
+        SetScriptResult(5000000);
+    }
+	 //case(EV_REQUEST_IS_DURABLE_SPELL) {
+		// SetScriptResult(true);
+	 //}
+	case(EV_REQUEST_TIMER) { SetScriptResult(4500); }
+}
+@Initialize
+{
+	SetCommonData("CurrentSC","Cascade \"Raw Pathos\"");
+	SetCommonData("Difficulty","Normal");
+	
+	boss = spawnBoss();
+	
+	ObjEnemy_SetDamageRate(boss,0,0);
+	SetShotAutoDeleteClip(16,64,16,16);
+	
+	EnemyName(boss, "Andi", 255, 180, 255);
+	
+	MainTask;
+	
+
+}
+@MainLoop
+{
+
+	if(ObjEnemy_GetInfo(boss, INFO_LIFE) <= 0 && !finishing)
+	{
+		finishing = true;
+		TBreakSpell([]);
+	}
+	else {
+		ObjEnemy_SetIntersectionCircleToShot(boss, ex, ey, 32); //hitbox against player bullets. 32 is the radius.
+		ObjEnemy_SetIntersectionCircleToPlayer(boss, ex, ey, 24); //hitbox against the player. 24 is the radius.
+	}
+	frame++;
+	yield;
+}
+
+
+task MainTask {
+	
+	ObjEnemy_SetDamageRate(boss,0,0);
+	//ObjMove_SetDestAtFrame(boss, rand(cx+60, cx-60), rand(cy-120, cy-90), 60);
+	ObjMove_SetDestAtFrame(boss, cx, cy-90, 60); //cy-120
+	
+	SetSpellCard;
+	ObjEnemyBossScene_StartSpell(objScene);
+	ObjEnemyBossScene_SetSpellTimer(objScene,5760); //5760
+//	TAfterImageBoss(boss,[255,255,255],1,1,15,3,BLEND_ADD_ARGB,0);
+	SE_Play(nyaa,60);
+	SetCaution;
+
+	wait(90);
+	
+	ObjEnemy_SetDamageRate(boss,24,8);
+
+
+	
+	frame = 0;
+	
+	TShoot;
+	TBigShots;
+//	Tmovement(cx-60,cx+60, cy,cy-60, 60,240, []); //[MOVE_PLAYERBIAS,2,0]
+
+}
+
+
+
+
+
+let N = 1; //3
+
+let rad0 = 30;
+//let rad1 = rad0+5*M;
+let off0 = 90;
+let coloff = 0;
+
+task TShoot {
+	let seobj = ObjSound_Create;
+	let shot;
+	let dir = 1;
+	let ang;
+	
+	let ang0 = 150;
+	let ang1 = 120; //240-(N-1)*6;
+	
+	let a = 0;
+		
+	while(!Obj_IsDeleted(boss)) {
+		ascent(i in 0..15){
+			shot = CreateShotB2(30*i,-5, 0,0, rand(0,0.05)*dir,0.1,  rand(0,0.25*dir),0.5, 212,0);
+			ObjShot_SetSpellResist(shot,true);
+		}
+		wait(60);
+	}
+}
+
+
+
+task TBigShots {
+	let shot; let shots;
+	let dummy = CreateShotA1(cx,cy-150,0,0,0,0);
+	ObjShot_SetSpellResist(dummy,true);
+	
+	while(!Obj_IsDeleted(boss)) {
+		
+		ConcentrationA1(dummy,"HEXAGON",30,3,200,[255,0,255]);
+		SetAttackPose(POSE_SET);
+		SE_Play(se_charge3,100);
+		wait(60);
+		
+		//ang = AimBounce(ex,ey-15,px,py,1+xdir); //90+(40+rand(-10,10))*dir;
+	//	shot = CreateShotA2(ex,ey-15,3,ang,-0.0,1.5, 782, 0); //823
+		
+		shots = [];
+		ascent(i in 1..8) {
+			shot = CreateSunShotA2(cx, cy-150, 0, 0, "SHRINK", 0.5+0.45*i, 0.05, 0.25+0.25*i, false, 255,180,128+15*i);
+		//	CustWrap(shot);
+			ObjShot_SetSpellResist(shot,true);
+			ObjShot_SetAutoDelete(shot,false);
+			shots = shots ~ [shot];
+			
+			SE_Play(se_explode,100);
+			ConcentrationA4Invert(dummy,"HEXAGON",3+0.25*i,64*i,[255,0,200]);
+			Obj_SetValue(shot,"IntersectionEnable",false);
+			wait(60/i);
+			//if(i<7){shot=shots[max(0,(i-1)-3)]; Obj_SetValue(shot,"IntersectionEnable",true);}
+		}
+		ascent(i in 0..length(shots)){
+			shot = shots[i];
+			ObjMove_AddPatternA2(shot,0, 0, GetAngleToPlayer(shot), 0.02, 0, 1);
+			Obj_SetValue(shot,"IntersectionEnable",false);
+		}
+		
+		SE_Play(se_explode,100);
+		ConcentrationA4Invert(dummy,"HEXAGON",5,400,[255,0,200]);	
+		
+		SetAttackPose(POSE_END);
+		
+		wait(20);
+		//Very outer shot doesn't collide, to make the hitbox less confusing
+		//Only the second-outermost actually needs to collide
+		Obj_SetValue(shots[length(shots)-2],"IntersectionEnable",true);
+		
+		wait(40); //60 //75
+//		ObjMove_SetDestAtFrame(boss,rand(cx-60,cx+60),rand(cy,cy-60),60);
+	}
+	
+	
+}
+
+
+
+
+task TConvertShots(mainshot) {
+	let shot; let shots; let nshot; let x=cx; let y=cy;
+	let seobj = ObjSound_Create;
+	let types = [758,752,756]; //765,146
+	//let types = [710,716];
+	//let types2 = [50,56];
+	let j = 0; let ang = 0;
+	
+//	let subshot = CreateShotA1(ObjMove_GetX(mainshot),ObjMove_GetY(mainshot),ObjMove_GetSpeed(mainshot),ObjMove_GetAngle(mainshot), 857, 0); //879
+	ObjShot_SetSpellResist(mainshot,true);
+	ObjShot_SetAutoDelete(mainshot,false);
+	//ObjRender_SetBlendType(mainshot,BLEND_MULTIPLY);
+///	ObjRender_SetColor(mainshot,255,0,255);
+//	ObjShot_SetSpellResist(subshot,true);
+//	BounceA1(mainshot, 1, [LFT,RGT,TOP,BTM]);
+//	BounceA1(subshot, 1, [LFT,RGT,TOP,BTM]);
+
+	let dir = 1;
+			
+	while(!Obj_IsDeleted(mainshot)) {
+		x = ObjMove_GetX(mainshot); y = ObjMove_GetY(mainshot);
+		//ObjMove_SetPosition(subshot,x,y);
+		shots = GetShotIdInCircleA2(x,y,90,TARGET_ENEMY);
+		ascent(i in 0..length(shots)) {
+			shot = shots[i];
+			if(ObjShot_GetImageID(shot) == type1) { //212 765
+				ObjMove_AddPatternB3(shot,0, 0,NO_CHANGE, rand(0,0.05)*dir,NO_CHANGE, rand(0,0.25*dir),1.5, type2); //212
+				dir*=-1;
+				loop(rand(0,4)){
+					//ObjMove_AddPatternA3(shot,60,0,90,0.1,0,1.5, 212);
+				//	nshot = CreateShotA1(ObjMove_GetX(shot),ObjMove_GetY(shot),1.5,90,216,0);
+					CreateShotB2(ObjMove_GetX(shot),ObjMove_GetY(shot), 0,1.5, rand(0,0.05)*dir,0, rand(0,0.25*dir),1.5,  type2,0);
+				//	ObjMove_AddPatternB3(nshot,0, 0,NO_CHANGE, rand(0,0.05)*dir,NO_CHANGE, rand(0,0.25*dir),1.5, 216); //212
+					dir*=-1;
+				}
+		
+				SE_PlayA2(se_chime,40,seobj,30);
+			}
+		}
+		
+		//if(x<-90 || y<-90 || x>sx+90 || y>sy+90){Obj_Delete(shot);}
+		
+		yield;
+	}
+}
+
+task TEraseShots(mainshot){
+	let shot; let shots; let x; let y;
+	
+	let subshot = CreateShotA1(ObjMove_GetX(mainshot),ObjMove_GetY(mainshot),ObjMove_GetSpeed(mainshot),ObjMove_GetAngle(mainshot), 861, 0); //861 //857 //879
+	ObjRender_SetBlendType(subshot,BLEND_SUBTRACT);
+	ObjShot_SetSpellResist(mainshot,true);ObjShot_SetSpellResist(subshot,true);
+	ObjShot_SetIntersectionEnable(mainshot,false);ObjShot_SetIntersectionEnable(subshot,false);
+	
+	while(!Obj_IsDeleted(mainshot)) {
+		x = ObjMove_GetX(mainshot); y = ObjMove_GetY(mainshot);
+		ObjMove_SetPosition(subshot,x,y);
+		shots = GetShotIdInCircleA2(x,y,20,TARGET_ENEMY);
+		ascent(i in 0..length(shots)) {
+			shot = shots[i];
+			if(ObjShot_GetImageID(shot) == type1) { //752 //212 765
+				//WarnShotB2(ObjMove_GetX(shot),ObjMove_GetY(shot),ObjShot_GetImageID(shot),ObjMove_GetAngle(shot),10);
+				ObjShot_FadeDelete(shot);
+			}
+		}
+		yield;
+	}
+}
+
+
+
+
+
+function CustWrap(shot) {
+	let x; let y; let scale;
+	task TCustWrap(shot) {
+		x = ObjMove_GetX(shot); y = ObjMove_GetY(shot);
+		scale = ObjRender_GetScaleX(shot);
+		while(!(x<-120*scale || y<-120*scale || x>sx+120*scale || y>sy+120*scale)){
+			yield;
+			x = ObjMove_GetX(shot); y = ObjMove_GetY(shot);
+		}
+		if(x<0||x>sx){ObjMove_SetX(shot,cx+(cx-x));}
+		if(y<0||y>sy){ObjMove_SetY(shot,cy+(cy-y));}
+		//ObjMove_SetY(shot,sy);
+//		ObjMove_AddPatternA3(shot,0,0,ang,0.05,0, 3.5, 146);
+	//	ObjMove_AddPatternA3(shot,0,NO_CHANGE,NO_CHANGE,NO_CHANGE,0,3.5,765);
+	}
+	TCustWrap(shot);
+}
+
+
+
+
+
+
+
+
+
+
+

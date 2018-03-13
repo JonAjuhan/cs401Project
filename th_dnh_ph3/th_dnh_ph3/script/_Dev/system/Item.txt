@@ -1,0 +1,63 @@
+let ITEM_CANCEL = 1;
+
+let ITEM_SCORE_M = ITEM_POINT+500;
+let ITEM_SCORE_S = ITEM_POINT_S+500;
+
+let ITEM_POWER_M = ITEM_POWER_S+500;
+let ITEM_POWER_L = ITEM_POWER+500;
+
+let ITEM_EXTEND = ITEM_1UP+500;
+let ITEM_LIFEPIECE = ITEM_1UP_S+500;
+
+let ITEM_SPELLEXTEND = ITEM_SPELL+500;
+let ITEM_SPELLPIECE = ITEM_SPELL_S+500;
+
+
+@Initialize{
+	SetDefaultBonusItemEnable(false);
+	SetItemRenderPriorityI(39); //below shots
+	let dir = GetCurrentScriptDirectory();
+	LoadItemData(dir~"item_data.txt");
+}
+
+@MainLoop{}
+
+@Event{
+	alternative(GetEventType())
+	case(EV_USER+72){
+		let pos = GetEventArgument(0);
+		if(length(pos) == 2){
+			TItem(ITEM_CANCEL, pos[0], pos[1]);
+		}
+	}
+	case(EV_GET_ITEM){
+		let type = GetEventArgument(0);
+		let item = GetEventArgument(1);
+		alternative(type)
+		case(ITEM_SCORE_M){
+			AddScore(10*trunc(GetCommonData("PointValue",10000+100*GetGraze)/10 ));
+		}
+		case(ITEM_SCORE_S){
+			AddScore(10*trunc(GetCommonData("PointValue",10000+100*GetGraze)/160 ));
+		}
+		case(ITEM_POWER_M){
+			
+		}
+		case(ITEM_CANCEL){
+			// SetPlayerSpell(GetPlayerSpell() + 1);
+			// PlaySE("./
+		}
+	}
+	case(EV_DELETE_SHOT_TO_ITEM){
+		let shot = GetEventArgument(0);
+		let pos = GetEventArgument(1);
+		let item = TItem(ITEM_CANCEL, pos[0], pos[1]);
+		CollectItemsByType(ITEM_CANCEL);
+	}
+}
+
+function TItem(type, x, y){
+	let obj = CreateItemU2(type, x, y, x,y, 100);
+	Obj_SetRenderPriorityI(obj, 60);
+	return obj;
+}

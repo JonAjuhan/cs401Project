@@ -1,0 +1,134 @@
+#TouhouDanmakufu[Single]
+#ScriptVersion[3]
+#Title["Inertia \"Chains of Imagined Perception\""]
+#Text["..."] 
+#BGM["./bgm/bgm - CC-CGR-loop.ogg"]
+#System["./system/Default_System.txt"]
+#Background["./system/Background_Sky.txt"]
+
+#include "./Index.txt"
+
+let timer = 37; //37
+
+@Event
+{
+	alternative(GetEventType())
+	case(EV_REQUEST_LIFE)
+	{
+		SetScriptResult(2000);
+	}
+	case(EV_REQUEST_SPELL_SCORE){
+        SetScriptResult(5000000);
+    }
+	case(EV_REQUEST_IS_DURABLE_SPELL) {
+		SetScriptResult(true);
+	}
+	
+	case(EV_REQUEST_TIMER) { SetScriptResult(timer*60); }
+}
+@Initialize
+{
+	SetCommonData("CurrentSC","Inertia \"Chains of Imagined Perception\"");
+	SetCommonData("Difficulty","Hard");
+	
+	boss = spawnBoss();
+	
+	ObjEnemy_SetDamageRate(boss,0,0);
+	SetShotAutoDeleteClip(16,16,16,16);
+	
+	MainTask;
+	
+
+}
+@MainLoop
+{
+
+	if(ObjEnemy_GetInfo(boss, INFO_LIFE) <= 0 && !finishing)
+	{
+		finishing = true;
+		TBreakSpell([]);
+	}
+	else {
+		SetBossHitbox(boss,ex,ey);
+	}
+	frame++;
+	yield;
+}
+
+
+task MainTask {
+	ObjEnemy_SetDamageRate(boss,0,0);
+	ObjMove_SetDestAtFrame(boss, cx, cy-120, 60);
+	
+	SetSpellCard;
+	MCircNextAlpha = 80;
+	Obj_SetValue(objSpellCircle,"MaxAlpha",64);
+	
+	ObjEnemyBossScene_StartSpell(objScene);
+	ObjEnemyBossScene_SetSpellTimer(objScene,timer*60); //5760
+	
+	//SetCaution;
+	//SetBossBlur(true);
+	AuraRainbow(boss,255,255,255);
+	TSpellImmune;
+
+	//ConcentrationA2(boss,"HEXAGON",90,3,10,[255,0,255]);
+		
+	wait(90);
+	Tmovement(cx-120,cx+120, cy-90,cy-60, 60,240, [MOVE_PLAYERBIAS,2,0,MOVE_MAXSPEED,1.5] );
+	ObjEnemy_SetDamageRate(boss,24,8);
+	frame = 0;
+	
+	
+	TShoot;
+	
+}
+
+
+
+
+
+
+task TShoot{
+	let shot;
+
+	let N = 30;
+	let a0; let a;
+
+	while(!Obj_IsDeleted(boss)){	
+		wait(60);
+	
+		a0=atan2(py-ey,px-ex);
+		ascent(i in 0..N){
+			a = a0+i*360/N;
+			shot = CreateShotA2(ex,ey,0,a,0.1,3,BALL_O_MAGENTA+500-altBin(i),15);
+			ObjMove_AddPatternA1(shot,60,NO_CHANGE,a+45*altSign(i));
+			MyWrap(shot);
+		}
+		SE_Play(se_chime2,100);
+		wait(60);
+		SE_Play(se_kira02,60);
+		wait(180);
+	}
+}
+
+
+
+
+task MyWrap(shot0){
+	while(!isOffScreen(shot0)){yield;}	
+	wrap(shot0);
+	wait(15); //30
+	ObjMove_Still(shot0,15); //30
+	wait(15);
+	SE_Play(se_shot,60);
+	let shot;
+	let N = randint(2,10);
+	ascent(i in 0..N){
+		shot = CopyShot(shot0);
+		ObjMove_AddPatternA2(shot,0, 0,frame+i*(360/N),0.05,0,3);
+	}
+	Obj_Delete(shot0);
+}
+
+

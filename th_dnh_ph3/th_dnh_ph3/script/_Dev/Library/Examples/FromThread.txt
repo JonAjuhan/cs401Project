@@ -1,0 +1,461 @@
+//Various code snippets from "useful misc code" thread
+//May not work/need to be updated
+
+
+
+
+
+
+
+
+//Iryan - returns minimum distance from point to line (can be negative depending on which side it's on)
+function GetPointToLine(ox, oy, p1x, p1y, p2x, p2y){
+  return ( (oy-p1y)*(p2x-p1x)-(ox-p1x)*(p2y-p1y) )/(( (p2x-p1x)^2 + (p2y-p1y)^2 )^0.5) ;
+}
+
+
+//Iryan / Blargel - returns true if point is in rectangle
+//Specify rectangle center, length, width, and angle
+function GetPointInRectangle(ox, oy, pcx, pcy, recl, recw, align){
+    //Applying transformations to point instead of rectangle
+    let distance = ((ox-pcx)^2+(oy-pcy)^2)^0.5;
+    let angle = atan2(oy-pcy, ox-pcy)-align;
+    let new_ox = cos(angle)*distance;
+    let new_oy = sin(angle)*distance;
+    //Checking if transformed point is within rectangle that is now axis-aligned and centered on origin
+    return (absolute(new_ox) <= recl/2 && absolute(new_oy) <= recw/2); 
+}
+//Iryan - returns true if point is in ellipse
+//r=max radius, s=min radius, ang=angular alignment of the ellipse
+function EllipseCollision(px, py, x, y, r, s, ang){
+	return((((y+((r^2 - s^2)^0.5)*sin(ang) - py)^2 + (x+((r^2 - s^2)^0.5)*cos(ang) - px)^2 )^0.5
+	      +( (y-((r^2 - s^2)^0.5)*sin(ang) - py)^2 + (x-((r^2 - s^2)^0.5)*cos(ang) - px)^2 )^0.5 )
+	       < 2 * r );
+}
+
+//Blargel - determines if two rectangles are intersected, complete with angle
+function IsIntersected_Box_Box(cx1, cy1, w1, h1, r1, cx2, cy2, w2, h2, r2){
+	let rectA = CalculateCorners(cx1, cy1, w1, h1, r1);
+	let rectB = CalculateCorners(cx2, cy2, w2, h2, r2);
+	let axisList = [rectA[1] - rectA[0],rectA[1] - rectA[2],rectB[0] - rectB[3],rectB[0] - rectB[1]];
+	ascent(i in 0..4){if(!IsAxisCollision(axisList[i])){return false;}}
+	return true;
+
+	function CalculateCorners(cx, cy, width, height, rotation){
+		if(rotation == 0){return [[cx-width/2, cy-height/2],[cx+width/2, cy-height/2],[cx+width/2, cy+height/2],[cx-width/2, cy+height/2]];}
+		else {
+			let angles = [atan2(height/-2, width/-2)+rotation,atan2(height/2, width/-2)+rotation,atan2(height/2, width/2)+rotation,atan2(height/-2, width/2)+rotation];
+			let distance = (height^2 + width^2)^0.5/2;
+			return [[cx+cos(angles[0])*distance, cy+sin(angles[0])*distance],[cx+cos(angles[1])*distance, cy+sin(angles[1])*distance],[cx+cos(angles[2])*distance, cy+sin(angles[2])*distance],[cx+cos(angles[3])*distance, cy+sin(angles[3])*distance]];
+		}
+	}
+	function IsAxisCollision(axis){
+		let rectAScalars = [GenerateScalar(rectA[0], axis),GenerateScalar(rectA[1], axis),GenerateScalar(rectA[2], axis),GenerateScalar(rectA[3], axis)];
+		let rectBScalars = [GenerateScalar(rectB[0], axis),GenerateScalar(rectB[1], axis),GenerateScalar(rectB[2], axis),GenerateScalar(rectB[3], axis)];
+		let rectAMin = ArrayMin(rectAScalars);let rectAMax = ArrayMax(rectAScalars);let rectBMin = ArrayMin(rectBScalars);let rectBMax = ArrayMax(rectBScalars);
+		if(rectBMax <= rectAMax && rectBMax >= rectAMin){return true;}
+		else if (rectAMax <= rectBMax && rectAMax >= rectBMin){return true;}
+		return false;
+	}
+	function GenerateScalar(corner, axis){
+		let num = (corner[0] * axis[0]) + (corner[1] * axis[1]);
+		let denom = (axis[0] * axis[0]) + (axis[1] * axis[1]);
+		let divisionResult = num / denom;
+		let cornerProjected = [divisionResult * axis[0], divisionResult * axis[1]];
+		let scalar = (axis[0] * cornerProjected[0]) + (axis[1] * cornerProjected[1]);
+		return scalar;
+	}
+}
+function ArrayMin(array){
+	let min = array[0];
+	ascent(i in 1..length(array)){if(array[i] < min){ min = array[i]; }}
+	return min;
+}
+function ArrayMax(array){
+	let max = array[0];
+	ascent(i in 1..length(array)){if(array[i] > max){ max = array[i]; }}
+	return max;
+}
+
+//Iryan
+//Creates an effect object that causes bulges in the background,
+//similar to what happens behind the bosses from SA onwards.
+//Call in @Initialize to create a bulge at the position of the player
+//in a given image drawn over the playing field.
+//nx,ny: Number of rows in effect object. Should not exceed 10/15
+//dmax: max bulge of any given vertex. Should not exceed sx/nx or sy/ny.
+//dfac: 0-1, determines "crassness" of bulge edge. 0.98 is good
+task BulgeBackground(image, nx, ny, dmax, dfac){
+	let dx=(sx-0)/nx; let dy=(sy-0)/ny;
+
+	let du=480/nx;                                 //width of the image goes here
+	let dv=640/ny;                                //height of the image goes here
+
+	let vertnum=floor(ny/2)*4*nx + floor(0.5+ny/2)*(2*nx+2) +1 -ny;
+	yield;yield;
+	let obj = Obj_Create(OBJ_EFFECT);
+	ObjEffect_SetRenderState(obj,ALPHA);
+	ObjEffect_SetTexture(obj, image);
+	ObjEffect_SetPrimitiveType(obj, PRIMITIVE_TRIANGLESTRIP);
+	ObjEffect_CreateVertex(obj, vertnum);
+	Obj_SetPosition(obj, GetClipMinX, GetClipMinY);
+	let xar=[]; let yar=[]; let by=0;
+	while(by<=(ny)){
+		if(by%2==0){
+			ascent(i in 0..(2*nx+2)){
+				xar=xar~[floor(i/2)];
+				yar=yar~[by + i%2 ];
+			}
+		}else{
+			ascent(i in 0..(4*nx)){
+				xar=xar~[nx - (i%2 + floor(i/4) ) ];
+				yar=yar~[by + floor(i/2)%2 ];
+			}
+		}
+		by++;
+		if(by<(ny)){ xar=erase(xar, length(xar)-1); yar=erase(yar, length(yar)-1); }
+	}
+
+	let td=0; let ta=0;	let ophi=rand(0, 360);
+	while(Obj_BeDeleted(obj)==false){
+		ophi+=7;
+		ObjEffect_SetLayer(obj,1);
+		ascent(i in 0..vertnum){
+			td= ((GetClipMinX + xar[i]*dx - GetPlayerX)^2 + (GetClipMinY + yar[i]*dy - GetPlayerY)^2)^0.5;                    // Change to GetX and GetY to
+			ta= atan2(GetClipMinY + yar[i]*dy - GetPlayerY, GetClipMinX + xar[i]*dx - GetPlayerX);                          // center the bulge on the boss and not the player
+			ObjEffect_SetVertexXY(obj, i, xar[i]*dx + cos(ta)*dmax*(dfac^td)*(4+sin(ophi+ta*6))/5 , yar[i]*dy + sin(ta)*dmax*(dfac^td)*(4+sin(ophi+ta*6))/5);
+			ObjEffect_SetVertexUV(obj, i, xar[i]*du, yar[i]*dv);
+			ObjEffect_SetVertexColor(obj, i, 255, 255-255*(dfac^td), 255-255*(dfac^td), 255-255*(dfac^td));
+		}
+		yield;
+	}
+}
+
+//CK Crash - Wavy Background Effect
+task WavyBG(imgBG,HScroll,VScroll){
+	let obj = Obj_Create(OBJ_EFFECT);
+	let s = 0;
+	Obj_SetPosition(obj,0,0);
+	ObjEffect_SetTexture(obj,imgBG);
+	ObjEffect_SetPrimitiveType(obj,PRIMITIVE_TRIANGLESTRIP);
+	ObjEffect_SetLayer(obj,0);
+	ObjEffect_CreateVertex(obj,32);
+	while(!Obj_BeDeleted(obj)){
+		ascent(i in 0..16)	{
+			ObjEffect_SetVertexUV(obj,i*2,HScroll,i*32+s*VScroll);
+			ObjEffect_SetVertexUV(obj,i*2+1,512+HScroll,i*32+s*VScroll);
+			ObjEffect_SetVertexXY(obj,i*2,GetClipMinX+sin(s+i*16)*64-64,sin(s+i*5)*64 + i*40-64);
+			ObjEffect_SetVertexXY(obj,i*2+1,GetClipMaxX+sin(s+i*16)*64+64,sin(s+i*5)*64 + i*40-64);
+		}
+		yield; s++;
+	}
+}
+
+
+//MMX - returns an effect object id wich may be "processed to change it's properties as usual."
+function CreateSprite3(texture, width, height){
+	let obj=Obj_Create(OBJ_EFFECT);
+	
+	ObjEffect_SetTexture(obj,texture);
+	ObjEffect_SetRenderState(obj,ALPHA); // by default. May be changed later
+				
+	ObjEffect_SetPrimitiveType(obj,PRIMITIVE_TRIANGLESTRIP);
+	ObjEffect_CreateVertex(obj, 4);
+
+	ObjEffect_SetVertexXY(obj,0,-width/2,-height/2);
+	ObjEffect_SetVertexXY(obj,1,width/2,-height/2);
+	ObjEffect_SetVertexXY(obj,2,-width/2,height/2);
+	ObjEffect_SetVertexXY(obj,3,width/2,height/2);
+
+	ObjEffect_SetVertexUV(obj,0,0,0);
+	ObjEffect_SetVertexUV(obj,1,width,0);
+	ObjEffect_SetVertexUV(obj,2,0,height);
+	ObjEffect_SetVertexUV(obj,3,width,height);
+	
+	return obj;
+}
+
+
+//Darkness1/Blargel - Makes an object/shot/laser turn until it points at a given point
+//Doesn't loop by itself, keep calling it
+function TurnToPoint(id, speed, PointX, PointY){
+    let current_angle = Obj_GetAngle(id);
+    let target_angle = atan2(PointY-Obj_GetY(id), PointX-Obj_GetX(id));
+    let adist = AngularDistance(current_angle, target_angle);
+
+    if(absolute(adist) < speed){
+        Obj_SetAngle(id, target_angle);
+    }
+    else {
+        if(adist > 0){
+            Obj_SetAngle(id, Obj_GetAngle(id)+speed);
+        }
+        else if(adist < 0){
+            Obj_SetAngle(id, Obj_GetAngle(id)-speed);
+        }
+    }
+}
+
+//ShedPH93 - returns the angle of reflection, given the angle of incidence and the angle of the "mirror"
+function ReflectionAngle (angle, mirror)  {return 2*mirror-angle;}
+
+
+function Obj_GetAngleToPoint(obj, tX, tY){
+	return (atan2(tY - Obj_GetY(obj), tX - Obj_GetX(obj)) + 360) % 360;
+}
+
+
+
+
+
+//Run DebugText in @DrawLoop
+function DebugText(){
+	SetFontColor(255, 255, 255, 255, 255, 255);
+	let temp = GetCommonDataDefault("DEBUG_TEXT", []);
+	let j = 0;
+	descent(i in 0..length(temp)){
+		if(temp[i] != ""){
+			DrawText(temp[i], 36, 450 - j*14, 12, 255);
+			j++;
+		}
+	}
+}
+function SetDebugText(line, string){
+	let temp = GetCommonDataDefault("DEBUG_TEXT", []);
+	if(line >= length(temp)){
+		while(line > length(temp)){
+			temp = temp ~ [""];
+		}
+		SetCommonData("DEBUG_TEXT", temp ~ [ToString(string)]);
+	}else{
+		temp[line] = ToString(string);
+		SetCommonData("DEBUG_TEXT", temp);
+	}
+}
+
+
+
+
+
+//ChronojetDragon
+function sec(n) { return 1/cos(n); }
+function csc(n) { return 1/sin(n); }
+function cot(n) { return 1/tan(n); }
+
+
+
+//GenericTouhouFailure - gradually increase score counter
+task AddScoreEx(amount,increment){
+        let c = 0;
+        while(c<amount){
+                AddScore(increment);
+                c+=increment;
+                yield;
+        }
+        if(c-amount>0){
+                AddScore(c-amount);
+        }
+}
+
+//Blargel - positive=clockwise, negative=counterclockwise
+function AngularDistance(angle1, angle2){
+	let distance = NormalizeAngle(angle2 - angle1);
+	if(distance>180){ distance-=360; }
+	return distance;
+}
+
+//Blargel - avoid some tedium when creating shot objects to register later
+function ObjShot_CreateA1(x, y, speed, angle, graphic, delay){
+	let obj = Obj_Create(OBJ_SHOT);
+	Obj_SetPosition(obj, x, y);
+	Obj_SetSpeed(obj, speed);
+	Obj_SetAngle(obj, angle);
+	ObjShot_SetGraphic(obj, graphic);
+	ObjShot_SetDelay(obj, delay);
+	return obj;
+}
+function ObjLaser_Create(x, y, angle, length, width, graphic, delay){
+	let obj = Obj_Create(OBJ_LASER);
+	Obj_SetPosition(obj, x, y);
+	//Obj_SetSpeed is skipped because it is ignored by laser objects.
+	Obj_SetAngle(obj, angle);
+	ObjLaser_SetLength(obj, length);
+	ObjLaser_SetWidth(obj, width);
+	ObjShot_SetGraphic(obj, graphic);
+	ObjShot_SetDelay(obj, delay);
+	return obj;
+}
+function ObjSinuateLaser_Create(x, y, speed, angle, length, width, graphic, delay){
+	let obj = Obj_Create(OBJ_SINUATE_LASER);
+	Obj_SetPosition(obj, x, y);
+	Obj_SetSpeed(obj, speed);
+	Obj_SetAngle(obj, angle);
+	ObjSinuateLaser_SetLength(obj, length);
+	ObjSinuateLaser_SetWidth(obj, width);
+	ObjShot_SetGraphic(obj, graphic);
+	ObjShot_SetDelay(obj, delay);
+	return obj;
+}
+
+//AweStrikerNova - bounce shot off the stage walls
+function BounceShot(obj){
+	if(Obj_GetX(obj)<=GetClipMinX||Obj_GetX(obj)>=GetClipMaxX){
+		Obj_SetAngle(obj,180-Obj_GetAngle(obj));
+	}
+	if(Obj_GetY(obj)<=GetClipMinY||Obj_GetY(obj)>=GetClipMaxY){
+		Obj_SetAngle(obj,360-Obj_GetAngle(obj));
+	}
+}
+
+//Blargel
+function YOnLineFromX(x1, y1, x2, y2, x3){
+  let a_numerator = y2-y1;
+  let a_denominator = x2-x1;
+  if(a_denominator==0){
+    return y2;
+  }
+  else {
+    let a = a_numberator/a_denominator;
+    let xDist = x3-x2;
+    let yDist = xDist*a;
+    let y3 = y2+yDist;
+    return y3;
+  }
+}
+function XOnLineFromY(x1, y1, x2, y2, y3){
+  let a_numerator = y2-y1;
+  let a_denominator = x2-x1;
+  if(a_numerator==0){
+    return x2;
+  }
+  else {
+    let a = a_numberator/a_denominator;
+    let yDist = y3-y2;
+    let xDist = yDist/a;
+    let x3 = x2+xDist;
+    return x3;
+  }
+}
+
+
+//Henry
+task TReflectionLaser(x, y, v, angle, maxLen, width, graphic, delay, count){
+   //adjust the angle
+   while(angle>=180){angle-=360;}
+   while(angle<-180){angle+=360;}
+
+   loop(delay){yield;}
+   //bullet object
+   let obj=Obj_Create(OBJ_LASER);
+
+   //initial settings
+   Obj_SetPosition(obj, x, y);
+   Obj_SetAngle(obj, angle);
+   ObjLaser_SetWidth(obj, width);
+   ObjShot_SetGraphic(obj, graphic);
+   Obj_SetAutoDelete(obj, false);
+   ObjLaser_SetSource(obj, false);
+   TReflectionLaser_Lengthen(obj, maxLen, v);
+   TReflectionLaser_Move(obj, x, y, v, angle);
+
+   while(!Obj_BeDeleted(obj)){
+      if(x>GetClipMaxX&&x+maxLen*cos(angle)>GetClipMaxX||x<GetClipMinX&&x+maxLen*cos(angle)<GetClipMinX||y<GetClipMinY&&y+maxLen*sin(angle)<GetClipMinY){Obj_Delete(obj);}
+      x=Obj_GetX(obj);
+      y=Obj_GetY(obj);
+      // reflection detection
+      if(angle<0 && y<GetClipMinY && x>GetClipMinX && x<GetClipMaxX){
+         //ceil
+         if(count>0){TReflectionLaser(x, y, v, -angle, maxLen, width, graphic, 0, count-1);}
+         break;
+      }else
+      if(((-90<angle && angle<90) && x>GetClipMaxX)||((angle<-90 || 90<angle) && x <GetClipMinX) && y>GetClipMinY && y<GetClipMaxY){
+         //wall
+         if(count>0){TReflectionLaser(x, y, v, 180 - angle, maxLen, width, graphic, 0, count-1);}
+         break;
+      }
+      yield;
+   }
+}
+//lengthen the object laser
+task TReflectionLaser_Lengthen(obj, maxLen, v) {
+   let len=0;
+   let max=floor(maxLen/v);
+   let i=0;
+   while(!Obj_BeDeleted(obj)) {
+      //When the length is negative,
+      //the laser extends backward.
+      ObjLaser_SetLength(obj, -len);
+      yield;
+      if(i<max){
+         len+=v;
+         i++;
+      }else
+      if(i==max){
+         ObjLaser_SetLength(obj, -maxLen);
+         break;
+      }
+   }
+}
+// move the object laser
+// Since Obj_SetSpeed is ignored in case of object laser,
+// the motion needs to be controlled by Obj_SetPosition.
+task TReflectionLaser_Move(obj, x, y, v, angle) {
+   let vx=v*cos(angle);
+   let vy=v*sin(angle);
+   while(!Obj_BeDeleted(obj)){
+      Obj_SetPosition(obj, x, y);
+      yield;
+      x+=vx;
+      y+=vy;
+   }
+}
+
+
+
+
+
+
+
+//Fujiwara no Mokou - rotate around an arbitrary axis
+function toEuler(let x, let y, let z, let angle)
+{
+	let s=sin(angle);
+	let c=cos(angle);
+	let t=1-c;
+        let yaw;
+        let pitch;
+        let roll;
+
+	//  normalize the axis
+	let magnitude = power(x*x + y*y + z*z, 0.5);
+	if (magnitude==0)
+        {
+            // error
+            return 0;
+        }
+	x /= magnitude;
+	y /= magnitude;
+	z /= magnitude;
+
+	if ((x*y*t + z*s) > 0.998)
+        {
+                // north pole singularity detected
+		yaw = 2*atan2(x*sin(angle/2), cos(angle/2));
+		roll = 90;
+		pitch = 0;
+	}
+	else if ((x*y*t + z*s) < -0.998)
+        {
+                // south pole singularity detected
+		yaw = -2*atan2(x*sin(angle/2), cos(angle/2));
+		roll = -90;
+		pitch = 0;
+	}
+        else
+        {
+	    yaw = atan2(y * s- x * z * t , 1 - (y*y+ z*z ) * t);
+	    roll = asin(x * y * t + z * s) ;
+	    pitch = atan2(x * s - y * z * t , 1 - (x*x + z*z) * t);
+        }
+        return [ yaw, pitch, roll ];
+}

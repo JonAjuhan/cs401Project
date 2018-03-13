@@ -1,0 +1,658 @@
+
+
+function ObjEnemy_GetLife(enemy){return ObjEnemy_GetInfo(enemy,INFO_LIFE);}
+
+
+
+//////////////////////////////////////////////////////////////////
+// Render Object Functions
+//////////////////////////////////////////////////////////////////
+
+
+
+
+
+
+//Andi - COLOR/ALPHA FUNCTIONS
+//Set an object's alpha or RGB, depending on blend type.
+//Efficient. Always use this to ensure alpha is accessible by other functions.
+function ObjRender_SetTrueAlpha(obj, alpha){
+	Obj_SetValue(obj, "Alpha", alpha); Obj_SetValue(obj, "A", alpha);
+	let C; let R; let G; let B; let A;
+	alternative(ObjRender_GetBlendType(obj))
+	case(BLEND_ADD_RGB,BLEND_SUBTRACT,BLEND_MULTIPLY,BLEND_SHADOW){
+		C = Obj_GetValueD(obj,"Color",[255,255,255]);
+		R = Obj_GetValueD(obj,"R",C[0]);
+		G = Obj_GetValueD(obj,"G",C[1]);
+		B = Obj_GetValueD(obj,"B",C[2]);
+		A = alpha/255;
+		Obj_SetValue(obj,"Color",[R,G,B,alpha]);
+	}
+	alternative(ObjRender_GetBlendType(obj))
+	case(BLEND_ALPHA)   {ObjRender_SetAlpha(obj, alpha);}
+	case(BLEND_ADD_ARGB){ObjRender_SetAlpha(obj, alpha);}
+	case(BLEND_ADD_RGB) {ObjRender_SetColor(obj, R*A, G*A, B*A);}
+	case(BLEND_SUBTRACT){ObjRender_SetColor(obj, R*A, G*A, B*A);}
+	case(BLEND_MULTIPLY){ObjRender_SetColor(obj, R*A, G*A, B*A);}
+	case(BLEND_SHADOW)  {ObjRender_SetColor(obj, R*A, G*A, B*A);}
+	others{ObjRender_SetAlpha(obj, alpha);}
+}
+//Set color such that it is accessible by other functions.
+//Efficient. Always use one of these. 
+function ObjRender_SetTrueColor(obj,r,g,b){
+	ObjRender_SetColor(obj,r,g,b);
+	Obj_SetValue(obj,"R",r);
+	Obj_SetValue(obj,"G",g);
+	Obj_SetValue(obj,"B",b);
+	Obj_SetValue(obj,"Color",[r,g,b]);
+}
+function ObjRender_SetRGB(obj,r,g,b){
+	ObjRender_SetTrueColor(obj,r,g,b);
+}
+function ObjRender_SetRGBA(obj,r,g,b,a){
+	ObjRender_SetTrueColor(obj,r,g,b);
+	ObjRender_SetTrueAlpha(obj,a);
+	Obj_SetValue(obj,"Color",[r,g,b,a]);
+}
+//Attempt to compensate for the lack of such functions.
+//Efficient as long as value was properly stored, or after the first time.
+function ObjRender_GetAlpha(obj){
+	if(Obj_IsValueExists(obj,"Alpha")){return Obj_GetValue(obj,"Alpha");}
+	else{
+		let C = Obj_GetValueD(obj,"Color",[255,255,255]);
+		if(length(C) > 3){ Obj_SetValue(obj,"Alpha",C[3]); return C[3]; }
+		let A = Obj_GetValueD(obj,"A",0);
+		if(A>0){ Obj_SetValue(obj,"Alpha",A); return A;}
+		let R = Obj_GetValueD(obj,"R",C[0]); 
+		let G = Obj_GetValueD(obj,"G",C[1]); 
+		let B = Obj_GetValueD(obj,"B",C[2]);
+		A = max(R,max(G,B)); //Use the largest RGB value
+		Obj_SetValue(obj,"Alpha",A); Obj_SetValue(obj,"A",A);
+		Obj_SetValue(obj,"Color",[R,G,B,A]);
+		return A;
+	}
+}
+function ObjRender_GetRGB(obj){
+	return Obj_GetValueD(obj,"Color",[Obj_GetValueD(obj,"R",255),Obj_GetValueD(obj,"G",255),Obj_GetValueD(obj,"B",255)]);
+}
+function ObjRender_GetRGBA(obj){
+	let C = Obj_GetValueD(obj,"Color",[Obj_GetValueD(obj,"R",255),Obj_GetValueD(obj,"G",255),Obj_GetValueD(obj,"B",255)]);
+	let A = ObjRender_GetAlpha(obj);
+	return C ~ [A];
+}
+
+function ObjRender_AddAlpha(obj,dA){
+	ObjRender_SetTrueAlpha(obj,ObjRender_GetAlpha(obj)+dA);
+}
+task ObjRender_SetAlphaAtFrame(obj,a1,time){
+	let a0   = ObjRender_GetAlpha(obj);
+	let dA   = (a1-a0)/time;
+	ascent(i in 0..time){
+		ObjRender_SetTrueAlpha(obj,a0+dA*i);
+		yield;
+	}
+}
+
+function ObjRender_AddScaleXYZ(obj,dX,dY,dZ){
+	ObjRender_SetScaleXYZ(obj,ObjRender_GetScaleX(obj)+dX,ObjRender_GetScaleY(obj)+dY,ObjRender_GetScaleZ(obj)+dZ);
+}
+task ObjRender_SetScaleAtFrame(obj,sx1,sy1,time){
+	let sx0   = ObjRender_GetScaleX(obj);
+	let sy0   = ObjRender_GetScaleY(obj);
+	let dsx   = (sx1-sx0)/time;
+	let dsy   = (sy1-sy0)/time;
+	ascent(i in 0..time){
+		ObjRender_SetScaleXYZ(obj,sx0+dsx*i,sy0+dsy*i,1);
+		yield;
+	}
+}
+
+
+
+
+
+task Obj_FadeDelete(obj) {
+	let a0   = Obj_GetValueD(obj,"Alpha",255);
+	let time = Obj_GetValueD(obj,"FadeTime",60);
+	let dA   = a0/time;
+	descent(i in 0..time){
+		ObjRender_SetAlpha(obj,dA*i);
+		yield;
+	}
+	Obj_Delete(obj);
+}
+task Obj_FadeDeleteRGB(obj) {
+	let c0 = Obj_GetValueD(obj,"Color",[255,255,255]);
+	let time = Obj_GetValueD(obj,"FadeTime",60);
+	let r0=c0[0]; let g0=c0[1]; let b0=c0[2];
+	let dR = r0/time; let dG = g0/time; let dB = b0/time;
+	descent(i in 0..time){
+		ObjRender_SetColor(obj,dR*i,dG*i,dB*i);
+		yield;
+	}
+	Obj_Delete(obj);
+}
+
+
+
+/////////////////////////////////////////////////////////////////
+// Shot Functions
+/////////////////////////////////////////////////////////////////
+
+
+
+function PrepareShotA1(x,y,s,a,graph){
+	let shot = ObjShot_Create(OBJ_SHOT);
+	ObjMove_SetPosition(shot,x,y);
+	ObjMove_SetSpeed(shot,s);
+	ObjMove_SetAngle(shot,a);
+	ObjShot_SetGraphic(shot,graph);
+	return shot;
+}
+function PrepareShotA2(x,y,s,a,acc,mspd,graph){
+	let shot = ObjShot_Create(OBJ_SHOT);
+	ObjMove_SetPosition(shot,x,y);
+	ObjMove_SetSpeed(shot,s);
+	ObjMove_SetAngle(shot,a);
+	ObjMove_SetAcceleration(shot,acc);
+	ObjMove_SetMaxSpeed(shot,mspd);
+	ObjShot_SetGraphic(shot,graph);
+	Obj_SetValue(shot,"Acceleration",acc); Obj_SetValue(shot,"MaxSpeed",mspd);
+	return shot;
+}
+
+
+
+//if a shot is too close to the player, don't create it after all
+//30 is a good radius
+function CheckShot(shot,r){
+	if(getdist(ObjMove_GetX(shot),ObjMove_GetY(shot),px,py) <= r){
+		let shot2 = CreateShotA1(ObjMove_GetX(shot),ObjMove_GetY(shot),0,0,ObjShot_GetImageID(shot),10);
+		ObjRender_SetAlpha(shot2,128);
+		ObjShot_SetDeleteFrame(shot2,0);
+		ObjShot_SetDeleteFrame(shot,0);
+	}
+}
+
+
+////////////////////////////////////////////////////////////////////
+// Shot Object Functions
+////////////////////////////////////////////////////////////////////
+
+//Andi - Copy a shot as best as I could manage
+//Things without getters need to be noted in the shot's dictionary to be used
+function CopyShot(shot){
+	if(Obj_IsDeleted(shot)){return NULL;}
+		
+	let x = ObjMove_GetX(shot);
+	let y = ObjMove_GetY(shot);
+	let spd = ObjMove_GetSpeed(shot);
+	let ang = ObjMove_GetAngle(shot);
+	let type = ObjShot_GetImageID(shot);
+	
+	let acc  = Obj_GetValueD(shot,"Acceleration",0);
+	let angv = Obj_GetValueD(shot,"AngularVelocity",0);
+	let mspd = Obj_GetValueD(shot,"MaxSpeed",9999);
+	
+	let spellresist = ObjShot_IsSpellResist(shot);
+	let intersect = Obj_GetValueD(shot,"IsIntersectionEnable",true);
+	let scalexyz = [ObjRender_GetScaleX(shot),ObjRender_GetScaleY(shot),ObjRender_GetScaleZ(shot)];
+	let blendtype = ObjRender_GetBlendType(shot);
+	let color = Obj_GetValueD(shot,"Color",[255,255,255]);
+	let alpha = Obj_GetValueD(shot,"Alpha",255);
+	
+	let length=NULL; let width=NULL; let dur=NULL; let del=0;
+	
+	let cpy=NULL; 
+	if(Obj_GetType(shot)==OBJ_SHOT){
+		cpy = CreateShotA1(x,y,spd,ang,type,0);
+	}else{
+		length = ObjLaser_GetLength(shot);
+		width = Obj_GetValueD(shot,"Width",15);
+		dur = Obj_GetValueD(shot,"Duration",30);
+		del = Obj_GetValueD(shot,"Delay",tern(Obj_GetType(shot)==OBJ_STRAIGHT_LASER, 15, 0));
+		if(Obj_GetType(shot)==OBJ_LOOSE_LASER){ cpy = CreateLooseLaserA1(x,y,spd,ang, length, width, type, del); }else
+		if(Obj_GetType(shot)==OBJ_STRAIGHT_LASER){ cpy = CreateStraightLaserA1(x,y,ang,length,width, dur, type, del); }else
+		if(Obj_GetType(shot)==OBJ_CURVE_LASER){ cpy = CreateCurveLaserA1(x,y,spd,ang, length, width, type, del); }
+	}	
+	ObjMove_SetAcceleration(cpy,acc);
+	ObjMove_SetAngularVelocity(cpy,angv);
+	ObjMove_SetMaxSpeed(cpy,mspd);
+	
+	ObjRender_SetColor(cpy,color[0],color[1],color[2]);
+	ObjRender_SetAlpha(cpy,alpha);
+	ObjRender_SetBlendType(cpy, blendtype);
+	ObjRender_SetScaleXYZ(cpy, scalexyz[0],scalexyz[1],scalexyz[2]);
+	
+	ObjShot_SetSpellResist(cpy,spellresist);
+	ObjShot_SetIntersectionEnable(cpy,intersect);	
+	Obj_SetRenderPriority(cpy,Obj_GetRenderPriority(shot));
+	
+	setvals(cpy, ["Acceleration","AngularVelocity","MaxSpeed","Alpha"]	//"IsIntersectionEnable","Color","Alpha"]
+				,[acc			,angv			  ,mspd      ,alpha  ]);	//,intersect             ,color  ,alpha  ]);
+	setval(cpy,"Color",color); setval(cpy,"IsIntersectionEnable",intersect);
+	
+	return cpy;
+}
+
+//////////////////////////////////////////////////////////////////////
+// Move Object Functions
+//////////////////////////////////////////////////////////////////////
+
+
+
+//for moving shit what don't do ObjMove
+task Obj_AddPatternA1(obj,fr,s,a){
+	wait(fr);
+	Obj_SetValue(obj,"Speed",s);
+	Obj_SetValue(obj,"Angle",a);
+	ObjRender_SetAngleZ(obj,a);
+	let dx = s*cos(a); let dy = s*sin(a);
+	while(!Obj_IsDeleted(obj) && Obj_GetValueD(obj,"Speed",s)==s && Obj_GetValueD(obj,"Angle",a)==a){
+		ObjRender_SetX(obj,ObjRender_GetX(obj)+dx);
+		ObjRender_SetY(obj,ObjRender_GetY(obj)+dy);
+		yield;
+	}
+}
+task Obj_AddPatternA2(obj,fr,s,a,acc,mspd){
+	wait(fr);
+	Obj_SetValue(obj,"Speed",s);
+	Obj_SetValue(obj,"Angle",a);
+	Obj_SetValue(obj,"Acceleration",acc);
+	Obj_SetValue(obj,"MaxSpeed",mspd);
+	let isDecel = (acc<0);
+	ObjRender_SetAngleZ(obj,a);
+	let dx = s*cos(a); let dy = s*sin(a);
+	while(!Obj_IsDeleted(obj) && Obj_GetValueD(obj,"Speed",s)==s && Obj_GetValueD(obj,"Angle",a)==a){
+		ObjRender_SetX(obj,ObjRender_GetX(obj)+dx);
+		ObjRender_SetY(obj,ObjRender_GetY(obj)+dy);
+		yield;
+		s+=acc;
+		alternative(isDecel)
+		case(true) {s=max(s,mspd);}
+		case(false){s=min(s,mspd);}
+		Obj_SetValue(obj,"Speed",s);
+		dx = s*cos(a); dy = s*sin(a);
+	}
+}
+
+
+
+task ObjMove_SetAngularAcceleration(shot,anga){
+	Obj_SetValue(shot,"AngularAcceleration",anga);
+	let angv = Obj_GetValueD(shot,"AngularVelocity",0);
+	while(!Obj_IsDeleted(shot) && Obj_GetValueD(shot,"AngularAcceleration",0)==anga ){
+		angv = Obj_GetValueD(shot,"AngularVelocity",0);
+		if( (|Obj_GetValueD(shot,"MaxAngularVelocity",0)|) < (|angv|) ){
+			ObjMove_SetAngularVelocity(shot,angv+anga);
+			Obj_SetValue(shot,"AngularVelocity",angv+anga);
+		}
+		yield;
+	}
+}
+function ObjMove_SetMaxAngularVelocity(shot,mangv){
+	Obj_SetValue(shot,"MaxAngularVelocity",mangv);
+}
+
+task ObjRender_SetAngularVelocity(obj,da){
+	Obj_SetValue(obj,"RenderAngularVelocity",da);
+	if(da==0){return;}
+	while(!Obj_IsDeleted(obj) && Obj_GetValueD(obj,"RenderAngularVelocity",0)==da){
+		ObjRender_SetAngleZ(obj,ObjRender_GetAngleZ(obj)+da);
+		yield;
+	}
+}
+task ObjRender_SetAngularVelocityXYZ(obj,dxa,dya,dza){
+	Obj_SetValue(obj,"RenderAngularVelocityXYZ",[dxa,dya,dza]);
+	if(dxa==0&&dya==0&&dza==0){return;}
+	while(!Obj_IsDeleted(obj) && Obj_GetValueD(obj,"RenderAngularVelocityXYZ",[0,0,0])==[dxa,dya,dza]){
+		ObjRender_SetAngleXYZ(obj,ObjRender_GetAngleX(obj)+dxa,ObjRender_GetAngleY(obj)+dya,ObjRender_GetAngleZ(obj)+dza);
+		yield;
+	}
+}
+
+
+
+
+//move x% of the remaining distance
+function ObjMove_SetDestAtZeno(obj,x,y,ratio){
+	let x0 = ObjMove_GetX(obj); let y0 = ObjMove_GetY(obj);
+	//let dist = getdist(x0,y0,x,y); let ang = getangle(x0,y0,x,y);
+	ObjMove_SetPosition(obj,lerp(x0,x,ratio),lerp(y0,y,ratio));
+}
+
+//disappear and warp to the destination
+task ObjMove_SetDestAtWarp(obj, destX, destY, time){
+	let xscale = ObjRender_GetScaleX(obj);
+	let yscale = ObjRender_GetScaleY(obj);
+
+	let ori = [xscale, yscale]; let tmp;
+
+	Obj_SetValue(obj, "Warping", true);
+	Obj_SetValue(obj, "Destination", [destX, destY]);
+
+	let smooth=true;
+	if(time<0){time=(|time|);smooth=false;}
+	
+	let blinktime; let hidetime;
+	if(time!=0){
+		blinktime = min(20,time/2);
+		hidetime = time-2*blinktime;
+	}else{
+		blinktime = 20;
+		hidetime = 0;
+	}
+	
+	loop(blinktime){
+		ObjRender_SetScaleXYZ(obj, xscale, yscale, 0);
+		xscale -= ori[0]/blinktime;
+		yscale += ori[1]/blinktime;
+		yield;
+	}
+	if(hidetime!=0){
+		if(Obj_GetType(obj)==OBJ_SHOT){ObjShot_SetIntersectionEnable(obj,false);}
+		if(Obj_GetType(obj)==OBJ_ENEMY_BOSS){ tmp = IsBossIntersectionEnable; IsBossIntersectionEnable=false; }
+		
+		Obj_SetVisible(obj,false);
+		
+		if(smooth){
+			ObjMove_SetDestAtFrame(obj,destX,destY,hidetime);
+		}else{
+			let ang = getangle(ex,ey,destX,destY);
+			ObjMove_SetPosition(obj,ex+2000*cos(ang),ey+2000*sin(ang));
+		}
+		wait(hidetime);
+		Obj_SetVisible(obj,true);
+		ObjMove_SetPosition(obj,destX,destY);
+		
+		if(Obj_GetType(obj)==OBJ_SHOT){ObjShot_SetIntersectionEnable(obj,Obj_GetValueD(obj,"IsIntersectionEnable",true));}
+		if(Obj_GetType(obj)==OBJ_ENEMY_BOSS){ IsBossIntersectionEnable=tmp; }
+	}
+	ObjRender_SetPosition(obj, destX, destY, 0);
+	loop(20){
+		ObjRender_SetScaleXYZ(obj, xscale, yscale, 0);
+		xscale += ori[0]/20;
+		yscale -= ori[1]/20;
+		yield;
+	}
+	Obj_SetValue(obj, "Warping", false);
+	ObjRender_SetScaleXYZ(obj, ori[0], ori[1], 0);
+}
+
+//"Jump" to a location, growing larger and then smaller again
+task ObjMove_SetDestAtScale(obj,destX,destY,time,scaleincr){
+	let xscale = ObjRender_GetScaleX(obj);
+	let yscale = ObjRender_GetScaleY(obj);
+	
+	let dx = (destX - getrx(obj))/time;
+	let dy = (destY - getry(obj))/time;
+	
+	let xs; let ys;
+
+	Obj_SetValue(obj, "Warping", true);
+	Obj_SetValue(obj, "Destination", [destX, destY]);
+
+	let tmp;
+	if(Obj_GetType(obj)==OBJ_SHOT){ObjShot_SetIntersectionEnable(obj,false);}
+	if(Obj_GetType(obj)==OBJ_ENEMY_BOSS){ tmp = IsBossIntersectionEnable; IsBossIntersectionEnable=false; }
+	
+	ascent(i in 0..time){
+		xs = xscale+xscale*scaleincr*sin(i*180/time);
+		ys = yscale+yscale*scaleincr*sin(i*180/time);
+		ObjRender_SetScaleXYZ(obj, xs,ys, 0);
+		ObjRender_SetPosition(obj,getrx(obj)+dx,getry(obj)+dy,0);
+		yield;
+	}
+	
+	if(Obj_GetType(obj)==OBJ_SHOT){ObjShot_SetIntersectionEnable(obj,Obj_GetValueD(obj,"IsIntersectionEnable",true));}
+	if(Obj_GetType(obj)==OBJ_ENEMY_BOSS){ IsBossIntersectionEnable=tmp; }
+
+	Obj_SetValue(obj, "Warping", false);
+//	ObjRender_SetScaleXYZ(obj, ori[0], ori[1], 0);
+}
+
+
+//Add pattern to shot and store parameters in the shot's dictionary
+function AddPatternA1(shot,del,spd,ang){
+	setvals(shot,["PatternDelay","PatternSpeed","PatternAngle"],
+				 [del,spd,ang]);
+	ObjMove_AddPatternA1(shot,del,spd,ang);
+	Update;
+	task Update{
+		wait(del);
+		setvals(shot,["Speed","Angle"],
+					 [spd,ang]);
+	}
+}
+function AddPatternA2(shot,del,spd,ang,acc,angv,mspd){
+	setvals(shot,["PatternDelay","PatternSpeed","PatternAngle","PatternAcceleration","PatternAngularVelocity","PatternMaxSpeed"],
+				 [del,spd,ang,acc,angv,mspd]);
+	ObjMove_AddPatternA2(shot,del,spd,ang,acc,angv,mspd);
+	Update;
+	task Update{
+		wait(del);
+		setvals(shot,["Speed","Angle","Acceleration","AngularVelocity","MaxSpeed"],
+					 [spd,ang,acc,angv,mspd]);
+	}
+}
+function AddPatternA3(shot,del,spd,ang,acc,angv,mspd,graph){
+	setvals(shot,["PatternDelay","PatternSpeed","PatternAngle","PatternAcceleration","PatternAngularVelocity","PatternMaxSpeed","PatternGraphic"],
+				 [del,spd,ang,acc,angv,mspd,graph]);
+	ObjMove_AddPatternA3(shot,del,spd,ang,acc,angv,mspd,graph);
+	Update;
+	task Update{
+		wait(del);
+		setvals(shot,["Speed","Angle","Acceleration","AngularVelocity","MaxSpeed","Graphic"],
+					 [spd,ang,acc,angv,mspd,graph]);
+	}
+}
+
+function AddPatternB1(shot,del,xspd,yspd){
+	setvals(shot,["PatternDelay","PatternXSpeed","PatternYSpeed"],
+				 [del,xspd,yspd]);
+	ObjMove_AddPatternB1(shot,del,xspd,yspd);
+	Update;
+	task Update{
+		wait(del);
+		setvals(shot,["XSpeed","YSpeed"],
+					 [xspd,yspd]);
+	}
+}
+function AddPatternB2(shot,del,xspd,yspd,xacc,yacc,xmspd,ymspd){
+	setvals(shot,["PatternDelay","PatternXSpeed","PatternYSpeed","PatternXAcceleration","PatternYAcceleration","PatternXMaxSpeed","PatternYMaxSpeed"],
+				 [del,xspd,yspd,xacc,yacc,xmspd,ymspd]);
+	ObjMove_AddPatternB2(shot,del,xspd,yspd,xacc,yacc,xmspd,ymspd);
+	Update;
+	task Update{
+		wait(del);
+		setvals(shot,["XSpeed","YSpeed","XAcceleration","YAcceleration","XMaxSpeed","YMaxSpeed"],
+					 [xspd,yspd,xacc,yacc,xmspd,ymspd]);
+	}
+}
+
+
+
+task ObjMove_Still(obj,time){
+	ObjMove_SetAcceleration(obj,0);
+	let s0 = ObjMove_GetSpeed(obj);
+	let dS = s0/time;
+	descent(i in 0..time){
+		ObjMove_SetSpeed(obj,dS*i);
+		yield;
+	}
+	ObjMove_SetAngularVelocity(obj,0);
+}
+
+//////////////////////////////////////////////////////////////////
+// Laser Object Functions
+//////////////////////////////////////////////////////////////////
+
+task ObjStLaser_SetAngularVelocity(las,angv){
+	Obj_SetValue(las,"AngularVelocity",angv);
+	while(!Obj_IsDeleted(las) && Obj_GetValueD(las,"AngularVelocity",angv)==angv){
+		ObjStLaser_SetAngle(las,ObjStLaser_GetAngle(las)+angv);
+		yield;
+	}
+}
+task ObjStLaser_SetAngularAcceleration(las,anga){
+	Obj_SetValue(las,"AngularAcceleration",anga);
+	let angv = Obj_GetValueD(las,"AngularVelocity",0);
+	while(!Obj_IsDeleted(las) && Obj_GetValueD(las,"AngularAcceleration",0)==anga ){
+		angv = Obj_GetValueD(las,"AngularVelocity",0);
+		if( (|angv|) < (|Obj_GetValueD(las,"MaxAngularVelocity",3)|) ){
+			ObjStLaser_SetAngularVelocity(las,angv+anga);
+			Obj_SetValue(las,"AngularVelocity",angv+anga);
+		}
+		yield;
+	}
+}
+function ObjStLaser_SetMaxAngularVelocity(las,mangv){ObjMove_SetMaxAngularVelocity(las,mangv);}
+
+function ObjStLaser_SetTipPosition(las,x,y){
+	let x0 = ObjMove_GetX(las);	let y0 = ObjMove_GetY(las);
+	let len = getdist(x0,y0,x,y);
+	let ang = getangle(x0,y0,x,y);
+	ObjLaser_SetLength(las,len);
+	ObjStLaser_SetAngle(las,ang);
+}
+
+task ObjLaser_SetExtendVelocity(las,extv){
+	Obj_SetValue(las,"ExtendVelocity",extv);
+	while(!Obj_IsDeleted(las) && Obj_GetValueD(las,"ExtendVelocity",0)==extv && Obj_GetValueD(las,"MaxExtendLength",0)>=ObjLaser_GetLength(las)){
+		ObjLaser_SetLength(las,ObjLaser_GetLength(las)+extv);
+		yield;
+	}
+}
+task ObjLaser_SetExtendAcceleration(las,exta){
+	Obj_SetValue(las,"ExtendAcceleration",exta);
+	let extv = Obj_GetValueD(las,"ExtendVelocity",0);
+	while(!Obj_IsDeleted(las) && Obj_GetValueD(las,"ExtendAcceleration",0)==exta ){
+		extv = Obj_GetValueD(las,"ExtendVelocity",0);
+		if( (|extv|) < (|Obj_GetValueD(las,"MaxExtendVelocity",2)|) ){
+			ObjLaser_SetExtendVelocity(las,extv+exta);
+			Obj_SetValue(las,"ExtendVelocity",extv+exta);
+		}
+		yield;
+	}
+}
+function ObjLaser_SetMaxExtendVelocity(las,mextv){
+	Obj_SetValue(las,"MaxExtendVelocity",mextv);
+}
+function ObjLaser_SetMaxExtendLength(las,mextl){
+	Obj_SetValue(las,"MaxExtendLength",mextl);
+}
+
+task ObjLaser_SetExpandVelocity(las,expv){
+	Obj_SetValue(las,"ExpandVelocity",expv); let width;
+	while(!Obj_IsDeleted(las) && Obj_GetValueD(las,"ExpandVelocity",0)==expv){
+		width = Obj_GetValueD(las,"Width",15);
+		if(width < Obj_GetValueD(las,"MaxExpandWidth",50)) {
+			ObjLaser_SetRenderWidth(las,width+expv);
+			ObjLaser_SetIntersectionWidth(las,(width+expv)/3);
+			Obj_SetValue(las,"Width",width+expv);
+		}
+		yield;
+	}
+}
+task ObjLaser_SetExpandAcceleration(las,expa){
+	Obj_SetValue(las,"ExpandAcceleration",expa);
+	let expv = Obj_GetValueD(las,"ExpandVelocity",0);
+	while(!Obj_IsDeleted(las) && Obj_GetValueD(las,"ExpandAcceleration",0)==expa ){
+		expv = Obj_GetValueD(las,"ExpandVelocity",0);
+		if( (|expv|) < (|Obj_GetValueD(las,"MaxExpandVelocity",3)|) ){
+			ObjLaser_SetExpandVelocity(las,expv+expa);
+		}
+		yield;
+	}
+}
+function ObjLaser_SetMaxExpandVelocity(las,mexpv){
+	Obj_SetValue(las,"MaxExpandVelocity",mexpv);
+}
+function ObjLaser_SetMaxExpandWidth(las,mexpw){
+	Obj_SetValue(las,"MaxExpandWidth",mexpw);
+}
+
+
+
+//////////////////////////////////////////////////////////////////
+// Intersection Functions
+//////////////////////////////////////////////////////////////////
+
+
+
+
+
+//Determine if two line segments intersect
+function IsIntersected_Line_Line(ax0,ay0,ax1,ay1,  bx0,by0,bx1,by1) {
+	//Convert vector 1 to equation - A*x + B*y + C
+	let e_a1 = ay1-ay0;
+	let e_b1 = ax0-ax1;
+	let e_c1 = (ax1*ay0) - (ax0*ay1);
+	
+	//Plug endpoints of vector 2 into that equation
+	let e_d1 = (e_a1*bx0) + (e_b1*by0) + e_c1;
+	let e_d2 = (e_a1*bx1) + (e_b1*by1) + e_c1;
+	
+	//If d1 and d2 have the same sign, they are both on same side of first line
+	//and therefore the lines cannot intersect
+	//0 is a special case
+	if((e_d1>0&&e_d2>0)||(e_d1<0&&e_d2<0)){
+		return false;
+	}
+	
+	//Since we were treating vector 1 an an infinite line, 
+	//we need to repeat that check treating vector 2 as an infinite line instead
+	
+	//Convert to equation
+	let e_a2 = by1-by0;
+	let e_b2 = bx0-bx1;
+	let e_c2 = (bx1*by0) - (bx0*by1);
+	//Plug in endpoints of vector 1
+	e_d1 = (e_a2*ax0) + (e_b2*ay0) + e_c2;
+	e_d2 = (e_a2*ax1) + (e_b2*ay1) + e_c2;
+	//Check if they're on the same side of vector 1
+	if((e_d1>0&&e_d2>0)||(e_d1<0&&e_d2<0)){
+		return false;
+	}
+	
+	//Check if they're colinear, i.e. intersecting at way too many points
+	//Technically this should be its own case but I don't really care
+	//It's not exactly a collision and it's unlikely to ever come up anyway
+	if( (e_a1*e_b2)-(e_a2*e_b1) < 0.001 ) {
+		return false;
+	}
+	
+	//Well, we've eliminated all the other possibilities I can think of
+	//So we'll assume they intersect
+	return true;
+}
+
+//Find point at which two line segments intersect
+function GetIntersection_Line_Line(x0,y0,x1,y1,  x2,y2,x3,y3) {
+	//Convert vector 1 to equation - 
+	//A*x + B*y + C
+	let a1 = y1-y0;
+	let b1 = x0-x1;
+	let c1 = (x1*y0) - (x0*y1);
+	//Convert vector 2 to equation - 
+	//A*x + B*y + C
+	let a2 = y3-y2;
+	let b2 = x2-x3;
+	let c2 = (x3*y2) - (x2*y3);
+	
+	//  a1x*a2x + b1y*a2x - c1*a2x = 0
+	//  a2x*a1x + b2y*a1x - c2*a1x = 0
+	
+	//   b1y*a2x - b2y*a1x   =  c1*a2x - c2*a1x
+	//   yx( b1*a2 ) - yx(b2*a1)   =  x(c1*a2) - x(c2*a1)
+	//   (c1*a2 - c2*a1)/(b1*a2 - b2*a1) = y
+	
+	let x = (c1*b2-c2*b1)/(a1*b2-a2*b1);
+	let y = (c1*a2 - c2*a1)/(b1*a2 - b2*a1);
+	
+	if(min(x0,x1)<=x && x <= max(x0,x1) && min(y0,y1)<=y && y <= max(y0,y1)) {
+		return [x,y];
+	}else{
+		return [NULL,NULL];
+	}
+}

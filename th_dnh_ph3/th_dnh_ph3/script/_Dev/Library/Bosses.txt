@@ -1,0 +1,100 @@
+function spawnBossYukari() {
+	WriteLog("Creating Yukari boss object");
+	let Yukari = ObjEnemy_Create(OBJ_ENEMY_BOSS);
+	ObjEnemy_Regist(Yukari);
+
+	let imgBoss = CSD~"../Gizmo's Touhou Boss Sprite Library/spriteimg/dot_yukari.png";
+	
+	ObjPrim_SetTexture(Yukari,imgBoss);
+	ObjSprite2D_SetDestCenter(Yukari);	
+	ObjRender_SetScaleXYZ(Yukari,1,1,0);
+	
+	ObjAnim_AddFrameA1(Yukari, ANIM_IDLE, 32, 32, 96, 96);
+	ObjAnim_AddFrameA1(Yukari, ANIM_IDLE, 32, 160, 96, 224);
+	ObjAnim_AddFrameA1(Yukari, ANIM_IDLE, 32, 288, 96, 352);
+	ObjAnim_AddFrameA1(Yukari, ANIM_IDLE, 160, 32, 224, 96);
+	ObjAnim_AddFrameA1(Yukari, ANIM_IDLE, 160, 160, 224, 224);
+	
+	ObjAnim_AddFrameA1(Yukari, ANIM_MOVE, 288, 288, 352, 352);
+	ObjAnim_AddFrameA1(Yukari, ANIM_MOVE, 288, 416, 352, 480);
+	ObjAnim_AddFrameA1(Yukari, ANIM_MOVEEND, 288, 288, 352, 352);
+		
+	ObjAnim_AddFrameA1(Yukari, ANIM_ATTACK, 544, 32, 608, 96);
+	ObjAnim_AddFrameA1(Yukari, ANIM_ATTACK, 544, 160, 608, 224);
+	ObjAnim_AddFrameA1(Yukari, ANIM_ATTACK, 544, 288, 608, 352);
+	ObjAnim_AddFrameA1(Yukari, ANIM_ATTACK, 672, 32, 736, 96);
+	ObjAnim_AddFrameA1(Yukari, ANIM_ATTACK, 672, 160, 736, 224);
+	ObjAnim_AddFrameA1(Yukari, ANIM_ATTACK, 672, 288, 736, 352);
+	ObjAnim_AddFrameA1(Yukari, ANIM_ATTACKEND, 544, 160, 608, 224);
+	
+	ObjAnim_SetLoopPointA1(Yukari, ANIM_MOVE, 1);
+	ObjAnim_SetLoopPointA1(Yukari, ANIM_ATTACK, 5);
+	ObjAnim_SetSpeedA1(Yukari, ANIM_IDLE, 7);
+	ObjAnim_SetSpeedA1(Yukari, ANIM_MOVE, 4);
+	ObjAnim_SetSpeedA1(Yukari, ANIM_ATTACK, 3);
+	ObjAnim_SetSpeedA1(Yukari, ANIM_ATTACKEND, 3);
+	ObjAnim_StartAnimationA1(Yukari, 0, 1); //0,3
+	
+	
+	//Set enemy name to display
+	EnemyName(Yukari, "Yukari Yakumo", 255, 180, 255);
+	
+	task TSetMagicCircle{
+		wait(2);
+		while(!ObjEnemyBossScene_GetInfo(objScene,INFO_IS_SPELL) || objMagicCircle==NULL){yield;}
+		WriteLog("Setting magic circle to Yukari's snowflake thing");	
+		ObjPrim_SetTexture(objMagicCircle,CSD~"../img/snowflake.png");
+		ObjSprite2D_SetSourceRect(objMagicCircle, 0, 0, 125, 125);
+		MCircRotSpd=0.5;
+	}
+	TSetMagicCircle;
+	
+	UpdatePositions;
+	
+	WriteLog("Returning Yukari boss object");
+	return Yukari;
+}
+
+
+
+
+
+
+
+
+
+function spawnBossTenshi(){
+	WriteLog("Creating Tenshi boss object");
+	let Tenshi = ObjEnemy_Create(OBJ_ENEMY_BOSS);
+	ObjEnemy_Regist(Tenshi);
+
+	let imgBoss = CSD~"../Gizmo's Touhou Boss Sprite Library/spriteimg/TenshiDSSprite.png";
+
+	ObjPrim_SetTexture(Tenshi,imgBoss);
+	ObjSprite2D_SetDestCenter(Tenshi);	
+	ObjRender_SetScaleXYZ(Tenshi,1,1,0);
+	
+	ascent(x in 0..4){ObjAnim_AddFrameA1(Tenshi, ANIM_IDLE, 64*x, 0, 64*(x+1), 80);}
+	descent(x in 1..3){ObjAnim_AddFrameA1(Tenshi, ANIM_IDLE, 64*x, 0, 64*(x+1), 80);}
+	
+	ascent(x in 0..4){ObjAnim_AddFrameA1(Tenshi, ANIM_MOVE, 64*x, 80, 64*(x+1), 160);}
+	descent(x in 0..4){ObjAnim_AddFrameA1(Tenshi, ANIM_MOVEEND, 64*x, 80, 64*(x+1), 160);}
+	
+	ObjAnim_AddFrameA1(Tenshi, ANIM_ATTACK, 0, 160, 64, 240);
+	ObjAnim_AddFrameA1(Tenshi, ANIM_ATTACKEND, 0, 160, 64, 240);
+	
+	ObjAnim_SetLoopPointA1(Tenshi, ANIM_MOVE, 3);
+	ObjAnim_SetLoopPointA1(Tenshi, ANIM_ATTACK, 0);
+	ObjAnim_SetSpeedA1(Tenshi, ANIM_IDLE, 7);
+	ObjAnim_SetSpeedA1(Tenshi, ANIM_MOVE, 4);
+	ObjAnim_SetSpeedA1(Tenshi, ANIM_ATTACKEND, 2);
+	ObjAnim_StartAnimationA1(Tenshi, 0, 2);
+	
+	//Set enemy name to display
+	EnemyName(Tenshi, "Hinanawi Tenshi", 255, 180, 255);
+	
+	UpdatePositions;
+	
+	WriteLog("Returning Tenshi boss object");
+	return Tenshi;
+}

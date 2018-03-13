@@ -1,0 +1,22 @@
+//Gets root directory of the script
+function rootdir {
+	//if(GetCommonData("ScriptRootDirectory","")!=""){return GetCommonData("ScriptRootDirectory",NULL);}
+	let dir = SplitString(GetCurrentScriptDirectory,"/"); 
+	let i = length(dir)-1;
+	while(dir[i-2]!="th_dnh_ph3"){i--;}
+	dir = slice(dir,0,min(i+1,length(dir)));
+	let dirstring = dir[0];
+	ascent(i in 1..length(dir)){dirstring=dirstring~"/"~dir[i];}
+	SetCommonData("ScriptRootDirectory",dirstring);
+	return dirstring;
+}
+
+
+let root = rootdir;
+let dirgizmo = root~"./Gizmo's Touhou Boss Sprite Library/spriteimg/";
+let dirimg = root~"./img/";
+let direffect = root~"./img/Effect/";
+let dirlib = root~"./Library/";
+let dirse = root~"./se/";
+let dirsys = root~"./system/";
+let dirbgm = root~"./bgm/";

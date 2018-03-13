@@ -1,0 +1,1599 @@
+//Stops the script for w frames
+//function wait(w) { loop(w) { yield; } }
+//------------------------------------------------------------
+//------------------------------------------------------------
+//------------------------------------------------------------
+
+//Gets the X center of stage field
+//function GetCenterX() {
+//	let calc = GetStgFrameWidth / 2;
+//	return calc;
+//}
+//------------------------------------------------------------
+//------------------------------------------------------------
+//------------------------------------------------------------
+
+//Gets the Y center of stage field
+//function GetCenterY() {
+//	let calc = GetStgFrameHeight / 2; 
+//	return calc; 
+//}
+//------------------------------------------------------------
+//------------------------------------------------------------
+//------------------------------------------------------------
+
+//Gets minimum X of stage field ( x = 0 )
+function GetClipMinX() { 
+	let calc = GetStgFrameWidth - GetStgFrameWidth;
+	return calc; 
+}
+//------------------------------------------------------------
+//------------------------------------------------------------
+//------------------------------------------------------------
+
+//Gets maximum X of stage field
+function GetClipMaxX() { 
+	let calc = GetStgFrameWidth;
+	return calc; 
+}
+//------------------------------------------------------------
+//------------------------------------------------------------
+//------------------------------------------------------------
+
+//Gets minimum Y of stage field
+function GetClipMinY() { 
+	let calc = GetStgFrameHeight - GetStgFrameHeight;
+	return calc; 
+} 
+//------------------------------------------------------------
+//------------------------------------------------------------
+//------------------------------------------------------------
+
+//Gets minimum Y of stage field
+function GetClipMaxY() { 
+	let calc = GetStgFrameHeight;
+	return calc; 
+}
+//------------------------------------------------------------
+//------------------------------------------------------------
+//------------------------------------------------------------
+function WaitForEnemyCount(num){
+     while(length(GetAllEnemyID()) > num){yield;}
+}
+//------------------------------------------------------------
+//------------------------------------------------------------
+//------------------------------------------------------------
+function ExterminateShot(a){
+	loop(a){
+		DeleteShotAll(TYPE_ALL, TYPE_IMMEDIATE);
+		yield;
+	}
+}
+//------------------------------------------------------------
+//------------------------------------------------------------
+//------------------------------------------------------------
+
+//Explosion effect (mkm made the base)
+function ExplodeRGB(x, y, dAlpha, dScale, r, g, b) {
+	let obj;
+	task ExplodeRGB(x, y, dAlpha, dScale, r, g, b)
+	{
+		loop(5){
+			let path = GetCurrentScriptDirectory ~ "Explode1.png";
+			obj = ObjPrim_Create(OBJ_SPRITE_2D);
+			ObjPrim_SetTexture(obj, path);
+			Obj_SetRenderPriority(obj, 0.65);
+			ObjRender_SetBlendType(obj, BLEND_ALPHA);
+			ObjRender_SetColor(obj, r, g, b);
+			ObjSprite2D_SetSourceRect(obj, 1, 1, 63, 63);
+			ObjSprite2D_SetDestCenter(obj);
+			ObjRender_SetPosition(obj, x, y, 0);
+			ObjRender_SetAngleXYZ(obj, rand(0, 360), rand(0, 360), rand(0, 360));
+
+			whileloop(obj);
+		}
+
+		task whileloop(obj){
+			let scale = 0;
+			let alpha = 255;
+			while(alpha > 0)
+			{
+				ObjRender_SetAlpha(obj, alpha);
+				ObjRender_SetScaleXYZ(obj, scale, scale, 1);
+
+				scale += dScale;
+				alpha -= dAlpha;
+				yield;
+			}
+			Obj_Delete(obj);
+		}
+	}
+	ExplodeRGB(x,y,dAlpha,dScale,r,g,b);
+	return obj;
+}
+//------------------------------------------------------------
+//------------------------------------------------------------
+//------------------------------------------------------------
+//Explosion effect
+task ExplodeCherry(x, y, dAlpha)
+{
+	let path = GetCurrentScriptDirectory ~ "Explode2.png";
+	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjPrim_SetTexture(obj, path);
+	Obj_SetRenderPriority(obj, 0.65);
+	ObjRender_SetBlendType(obj, BLEND_ALPHA);
+	ObjSprite2D_SetSourceRect(obj, 0, 0, 64, 64);
+	ObjSprite2D_SetDestCenter(obj);
+	ObjRender_SetPosition(obj, x, y, 0);
+	ObjRender_SetAngleXYZ(obj, rand(0, 360), rand(0, 360), rand(0, 360));
+
+	let alpha = 255;
+	let x2 = rand(-7, 7);
+	let y2 = rand(-7, 7);
+
+	let a1 = rand(-3, 3);
+	let a2 = rand(-3, 3);
+	let a3 = rand(-3, 3);
+	let scale = 1;
+	while(alpha > 0)
+	{
+		ObjRender_SetAngleXYZ(obj, ObjRender_GetAngleX(obj) + a1, ObjRender_GetAngleY(obj) + a2, ObjRender_GetAngleZ(obj) + a3);
+		ObjRender_SetPosition(obj, ObjRender_GetX(obj) + x2, ObjRender_GetY(obj) + y2, 0);
+		ObjRender_SetAlpha(obj, alpha);
+		ObjRender_SetScaleXYZ(obj, scale, scale, scale);
+		if(scale > 0){scale -= 0.025}
+
+		alpha -= dAlpha;
+		yield;
+	}
+	Obj_Delete(obj);
+}
+//------------------------------------------------------------
+//------------------------------------------------------------
+//------------------------------------------------------------
+//Advanced sun function for all your crazy movement needs (heavily tweaked version of Frenticpony's)
+function CreateSunShotA1Orig(x, y, speed, angle, type, initScale, sizePerFrame, endScale, texture2, texture, r, g, b){
+    let loc_scale = initScale;
+    let growToInit = 0;
+    
+    let objShot = ObjShot_Create(OBJ_SHOT);
+    ObjShot_Regist(objShot);
+    ObjShot_SetSpellResist(objShot, true);
+    ObjMove_SetPosition(objShot, x, y);
+    ObjMove_SetSpeed(objShot, speed);
+    ObjMove_SetAngle(objShot, angle);
+    ObjShot_SetIntersectionCircleA1(objShot, 92 * initScale);
+           
+    let objRender = ObjPrim_Create(OBJ_SPRITE_2D);
+    if(texture != "NONE"){
+    	ObjPrim_SetTexture(objRender, texture);
+    	ObjSprite2D_SetSourceRect(objRender, 0, 0, 256, 256);
+    	ObjSprite2D_SetDestCenter(objRender);
+    	ObjRender_SetScaleXYZ(objRender, growToInit, growToInit, 0);
+    	ObjRender_SetBlendType(objRender, BLEND_ADD_ARGB);
+    	Obj_SetRenderPriorityI(objRender, 49);
+    	ObjRender_SetAngleZ(objRender, ObjMove_GetAngle(objShot));
+    }
+
+    let objRender2 = ObjPrim_Create(OBJ_SPRITE_2D);
+    ObjPrim_SetTexture(objRender2, texture2);
+    ObjSprite2D_SetSourceRect(objRender2, 0, 0, 256, 256);
+    ObjSprite2D_SetDestCenter(objRender2);
+    ObjRender_SetColor(objRender2, r, g, b);
+    ObjRender_SetScaleXYZ(objRender2, growToInit, growToInit, 0);
+    ObjRender_SetBlendType(objRender2, BLEND_ADD_ARGB);
+    Obj_SetRenderPriorityI(objRender2, 49);
+    ObjRender_SetAngleZ(objRender2, ObjMove_GetAngle(objShot));
+
+    renderSunStuff;
+
+    return objShot;
+
+    task renderSunStuff{
+    	let z = 0;
+    	if(type == "GROW"){
+	    	while(!Obj_IsDeleted(objShot)){
+	    		while(growToInit < loc_scale){
+	            	growToInit += 0.2;
+
+	            	ObjShot_SetIntersectionCircleA1(objShot, 91 * growToInit);
+	        		ObjRender_SetScaleXYZ(objRender, growToInit, growToInit, 0);
+	        		ObjRender_SetPosition(objRender, ObjMove_GetX(objShot), ObjMove_GetY(objShot), 0);
+	        		ObjRender_SetAngleZ(objRender, z);
+
+	        		ObjRender_SetScaleXYZ(objRender2, growToInit, growToInit, 0);
+	        		ObjRender_SetPosition(objRender2, ObjMove_GetX(objShot), ObjMove_GetY(objShot), 0);
+	        		ObjRender_SetAngleZ(objRender2, z);
+
+	        		z++;
+	        		yield;
+	       		}
+	        	if(loc_scale < endScale){
+	            	loc_scale += sizePerFrame;
+	       		}
+	       		if(loc_scale <= 0){
+	       			Obj_Delete(objShot);
+	            	Obj_Delete(objRender);
+	    			Obj_Delete(objRender2);;
+	       		}
+
+	        	ObjShot_SetIntersectionCircleA1(objShot, 91 * loc_scale);
+	        	ObjRender_SetScaleXYZ(objRender, loc_scale, loc_scale, 0);
+	        	ObjRender_SetPosition(objRender, ObjMove_GetX(objShot), ObjMove_GetY(objShot), 0);
+	        	ObjRender_SetAngleZ(objRender, z);
+
+	        	ObjRender_SetScaleXYZ(objRender2, loc_scale, loc_scale, 0);
+	        	ObjRender_SetPosition(objRender2, ObjMove_GetX(objShot), ObjMove_GetY(objShot), 0);
+	        	ObjRender_SetAngleZ(objRender2, z);
+
+	        	z++;
+	        	yield;
+	    	}
+	    	Obj_Delete(objRender);
+	    	Obj_Delete(objRender2);
+		
+		}else if(type == "SHRINK"){
+	    	while(!Obj_IsDeleted(objShot)){
+	    		while(growToInit < loc_scale){
+	            	growToInit += 0.2;
+
+	            	ObjShot_SetIntersectionCircleA1(objShot, 91 * growToInit);
+	        		ObjRender_SetScaleXYZ(objRender, growToInit, growToInit, 0);
+	        		ObjRender_SetPosition(objRender, ObjMove_GetX(objShot), ObjMove_GetY(objShot), 0);
+	        		ObjRender_SetAngleZ(objRender, z);
+
+	        		ObjRender_SetScaleXYZ(objRender2, growToInit, growToInit, 0);
+	        		ObjRender_SetPosition(objRender2, ObjMove_GetX(objShot), ObjMove_GetY(objShot), 0);
+	        		ObjRender_SetAngleZ(objRender2, z);
+
+	        		z++;
+	        		yield;
+	       		}
+	        	if(loc_scale > endScale){
+	            	loc_scale -= sizePerFrame;
+	       		}
+	       		if(loc_scale <= 0){
+	       			Obj_Delete(objShot);
+	            	Obj_Delete(objRender);
+	    			Obj_Delete(objRender2);;
+	       		}
+
+	        	ObjShot_SetIntersectionCircleA1(objShot, 91 * loc_scale);
+	        	ObjRender_SetScaleXYZ(objRender, loc_scale, loc_scale, 0);
+	        	ObjRender_SetPosition(objRender, ObjMove_GetX(objShot), ObjMove_GetY(objShot), 0);
+	        	ObjRender_SetAngleZ(objRender, z);
+
+	        	ObjRender_SetScaleXYZ(objRender2, loc_scale, loc_scale, 0);
+	        	ObjRender_SetPosition(objRender2, ObjMove_GetX(objShot), ObjMove_GetY(objShot), 0);
+	        	ObjRender_SetAngleZ(objRender2, z);
+
+	        	z++;
+	       		yield;
+	    	}
+	    	Obj_Delete(objRender);
+	    	Obj_Delete(objRender2);
+		
+		}
+    }
+}
+//------------------------------------------------------------
+//------------------------------------------------------------
+//------------------------------------------------------------
+//Makes the screen shake
+//Function by gt_bot
+task ScreenShakeA1(shaketime, intensity){
+	let x = Get2DCameraX;
+	let y = Get2DCameraY;
+	while(shaketime>0){
+		Set2DCameraFocusX(GetStgFrameWidth/2 + rand(-intensity, intensity));
+		Set2DCameraFocusY(GetStgFrameHeight/2 + rand(-intensity, intensity));
+		shaketime--;
+		yield;
+	}
+	Set2DCameraFocusX(GetStgFrameWidth/2);
+	Set2DCameraFocusY(GetStgFrameHeight/2);
+	yield;
+}
+//------------------------------------------------------------
+//------------------------------------------------------------
+//------------------------------------------------------------
+function rand_int(min, max){
+  return round(rand(min, max))
+}
+//------------------------------------------------------------
+//------------------------------------------------------------
+//------------------------------------------------------------
+task DelayLaser(x, y, ang, l, w, dt, graph, delay){
+	let objlaser = CreateStraightLaserA1(x, y, ang, l, w, dt, graph, delay);
+	wait(delay-1);//So that the graphic never enlarges. 
+	Obj_Delete(objlaser);
+}
+//------------------------------------------------------------
+//------------------------------------------------------------
+//------------------------------------------------------------
+function GetPointAngle(x1, y1, x2, y2){
+	let angle = atan2(y1 - y2, x1 - x2);
+	return angle;
+}
+//------------------------------------------------------------
+//------------------------------------------------------------
+//------------------------------------------------------------
+task PlaytestInvincibility {
+	AddVirtualKey(VK_USER1,KEY_SPACE,KEY_INVALID);	
+	while(true) {
+		if(GetVirtualKeyState(VK_USER1)==KEY_HOLD) {
+			SetPlayerInvincibilityFrame(30);
+			SetPlayerLife(99);
+		}
+		yield;
+	}	
+}
+//------------------------------------------------------------
+//------------------------------------------------------------
+//------------------------------------------------------------
+//Thanks, gtbot!
+function CreateEnemyObject(CEOlife, SBIimage, rec1, rec2, rec3, rec4){
+	let CEOboss = ObjEnemy_Create(OBJ_ENEMY);
+	ObjEnemy_Regist(CEOboss);
+	ObjPrim_SetTexture(CEOboss, SBIimage); 
+	ObjSprite2D_SetSourceRect(CEOboss, rec1, rec2, rec3, rec4); 
+	ObjSprite2D_SetDestCenter(CEOboss);
+	ObjEnemy_SetLife(CEOboss, CEOlife);
+	return CEOboss;
+}
+//------------------------------------------------------------
+//------------------------------------------------------------
+//------------------------------------------------------------
+//Sparen
+task EnemyName(obj, name, r, g, b){ //Blurred originally
+  let objText = ObjText_Create();
+  //ObjText_SetFontSize(objText,20);//pre23
+  ObjText_SetFontSize(objText,12);//new
+  InstallFont("./Russell Square Regular.ttf");
+  ObjText_SetFontType(objText,"Russell Square Regular");//Helvetica: Use 14 pt font, All caps.
+  ObjText_SetFontBold(objText, true);
+  ObjText_SetFontColorTop(objText, 255, 255, 255);
+  ObjText_SetFontColorBottom(objText, 255, 255, 255);
+  ObjText_SetFontBorderType(objText, BORDER_FULL);
+  ObjText_SetFontBorderColor(objText,255, 255, 255);
+  ObjText_SetFontBorderWidth(objText, 1);
+  Obj_SetRenderPriority(objText, 0.8);
+  ObjRender_SetX(objText, 5);
+  ObjRender_SetY(objText, 12);//Orig 15, but some spell names were too long... (edited in conjunction with cutin.h)
+  ObjText_SetFontBorderColor(objText, r, g, b);
+  ObjText_SetText(objText, name);
+
+  while(ObjEnemy_GetInfo(obj,INFO_LIFE)>0){
+    yield;
+  }
+  wait(12);//It can only handle 12 yields, currently, before the script is closed.
+  Obj_Delete(objText);
+}
+//------------------------------------------------------------
+//------------------------------------------------------------
+//------------------------------------------------------------
+ function Obj_IsInArea(obj, left, top, right, bottom){
+	if(ObjMove_GetX(obj)<left){
+		return false;
+	}
+               
+	if(ObjMove_GetX(obj)>right){
+		return false;
+	}      
+ 
+	if(ObjMove_GetY(obj)<top){
+		return false;
+	}
+               
+	if(ObjMove_GetY(obj)>bottom){
+		return false;
+	}              
+	return true
+}
+//------------------------------------------------------------
+//------------------------------------------------------------
+//------------------------------------------------------------
+//Function by neito
+task neitoCharge(x,y,flame,r1,g1,b1)
+{
+	ascent(i in 0..5){
+		lotemasLite(x+rand(-5,5),y+rand(-15,15),1*i,flame,r1,g1,b1,(1*i)/1); //Creates the Color Charge effect
+		lotemas(x+rand(-5,5),y+rand(-15,15),1*i,flame,250,250,250,(1*i)); //Creates the Black charge effect
+	}
+	loop(flame-30){ //No dot effects will be spawned if the charge times is less then or equal to 30 frames.
+		loop(rand(1,3)){
+			oltahmas(x+rand(-5,5),y+rand(-5,5),30,r1,g1,b1); //Creates Dots of black and the designated colors randomly that fly in at the given position.
+		}
+		yield;
+	}
+}
+
+task lotemas(x,y,Edscale,flame,r1,g1,b1,fractal)
+{
+	let imgEff = GetCurrentScriptDirectory~"eltmas1.png";
+	let scale = Edscale;
+	let alpha = 0;
+	let angle = rand(0,360);
+	let angleR = rand(-3,3); 
+
+	let obj=ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjRender_SetBlendType(obj, BLEND_SUBTRACT);
+	ObjPrim_SetTexture(obj, imgEff);
+	Obj_SetRenderPriority(obj, 0.26);
+	ObjSprite2D_SetSourceRect(obj, 0, 0, 256, 256);
+	ObjSprite2D_SetDestRect(obj, -128, -128, 128, 128);
+	ObjRender_SetAlpha(obj, 255);
+	ObjRender_SetPosition(obj, x, y, 0);
+	ascent(i in 0 .. flame){
+		//if(Obj_IsDeleted(bossObj)==true){Obj_Delete(obj);}
+		ObjRender_SetColor(obj, alpha*r1, alpha*g1, alpha*b1);
+		ObjRender_SetScaleXYZ(obj,scale,scale,1.0);
+		ObjRender_SetAngleXYZ(obj,0,0,angle);
+		angle+=angleR;
+		scale-= Edscale/flame;
+		alpha+= (1/fractal)/(flame/Edscale);
+		yield;
+	}
+	Obj_Delete(obj);
+}
+task lotemasLite(x,y,Edscale,flame,r1,g1,b1,fractal)
+{
+	let imgEff = GetCurrentScriptDirectory~"eltmas1.png";
+	let scale = Edscale;
+	let alpha = 0;
+	let angle = rand(0,360);
+	let angleR = rand(-3,3); 
+
+	let obj=ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjRender_SetBlendType(obj, BLEND_ADD_RGB);
+	ObjPrim_SetTexture(obj, imgEff);
+	Obj_SetRenderPriority(obj, 0.26);
+	ObjSprite2D_SetSourceRect(obj, 0, 0, 256, 256);
+	ObjSprite2D_SetDestRect(obj, -128, -128, 128, 128);
+	ObjRender_SetAlpha(obj, 255);
+	ObjRender_SetPosition(obj, x, y, 0);
+	ascent(i in 0 .. flame){
+		//if(Obj_IsDeleted(bossObj)==true){Obj_Delete(obj);}
+		ObjRender_SetColor(obj, alpha*r1, alpha*g1, alpha*b1);
+		ObjRender_SetScaleXYZ(obj,scale,scale,1.0);
+		ObjRender_SetAngleXYZ(obj,0,0,angle);
+		angle+=angleR;
+		scale-= Edscale/flame;
+		alpha+= (1/fractal)/(flame/Edscale);
+		yield;
+	}
+	Obj_Delete(obj);
+}
+task oltahmas(x,y,flame,r1,g1,b1)
+{
+	let imgEff = GetCurrentScriptDirectory~"dot.png";
+	let scaleStandard = rand(0.25,1);
+	let scale = scaleStandard;
+	let alpha = 0;
+	let alphaDun = rand(0.1,1);
+
+	let accer = rand(0.3, 0.4);
+	let angle = rand(0, 360);
+	let r = accer*(flame^2)/2;
+	x += r*cos(angle);
+	y += r*sin(angle);
+
+	let ToF=0;
+	ToF=rand(-1,1);
+
+	let obj=ObjPrim_Create(OBJ_SPRITE_2D);
+	if(ToF>0){
+		ObjRender_SetBlendType(obj, BLEND_ADD_RGB);
+	}else if(ToF<0){
+		ObjRender_SetBlendType(obj, BLEND_SUBTRACT);
+	}
+	ObjPrim_SetTexture(obj, imgEff);
+	Obj_SetRenderPriority(obj, 0.26);
+	ObjSprite2D_SetSourceRect(obj, 0, 0, 64, 64);
+	ObjSprite2D_SetDestRect(obj, -32, -32, 32, 32);
+	ObjRender_SetPosition(obj, x, y, 0);
+	ascent(i in 0 .. flame){
+		ObjRender_SetPosition(obj, x, y, 0);
+		ObjRender_SetAlpha(obj, 255*alpha);
+		//if(Obj_IsDeleted(bossObj)==true){Obj_Delete(obj);}
+		ObjRender_SetColor(obj, alpha*r1, alpha*g1, alpha*b1);
+		ObjRender_SetScaleXYZ(obj,scale,scale,1.0);
+		x -= accer*i*cos(angle);
+		y -= accer*i*sin(angle);
+		if(alpha<alphaDun){
+			alpha+= alphaDun/5;
+		}
+		scale-=scaleStandard/flame;
+		yield;
+	}
+	Obj_Delete(obj);
+}
+//------------------------------------------------------------
+//------------------------------------------------------------
+//------------------------------------------------------------
+task SetDamageRateAtFrameEnm(obj, shot,bomb,frame){
+  ObjEnemy_SetDamageRate(obj, 0,0);
+  let time=frame;
+  while(time>0){
+    time--;
+    yield;
+  }//No need to worry about bomb damage carrying over.
+  ObjEnemy_SetDamageRate(obj,shot,bomb);
+}
+//------------------------------------------------------------
+//------------------------------------------------------------
+//------------------------------------------------------------
+task BottomEnemyMarker(obj, bossobj){
+  let imgnumber = GetCurrentScriptDirectory~"enemymarker.png";
+  let objEnemy = ObjPrim_Create(OBJ_SPRITE_2D);
+  ObjRender_SetPosition(objEnemy, GetCenterX, GetStgFrameHeight+32, 1); 
+  ObjPrim_SetPrimitiveType(objEnemy, PRIMITIVE_TRIANGLESTRIP);
+  ObjRender_SetBlendType(objEnemy, BLEND_ALPHA);
+  Obj_SetRenderPriority(objEnemy, 0.85);
+  ObjPrim_SetTexture(objEnemy, imgnumber);
+  ObjRender_SetAlpha(objEnemy, 255);
+  ObjSprite2D_SetSourceRect(objEnemy, 0, 0, 48, 16);
+  ObjSprite2D_SetDestRect(objEnemy, -25, -8, 25, 8);
+  while(ObjEnemy_GetInfo(bossobj,INFO_LIFE)>0){
+    ObjRender_SetPosition(objEnemy, ObjMove_GetX(obj)+32, GetStgFrameHeight+24, 1);
+    yield;
+  }
+  //wait(60); //So it doesn't look like they disappear in between attacks. IN PH3 THIS DOES NOT WORK WITHOUT AUTODELETE OF OBJECTS.
+  wait(12);//It can only handle 12 yields, currently, before the script is closed.
+  Obj_Delete(objEnemy);
+}
+//------------------------------------------------------------
+//------------------------------------------------------------
+//------------------------------------------------------------
+//lol global (sets player speed only)
+task SetGlobalSpeed(bossObj, t, v){
+	let i = 0;
+	let speed = GetPlayerSpeed;
+	loop(t){
+		if(ObjEnemy_GetInfo(bossObj, INFO_LIFE) < 0){break;}
+		SetPlayerSpeed(speed[0]*v, speed[1]*v);
+		yield;
+	}
+	SetPlayerSpeed(speed[0], speed[1]);
+}
+//------------------------------------------------------------
+//------------------------------------------------------------
+//------------------------------------------------------------
+//Does NOT move on it's own. Movement needs to be assigned with ObjMove functions
+function CreateBoxA1(x, y, dist, dir, sides, l, w, dt, g, d){
+	let boxcontrol = ObjShot_Create(OBJ_SHOT);
+	ObjShot_Regist(boxcontrol);
+	ObjShot_SetSpellResist(boxcontrol, true);
+
+	let boxX = 0;
+	let boxY = 0;
+	let a = 0;
+
+	ObjMove_SetPosition(boxcontrol, x, y);
+
+	laserbox;
+	return boxcontrol;
+
+	task laserbox{
+		loop(sides){
+			laser(a);
+			a += 360/sides;
+		}
+		task laser(a2){
+			let obj = CreateStraightLaserA1(x, y, a2, l, w, dt, g, d);
+			ObjLaser_SetInvalidLength(obj, 0, 0);
+			ObjStLaser_SetSource(obj, false);
+
+			while(!Obj_IsDeleted(boxcontrol)){
+				boxX = ObjMove_GetX(boxcontrol);
+				boxY = ObjMove_GetY(boxcontrol);
+
+				ObjMove_SetPosition(obj, boxX+dist*cos(a2), boxY+dist*sin(a2));
+				ObjMove_SetPosition(obj, boxX+dist*cos(a2), boxY+dist*sin(a2));
+				ObjStLaser_SetAngle(obj, a2);
+				a2 += dir;
+				yield;
+			}
+		}
+	}
+}
+//------------------------------------------------------------
+//------------------------------------------------------------
+//------------------------------------------------------------
+task Difficulty(img, left, top, right, bottom){
+	let objText = ObjPrim_Create(OBJ_SPRITE_2D);
+
+	ObjPrim_SetTexture(objText, img);
+	ObjSprite2D_SetSourceRect(objText, left, top, right, bottom);
+	ObjSprite2D_SetDestCenter(objText);
+  	Obj_SetRenderPriority(objText, 0.7);
+  	ObjRender_SetScaleXYZ(objText, 0.75, 0.75, 0);
+  	ObjRender_SetX(objText, GetCenterX);
+  	ObjRender_SetY(objText, 24);
+  	loop(5){
+  		ObjRender_SetAlpha(objText, 0);
+  		wait(5);
+  		ObjRender_SetAlpha(objText, 255);
+  		wait(5);
+  	}
+  	let alpha = 255;
+  	while(alpha > 0){
+  		ObjRender_SetAlpha(objText, alpha);
+  		alpha -= 5;
+  		yield;
+  	}
+  	wait(10);
+  	Obj_SetRenderPriority(objText, 1.0);
+  	ObjRender_SetX(objText, GetClipMaxX + 150);
+  	ObjRender_SetY(objText, 24);
+  	while(alpha < 255){
+  		ObjRender_SetAlpha(objText, alpha);
+  		alpha += 5;
+  		yield;
+  	}
+}
+//------------------------------------------------------------
+//------------------------------------------------------------
+//------------------------------------------------------------
+task ObjShot_ReflectCeiling(obj){
+	while(!Obj_IsDeleted(obj)){
+		if(ObjMove_GetY(obj) <= 0 && ObjMove_GetY(obj) >= -20){
+			ObjMove_SetAngle(obj, -ObjMove_GetAngle(obj));
+		}
+		yield;
+	}
+}
+//------------------------------------------------------------
+//------------------------------------------------------------
+//------------------------------------------------------------
+task ObjShot_ReflectBottom(obj){
+	while(!Obj_IsDeleted(obj)){
+		if(ObjMove_GetY(obj) >= GetClipMaxY && ObjMove_GetY(obj) <= GetClipMaxY + 20){
+			ObjMove_SetAngle(obj, -ObjMove_GetAngle(obj));
+		}
+		yield;
+	}
+}
+
+//------------------------------------------------------------
+//------------------------------------------------------------
+//------------------------------------------------------------
+task ObjShot_ReflectWalls(obj){
+	while(!Obj_IsDeleted(obj)){
+		if(ObjMove_GetX(obj) <= 0 && ObjMove_GetX(obj) >= -20){
+			ObjMove_SetAngle(obj, -ObjMove_GetAngle(obj) + 180);
+		}
+
+		if(ObjMove_GetX(obj) >= GetClipMaxX && ObjMove_GetX(obj) <= GetClipMaxX + 20){
+			ObjMove_SetAngle(obj, -ObjMove_GetAngle(obj) + 180);
+		}
+		yield;
+	}
+}
+//------------------------------------------------------------
+//------------------------------------------------------------
+//------------------------------------------------------------
+function GetDistance(x1,y1,x2,y2) {
+	return ((x1-x2)^2+(y1-y2)^2)^(1/2);
+}
+//------------------------------------------------------------
+//------------------------------------------------------------
+//------------------------------------------------------------
+//AJS
+function PagodaLaser(x,y,xmov,ymov,scale,angle,prerotation,postrotation,maxwidth,color,delay,del) {
+	let objHitbox = CreateStraightLaserA1(x,y,angle,800,maxwidth*(5/4),del+45,1,delay);
+	ObjLaser_SetInvalidLength(objHitbox, 0, 0);
+	PagodaBeam;
+	return objHitbox;
+	
+	task PagodaBeam {
+		let objLaser1 = ObjPrim_Create(OBJ_SPRITE_2D);
+		let objLaser2 = ObjPrim_Create(OBJ_SPRITE_2D);
+		let objDetail = ObjPrim_Create(OBJ_SPRITE_2D);
+		let objFire = ObjPrim_Create(OBJ_SPRITE_2D);
+		let objFire2 = ObjPrim_Create(OBJ_SPRITE_2D);
+		
+		let width = 2;
+		let length = 0;
+		let fire_scale = 1.2*scale;
+		let fire_scale2 = 0.8*scale;
+		let fire_count = 0;
+		let detail_count = 0;
+		let newangle = angle;
+		let newX = x;
+		let newY = y;
+				
+		Obj_SetVisible(objHitbox,false);
+		
+		ObjRender_SetBlendType(objLaser1, BLEND_ALPHA);
+		Obj_SetRenderPriorityI(objLaser1, 28);
+		ObjPrim_SetTexture(objLaser1, GetCurrentScriptDirectory ~ "PagodaLaser.png");
+		ObjSprite2D_SetSourceRect(objLaser1, 0, 37, 256, 69);
+		ObjSprite2D_SetDestRect(objLaser1, 0.5, -16, 256.5, 16);
+		ObjRender_SetColor(objLaser1,color[0],color[1],color[2]);
+		
+		ObjRender_SetBlendType(objLaser2, BLEND_ADD_RGB);
+		Obj_SetRenderPriorityI(objLaser2, 29);
+		ObjPrim_SetTexture(objLaser2, GetCurrentScriptDirectory ~ "PagodaLaser.png");
+		ObjSprite2D_SetSourceRect(objLaser2, 0, 77, 256, 109);
+		ObjSprite2D_SetDestRect(objLaser2, 0.5, -16, 256.5, 16);
+		
+		ObjRender_SetBlendType(objDetail, BLEND_ALPHA);
+		Obj_SetRenderPriorityI(objDetail, 29);
+		ObjPrim_SetTexture(objDetail, GetCurrentScriptDirectory ~ "PagodaLaser.png");
+		ObjSprite2D_SetSourceRect(objDetail, 0, 0, 256, 30);
+		ObjSprite2D_SetDestRect(objDetail, 0.5, -18, 256.5, 18);
+		
+		ObjRender_SetBlendType(objFire, BLEND_ALPHA);
+		Obj_SetRenderPriorityI(objFire, 27);
+		ObjPrim_SetTexture(objFire, GetCurrentScriptDirectory ~ "PagodaLaser_Fire.png");
+		ObjRender_SetColor(objFire,color[0],color[1],color[2]);
+		ObjRender_SetScaleXYZ(objFire,fire_scale,fire_scale,1);
+		
+		ObjRender_SetBlendType(objFire2, BLEND_ADD_RGB);
+		Obj_SetRenderPriorityI(objFire2, 30);
+		ObjPrim_SetTexture(objFire2, GetCurrentScriptDirectory ~ "PagodaLaser_Fire.png");
+		ObjRender_SetScaleXYZ(objFire2,fire_scale2,fire_scale2,1);
+		
+		loop(delay) {
+			newangle+=prerotation;
+			ObjStLaser_SetAngle(objHitbox,newangle);
+			newX+=xmov;
+			newY+=ymov;
+			ObjMove_SetX(objHitbox,newX);
+			ObjMove_SetY(objHitbox,newY);
+		
+			ObjRender_SetScaleXYZ(objLaser1,2,width/25,0);
+			ObjRender_SetPosition(objLaser1,ObjMove_GetX(objHitbox),ObjRender_GetY(objHitbox),0);
+			ObjRender_SetAngleZ(objLaser1,ObjStLaser_GetAngle(objHitbox));
+			
+			ObjRender_SetScaleXYZ(objLaser2,2,width/32,0);
+			ObjRender_SetPosition(objLaser2,ObjMove_GetX(objHitbox),ObjRender_GetY(objHitbox),0);
+			ObjRender_SetAngleZ(objLaser2,ObjStLaser_GetAngle(objHitbox));
+			
+			
+			ObjRender_SetScaleXYZ(objDetail,2,width/32,0);
+			ObjRender_SetPosition(objDetail,ObjMove_GetX(objHitbox),ObjRender_GetY(objHitbox),0);
+			ObjRender_SetAngleZ(objDetail,ObjStLaser_GetAngle(objHitbox));
+			ObjSprite2D_SetSourceRect(objDetail, 0-detail_count, 0, 256-detail_count, 30);
+			ObjSprite2D_SetDestRect(objDetail, 1.5, -18, 257.5, 18);
+			
+			
+			ObjRender_SetPosition(objFire,ObjMove_GetX(objHitbox),ObjRender_GetY(objHitbox),0);
+			ObjRender_SetAngleZ(objFire,ObjStLaser_GetAngle(objHitbox));
+			if(fire_count%2==0) { ObjSprite2D_SetSourceRect(objFire, 1, 1, 123, 127); }
+			else if(fire_count%2==1) { ObjSprite2D_SetSourceRect(objFire, 129, 1, 255, 127); }
+			ObjSprite2D_SetDestRect(objFire, 0.5, -61, 128.5, 61);
+			
+			ObjRender_SetPosition(objFire2,ObjMove_GetX(objHitbox),ObjRender_GetY(objHitbox),0);
+			ObjRender_SetAngleZ(objFire2,ObjStLaser_GetAngle(objHitbox));
+			if(fire_count%2==0) { ObjSprite2D_SetSourceRect(objFire2, 1, 129, 123, 255); }
+			else if(fire_count%2==1) { ObjSprite2D_SetSourceRect(objFire2, 129, 129, 255, 255); }
+			ObjSprite2D_SetDestRect(objFire2, 0.5, -61, 128.5, 61);
+			
+			if(Obj_IsDeleted(objHitbox)) {
+				Obj_Delete(objLaser1);
+				Obj_Delete(objLaser2);
+				Obj_Delete(objDetail);
+				Obj_Delete(objFire);
+				Obj_Delete(objFire2);
+			}
+			
+			fire_count+=0.5;
+			detail_count+=12;
+			yield;
+		}
+		loop(20) {
+			newangle+=postrotation;
+			ObjStLaser_SetAngle(objHitbox,newangle);
+			newX+=xmov;
+			newY+=ymov;
+			ObjMove_SetX(objHitbox,newX);
+			ObjMove_SetY(objHitbox,newY);
+		
+			ObjRender_SetScaleXYZ(objLaser1,2*(length/800),width/25,1);
+			ObjRender_SetPosition(objLaser1,ObjMove_GetX(objHitbox),ObjMove_GetY(objHitbox),0);
+			ObjRender_SetAngleZ(objLaser1,ObjStLaser_GetAngle(objHitbox));
+			
+			ObjRender_SetScaleXYZ(objLaser2,2*(length/800),width/32,0);
+			ObjRender_SetPosition(objLaser2,ObjMove_GetX(objHitbox),ObjMove_GetY(objHitbox),0);
+			ObjRender_SetAngleZ(objLaser2,ObjStLaser_GetAngle(objHitbox));
+			
+			
+			ObjRender_SetScaleXYZ(objDetail,2,width/32,0);
+			ObjRender_SetPosition(objDetail,ObjMove_GetX(objHitbox),ObjMove_GetY(objHitbox),0);
+			ObjRender_SetAngleZ(objDetail,ObjStLaser_GetAngle(objHitbox));
+			ObjSprite2D_SetSourceRect(objDetail, 0-detail_count, 0, 256-detail_count, 30);
+			ObjSprite2D_SetDestRect(objDetail, 0.5, -18, 256.5, 18);
+			
+			
+			ObjRender_SetPosition(objFire,ObjMove_GetX(objHitbox),ObjMove_GetY(objHitbox),0);
+			ObjRender_SetAngleZ(objFire,ObjStLaser_GetAngle(objHitbox));
+			if(fire_count%2==0) { ObjSprite2D_SetSourceRect(objFire, 1, 1, 123, 127); }
+			else if(fire_count%2==1) { ObjSprite2D_SetSourceRect(objFire, 129, 1, 255, 127); }
+			ObjSprite2D_SetDestRect(objFire, 0.5, -61, 128.5, 61);
+			
+			ObjRender_SetPosition(objFire2,ObjMove_GetX(objHitbox),ObjRender_GetY(objHitbox),0);
+			ObjRender_SetAngleZ(objFire2,ObjStLaser_GetAngle(objHitbox));
+			if(fire_count%2==0) { ObjSprite2D_SetSourceRect(objFire2, 1, 129, 123, 255); }
+			else if(fire_count%2==1) { ObjSprite2D_SetSourceRect(objFire2, 129, 129, 255, 255); }
+			ObjSprite2D_SetDestRect(objFire2, 0.5, -61, 128.5, 61);
+			
+			if(Obj_IsDeleted(objHitbox)) {
+				Obj_Delete(objLaser1);
+				Obj_Delete(objLaser2);
+				Obj_Delete(objDetail);
+				Obj_Delete(objFire);
+				Obj_Delete(objFire2);
+			}
+			
+			length+=800/20;
+			width+=(maxwidth-2)/20;
+			fire_count+=0.5;
+			detail_count+=12;
+			yield;
+		}
+		
+		loop(del) {
+			newangle+=postrotation;
+			ObjStLaser_SetAngle(objHitbox,newangle);
+			newX+=xmov;
+			newY+=ymov;
+			ObjMove_SetX(objHitbox,newX);
+			ObjMove_SetY(objHitbox,newY);
+		
+			ObjRender_SetScaleXYZ(objLaser1,2*(length/800),width/25,1);
+			ObjRender_SetPosition(objLaser1,ObjMove_GetX(objHitbox),ObjMove_GetY(objHitbox),0);
+			ObjRender_SetAngleZ(objLaser1,ObjStLaser_GetAngle(objHitbox));
+			
+			ObjRender_SetScaleXYZ(objLaser2,2*(length/800),width/32,0);
+			ObjRender_SetPosition(objLaser2,ObjMove_GetX(objHitbox),ObjMove_GetY(objHitbox),0);
+			ObjRender_SetAngleZ(objLaser2,ObjStLaser_GetAngle(objHitbox));
+			
+			
+			ObjRender_SetScaleXYZ(objDetail,2,width/32,0);
+			ObjRender_SetPosition(objDetail,ObjMove_GetX(objHitbox),ObjMove_GetY(objHitbox),0);
+			ObjRender_SetAngleZ(objDetail,ObjStLaser_GetAngle(objHitbox));
+			ObjSprite2D_SetSourceRect(objDetail, 0-detail_count, 0, 256-detail_count, 30);
+			ObjSprite2D_SetDestRect(objDetail, 0.5, -18, 256.5, 18);
+			
+			
+			ObjRender_SetPosition(objFire,ObjMove_GetX(objHitbox),ObjMove_GetY(objHitbox),0);
+			ObjRender_SetAngleZ(objFire,ObjStLaser_GetAngle(objHitbox));
+			if(fire_count%2==0) { ObjSprite2D_SetSourceRect(objFire, 1, 1, 123, 127); }
+			else if(fire_count%2==1) { ObjSprite2D_SetSourceRect(objFire, 129, 1, 255, 127); }
+			ObjSprite2D_SetDestRect(objFire, 0.5, -61, 128.5, 61);
+			
+			ObjRender_SetPosition(objFire2,ObjMove_GetX(objHitbox),ObjRender_GetY(objHitbox),0);
+			ObjRender_SetAngleZ(objFire2,ObjStLaser_GetAngle(objHitbox));
+			if(fire_count%2==0) { ObjSprite2D_SetSourceRect(objFire2, 1, 129, 123, 255); }
+			else if(fire_count%2==1) { ObjSprite2D_SetSourceRect(objFire2, 129, 129, 255, 255); }
+			ObjSprite2D_SetDestRect(objFire2, 0.5, -61, 128.5, 61);
+			
+			if(Obj_IsDeleted(objHitbox)) {
+				Obj_Delete(objLaser1);
+				Obj_Delete(objLaser2);
+				Obj_Delete(objDetail);
+				Obj_Delete(objFire);
+				Obj_Delete(objFire2);
+			}
+			
+			fire_count+=0.5;
+			detail_count+=12;
+			yield;
+		}
+		
+		loop(30) {
+			newangle+=postrotation;
+			ObjStLaser_SetAngle(objHitbox,newangle);
+			newX+=xmov;
+			newY+=ymov;
+			ObjMove_SetX(objHitbox,newX);
+			ObjMove_SetY(objHitbox,newY);
+		
+			ObjShot_SetIntersectionEnable(objHitbox,false);
+		
+			ObjRender_SetScaleXYZ(objLaser1,2,width/25,1);
+			ObjRender_SetPosition(objLaser1,ObjMove_GetX(objHitbox),ObjMove_GetY(objHitbox),0);
+			ObjRender_SetAngleZ(objLaser1,ObjStLaser_GetAngle(objHitbox));
+			
+			ObjRender_SetScaleXYZ(objLaser2,2,width/32,0);
+			ObjRender_SetPosition(objLaser2,ObjMove_GetX(objHitbox),ObjMove_GetY(objHitbox),0);
+			ObjRender_SetAngleZ(objLaser2,ObjStLaser_GetAngle(objHitbox));
+			
+			
+			ObjRender_SetScaleXYZ(objDetail,2,width/32,0);
+			ObjRender_SetPosition(objDetail,ObjMove_GetX(objHitbox),ObjMove_GetY(objHitbox),0);
+			ObjRender_SetAngleZ(objDetail,ObjStLaser_GetAngle(objHitbox));
+			ObjSprite2D_SetSourceRect(objDetail, 0-detail_count, 0, 256-detail_count, 30);
+			ObjSprite2D_SetDestRect(objDetail, 0.5, -18, 256.5, 18);
+			
+			
+			ObjRender_SetScaleY(objFire,fire_scale*(width/32));
+			ObjRender_SetPosition(objFire,ObjMove_GetX(objHitbox),ObjMove_GetY(objHitbox),0);
+			ObjRender_SetAngleZ(objFire,ObjStLaser_GetAngle(objHitbox));
+			if(fire_count%2==0) { ObjSprite2D_SetSourceRect(objFire, 1, 1, 123, 127); }
+			else if(fire_count%2==1) { ObjSprite2D_SetSourceRect(objFire, 129, 1, 255, 127); }
+			ObjSprite2D_SetDestRect(objFire, 0.5, -61, 128.5, 61);
+			
+			ObjRender_SetScaleY(objFire2,fire_scale2*(width/32));
+			ObjRender_SetPosition(objFire2,ObjMove_GetX(objHitbox),ObjRender_GetY(objHitbox),0);
+			ObjRender_SetAngleZ(objFire2,ObjStLaser_GetAngle(objHitbox));
+			if(fire_count%2==0) { ObjSprite2D_SetSourceRect(objFire2, 1, 129, 123, 255); }
+			else if(fire_count%2==1) { ObjSprite2D_SetSourceRect(objFire2, 129, 129, 255, 255); }
+			ObjSprite2D_SetDestRect(objFire2, 0.5, -61, 128.5, 61);
+			
+			if(Obj_IsDeleted(objHitbox)) {
+				Obj_Delete(objLaser1);
+				Obj_Delete(objLaser2);
+				Obj_Delete(objDetail);
+				Obj_Delete(objFire);
+				Obj_Delete(objFire2);
+			}
+			
+			width-=(maxwidth+2)/30;
+			fire_count+=0.5;
+			detail_count+=12;
+			yield;
+		}
+		Obj_Delete(objLaser1);
+		Obj_Delete(objLaser2);
+		Obj_Delete(objDetail);
+		Obj_Delete(objFire);
+		Obj_Delete(objFire2);
+	}
+}
+//------------------------------------------------------------
+//------------------------------------------------------------
+//------------------------------------------------------------
+task StageIntro{
+	let img = GetCurrentScriptDirectory ~ "../IMG/StageIntro.png";
+	let pic = ObjPrim_Create(OBJ_SPRITE_2D);
+	let title = ObjPrim_Create(OBJ_SPRITE_2D);
+	let desc = ObjPrim_Create(OBJ_SPRITE_2D);
+
+	ObjPrim_SetTexture(pic, img);
+	ObjSprite2D_SetSourceRect(pic, 320, 0, 480, 160);
+	ObjSprite2D_SetDestCenter(pic);
+	ObjPrim_SetTexture(title, img);
+	ObjSprite2D_SetSourceRect(title, 0, 0, 320, 32);
+	ObjSprite2D_SetDestCenter(title);
+	ObjPrim_SetTexture(desc, img);
+	ObjSprite2D_SetSourceRect(desc, 0, 32, 320, 64);
+	ObjSprite2D_SetDestCenter(desc);
+
+	ObjRender_SetPosition(pic, GetCenterX + 80, GetCenterY - 64, 0);
+	ObjRender_SetAngleZ(pic, 90);
+	ObjRender_SetPosition(title, GetCenterX, GetCenterY - 96, 0);
+	ObjRender_SetPosition(desc, GetCenterX, GetCenterY, 0);
+
+	ObjRender_SetAlpha(pic, 0);
+	ObjRender_SetAlpha(title, 0);
+	ObjRender_SetAlpha(desc, 0);
+
+	Obj_SetRenderPriority(pic, 0.3);
+	Obj_SetRenderPriority(title, 0.31);
+	Obj_SetRenderPriority(desc, 0.31);
+
+	renderpic;
+	wait(120);
+	rendertitle;
+	wait(60);
+	rendertext;
+
+	task renderpic{
+		let alpha = 0;
+		let a = 90;
+		let scale = 2;
+
+		while(alpha < 255){
+			ObjRender_SetScaleXYZ(pic, scale, scale, scale);
+			ObjRender_SetAlpha(pic, alpha);
+			ObjRender_SetAngleZ(pic, a);
+
+			alpha += 2;
+			a -= 0.7;
+			scale -= 1/128;
+			yield;
+		}
+		wait(150);
+		while(alpha > 0){
+			ObjRender_SetScaleXYZ(pic, scale, scale, scale);
+			ObjRender_SetAlpha(pic, alpha);
+
+			alpha -= 2;
+			scale -= 1/128;
+			if(scale <= 0){Obj_Delete(pic);}
+			yield;
+		}
+	}
+
+	task rendertitle{
+		let alpha = 0;
+		
+		while(alpha < 255){
+			ObjRender_SetAlpha(title, alpha);
+
+			alpha += 5;
+			yield;
+		}
+		wait(120);
+		while(alpha > 0){
+			ObjRender_SetAlpha(title, alpha);
+
+			alpha -= 5;
+			yield;
+		}
+		Obj_Delete(title);
+	}
+
+	task rendertext{
+		let alpha = 0;
+		
+		while(alpha < 255){
+			ObjRender_SetAlpha(desc, alpha);
+
+			alpha += 5;
+			yield;
+		}
+		wait(60);
+		while(alpha > 0){
+			ObjRender_SetAlpha(desc, alpha);
+
+			alpha -= 5;
+			yield;
+		}
+		Obj_Delete(desc);
+	}
+}
+//------------------------------------------------------------
+//------------------------------------------------------------
+//------------------------------------------------------------
+//Image must be 128x128
+task EnemyMarker(obj, path){
+	let objMarker = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjPrim_SetTexture(objMarker, path);
+	Obj_SetRenderPriority(objMarker, 0.29);
+	ObjSprite2D_SetSourceRect(objMarker, 0, 0, 128, 128);
+	//ObjSprite2D_SetDestRect(objMarker, 0, 0, 128, 128);
+	ObjSprite2D_SetDestCenter(objMarker);
+	ObjRender_SetBlendType(objMarker, BLEND_ALPHA);
+	ObjRender_SetScaleXYZ(objMarker, 1.5, 1.5, 0);
+
+	let a = 0;
+	if(obj == GetPlayerObjectID){
+		while(!IsCloseScript(GetOwnScriptID)){
+			ObjRender_SetPosition(objMarker, GetPlayerX, GetPlayerY, 0);
+			ObjRender_SetAngleZ(objMarker, a);
+			a += 3;
+			yield;
+		}
+		Obj_Delete(objMarker);
+	}else{
+		while(!Obj_IsDeleted(obj)){
+			ObjRender_SetPosition(objMarker, ObjMove_GetX(obj), ObjMove_GetY(obj), 0);
+			ObjRender_SetAngleZ(objMarker, a);
+			a += 3;
+			yield;
+		}
+		Obj_Delete(objMarker);
+	}
+}
+//------------------------------------------------------------
+//------------------------------------------------------------
+//------------------------------------------------------------
+//Functions by Ultima
+//Uses Speed
+task ObjMove_SetDestAtHermiteS(obj,dest_x,dest_y,x_dir,x_angle,y_dir,y_angle,speed)
+{
+        real t = 0;
+        real ini_x = ObjMove_GetX(obj);
+        real ini_y = ObjMove_GetY(obj);
+ 
+        while(t<1)
+        {
+                real scale = t/1;
+                real h1a = 2*scale^3 - 3*scale^2 + 1;
+                real h2a = -2*scale^3 + 3*scale^2;
+                real h3a = scale^3 - 2*scale^2 + scale;
+                real h4a = scale^3 - scale^2;
+                real fx = h1a*ini_x + h2a*dest_x + h3a*x_dir + h4a*x_angle;
+               
+                real h1b = 2*scale^3 - 3*scale^2 + 1;
+                real h2b = -2*scale^3 + 3*scale^2;
+                real h3b = scale^3 - 2*scale^2 + scale;
+                real h4b = scale^3 - scale^2;
+                real fy = h1b*ini_y + h2b*dest_y + h3b*y_dir + h4b*y_angle;
+               
+                ObjMove_SetPosition(obj,fx,fy);
+               
+                t+=speed/100;
+                yield;
+        }
+}
+ 
+//Uses Frames
+task ObjMove_SetDestAtHermiteF(obj,dest_x,dest_y,x_dir,x_angle,y_dir,y_angle,frames)
+{
+        real t = 0;
+        real ini_x = ObjMove_GetX(obj);
+        real ini_y = ObjMove_GetY(obj);
+        real speed = (1-0)/frames;
+ 
+        loop(frames)
+        {
+                real scale = t/1;
+                real h1a = 2*scale^3 - 3*scale^2 + 1;
+                real h2a = -2*scale^3 + 3*scale^2;
+                real h3a = scale^3 - 2*scale^2 + scale;
+                real h4a = scale^3 - scale^2;
+                real fx = h1a*ini_x + h2a*dest_x + h3a*x_dir + h4a*x_angle;
+               
+                real h1b = 2*scale^3 - 3*scale^2 + 1;
+                real h2b = -2*scale^3 + 3*scale^2;
+                real h3b = scale^3 - 2*scale^2 + scale;
+                real h4b = scale^3 - scale^2;
+                real fy = h1b*ini_y + h2b*dest_y + h3b*y_dir + h4b*y_angle;
+               
+                ObjMove_SetPosition(obj,fx,fy);
+               
+                t+=speed;
+                yield;
+        }
+}
+//------------------------------------------------------------
+//------------------------------------------------------------
+//------------------------------------------------------------
+//Since I can't be bothered to convert length and width to a number between 0 and 1, two more parameters are used, sx and sy. sx is equal to the length of
+//the spark and sy is the width. Trial and error.
+//Standard sized Master Spark (obj is laser, obj2 aura):
+//let obj = MasterSpark(bossX, bossY, GetAngleToPlayer(bossObj), 400, 200, 60, 1.5, 1, Spark, 255, 255, 255, BLEND_ADD_RGB);
+//let obj2 = MasterSpark(bossX, bossY, GetAngleToPlayer(bossObj), 400, 200, 60, 1.5, 1.2, Spark, 0, 0, 255, BLEND_ADD_RGB);
+function MasterSpark(x, y, a, l, w, d, sx, sy, tex, r, g, b, blend){
+	let obj = ObjShot_Create(OBJ_STRAIGHT_LASER);
+	ObjShot_Regist(obj);
+	ObjMove_SetPosition(obj, x, y);
+	ObjStLaser_SetAngle(obj, a);
+	ObjStLaser_SetSource(obj, false);
+	ObjLaser_SetLength(obj, l);
+	ObjLaser_SetIntersectionWidth(obj, w);
+	ObjShot_SetDelay(obj, d);
+	ObjShot_SetGraphic(obj, 1);
+
+	let objRender = ObjPrim_Create(OBJ_SPRITE_2D);
+    ObjPrim_SetTexture(objRender, tex);
+    ObjSprite2D_SetSourceRect(objRender, 1, 1, 256, 128);
+    ObjSprite2D_SetDestRect(objRender, 1, -128, 256, 128);
+    ObjRender_SetColor(objRender, r, g, b);
+    ObjRender_SetScaleXYZ(objRender, sx, sy, 0);
+    ObjRender_SetBlendType(objRender, blend);
+    ObjRender_SetPosition(objRender, x, y, 0);
+    Obj_SetRenderPriorityI(objRender, 49);
+    ObjRender_SetAngleZ(objRender, a);
+
+    sparkshit;
+
+    return obj;
+
+    task sparkshit{
+    	let s = 0;
+    	ObjRender_SetScaleY(objRender, 0.05);
+    	wait(d);
+    	loop(5){
+    		ObjRender_SetScaleY(objRender, s);
+    		ObjRender_SetPosition(objRender, ObjMove_GetX(obj), ObjMove_GetY(obj), 0);
+    		ObjRender_SetAngleZ(objRender, ObjStLaser_GetAngle(obj));
+    		s += sy/5;
+    		yield;
+    	}
+    	s = sy;
+    	while(!Obj_IsDeleted(obj)){
+    		ObjRender_SetPosition(objRender, ObjMove_GetX(obj), ObjMove_GetY(obj), 0);
+    		ObjRender_SetAngleZ(objRender, ObjStLaser_GetAngle(obj));
+    		yield;
+    	}
+    	while(s > 0){
+    		ObjRender_SetScaleY(objRender, s);
+    		s -= 0.05;
+    		yield;
+    	}
+    	Obj_Delete(objRender);
+    }
+}
+//------------------------------------------------------------
+//------------------------------------------------------------
+//------------------------------------------------------------
+task Obj_SpinXYZ(obj, xspin, yspin, zspin, i){
+	if(i <= 0){
+		while(!Obj_IsDeleted(obj)){
+			ObjRender_SetAngleXYZ(obj, ObjRender_GetAngleX(obj) + xspin, ObjRender_GetAngleY(obj) + yspin, ObjRender_GetAngleZ(obj) + zspin);
+			yield;
+		}
+		return;
+	}else{
+		while(i > 0){
+			ObjRender_SetAngleXYZ(obj, ObjRender_GetAngleX(obj) + xspin, ObjRender_GetAngleY(obj) + yspin, ObjRender_GetAngleZ(obj) + zspin);
+			i--;
+			yield;
+		}
+		ObjRender_SetAngleXYZ(obj, 0, 0, 0);
+		return;
+	}
+}
+//------------------------------------------------------------
+//------------------------------------------------------------
+//------------------------------------------------------------
+task widescreen{
+	let left = 32;
+	let top = 16;
+	let right = 416;
+	let bottom = 464;
+	
+	loop{
+		if(left>0){left-=0.51;}
+		if(top>0){top-=0.25;}
+		if(right<GetScreenWidth){right+=4;}
+		if(bottom<GetScreenHeight){bottom+=0.26;}
+		SetStgFrame(left,top,right,bottom,20,80);
+		SetPlayerClip(left,top,right,bottom);
+		yield;
+	}
+}
+//------------------------------------------------------------
+//------------------------------------------------------------
+//------------------------------------------------------------
+//Utsuho caution cutin.
+//Made by AJS
+task CautionCutin(render, yposition, img){	
+	Tcaution(GetStgFrameWidth/2, yposition+90, render, img);
+	Tcaution(GetStgFrameWidth/2-250, yposition+90, render, img);
+	Tcaution(GetStgFrameWidth/2+250, yposition+90, render, img);
+	
+	Tcaution(GetStgFrameWidth/2, yposition-90, render, img);
+	Tcaution(GetStgFrameWidth/2-250, yposition-90,render, img);
+	Tcaution(GetStgFrameWidth/2+250, yposition-90, render, img);
+	
+	radiation(GetStgFrameWidth/2, yposition, render, img);
+	radiation(GetStgFrameWidth/2-250, yposition, render, img);
+	radiation(GetStgFrameWidth/2+250, yposition, render, img);
+	yield;
+}
+
+task Tcaution(xpos, ypos, renderpriority, img){
+	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	let counter = 0;
+	let size = 0;
+	let alpha = 0;
+	
+	ObjPrim_SetTexture(obj, img);
+	ObjSprite2D_SetSourceRect(obj,0, 216, 256, 256);
+	ObjRender_SetScaleXYZ(obj,1,1,0);
+	Obj_SetRenderPriorityI(obj,renderpriority);
+	ObjSprite2D_SetDestCenter(obj);
+	ObjRender_SetBlendType(obj,BLEND_ALPHA);
+	ObjRender_SetPosition(obj,xpos,ypos,0);
+	ObjRender_SetAngleXYZ(obj,0,0,0);	
+	ObjRender_SetAlpha(obj,alpha);
+	
+	loop(20){		
+		counter++;
+		alpha+=255/20;
+		ObjRender_SetAlpha(obj,alpha);
+		ObjRender_SetPosition(obj,xpos+(counter),ypos,0);		
+		yield;
+	}
+	loop(120){		
+		counter++;
+		ObjRender_SetPosition(obj,xpos+(counter),ypos,0);		
+		yield;
+	}
+	loop(20){		
+		counter++;
+		alpha-=255/20;
+		ObjRender_SetAlpha(obj,alpha);
+		ObjRender_SetPosition(obj,xpos+(counter),ypos,0);		
+		yield;
+	}
+	Obj_Delete(obj);
+}
+
+task radiation(xpos, ypos, renderpriority, img){
+	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	let counter = 0;
+	let size = 0;
+	let alpha = 0;
+	
+	ObjPrim_SetTexture(obj, img);
+	ObjSprite2D_SetSourceRect(obj,0, 0, 256, 128);
+	ObjRender_SetScaleXYZ(obj,1,1,0);
+	Obj_SetRenderPriorityI(obj,renderpriority);
+	ObjSprite2D_SetDestCenter(obj);
+	ObjRender_SetBlendType(obj,BLEND_ALPHA);
+	ObjRender_SetPosition(obj,xpos,ypos,0);
+	ObjRender_SetAngleXYZ(obj,0,0,0);	
+	ObjRender_SetAlpha(obj,alpha);
+	
+	loop(20){		
+		counter++;
+		alpha+=255/20;
+		ObjRender_SetAlpha(obj,alpha);
+		ObjRender_SetPosition(obj,xpos-(counter),ypos,0);		
+		yield;
+	}
+	loop(120){		
+		counter++;
+		ObjRender_SetPosition(obj,xpos-(counter),ypos,0);		
+		yield;
+	}
+	loop(20){		
+		counter++;
+		alpha-=255/20;
+		ObjRender_SetAlpha(obj,alpha);
+		ObjRender_SetPosition(obj,xpos-(counter),ypos,0);		
+		yield;
+	}
+	Obj_Delete(obj);
+}
+//------------------------------------------------------------
+//------------------------------------------------------------
+//------------------------------------------------------------
+//Ultima
+function NormalizeAngle(angle){
+	angle %= 360;
+ 
+	if(angle<0){
+  		angle += 360;
+ 	}
+ 
+ 	return angle
+}
+//------------------------------------------------------------
+//------------------------------------------------------------
+//------------------------------------------------------------
+//AJS
+// task AfterImage(tobj,texture,color,scaleinc,time,x1,y1,x2,y2,Yangle){
+	// let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	// let scale = 1;
+	// let alpha = 255;
+	// let Red = color[0];
+	// let Green = color[1];
+	// let Blue = color[2];
+	
+	// ObjPrim_SetTexture(obj, texture);
+	// ObjSprite2D_SetSourceRect(obj, x1, y1, x2, y2);
+	// ObjRender_SetScaleXYZ(obj,scale,scale,0);
+	// Obj_SetRenderPriorityI(obj,23);
+	// ObjSprite2D_SetDestCenter(obj);
+	// ObjRender_SetPosition(obj,ObjRender_GetX(tobj),ObjRender_GetY(tobj),0);
+	// ObjRender_SetAlpha(obj,alpha);
+	// ObjRender_SetBlendType(obj,BLEND_ADD_ARGB);
+	// ObjRender_SetColor(obj,Red,Green,Blue);
+	// ObjRender_SetAngleY(obj,Yangle);
+	
+	// loop(time){
+		// scale+=scaleinc/time;
+		// ObjRender_SetScaleXYZ(obj,scale,scale,0);
+		
+		// alpha-=255/time;
+		// ObjRender_SetAlpha(obj,alpha);
+		// yield;
+	// }
+	// Obj_Delete(obj);
+// }
+//------------------------------------------------------------
+//------------------------------------------------------------
+//------------------------------------------------------------
+//AJS
+task ExpandFrame(speed){
+    let left;
+    let top;
+    let right;
+    let bottom;
+    let t = 0;
+    let F = [[32,0],[16,0],[416,640],[464,480]];
+     
+    while(t<1){
+    left = F[0][0]+t*(F[0][1]-F[0][0]);
+    top = F[1][0]+t*(F[1][1]-F[1][0]);
+    right = F[2][0]+t*(F[2][1]-F[2][0]);
+    bottom = F[3][0]+t*(F[3][1]-F[3][0]);
+    SetStgFrame(left,top,right,bottom,20,80);
+    SetPlayerClip(left,top,right,bottom);
+    t+=speed/100;
+    yield;
+    }
+    SetStgFrame(floor(left),floor(top),F[2][1],ceil(bottom),20,80);
+    SetPlayerClip(floor(left),floor(top),F[2][1],ceil(bottom));
+}
+//------------------------------------------------------------
+//------------------------------------------------------------
+//------------------------------------------------------------
+//AJS
+task FlameAura(tobj,color,scale){	
+	let angle = rand(0,360);
+	
+	while(!Obj_IsDeleted(tobj)){
+		if(Obj_IsDeleted(tobj)){break;}
+		flame(tobj,color,scale);
+		flamebase(tobj,color,scale,angle);
+		angle+=rand(45,90);
+		wait(10);
+	}
+}
+
+task flame(tobj,color,scale){
+	let frame = 0;
+	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	let Xscale = scale/2;
+	let Yscale = scale/6;
+	let trans = 255;
+	
+	ObjPrim_SetTexture(obj, GetCurrentScriptDirectory~"Aura.png");
+	ObjSprite2D_SetSourceRect(obj,0, 0, 48, 64);
+	ObjRender_SetScaleXYZ(obj,Xscale,Yscale,1);
+	Obj_SetRenderPriorityI(obj,25);
+	ObjSprite2D_SetDestCenter(obj);
+	ObjRender_SetBlendType(obj,BLEND_ADD_ARGB);
+	ObjRender_SetPosition(obj,ObjMove_GetX(tobj),ObjMove_GetY(tobj),0);
+	ObjRender_SetAngleXYZ(obj,0,0,rand(-5,5));
+	ObjRender_SetColor(obj,color[0],color[1],color[2]);
+	loop(30){
+		if(Obj_IsDeleted(tobj)){break;}
+		ObjRender_SetScaleXYZ(obj,Xscale,Yscale,1);
+		ObjRender_SetAlpha(obj,trans);
+		ObjRender_SetPosition(obj,ObjMove_GetX(tobj),ObjMove_GetY(tobj),0);
+		trans-=255/30;
+		Xscale+=(scale/4)/30;
+		Yscale+=(scale*2)/30;
+		yield;
+	}
+	Obj_Delete(obj);
+}
+
+task flamebase(tobj,color,scale,angle){
+	let frame = 0;
+	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	let Xscale = scale/6;
+	let Yscale = scale/6;
+	let trans = 255;
+	
+	ObjPrim_SetTexture(obj, GetCurrentScriptDirectory~"Aura.png");
+	ObjSprite2D_SetSourceRect(obj,48, 0, 96, 48);
+	ObjRender_SetScaleXYZ(obj,Xscale,Yscale,1);
+	Obj_SetRenderPriorityI(obj,25);
+	ObjSprite2D_SetDestCenter(obj);
+	ObjRender_SetBlendType(obj,BLEND_ADD_ARGB);
+	ObjRender_SetPosition(obj,ObjMove_GetX(tobj),ObjMove_GetY(tobj),0);
+	ObjRender_SetAngleXYZ(obj,0,0,angle);
+	ObjRender_SetColor(obj,color[0],color[1],color[2]);
+	loop(30){
+		if(Obj_IsDeleted(tobj)){break;}
+		ObjRender_SetScaleXYZ(obj,Xscale,Yscale,1);
+		ObjRender_SetAlpha(obj,trans);
+		ObjRender_SetPosition(obj,ObjMove_GetX(tobj),ObjMove_GetY(tobj)+20,0);
+		trans-=255/30;
+		Xscale+=scale*1.1/30;
+		Yscale+=scale*1.1/30;
+		yield;
+	}
+	Obj_Delete(obj);
+}
+//------------------------------------------------------------
+//------------------------------------------------------------
+//------------------------------------------------------------
+//Naut
+function LineToLinePoint(let x1, let y1, let x2, let y2, let x3, let y3, let x4, let y4){
+    let point = [0, 0];
+    point[0] = ( ((x1*y2 - y1*x2)*(x3 - x4) - (x1 - x2)*(x3*y4 - y3*x4)) / ((x1 - x2)*(y3 - y4) - (y1 - y2)*(x3 - x4)) );
+    point[1] = ( ((x1*y2 - y1*x2)*(y3 - y4) - (y1 - y2)*(x3*y4 - y3*x4)) / ((x1 - x2)*(y3 - y4) - (y1 - y2)*(x3 - x4)) );
+    return point;
+}
+//------------------------------------------------------------
+//------------------------------------------------------------
+//------------------------------------------------------------
+function StageStart(img){ //It's a function so that it stops the script while it's executed
+	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjPrim_SetTexture(obj, img);
+	ObjSprite2D_SetSourceRect(obj, 0, 0, 256, 96);
+	ObjSprite2D_SetDestCenter(obj);
+	Obj_SetRenderPriority(obj, 0.79);
+
+	ObjRender_SetPosition(obj, GetStgFrameWidth/2, GetStgFrameHeight/2, 0);
+	wait(60);
+	ObjPrim_SetTexture(obj, GetCurrentScriptDirectory ~ "./../IMG/go.png");
+	ObjSprite2D_SetSourceRect(obj, 0, 0, 128, 128);
+	ObjSprite2D_SetDestCenter(obj);
+	wait(60);
+	Obj_Delete(obj);
+}
+//------------------------------------------------------------
+//------------------------------------------------------------
+//------------------------------------------------------------
+function StageClear{ //It's a function so that it stops the script while it's executed
+	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjPrim_SetTexture(obj, GetCurrentScriptDirectory ~ "./../IMG/clear.png");
+	ObjSprite2D_SetSourceRect(obj, 0, 0, 256, 64);
+	ObjSprite2D_SetDestCenter(obj);
+	Obj_SetRenderPriority(obj, 0.79);
+
+	ObjRender_SetPosition(obj, GetStgFrameWidth/2, GetStgFrameHeight/2, 0);
+	ObjRender_SetAlpha(obj, 0);
+	let alpha = 0;
+	while(alpha < 255){
+		ObjRender_SetAlpha(obj, alpha);
+		alpha += 5;
+		yield;
+	}
+	wait(60);
+	while(alpha > 0){
+		ObjRender_SetAlpha(obj, alpha);
+		alpha -= 5;
+		yield;
+	}
+	wait(10);
+	Obj_Delete(obj);
+}
+//------------------------------------------------------------
+//------------------------------------------------------------
+//------------------------------------------------------------
+function SetStaticBackground(img, r1, r2, r3, r4, s){
+	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjPrim_SetTexture(obj, img);
+	ObjSprite2D_SetSourceRect(obj, r1, r2, r3, r4);
+	ObjSprite2D_SetDestCenter(obj);
+	Obj_SetRenderPriority(obj, 0.2);
+	ObjRender_SetPosition(obj, GetStgFrameWidth/2, GetStgFrameHeight/2, 0);
+	ObjRender_SetScaleXYZ(obj, s, s, s);
+}
+//------------------------------------------------------------
+//------------------------------------------------------------
+//------------------------------------------------------------
+task FadeToBlack(i){
+	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjPrim_SetTexture(obj, GetCurrentScriptDirectory ~ "./../IMG/black.png");
+	ObjSprite2D_SetSourceRect(obj, 0, 0, 100, 100);
+	ObjSprite2D_SetDestCenter(obj);
+	Obj_SetRenderPriority(obj, 1.0);
+	ObjRender_SetAlpha(obj, 0);
+
+	ObjRender_SetPosition(obj, GetCenterX, GetCenterY, 0);
+	ObjRender_SetScaleXYZ(obj, 8, 8, 0);
+	let a = 0;
+	while(a < 255){
+		ObjRender_SetAlpha(obj, a);
+		a += 2;
+		yield;
+	}
+	wait(i);
+	Obj_Delete(obj);
+}
+//------------------------------------------------------------
+//------------------------------------------------------------
+//------------------------------------------------------------
+function GetLineBorderPoint(px, py, tx, ty){ //Trickysticks is such a nice person :D
+    let ta = atan2(ty-py, tx-px);
+ 
+    if( ta>= atan2(GetClipMinY - py, GetClipMinX - px) && ta<=  atan2(GetClipMinY - py, GetClipMaxX - px)){
+        return [px - (GetClipMinY-py)*tan(ta+90), GetClipMinY];
+    }
+    if( ta>= atan2(GetClipMinY - py, GetClipMaxX - px) && ta<=  atan2(GetClipMaxY - py, GetClipMaxX - px)){
+        return [GetClipMaxX, py + (GetClipMaxX-px)*tan(ta)];
+    }
+    if( ta>= atan2(GetClipMaxY - py, GetClipMaxX - px) && ta<=  atan2(GetClipMaxY - py, GetClipMinX - px)){
+        return [px - (GetClipMaxY-py)*tan(ta-90), GetClipMaxY];
+    }
+    if( ta> atan2(GetClipMaxY - py, GetClipMinX - px) || ta<  atan2(GetClipMinY - py, GetClipMinX - px)){
+        return [GetClipMinX, py + (GetClipMinX-px)*tan(ta+180)];
+    }
+}
+
+function GetLineWallIntersection(px, py, tx, ty){ //Trickysticks is such a nice person :D
+    let ta = atan2(ty-py, tx-px);
+ 
+    if( ta>= atan2(GetClipMinY - py, GetClipMaxX - px) && ta<=  atan2(GetClipMaxY - py, GetClipMaxX - px)){
+        return true;
+    }
+    if( ta> atan2(GetClipMaxY - py, GetClipMinX - px) || ta<  atan2(GetClipMinY - py, GetClipMinX - px)){
+        return true;
+    }
+}

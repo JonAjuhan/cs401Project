@@ -1,0 +1,366 @@
+//------------------------------
+//ORRERIES CONTROL PANEL
+//------------------------------
+//Update variables (set each frame)
+let rot = 0;       //Master control variable for revolution of orreries
+let r = 0;         //Master control variable for radius of orreries
+let swiv = 0;      //Master control variable for swivel of each orrery
+let swivF = [];    //Control swivel of each orrery individually
+let tx=0; let ty=0;//Location at which to point ring if aimed
+//Shot variables
+let sspd = 2.5;          //Shot speed
+let saccel = 0.000;      //Shot acceleration
+let smaxspd = 999;       //Shot max speed
+let stype = 502;         //Shot type (bullet graphic)
+let sdelay = 5;          //Shot delay
+let shotSpellResist=false; //Whether fired shots should be immune to bombs
+//Laser variables
+let enableLasers = true; //Whether there should be lasers between orreries
+let deadlyLasers = false;//Whether said lasers should kill you
+let innerLasers = false; //Whether to fill the interior with a pattern of lasers
+//Other variables
+let orrGraphic = 736;  //Graphic to use for orreries
+let aimed = false;     //If true, ring points in same direction instead of radial
+let aimFree = false;   //If true, aim individually instead of as group
+let swivFree = false;  //If true, swivel individually with array in swivF
+let refresh = 1;       //Refresh rate of lasers
+let numInner = 3;      //Number of inner lasers per outer laser
+//-------------------------------
+
+
+//------------------------------------------------------------------
+//ORRERY CONTROL FUNCTIONS
+//------------------------------------------------------------------
+
+//Update rotation/radius/swivel/target each frame with desired equation
+function Orr_SetRot(newRot) {
+	rot = newRot; 
+	return rot;
+}
+function Orr_SetRad(rad) {
+	r = rad;
+	return r;
+}
+function Orr_SetSwivel(swivel) {
+	swiv = swivel;
+	return swiv;
+}
+function Orr_SetSwivelF(i, swivel) {
+	swivF[i] = swivel;
+	return swivel;
+}
+function Orr_SetSwivels(swivels) {
+	swivF = swivels;
+	return swivF;
+}
+function Orr_SetTarget(x, y) {
+	tx = x; ty = y;
+	return [tx,ty];
+}
+function Orr_GetRot() { return rot; }
+function Orr_GetRad() { return r; }
+function Orr_GetSwivel() { return swiv; }
+function Orr_GetSwivelF(i) { return swivF[i]; }
+
+
+
+
+//Setters for control panel
+function Orr_SetAimed(let enable) { aimed = enable; }
+function Orr_SetAimFree(let enable) { aimFree = enable; }
+function Orr_SetSwivelFree(let enable) { swivFree = enable; }
+
+function Orr_SetEnableLasers(let enable) { enableLasers = enable; }
+function Orr_SetDeadlyLasers(let enable) { deadlyLasers = enable; }
+function Orr_SetInnerLasers(let enable) { innerLasers = enable; }
+
+function Orr_SetShotSpeed(let speed) { sspd = speed; return speed; }
+function Orr_SetShotAcceleration(let accel) { saccel = accel; return accel; }
+function Orr_SetShotMaxSpeed(let mspd) { smaxspd = mspd; return mspd; }
+function Orr_SetShotDelay(let del) { sdelay = del; return del; }
+function Orr_SetShotType(let type) { stype = type; return type; }
+function Orr_SetShotSpellResist(let enable) { shotSpellResist = enable; }
+
+function Orr_SetOrrGraphic(let graph) { orrGraphic = graph; return graph; }
+function Orr_SetRefresh(refRate) { refresh = refRate; }
+function Orr_SetNumInnerLas(num) { numInner = num; }
+
+
+
+//------------------------------------------------------------------
+//MAIN ORRERY CREATION FUNCTION
+//This is what you call to make a ring of orreries
+//------------------------------------------------------------------
+function Orr_NewRing(let center, let template) {
+	//check type of template, and if array, use that as color array
+	let colors = [0,3,5,6]; let number;
+	if(Obj_GetType(template) == Obj_GetType(colors)) { 
+		colors = template;
+		number = length(template);
+	}
+	else {
+		number = template;
+		if(number != 4) {
+			colors = [0];
+			ascent(i in 1..number) {
+				colors = colors ~ [i%7];
+			}
+		}
+	}
+	
+	let o;
+	//Make array of appropriate number of shots
+	let temp = CreateShotA1(0,0,0,0,0,0); o = [temp];
+	ascent(i in 1..number) {
+		o = o ~ [temp];
+	}
+	ascent(i in 0..number) { 
+		o[i] = CreateOrrery(45+i*(360/number), colors[i], center); 
+	}
+	if(enableLasers) { TOrreryLasers(o,colors,center,refresh,true,false); }
+	
+	return o;
+}
+//------------------------------------------------------------------
+
+
+
+//------------------------------------------------------------------
+//Function to fire from orreries and return an array of shots
+//------------------------------------------------------------------
+function Orr_Fire(o, colors) {
+	let shots = [];
+	let number = length(o); 
+	let numColors = length(colors);
+	ascent(i in 0..number) {
+		let shot = CreateShotA2(ObjMove_GetX(o[i]),ObjMove_GetY(o[i]),sspd,ObjMove_GetAngle(o[i]),saccel,smaxspd,stype+colors[i%numColors],sdelay);
+	//	ObjRender_SetBlendType(shot,BLEND_ADD_ARGB);
+		ObjShot_SetSpellResist(shot, shotSpellResist);
+		shots = shots ~ [shot];
+	}
+
+	return shots;
+}
+//------------------------------------------------------------------
+
+
+
+//------------------------------------------------------------------
+//Function to fire beams from orreries and move them along with ring
+//------------------------------------------------------------------
+function Orr_Beam(let o, let colors, let width, let dur, let lasdelay) {
+	let beams = [];
+	let number = length(o); 
+	let numColors = length(colors);
+	ascent(i in 0..number) {
+		let las = CreateStraightLaserA1(ObjMove_GetX(o[i]),ObjMove_GetY(o[i]),ObjMove_GetAngle(o[i]),1000,width,dur,1002+colors[i%numColors],lasdelay);
+		TMaintainBeam(las,o[i]);
+		beams = beams ~ [las];
+	}
+	
+	return beams;
+}
+//------------------------------------------------------------------
+
+
+
+//------------------------------------------------------------------
+//Manually set a shot as an orrery
+//For non-standard orrery configurations ONLY
+//Clunky to use, but powerful
+//------------------------------------------------------------------
+function Orr_SetAsOrrery(shot, center, offset, rotMul, radMul, swivMul, rotPlus, radPlus, swivPlus, rot0, r0, angleType) {
+	let orrery = shot;
+	ObjShot_SetSpellResist(orrery,true);
+	ObjShot_SetAutoDelete(orrery,false);
+	if(rot0<0 && rotMul!=0) {
+		rot0 = rot/rotMul;
+	}
+	if(r0<0 && radMul!=0) {
+		r0 = r/radMul; //todo
+	}
+	
+	//Task for each orrery to update its position and angle
+	task TOrrery2() {
+		let id = length(swivF);
+		swivF = swivF ~ [swivPlus];
+		let angle;
+		let x0=ObjMove_GetX(shot); let y0=ObjMove_GetY(shot);
+		let cx0=ObjMove_GetX(center); let cy0=ObjMove_GetY(center);
+		while(!Obj_IsDeleted(center)) {
+			let cx = ObjMove_GetX(center); let cy = ObjMove_GetY(center);
+			let pos = rotPlus + rot*rotMul+offset+rot0;
+			let rad = radPlus + (r-r0)*radMul;
+			let swv = swivPlus+ swivMul*getSwivel(id);
+			let ox = cx+rad*cos(pos); let oy = cy+rad*sin(pos);
+			ObjMove_SetPosition(orrery, ox, oy);
+			
+			alternative(angleType)
+			case(0) { //same as normal
+				if(!aimed) { 
+					angle = atan2(oy - cy, ox - cx) + swv; 
+				}
+				else if(!aimFree) {
+					let reltx = tx + ox-cx; let relty = ty + oy-cy;
+					angle = atan2(relty - oy, reltx - ox) + swv;
+				}
+				else { angle = atan2(ty - oy, tx - ox) + swv; }
+				ObjMove_SetAngle(orrery,angle); //point orrery at center/target
+			}
+			case(1) {}//Don't update angle - useful if you'd rather use angular velocity
+			case(2) { //Match center
+				ObjMove_SetAngle(orrery,ObjMove_GetAngle(center) + swv); 
+			}
+			case(3) { //Match rotation
+				ObjMove_SetAngle(orrery,pos+90*rotMul + swv);
+			}
+			case(4) { //Follow rotation - looser/more natural-looking than 3? not really
+				let dx = cx-cx0; let dy = cy-cy0;
+				let a = atan2(cy - oy - dy, cx - ox - dx);
+				a -= 90-15*rotMul;
+				ObjMove_SetAngle(orrery,a + swv);
+			}
+			case(5) { //Actual direction, i.e. rotation plus center movement
+				let a = angleBetween(x0,y0,ox,oy);
+				ObjMove_SetAngle(orrery,a + swv);
+			}
+			
+			case(666) { //Mostly point upward and sort of twitch occasionally
+				let a = angleBetween(cos(x0-cx0), sin(y0-cx0), cos(ox-cx), sin(ox-cy));
+				ObjMove_SetAngle(orrery,a + swv);
+			}
+			
+			x0=ObjMove_GetX(shot); y0=ObjMove_GetY(shot);
+			cx0=ObjMove_GetX(center); cy0=ObjMove_GetY(center);
+			yield;
+		}
+	}
+	TOrrery2();
+	return orrery;
+}
+//------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+//------------------------------------------------------------------
+//INTERNAL
+//Used by control functions - should not be called outside this library
+//------------------------------------------------------------------
+
+
+//------------------------------------------------------------------
+//Create and maintain a single orrery
+//------------------------------------------------------------------
+function CreateOrrery(let offset, let color, let center) {
+	let orrery = CreateShotA1(0,0,0,0,orrGraphic+color,0);
+	ObjShot_SetSpellResist(orrery,true);
+	ObjRender_SetBlendType(orrery,BLEND_ADD_ARGB);
+	ObjShot_SetAutoDelete(orrery,false);
+	
+	//Task for each orrery to update its position and angle
+	task TOrrery() {
+		let id = length(swivF);
+		swivF = swivF ~ [0];
+		let angle;
+		while(!Obj_IsDeleted(center)) {
+			let cx = ObjMove_GetX(center); let cy = ObjMove_GetY(center);
+			let pos = rot+offset; 
+			let ox = cx+r*cos(pos); let oy = cy+r*sin(pos);
+			ObjMove_SetPosition(orrery, ox, oy);
+			if(!aimed) { angle = atan2(oy - cy, ox - cx) + getSwivel(id); }
+			else if(!aimFree) {
+				let reltx = tx + ox-cx; let relty = ty + oy-cy;
+				angle = atan2(relty - oy, reltx - ox) + getSwivel(id);
+			}
+			else { angle = atan2(ty - oy, tx - ox) + getSwivel(id); }
+			ObjMove_SetAngle(orrery,angle); //point orrery at center/target
+
+			yield;
+		}
+	}
+	TOrrery();
+	return orrery;
+}
+//------------------------------------------------------------------
+
+
+
+//------------------------------------------------------------------
+//Maintain the position of a beam
+//------------------------------------------------------------------
+task TMaintainBeam(las, orr) {
+	while(!Obj_IsDeleted(las)) {
+		ObjMove_SetX(las,ObjMove_GetX(orr));
+		ObjMove_SetY(las,ObjMove_GetY(orr));
+		ObjStLaser_SetAngle(las,ObjMove_GetAngle(orr));
+		yield;
+	}
+}
+//------------------------------------------------------------------
+
+
+
+//------------------------------------------------------------------
+//Task to add lasers between orreries.
+//------------------------------------------------------------------
+task TOrreryLasers(o, ocolor, center, refreshRate, allowInner, toCenter) {
+	//While checking the length each frame may have additional overhead
+	//it prevents errors when one is deleted
+	while(!Obj_IsDeleted(center) && enableLasers) {
+		ascent(i in 0..length(o)-1) {
+			lasbetw(o[i],o[i+1], ocolor[i+1]);
+		}
+		lasbetw(o[length(o)-1],o[0], ocolor[0]);
+		wait(refreshRate);
+	}
+	
+	function lasbetw(a,b, color) {
+		let ax = ObjMove_GetX(a); let bx = ObjMove_GetX(b);
+		let ay = ObjMove_GetY(a); let by = ObjMove_GetY(b);
+		let angle = atan2(by - ay, bx - ax);
+		let len = GetObjectDistance(a,b);
+		let type = 1002 + color; //-1 for white
+		let las = CreateStraightLaserA1(ax,ay,angle,len,10,10,type,0); //1057
+		ObjStLaser_SetSource(las,false);
+		ObjRender_SetAlpha(las,8);
+		ObjShot_SetIntersectionEnable(las,deadlyLasers);
+		ObjShot_SetAutoDelete(las,false);
+		ObjShot_SetItemChange(las,false);
+		//Inner lasers. Note that this happens every (refreshRate) frames, so work on optimizing it!
+		if(innerLasers && allowInner) {
+			let inlasoffset = 15+30*sin(frame%180);
+			descent(i in 1..(numInner+1)) {
+				let inlas = CreateStraightLaserA1(ax,ay,angle+i*inlasoffset,len*(1+sin(i*60)),10,10,type,0); //1057
+				ObjStLaser_SetSource(inlas,false);
+				ObjShot_SetIntersectionEnable(inlas,false);
+				ObjRender_SetAlpha(inlas,8);
+				ObjShot_SetItemChange(inlas,false);
+			}
+		}
+		if(toCenter) {
+			let cenLas = CreateStraightLaserA1(ax,ay,angleBetween(ObjMove_GetX(a),ObjMove_GetY(a),ObjMove_GetX(center),ObjMove_GetY(center)),len,10,10,type,0);
+			ObjStLaser_SetSource(cenLas,false);
+			ObjRender_SetAlpha(cenLas,8);
+			ObjShot_SetIntersectionEnable(cenLas,deadlyLasers);
+			ObjShot_SetAutoDelete(cenLas,false);
+			ObjShot_SetItemChange(cenLas,false);
+		}
+		return las;
+	}
+}
+//------------------------------------------------------------------
+
+
+//Simplify the checking of which swivel to use
+function getSwivel(i) {
+	if(i<0) { return 0; }
+	else if(!swivFree) { return swiv; }
+	else { return swivF[i]; }
+}

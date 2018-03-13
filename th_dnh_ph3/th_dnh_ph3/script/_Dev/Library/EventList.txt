@@ -1,0 +1,15 @@
+let EV_SPAWN_ITEM = EV_USER_SYSTEM+1;
+
+let EV_CANCEL_PLAYER_DEATH = EV_USER_PLAYER+1;
+
+let EV_GET_CONTINUE = EV_USER+3; //not yet implemented
+
+
+let EV_START_SONG = EV_USER+4; //not yet reimplemented
+let EV_STOP_SONG = EV_USER+5;
+let EV_DELETE_SONG = EV_USER+6;
+let EV_SET_SONG = EV_USER+7;
+
+
+// let EV_SET_DIFFICULTY = EV_USER+8; //unused, I do this with common data
+// let EV_FAM_DIE = EV_USER+3; //unused afaik

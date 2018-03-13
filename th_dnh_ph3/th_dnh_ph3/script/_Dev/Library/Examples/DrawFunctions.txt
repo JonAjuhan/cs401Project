@@ -1,0 +1,991 @@
+let point = 0;
+let Remi = false;
+let mc = 0;
+let m_time = 0;
+
+task maple{ // Choose which type you want to use
+	let start = rand(0,0);
+		PlaySound("Charge5",95,0);
+		ascent(i in 0..40){
+		etama(i*7.5+rand(0,25),20,i/2,start,1);
+		etama(i*7.5+rand(0,25),20,i/2,start,-1);
+		if(i%15==0)
+		{Bright(objBoss,10,40,"AQUA");}
+		wait(i%2);
+	}
+}
+
+task MapleExplode(px,py,speed,c){
+	let color = GetColor(c);
+	let st = rand(0,30);
+	TExpan(px,py,12,30,color[0],color[1],color[2]);
+	ascent(i in 0..12){
+		Maple(px,py,speed+speed/(5/3)*sin(i*177),i*30+st,color[0],color[1],color[2]);
+	}
+}
+
+
+task FamExplode(px,py,speed,c){
+	let color = GetColor(c);
+	let st = rand(0,30);
+	TExpan(px,py,8,30,color[0],color[1],color[2]);
+	/*ascent(i in 0..12){
+		Maple(px,py,speed+speed/(5/3)*sin(i*177),i*30+st,color[0],color[1],color[2]);
+	}*/
+}
+
+task etama(r,a,n,start,way){ // task for youmu charge effect
+	let obj=ObjPrim_Create(OBJ_SPRITE_2D);
+	let img=GCSD~"img/bloom.png";
+	let dir = rand(0,359);
+	let angle = rand(0,359);
+	let size = 0.25+r/600;
+	let s = size;
+	let ra = r;
+	let c = 0;
+	let m = -10;
+	let alpha = 0;
+	let set = 360/a;
+	let color = 0;
+	let alphaplus = 255/ra;
+	ObjPrim_SetTexture(obj,img);
+	ObjSprite2D_SetSourceRect(obj,0,0,64,64);
+	ObjSprite2D_SetDestCenter(obj);
+	ObjRender_SetScaleXYZ(obj,size,size,size);
+	ObjRender_SetBlendType(obj,BLEND_ADD_RGB);
+	ObjRender_SetAlpha(obj,0);
+	Obj_SetRenderPriorityI(obj,25);
+	while(r>0 && !Obj_IsDeleted(objBoss)){
+	ObjRender_SetPosition(obj,GetEnemyX+r*cos(dir),GetEnemyY+r*sin(dir),0);
+	ObjRender_SetAngleXYZ(obj,0,0,angle+c*100*way);
+	ObjRender_SetScaleXYZ(obj,size,size,size);
+	color = (0+alpha);
+	ObjRender_SetColor(obj,0,color+alpha*2.5,color+alpha*2.5);
+	if(r>ra/2){alpha += alphaplus+1;}
+	else{
+	alpha -= alphaplus;
+	if(alpha<=0){Obj_Delete(obj);}
+	}
+	size -= 0.01;
+	r -= 8+c;
+	c += n/300;
+	yield;
+	}
+	Obj_Delete(obj);
+}
+
+task Maple(px,py,sizespeed,dir,red,green,blue){
+	let obj=ObjPrim_Create(OBJ_SPRITE_2D);
+	let img=GCSD~"img/effect1.png";
+	let spd = sizespeed*7;
+	let acc = spd/60;
+	let acc2 = acc/100;
+	let r = 0;
+	let a = [0,0,0];
+	let angle_s = [0,0,0];
+	let alpha = 255;
+	let result = 0;
+	let color_ratio = [red/90,green/90,blue/90];
+	ascent(i in 0..3){
+	result = rand(-1,1);
+	if(result>0){result = 1;}
+	else{result = -1;}
+	angle_s[i] = rand(2,4)*result;
+	}
+	LoadTexture(img);
+	ObjPrim_SetTexture(obj,img);
+	ObjSprite2D_SetSourceRect(obj, 0, 0, 64, 64);
+	ObjSprite2D_SetDestCenter(obj);
+	ObjRender_SetBlendType(obj,BLEND_ADD_RGB);
+	ObjRender_SetScaleXYZ(obj,sizespeed,sizespeed,sizespeed);
+		while( (red>0 || green>0 || blue>0) && !Obj_IsDeleted(objBoss)){
+		ObjRender_SetAngleXYZ(obj,a[0],a[1],a[2]);
+		ObjRender_SetPosition(obj,px+r*cos(dir),py+r*sin(dir),0);
+		ObjRender_SetColor(obj,red,green,blue);
+		r+=spd;
+		if(spd>1.5){
+		red -= color_ratio[0];
+		green -= color_ratio[1];
+		blue -= color_ratio[2];
+		spd -=acc;
+		acc += acc2;
+		}
+		else{
+		red -= color_ratio[0]*4;
+		green -= color_ratio[1]*4;
+		blue -= color_ratio[2]*4;
+		}
+		ascent(i in 0..3){
+		a[i] = a[i]+angle_s[i];
+		}
+		yield;
+		}
+		Obj_Delete(obj);
+}
+	
+task SetImageAndTail(obj,name,r1,r2,r3,r4,angleY){ // Set images rects for the boss, also set the auras
+	ObjSprite2D_SetSourceRect(obj,r1,r2,r3,r4);
+	MarisaTail(obj,name,r1,r2,r3,r4,0);
+	ObjRender_SetAngleY(objBoss,angleY);
+	}
+	
+task MarisaTail(boss,name,r1,r2,r3,r4,ang){ // task for the aura (rainbow aura)
+	m_time++;
+	mc+=+1;
+	if(m_time%2==0){
+	let obj=ObjPrim_Create(OBJ_SPRITE_2D);
+	let img;
+	if(name=="Yuyuko" || name=="?"){img = GCSD~"img/boss_yuyuko.png";}
+	if(name=="Youmu"){img = GCSD~"img/boss_youmu.png";}
+	LoadTexture(img);
+	ObjPrim_SetTexture(obj,img);
+	ObjSprite2D_SetSourceRect(obj, r1, r2, r3, r4);
+	ObjSprite2D_SetDestCenter(obj);
+	ObjRender_SetBlendType(obj,BLEND_ADD_ARGB);
+	ObjRender_SetScaleXYZ(obj,1,1,1);
+	ObjRender_SetAngleXYZ(obj,0,ang,0);
+	if(!Obj_IsDeleted(boss)){
+	ObjRender_SetPosition(obj,ObjRender_GetX(boss),ObjRender_GetY(boss),0);
+	}
+	if(ObjRender_GetX(boss)==0 && ObjRender_GetY(boss) ==0){Obj_Delete(obj);}
+	Obj_SetRenderPriority(obj,0.3);
+	ManageScale;
+	ManageAlpha;
+	task ManageScale{
+		ascent(i in -5..15){
+		ObjRender_SetScaleXYZ(obj,1+i*0.12,1+i*0.12,1);
+		yield;
+		}
+		Obj_Delete(obj);
+	}
+	task ManageAlpha{
+		descent(i in 0..20){
+		if(!Obj_IsDeleted(boss)){
+		ObjRender_SetColor(obj,i*8+35*sin(mc%180),i*7,i*8+35*sin(mc%180));
+		yield;
+		}
+		}
+		Obj_Delete(obj);
+	}
+	}
+	}
+	
+task CallFan(expand)
+{
+	let obj=ObjPrim_Create(OBJ_SPRITE_2D);
+	let img;
+	let count = 0;
+	img = GCSD~"img/__ougi.png";
+	LoadTexture(img);
+	ObjPrim_SetTexture(obj,img);
+	ObjSprite2D_SetSourceRect(obj, 0, 0, 512, 256+32);
+	ObjSprite2D_SetDestCenter(obj);
+	ObjRender_SetBlendType(obj,BLEND_ADD_ARGB);
+	Obj_SetRenderPriorityI(obj,22);
+	SetScale;
+	while(!Obj_IsDeleted(obj))
+	{
+		if(GetCommonData("FanAtYuyuko",1)==1)
+		{
+			ObjRender_SetPosition(obj,GetEnemyX-32-8,GetEnemyY,0);
+			ObjRender_SetColor(obj,255,255,255);
+		}
+		else if(GetCommonData("FanAtYuyuko",1)==2)
+		{
+			ObjRender_SetPosition(obj,GetEnemyX-32-8,GetEnemyY,0);
+			ObjRender_SetColor(obj,128,128,128);
+		}
+		else
+		{
+			ObjRender_SetPosition(obj,GetPlayerX-32-8,GetPlayerY,0);
+			ObjRender_SetColor(obj,128,128,128);
+		}		
+		count++;
+		if(count>120 && GetCommonData("IsFan",false)==false)
+		{
+			Obj_Delete(obj);
+		}
+		yield;
+	}
+	task SetScale
+	{
+		if(expand==1)
+		{
+			ascent(i in 0..45)
+			{
+				ObjRender_SetScaleXYZ(obj,1,0.1*sin(i*2),1);
+				yield;
+			}
+			ascent(i in 0..45)
+			{
+				ObjRender_SetScaleXYZ(obj,1,0.1+0.9*sin(i*2),1);
+				yield;
+			}
+			SetCommonData("IsFan",true);
+		}
+		else if(expand==0)
+		{
+			ObjRender_SetScaleXYZ(obj,1,1,1);
+			SetCommonData("IsFan",true);
+		}
+		else if(expand==-1)
+		{
+			SetCommonData("IsFan",false);
+			ObjRender_SetScaleXYZ(obj,0,0,0);
+			yield;
+			descent(i in 0..45)
+			{
+				ObjRender_SetScaleXYZ(obj,1,sin(i*2),1);
+				yield;
+			}
+			Obj_Delete(obj);
+		}
+		else if(expand==-2)
+		{
+			Obj_Delete(obj);
+		}
+	}
+}
+
+task Cutin(text,textwidth,cha){ // cut-in function , a lot of things run here
+	let difficulty = GetCommonData("Effect",1);
+	CreateCommonDataArea("SpellHistory");
+	LoadCommonDataAreaA1("SpellHistory");
+	let SpellDAttempt = text~GetPlayerID~"Attempt";
+	let SpellDGet = text~GetPlayerID~"Get";
+	let SpellVAttempt = GetAreaCommonData("SpellHistory", SpellDAttempt, 0);
+	let SpellVGet = GetAreaCommonData("SpellHistory", SpellDGet, 0);
+	if(!IsReplay){SpellVAttempt++;}
+	SetAreaCommonData("SpellHistory", SpellDAttempt, SpellVAttempt);
+	SaveCommonDataAreaA1("SpellHistory"); // I still don't understand this thing.
+	EffText;
+	SpellAttack;
+	Value(325,"Get");
+	Value(355,"Attempt");
+	HistoryText;
+	task Value(px,type){
+		let objText = ObjText_Create();
+		let alpha = 0;
+		let c = 0;
+		ObjText_SetFontSize(objText, 10);
+		ObjText_SetFontColorTop(objText, 255, 255, 255);
+		ObjText_SetFontColorBottom(objText, 255, 255, 255);
+		ObjText_SetFontBorderType(objText, BORDER_FULL);
+		ObjText_SetFontBorderColor(objText,128, 0, 128);
+		ObjText_SetFontBorderWidth(objText, 2);
+		ObjRender_SetPosition(objText,px,43,0);
+			if(GetCommonData("IsSpell",false)==true){Stable;}
+			while(GetCommonData("IsSpell",false)==true && !Obj_IsDeleted(objBoss)){
+			if(c>150){
+			if(GetPlayerY>100 && alpha<255){alpha+=10;}
+			if(GetPlayerY<=100 && alpha>100){alpha-=10;}
+			}
+			if(type=="Attempt"){
+			ObjText_SetText(objText,IntToString(GetAreaCommonData("SpellHistory", SpellDAttempt,SpellVAttempt)));
+			}
+			if(type=="Get"){
+			let s = IntToString(GetAreaCommonData("SpellHistory", SpellDGet, SpellVGet));
+			ObjText_SetText(objText,IntToString(GetAreaCommonData("SpellHistory", SpellDGet, SpellVGet)));
+			}
+			ObjRender_SetAlpha(objText,alpha);
+			c++;
+			yield;
+			}
+					task Stable{
+					while(!Obj_IsDeleted(objBoss)){yield;}
+						Obj_Delete(objText);
+						if(type=="Get"){
+						if(ObjEnemyBossScene_GetInfo(objScene, INFO_PLAYER_SHOOTDOWN_COUNT) +ObjEnemyBossScene_GetInfo(objScene, INFO_PLAYER_SPELL_COUNT) == 0 && !IsReplay){
+						SpellVGet++;
+						}
+						SetAreaCommonData("SpellHistory", SpellDGet, SpellVGet);
+						SaveCommonDataAreaA1("SpellHistory");
+						}
+					}
+		}
+		
+		task HistoryText{
+		let objText = ObjText_Create();
+		let alpha = 0;
+		let c = 0;
+		ObjText_SetText(objText,"History   /");
+		ObjText_SetFontSize(objText, 10);
+		ObjText_SetFontColorTop(objText, 255, 255, 255);
+		ObjText_SetFontColorBottom(objText, 255, 255, 255);
+		ObjText_SetFontBorderType(objText, BORDER_FULL);
+		ObjText_SetFontBorderColor(objText,128, 0, 128);
+		ObjText_SetFontBorderWidth(objText, 2);
+		ObjRender_SetPosition(objText,275,43,0);
+			while(GetCommonData("IsSpell",false)==true && !Obj_IsDeleted(objText) && !Obj_IsDeleted(objBoss)){
+			if(c>150){
+			if(GetPlayerY>100 && alpha<255){alpha+=10;}
+			if(GetPlayerY<=100 && alpha>100){alpha-=10;}
+			}
+			ObjRender_SetAlpha(objText,alpha);
+			c++;
+			yield;
+			}
+			Obj_Delete(objText);
+		}
+	task EffText{
+	let scale=3.9;
+	let py = 0;
+	let acc = 0;
+	let acc2 = 0;
+	let alpha = 0;
+	let yscale = 0;
+	let objTxt=ObjText_Create;
+	TScale;
+	ObjText_SetText(objTxt,text);
+	ObjText_SetFontSize(objTxt,textwidth);
+	ObjText_SetFontColorTop(objTxt,255,255,255);
+	ObjText_SetFontColorBottom(objTxt,255,128,255);
+	ObjText_SetFontBorderType(objTxt,BORDER_SHADOW);
+	ObjText_SetFontBorderColor(objTxt,128,0,192);
+	ObjText_SetFontBorderWidth(objTxt,1);
+	ObjText_SetHorizontalAlignment(objTxt,ALIGNMENT_RIGHT);
+	ObjText_SetMaxWidth(objTxt,380);
+	Obj_SetRenderPriority(objTxt,0.8);
+	ObjRender_SetPosition(objTxt,-300,300,0);
+	ObjText_SetAutoTransCenter(objTxt,true);
+		task TScale{
+		DrawLine;
+		ascent(i in 0..30){
+		ObjRender_SetAlpha(objTxt,i*12);
+		ObjRender_SetScaleXYZ(objTxt,scale,scale,1);
+		ObjRender_SetPosition(objTxt,-295+i*10,300,0);
+		scale -= 0.1;
+		yield;
+		}
+		loop(57){
+		ObjRender_SetPosition(objTxt,-5,300+py,0);
+		py += acc;
+		acc += 0.1;
+		yield;
+		}
+		ObjRender_SetPosition(objTxt,0,-240,0);
+		loop(40){
+		ObjRender_SetPosition(objTxt,-5,-240+py,0);
+		py += acc;
+		acc -= 0.16;
+		yield;
+		}
+		let alpha_t = 255;
+		while(!Obj_IsDeleted(objBoss) && !Obj_IsDeleted(objTxt)){
+			if(GetPlayerY>100 && alpha_t<255){alpha_t+=10;}
+			if(GetPlayerY<=100 && alpha_t>100){alpha_t-=10;}
+			ObjRender_SetAlpha(objTxt,alpha_t);
+		yield;
+		}
+		Obj_Delete(objTxt);
+			loop(20){
+				alpha-=12.75;
+				yscale+=0.05;
+				ObjRender_SetAlpha(objTxt,alpha);
+				ObjRender_SetScaleXYZ(objTxt,yscale,yscale,1);
+				yield;
+			}
+		}
+			task DrawLine{
+			let obj=ObjPrim_Create(OBJ_SPRITE_2D);
+			let img=GCSD~"img/line.png";
+			let size = 0.75;
+			let color = 0;
+			let c = 0;
+			ObjPrim_SetTexture(obj,img);
+			ObjSprite2D_SetSourceRect(obj,0,0,256,36);
+			ObjSprite2D_SetDestCenter(obj);
+			ObjRender_SetBlendType(obj,BLEND_ALPHA);
+			ObjRender_SetScaleXYZ(obj,size*1.95,size,size);
+			ObjRender_SetAngleXYZ(obj,0,0,0);
+			let alpha_t = 0;
+			let t = 0;
+			while(!Obj_IsDeleted(objBoss) && !Obj_IsDeleted(obj)){
+			ObjRender_SetPosition(obj,ObjRender_GetX(objTxt)+200,ObjRender_GetY(objTxt)+8,0);
+			if(t>100){
+			if(GetPlayerY>100 && alpha_t<255){alpha_t+=10;}
+			if(GetPlayerY<=100 && alpha_t>100){alpha_t-=10;}
+			}
+			ObjRender_SetAlpha(obj,alpha_t);
+			t++;
+			yield;
+			}
+			Obj_Delete(obj);
+			}
+	}
+	
+	let cut=ObjPrim_Create(OBJ_SPRITE_2D);
+	let path;
+	if(cha=="NAZRIN"){
+	path=GCSD~"img/MCutin.png";
+	}
+	else{
+	path=GCSD~"img/Cutin.png";
+	}
+	LoadTexture(path);
+	ObjPrim_SetTexture(cut,path);
+	ObjSprite2D_SetSourceRect(cut,0,0,256,512);
+  	ObjSprite2D_SetDestCenter(cut);
+	ObjRender_SetPosition(cut,416,120,0);
+	Obj_SetRenderPriority(cut,0.4);
+	//ObjRender_SetBlendType(cut,BLEND_ADD_ARGB);
+	TCut;
+	
+	task TTail(px,py,alpha,num,t){
+		if(GetCommonData("Effect",2)==2){
+		wait(t);
+		let tail=ObjPrim_Create(OBJ_SPRITE_2D);
+		let path=GCSD~"img/Cutin.png";
+		let sc = 1;
+		LoadTexture(path);
+		ObjPrim_SetTexture(tail,path);
+		ObjSprite2D_SetSourceRect(tail,0,0,256,512);
+		ObjSprite2D_SetDestCenter(tail);
+		Obj_SetRenderPriority(tail,0.21);
+		ObjRender_SetBlendType(tail,BLEND_ADD_ARGB);
+		descent(i in 0..15){
+		ObjRender_SetPosition(tail,px,py,0);
+		ObjRender_SetScaleXYZ(tail,sc,sc,0);
+		ObjRender_SetColor(tail,alpha*i/15,0,alpha*i/22.5);
+		sc += 0.005;
+		yield;
+		}
+		Obj_Delete(tail);
+		}
+	}
+
+	task TCut{
+		
+		let speed=1;
+		let alpha = 0;
+		let count = 0;
+		ObjRender_SetAlpha(cut,alpha);
+		ObjRender_SetY(cut,180);
+		ObjRender_SetX(cut,384+130);
+			descent(i in 10..70){
+			//if(i%3==0){TTail(ObjRender_GetX(cut),ObjRender_GetY(cut),alpha/2,0,0);}
+			ObjRender_SetY(cut,ObjRender_GetY(cut)+i/30);
+			ObjRender_SetX(cut,ObjRender_GetX(cut)-i/8);
+			ObjRender_SetAlpha(cut,alpha);
+			alpha+=4;
+			yield;
+			}
+			descent(i in 0..60){
+			//if(i%3==0){TTail(ObjRender_GetX(cut),ObjRender_GetY(cut),alpha/2,0,0);}
+			ObjRender_SetY(cut,ObjRender_GetY(cut)+10/60);
+			ObjRender_SetX(cut,ObjRender_GetX(cut)-10/16);
+			ObjRender_SetAlpha(cut,alpha);
+			yield;
+			}
+			ascent(i in 10..70){
+			//if(i%3==0){TTail(ObjRender_GetX(cut),ObjRender_GetY(cut),alpha/2,0,0);}
+			ObjRender_SetY(cut,ObjRender_GetY(cut)+i/30);
+			ObjRender_SetX(cut,ObjRender_GetX(cut)-i/8);
+			ObjRender_SetAlpha(cut,alpha);
+			alpha-= 4;
+			yield;
+			}
+		Obj_Delete(cut);
+		}
+}
+
+task SpellAttack{ // task for draw spell attack images
+	let s = 1;
+	ascent(j in 0..10){
+	ascent(i in 0..9){
+	Attack(stgx-600+i*230*cos(-60),stgy+175+j*34+i*78*sin(-60),0,60,s);
+	}
+	s = -s;
+	}
+	ascent(i in 0..7){
+	Attack(stgx+100,stgy+140,120,i*360/7,1);
+	Attack(stgx+100,stgy+140,150,i*360/7,-1);
+	Attack(stgx+100,stgy+140,180,i*360/7,-1);
+	}
+	ascent(i in 0..7){
+	Attack(stgx-150,stgy-200,120,i*360/7,1);
+	Attack(stgx-150,stgy-200,150,i*360/7,-1);
+	Attack(stgx-150,stgy-200,180,i*360/7,-1);
+	}
+		task Attack(x,y,r,ang,way){
+		let obj=ObjPrim_Create(OBJ_SPRITE_2D);
+		let img=GCSD~"img/circle.png";
+		let size = 1;
+		let color = 0;
+		let c = 0;
+		ObjPrim_SetTexture(obj,img);
+		ObjSprite2D_SetSourceRect(obj,102,0,120,128);
+		ObjSprite2D_SetDestCenter(obj);
+		ObjRender_SetPosition(obj,stgx,stgx,0);
+		ObjRender_SetBlendType(obj,BLEND_ADD_RGB);
+		ObjRender_SetScaleXYZ(obj,size,size,size);
+		ObjRender_SetAngleXYZ(obj,0,0,ang);
+		ManageAlpha;
+			if(r==0){
+				while(!Obj_IsDeleted(obj)){
+				ObjRender_SetPosition(obj,x,y,0);
+				x+=1.25*way*cos(ang-90);
+				y+= 1.25*way*sin(ang-90);
+				yield;
+				}
+			}
+			else {
+				while(!Obj_IsDeleted(obj)){
+				ObjRender_SetAngleXYZ(obj,0,0,GetPointAngle(x,y,ObjRender_GetX(obj),ObjRender_GetY(obj)));
+				ObjRender_SetPosition(obj,x+r*cos(ang+c),y+r*sin(ang+c),0);
+				c-= 1.25*way;
+				yield;
+				}
+			}
+			task ManageAlpha{
+			ascent(i in 0..30){
+			ObjRender_SetColor(obj,i*3,i*3,i*3);
+			yield;
+			}
+			wait(90);
+			descent(i in 0..30){
+			ObjRender_SetColor(obj,i*3,i*3,i*3);
+			yield;
+			}
+			Obj_Delete(obj);
+			}
+		}
+	}
+	
+	task IsDelete(obj){
+	while(!Obj_IsDeleted(objBoss) && !Obj_IsDeleted(obj)){yield;}
+	Obj_Delete(obj);
+	}
+
+task RayCharge(type,v,t){
+	ascent(i in 0..9){
+	Ray(objBoss,rand(2.5,5.5),rand(3.5,4)*2,v,t,i*360/9,type,rand(0.5,1));
+	Ray(objBoss,rand(2.5,5.5),rand(3.5,4)*2,v,t,i*360/9+20,type,-1*rand(0.5,1));
+	}
+}
+
+task RayCharge2(obj,type,v,t){
+	ascent(i in 0..9){
+	Ray(obj,rand(2.5,5.5),rand(3.5,4)*2,v,t,i*360/9,type,rand(0.5,1));
+	Ray(obj,rand(2.5,5.5),rand(3.5,4)*2,v,t,i*360/9+20,type,-1*rand(0.5,1));
+	}
+}
+
+task Ray(target,s1,s2,v,t,dir,type,way){
+	let obj=ObjPrim_Create(OBJ_SPRITE_2D);
+	let img=GCSD~"img/effects.png";
+	let c = dir;
+	let size = [0,0];
+	let color = [0,0,0];
+	let mcolor = [0,0,0];
+	mcolor = GetColor(type);
+	size[0] = s1;
+	size[1] = s2;
+	LoadTexture(img);
+	ObjPrim_SetTexture(obj,img);
+	ObjSprite2D_SetSourceRect(obj,0,0,96,40);
+	ObjSprite2D_SetDestCenter(obj);
+	ObjRender_SetBlendType(obj,BLEND_ADD_ARGB);
+	ObjRender_SetScaleXYZ(obj,size[0],size[1],0);
+	Obj_SetRenderPriority(obj,0.21);
+	ManageColor;
+		while(!Obj_IsDeleted(target) && !Obj_IsDeleted(obj)){
+		ObjRender_SetPosition(obj,ObjMove_GetX(target)+48*size[0]*cos(c),ObjMove_GetY(target)+48*size[0]*sin(c),0);
+		ObjRender_SetAngleXYZ(obj,0,0,c);
+		ObjRender_SetColor(obj,color[0],color[1],color[2]);
+		c+= 1*way;
+		yield;
+		}
+		Obj_Delete(obj);
+		task ManageColor{
+			loop(t/2){
+			ascent(i in 0..3){
+			color[i] = color[i]+mcolor[i]/(255/v);
+			}
+			yield;
+			}
+			wait(90);
+			loop(t/2){
+			ascent(i in 0..3){
+			color[i] = color[i]-mcolor[i]/(255/v);
+			}
+			yield;
+			}
+				Obj_Delete(obj);
+		}
+}
+	
+task magiccircle(boss,ang,type){ // draw magic circle
+	let obj=ObjPrim_Create(OBJ_SPRITE_2D);
+	let img=GCSD~"img/MG.png";
+	let spin = 0;
+	let s = 0;
+	let size = 0;
+	LoadTexture(img);
+	ObjPrim_SetTexture(obj,img);
+	ObjSprite2D_SetSourceRect(obj,0,0,256,256);
+	ObjSprite2D_SetDestCenter(obj);
+	ObjRender_SetScaleXYZ(obj,size,size,size);
+	ObjRender_SetAlpha(obj,192);
+	ObjRender_SetBlendType(obj,BLEND_ALPHA);
+	Obj_SetRenderPriorityI(obj,22);
+		while(!Obj_IsDeleted(boss) && !Obj_IsDeleted(obj)){
+		spin += 1/3;
+		size = GetCommonData("CircleSize",1);
+		let timer = ObjEnemyBossScene_GetInfo(objScene, INFO_TIMERF);
+		ObjRender_SetAngleXYZ(obj,30*sin(spin*1.5)*type,25*cos(spin*1.5-30*sin(spin*3))*type,spin*3*type);
+		ObjRender_SetPosition(obj,ObjMove_GetX(boss),ObjMove_GetY(boss),0);
+		ObjRender_SetScaleXYZ(obj,size,size,0);
+		ObjMove_SetPosition(obj,GetEnemyX,GetEnemyY);
+		yield;
+		}
+		Obj_Delete(obj);
+	}
+
+task Bright(boss,size,t,color){ // task for draw light circle , I can't describe it, so try it yourself
+	let obj=ObjPrim_Create(OBJ_SPRITE_2D);
+	let img=GCSD~"img/bright.png";
+	let c = 0;
+	let set = 360/(t*3);
+	let value = [0,0,0];
+	let speed = 90/t;
+	let size_speed = size/t;
+	value = GetColor(color);
+	ObjPrim_SetTexture(obj,img);
+	ObjSprite2D_SetSourceRect(obj,0,0,64,64);
+	ObjSprite2D_SetDestCenter(obj);
+	ObjRender_SetPosition(obj,ObjRender_GetX(boss),ObjRender_GetY(boss),0);
+	ObjRender_SetBlendType(obj,BLEND_ADD_RGB);
+	ObjRender_SetScaleXYZ(obj,0,0,0);
+	Obj_SetRenderPriorityI(obj,25);
+		ascent(i in 0..t){
+		if(Obj_IsDeleted(objBoss)){break;}
+		ObjRender_SetColor(obj,value[0]*sin(i*speed)/2,value[1]*sin(i*speed)/2,value[2]*sin(i*speed)/2);
+		ObjRender_SetScaleXYZ(obj,11-i*size_speed,11-i*size_speed,0);
+		yield;
+		}
+		Obj_Delete(obj);
+	}
+	
+task DrawAll{ // 
+	DrawName;
+	}
+	
+task DrawName{
+	let objText = ObjText_Create();
+	let alpha = 255;
+	ObjText_SetText(objText, GetCommonData("BossName","Unknown"));
+	ObjText_SetFontSize(objText, 11);
+	ObjText_SetFontColorTop(objText, 255, 255, 255);
+	ObjText_SetFontColorBottom(objText, 255, 0, 255);
+	ObjText_SetFontBorderType(objText, BORDER_SHADOW);
+	ObjText_SetFontBorderColor(objText,128, 0, 128);
+	ObjText_SetFontBorderWidth(objText, 2);
+	ObjRender_SetPosition(objText,0,12,0);
+	Obj_SetRenderPriority(objText,0.7);
+	while(!Obj_IsDeleted(objBoss)){
+	if(GetPlayerY>80 && alpha<255){alpha+=10;}
+	if(GetPlayerY<=80 && alpha>100){alpha-=10;}
+	ObjRender_SetAlpha(objText,alpha);
+	yield;
+	}
+	Obj_Delete(objText);
+	}
+
+function TCharge01(boss,size,frame,r,g,b){
+	let obj=ObjPrim_Create(OBJ_SPRITE_2D);
+	let img=GCSD~"img/charge.png";
+	let set = 360/(frame*4);
+	ObjPrim_SetTexture(obj,img);
+	ObjSprite2D_SetSourceRect(obj,0,0,128,128);
+	ObjSprite2D_SetDestCenter(obj);
+	ObjRender_SetPosition(obj,ObjMove_GetX(boss),ObjMove_GetY(boss),0);
+	ObjRender_SetAlpha(obj,0);
+	ObjRender_SetScaleXYZ(obj,size,size,0);
+	ObjRender_SetBlendType(obj,BLEND_ADD_ARGB);
+	Obj_SetRenderPriorityI(obj,25);
+	TAlpha;
+	TShrink;
+	return obj;
+	task TAlpha{
+		let l=10;
+		let alpha=255/l;
+		loop(l){
+			ObjRender_SetAlpha(obj,alpha);
+			alpha+=255/(l*2);
+			yield;
+			}
+		}
+	task TShrink{
+		let l=frame;
+		let a = size*2/l/l;
+		ascent(i in 0..l){
+			ObjRender_SetScaleXYZ(obj,size,size,0);
+			ObjRender_SetPosition(obj,ObjMove_GetX(boss),ObjMove_GetY(boss),0);
+			ObjRender_SetColor(obj,r,g,b);
+			size = size-i*a;
+			if(Obj_IsDeleted(objBoss)){Obj_Delete(obj);}
+			yield;
+			}
+		Obj_Delete(obj);
+	}
+}
+
+function TExpan(px,py,maxv,t,r,g,b){
+	let obj=ObjPrim_Create(OBJ_SPRITE_2D);
+	let img=GCSD~"img/charge.png";
+	let scale = 0;
+	let v = 0;
+	let malpha = 255/t;
+	ObjPrim_SetTexture(obj,img);
+	ObjSprite2D_SetSourceRect(obj,0,0,128,128);
+	ObjSprite2D_SetDestCenter(obj);
+	ObjRender_SetPosition(obj,px,py,0);
+	ObjRender_SetColor(obj,r,g,b);
+	Obj_SetRenderPriorityI(obj,25);
+	Expan;
+		task Expan{
+			descent(i in 0..t){
+			if(Obj_IsDeleted(objBoss)){break;}
+			ObjRender_SetAlpha(obj,malpha*i);
+			v = (i*maxv/2)/(t*t);
+			scale += v;
+			ObjRender_SetScaleXYZ(obj,scale,scale,0);
+			yield;
+			}
+			Obj_Delete(obj);
+		}
+	}
+
+function TCharge02(boss,size,frame,r,g,b){ //Draw a charge circle that has no acceleration on shrinking
+	let obj=ObjPrim_Create(OBJ_SPRITE_2D);
+	let img=GCSD~"img/charge.png";
+	ObjPrim_SetTexture(obj,img);
+	ObjSprite2D_SetSourceRect(obj,0,0,128,128);
+	ObjSprite2D_SetDestCenter(obj);
+	ObjRender_SetAlpha(obj,0);
+	ObjRender_SetScaleXYZ(obj,size,size,0);
+	Obj_SetRenderPriorityI(obj,25);
+	TAlpha;
+	TShrink;
+	return obj;
+	task TAlpha{
+		let l=frame;
+		let alpha=255/l;
+		let ra = r/l;
+		let ga = g/l;
+		let ba = b/l;
+		loop(l){
+			if(Obj_IsDeleted(objBoss)){break;}
+			ObjRender_SetAlpha(obj,alpha);
+			ObjRender_SetColor(obj,ra,ga,ba);
+			alpha+=255/(l);
+			ra += r*1.5/l;
+			ga += g*1.5/l;
+			ba += b*1.5/l;
+			yield;
+			}
+			Obj_Delete(obj);
+		}
+	task TShrink{
+			let a = size/frame;
+			loop(frame){
+			ObjRender_SetScaleXYZ(obj,size,size,0);
+			ObjRender_SetPosition(obj,ObjMove_GetX(boss),ObjMove_GetY(boss),0);
+			size = size-a;
+			if(Obj_IsDeleted(objBoss)){Obj_Delete(obj);}
+			yield;
+			}
+		Obj_Delete(obj);
+		
+	}
+}
+
+function Charge02(boss,size,frame,r,g,b){ //Draw a charge circle that has no acceleration on shrinking
+	let obj=ObjPrim_Create(OBJ_SPRITE_2D);
+	let img=GCSD~"img/charge.png";
+	ObjPrim_SetTexture(obj,img);
+	ObjSprite2D_SetSourceRect(obj,0,0,128,128);
+	ObjSprite2D_SetDestCenter(obj);
+	ObjRender_SetAlpha(obj,0);
+	ObjRender_SetScaleXYZ(obj,size,size,0);
+	Obj_SetRenderPriorityI(obj,25);
+	TAlpha;
+	TShrink;
+	return obj;
+	task TAlpha{
+		let l=frame;
+		let alpha=255/l;
+		let ra = r/l;
+		let ga = g/l;
+		let ba = b/l;
+		loop(l){
+			if(Obj_IsDeleted(objBoss)){break;}
+			ObjRender_SetAlpha(obj,alpha);
+			ObjRender_SetColor(obj,ra,ga,ba);
+			alpha+=255/(l);
+			ra += r*2/l;
+			ga += g*2/l;
+			ba += b*2/l;
+			yield;
+			}
+			Obj_Delete(obj);
+		}
+	task TShrink{
+			let a = size/frame;
+			loop(frame){
+			ObjRender_SetScaleXYZ(obj,size,size,0);
+			ObjRender_SetPosition(obj,ObjMove_GetX(boss),ObjMove_GetY(boss),0);
+			size = size-a;
+			if(Obj_IsDeleted(objBoss)){Obj_Delete(obj);}
+			yield;
+			}
+		Obj_Delete(obj);
+	}
+}
+	
+task effbreak(shot,size,t){ // task for call other functions
+		if(!Obj_IsDeleted(shot)){
+		fragment(shot,size,1);
+			if(GetCommonData("Effect",2)==2){
+			spongy(shot,0.1,t);
+			}
+		}
+	}
+	
+task fragment(shot,size,num){ // Bullet clear effect from UFO,TD
+		if(!Obj_IsDeleted(shot)){
+		loop(num){
+		realTask;
+		}
+		}
+			task realTask{
+			let obj=ObjPrim_Create(OBJ_SPRITE_2D);
+			let img=GCSD~"img/effbreak.png";
+			let s = rand(0.8,1.2)+size;
+			let pic = ObjShot_GetImageID(shot);
+			let color = GetShotDataInfoA1(pic,TARGET_ENEMY,INFO_DELAY_COLOR);
+			let rect = [0,0,32,32];
+			ObjPrim_SetTexture(obj,img);
+			ObjSprite2D_SetSourceRect(obj,rect[0],rect[1],rect[2],rect[3]);
+			ObjSprite2D_SetDestCenter(obj);
+			ObjRender_SetScaleXYZ(obj,s,s,0);
+			ObjRender_SetAngleXYZ(obj,0,0,rand(0,359));
+			ObjRender_SetBlendType(obj,BLEND_ALPHA);
+			ObjRender_SetColor(obj,color[0],color[1],color[2]);
+			Obj_SetRenderPriority(obj,0.21);
+			ObjShot_SetIntersectionEnable(shot,false);
+			let x = ObjMove_GetX(shot);
+			let y = ObjMove_GetY(shot);
+			if(x!=0 && y!=0){
+			ascent(i in 0..7){
+			if(Obj_IsDeleted(objBoss)){Obj_Delete(obj);}
+			ObjRender_SetPosition(obj,x,y,0);
+			ObjSprite2D_SetSourceRect(obj,rect[0],rect[1],rect[2],rect[3]);
+			rect[0] = rect[0]+32;
+			rect[2] = rect[2]+32;
+			wait(3);
+			}
+			}
+			Obj_Delete(obj);
+			}
+		}
+	
+task spongy(shot,v,t){ // make bullet slightly grow and fade it's alpha/color
+		if(!Obj_IsDeleted(shot)){
+		let cloud = ObjShot_GetImageID(shot);
+		let obj=ObjPrim_Create(OBJ_SPRITE_2D);
+		let img=GCSD~"Shot/AllStarShot.png";
+		let s = 1;
+		let adc = false;
+		let rect = GetShotDataInfoA1(cloud,TARGET_ENEMY,INFO_RECT);
+		let dir = ObjMove_GetAngle(shot)+90;
+		let d = 0;
+		ObjPrim_SetTexture(obj,img);
+		ObjSprite2D_SetSourceRect(obj,rect[0],rect[1],rect[2],rect[3]);
+		ObjSprite2D_SetDestCenter(obj);
+		ObjRender_SetPosition(obj,ObjMove_GetX(shot),ObjMove_GetY(shot),0);
+		ObjRender_SetAngleXYZ(obj,0,0,dir);
+		ObjRender_SetBlendType(obj,BLEND_ALPHA);
+	 if(GetShotDataInfoA1(cloud,TARGET_ENEMY,INFO_BLEND)==BLEND_ADD_RGB || GetShotDataInfoA1(cloud,TARGET_ENEMY,INFO_BLEND)==BLEND_ADD_ARGB){
+	 adc = true;
+	 ObjRender_SetBlendType(obj,BLEND_ADD_ARGB);
+	 }
+		ascent(i in 0..t){
+		if(Obj_IsDeleted(objBoss)){Obj_Delete(obj);}
+		ObjRender_SetScaleXYZ(obj,s,s,0);
+		if(adc==false){ObjRender_SetAlpha(obj,255-i*255/t);}
+		if(adc==true){ObjRender_SetColor(obj,255-i*255/t,255-i*255/t,255-i*255/t);}
+		s += v;
+		yield;
+		}
+		Obj_Delete(obj);
+		}
+		}
+
+task ShinkiCharge(num,color){
+	let value = [0,0,0];
+	value = GetColor(color);
+	ascent(i in 0..num){
+	FakeLaser;
+	if(i%7==0)
+	{
+		if(GetCommonData("FanAtYuyuko",1)>0)
+		{
+			Bright(objBoss,11,30,color);
+		}
+		else
+		{
+			Bright(GetPlayerObjectID,11,30,color);
+		}
+	}
+	wait(1+i%2);
+	}
+	task FakeLaser{
+	let ang = rand(0,360);
+	let length = round(rand(250,300));
+	let l = length;
+	let obj;
+	if(GetCommonData("FanAtYuyuko",1)>0)
+	{
+		obj = CreateStraightLaserA1(GetEnemyX,GetEnemyY,ang,length,5,120,48,0);
+	}
+	else
+	{
+		obj = CreateStraightLaserA1(GetPlayerX,GetPlayerY,ang,length,5,120,48,0);
+	}
+	ObjRender_SetColor(obj,value[0],value[1],value[2]);
+	ObjShot_SetIntersectionEnable(obj,false);
+	ObjShot_SetSpellResist(obj,true);
+	ObjStLaser_SetSource(obj,false);
+		while(length>0){
+		ObjLaser_SetLength(obj,length);
+		length -=l/20;
+		yield;
+		}
+		Obj_Delete(obj);
+	}
+}
+
+task ShinkiLCharge(num,size,time,color){
+	let value = [0,0,0];
+	value = GetColor(color);
+	ascent(i in 0..num){
+	Bright(objBoss,size,30,color);
+	wait(time);
+	}
+}
+		
+function GetColor(type){
+	if(type=="RED"){return [255,32,32];}
+	if(type=="ORANGE"){return [255,128,32];}
+	if(type=="YELLOW"){return [255,255,32];}
+	if(type=="GREEN"){return [32,255,32];}
+	if(type=="BLUE"){return [32,32,255];}
+	if(type=="PURPLE"){return [255,32,255];}
+	if(type=="PINK"){return [255,32,128];}
+	if(type=="WHITE"){return [255,255,255];}
+	if(type=="AQUA"){return [0,255,255];}
+	if(type=="WHITE"){return [255,255,255];}
+	}
+	

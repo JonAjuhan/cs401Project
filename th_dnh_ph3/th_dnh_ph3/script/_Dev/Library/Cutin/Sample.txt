@@ -1,0 +1,92 @@
+#TouhouDanmakufu[Single]
+#ScriptVersion[3]
+#Title["Cutin Sample"]
+#Text["Sample of the cutin function[r]created by gtbot."]
+
+#include"./Cutin.txt"
+
+@Initialize{
+	StartSpell;
+}
+
+@Event{
+	alternative(GetEventType)
+	case(EV_REQUEST_SPELL_SCORE){SetScriptResult(1000000);}
+	case(EV_REQUEST_LIFE){SetScriptResult(2250);}
+	case(EV_REQUEST_TIMER){SetScriptResult(35);}
+}
+
+@MainLoop{yield;}
+
+@Finalize{}
+
+task StartSpell{
+	let objEnemy = GetEnemyBossObjectID[0];
+	loop(90){yield;}
+	
+	//Cutin Images from http://seiga.nicovideo.jp/user/illust/3494232
+	
+	
+	let sekibanki = GetCurrentScriptDirectory~"cutin.png";
+	let kyouko = GetCurrentScriptDirectory~"cutin.png";
+	ObjCutin_SetSpellcardS4("Testing Cutin 1", sekibanki, NAZRIN, 240, 104, 104);
+	//No matter what cutin type and image you put for the first ObjCutin_SetSpellcardS4 function, 
+	//the ObjCutin_LaunchS3's cutin type and image will override them
+	ObjCutin_LaunchS3(YABUSAME, sekibanki, "Normal");
+	
+	/*
+	ObjCutin_SetSpellcardS3("Spellcard Name, R, G, B);
+	This sets the spellcard names and cutin.
+	The order that you call this in matters, as the first one will be the "main" spellcard
+	Only the first one will show the cutin image.
+	
+	ObjCutin_LaunchS3("Spellcard type", Cutin Image, "Difficulty");
+	This sets the spell's properties
+	
+	"Spellcard Type" - Currently the following types:
+		- "NAZRIN": UFO type cutin
+		- "MOKOU": Mokou's resurrection cutin (the cutin deletes itself after a few seconds)
+		- "AYA": No cutin image is displayed
+	
+	"Spellcard Name" - Name of the spellcard
+	
+	Cutin Image - path to the image of the cutin: this function will automatically use the whole image (sorry)
+	
+	r, g, b - the RGB values of the cutin (the text and the text's background will change to the color set)
+	
+	"Difficulty" - Sets the spellcard's difficulty;
+	This is important for saving history across different difficulties if the spellcard has the same name
+	
+	
+	The cutin will be deleted when the main boss object is deleted
+	History is saved to the "cutin_History"	common area data
+	
+	*/
+	ObjEnemyBossScene_StartSpell(GetEnemyBossSceneObjectID);
+	
+	
+	
+	ObjPrim_SetTexture(objEnemy, GetCurrentScriptDirectory~"boss.png"); 
+	ObjSprite2D_SetSourceRect(objEnemy, 0, 0, 64, 80); 
+	ObjSprite2D_SetDestCenter(objEnemy); 
+	
+	ObjMove_SetDestAtWeight(objEnemy, GetStgFrameWidth/2, GetStgFrameHeight/2-96, 13, 5);
+	
+	//You may set another spellcard after launching the cutin effect
+	loop(200){yield;}
+	//If the spellcard effect is not playing, it will play again upon setting a new spellcard
+	ObjCutin_SetSpellcardS4("Testing Cutin 2", kyouko, BYAKUREN, 104, 240, 104);
+	loop(200){yield;}
+	ObjCutin_SetSpellcardS4("Testing Cutin 3", sekibanki, YABUSAME, 104, 104, 240);
+	
+	
+	
+	while(ObjEnemy_GetInfo(objEnemy, INFO_LIFE)>0){
+		ObjEnemy_SetIntersectionCircleToShot(objEnemy, ObjMove_GetX(objEnemy), ObjMove_GetY(objEnemy), 32);
+		ObjEnemy_SetIntersectionCircleToPlayer(objEnemy, ObjMove_GetX(objEnemy), ObjMove_GetY(objEnemy), 24);
+		yield;
+	}
+	Obj_Delete(objEnemy);
+}
+
+

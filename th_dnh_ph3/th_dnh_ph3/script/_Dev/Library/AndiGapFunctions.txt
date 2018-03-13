@@ -1,0 +1,542 @@
+
+//////////////////////////////////////////////////////////////////////////
+//Gap functions by Andi
+//////////////////////////////////////////////////////////////////////////
+//Use CreateGapA1 to create an outgap and an ingap.
+//Shots intersecting the ingap will be warped to the outgap,
+//preserving their relative location and angle.
+//Outgaps by themselves do nothing, so use them if you just want the image.
+//The gaps can be of different sizes, and multiple ingaps can be linked to one outgap.
+
+//The ingap needs an outgap to warp things to, so create the outgap first.
+//You can pass in NULL instead of an outgap when creating outgaps,
+//or if you'd rather the ingap delete shots instead of warping them.
+//The outgap can also be changed through the gap's dictionary.
+
+//The parameter exargs is for anything that needs to happen on the first frame,
+//but isn't important enough to warrant a dedicated parameter.
+//Most of the time you'll use an empty array, but it makes it easier to add extra stuff.
+
+//External manipulation of the gap should be done through the gap object's dictionary.
+//Setting its position, angle, etc manually will not prompt it to recalculate
+//its collision variables, leading to undefined behavior.
+//Instead, use ObjGap_SetPosition, ObjGap_SetAngle, ObjGap_SetScaleXYZ, etcetera.
+//I haven't defined every possible setter, but it shouldn't be too hard to add more
+//if you need them, or just set the dictionary values manually.
+
+//External manipulation of the gap's render object should be fine (as long as you're
+//not changing its position, scale or angle too much). A reference to the gap's
+//render object can be obtained through the gap's dictionary with the key "RenderObject",
+//or with ObjGap_GetRenderObject.
+
+//Gapping large shots is not advised, since their abrupt disappearance is
+//noticeable. I plan to eventually shrink large shots before warping them.
+
+//
+
+//Constants for gap types
+let GAP_IN = 999901; let GAP_OUT = 999902; let GAP_VOID = 999904;
+//Constants for extra arguments
+let GAP_HIDDEN = 999911; let GAP_COLOR_PORTAL = 999912;
+
+
+//////////////////////////////////////////////////////////////////////////
+//Main function to create a gap
+//////////////////////////////////////////////////////////////////////////
+//x,y: 				Position of gap's center
+//opening, width:	Length and width of the gap.
+//angle:			Angle the opening should face. Gaps work from both directions, and
+//					 the back of the ingap leads to the front of the outgap.
+//dur:				Duration of the gap. Use 9999 or similar to prevent auto-deleting.
+//					 To manually delete, use ObjGap_Delete, which closes it first.
+//del:				Delay before the gap becomes active/visible.
+//type:				Whether the gap is an ingap (GAP_IN) or an outgap (GAP_OUT).
+//					 GAP_VOID can also be used, which deletes shots instead of warping them.
+//target:			Whether player or enemy shots should be warped (TARGET_ENEMY, etc).
+//outgap:			Outgap to send shots to. Use NULL for outgaps or void gaps.
+//exargs:			Extra arguments, see above. Usually [].
+//////////////////////////////////////////////////////////////////////////
+function CreateGapA1(x,y,opening,width,angle,dur,del,  type,target, outgap, exargs)	{
+	
+	let gap = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjRender_SetPosition(gap,x,y,0);
+	ObjGap_SetPosition(gap,x,y);
+	Obj_SetValue(gap,"Type",type);
+	
+	//Miscellaneous
+	let seobj = ObjSound_Create;
+	let isArg; //let del=0;
+	//
+//	isArg = checkarr(exargs,GAP_DELAY); if(isArg!=-1){del=exargs[isArg+1];}
+	
+	//Values used for rendering
+	let Yangle = 0; //90 
+	let Xangle = 0;  //0
+	let xscale = width/44; let yscale = opening/114;
+	
+	//Values used for collision detection and warp calculations
+	let midx = x; let midy = y; let endpoints; let x0; let y0; let x1; let y1;
+	function UpdateCollisionVariables {
+		//x = ObjMove_GetX(gap); y = ObjMove_GetY(gap); midx=x; midy=y;
+		opening = yscale*114; width = xscale*44;
+		endpoints = rotateC(x,y+opening/2,x,y,angle) ~ rotateC(x,y-opening/2,x,y,angle);
+	//	x0=endpoints[0]; y0=endpoints[3]; x1=endpoints[2]; y1=endpoints[1];
+		x0=endpoints[0]; y0=endpoints[1]; x1=endpoints[2]; y1=endpoints[3];
+		Obj_SetValue(gap,"Endpoints",[x0,y0,x1,y1]);
+		endpoints = [x0,y0,x1,y1];
+	}
+	UpdateCollisionVariables;
+
+
+	
+	if(del!=0){wait(del);UpdateCollisionVariables;}
+	
+	UpdateGap;
+	RenderGap;
+	if(type==GAP_IN || type==GAP_VOID){ TInGap; }
+	
+	return gap;
+	
+	
+	
+	//Updates various things to allow setters to function
+	task UpdateGap {
+		while(!Obj_IsDeleted(gap)) {
+			if(Obj_IsValueExists(gap,"UpdateCheck")) {
+				if(!Obj_IsValueExists(gap,"UpdateCheckRepeat")){Obj_DeleteValue(gap,"UpdateCheck");}
+				
+				//Check if a new outgap has been assigned
+				if(Obj_IsValueExists(gap,"NewOutGap")){outgap = Obj_GetValue(gap,"NewOutGap"); Obj_DeleteValue(gap,"NewOutGap"); }
+							
+				if(Obj_IsValueExists(gap,"NewAngleXYZ")){
+					let anglexyz = Obj_GetValue(gap,"NewAngleXYZ");
+					if(anglexyz[0]!=NO_CHANGE){ Xangle = anglexyz[0]; }
+					if(anglexyz[1]!=NO_CHANGE){ Yangle = anglexyz[1]; }
+					if(anglexyz[2]!=NO_CHANGE){ angle  = anglexyz[2]; UpdateCollisionVariables; }
+					ObjRender_SetAngleXYZ(gap,Xangle,Yangle,angle);
+					Obj_DeleteValue(gap,"NewAngleXYZ");
+				}
+				if(Obj_IsValueExists(gap,"NewScaleXYZ")){
+					let scalexyz = Obj_GetValue(gap,"NewScaleXYZ");
+					if(scalexyz[0]!=NO_CHANGE){ xscale = scalexyz[0]; }
+					if(scalexyz[1]!=NO_CHANGE){ yscale = scalexyz[1]; UpdateCollisionVariables; }
+					ObjRender_SetScaleXYZ(gap,xscale,yscale,1);
+					Obj_DeleteValue(gap,"NewScaleXYZ");
+					UpdateCollisionVariables;
+				}
+				if(Obj_IsValueExists(gap,"NewPosition")){
+					let pos = Obj_GetValue(gap,"NewPosition");
+					if(pos[0]!=NO_CHANGE){x=pos[0];}
+					if(pos[1]!=NO_CHANGE){y=pos[1];}
+					ObjRender_SetPosition(gap,x,y,0);
+					midx=x; midy=y;
+					Obj_DeleteValue(gap,"NewPosition");
+					UpdateCollisionVariables;
+				}
+				
+				
+			}
+			
+			yield;
+		}
+	}
+	
+	
+	task RenderGap {
+		SE_Play(se_gap,120);
+		isArg = checkarr(exargs,GAP_COLOR_PORTAL); 
+		if(isArg!=-1){
+			ObjPrim_SetTexture(gap, CSD~"../img/gap_invert.png");
+			if(type==GAP_IN ){ObjRender_SetColor(gap,64,64,255);}
+			if(type==GAP_OUT){ObjRender_SetColor(gap,255,128,0);}
+		}else{
+			ObjPrim_SetTexture(gap, CSD~"../img/gap.png");
+			if(type==GAP_IN ){ObjRender_SetColor(gap,64,64,255);}
+			if(type==GAP_OUT){ObjRender_SetColor(gap,255,128,0);}
+		}
+		isArg = checkarr(exargs,GAP_HIDDEN);
+		if(isArg!=-1){
+			Obj_SetVisible(gap,false);
+			while(!Obj_IsValueExists(gap,"Unhide")){yield;}
+			Obj_SetVisible(gap,true);
+		}
+		ObjSprite2D_SetSourceRect(gap,0, 0, 44, 114);
+		ObjRender_SetScaleXYZ(gap,xscale,yscale,1);
+		Obj_SetRenderPriorityI(gap,30);
+		ObjSprite2D_SetDestCenter(gap);
+		ObjRender_SetBlendType(gap,BLEND_ALPHA);
+		ObjRender_SetPosition(gap,midx,midy,0);
+		ObjRender_SetAngleXYZ(gap,0,Yangle,angle);
+
+		let scale = xscale;
+		let dS = xscale/15;
+		Obj_SetValue(gap,"Blinking",false);
+		scale=0;
+		loop(15){
+			scale+=dS;
+			ObjRender_SetScaleX(gap,scale);
+			ObjRender_SetAngleXYZ(gap,Xangle,Yangle,angle);
+			yield;
+		}
+		Obj_DeleteValue(gap,"Blinking");
+		//While gap active
+		let glowdel = 15; let glowcount=0;
+		while(dur>0 && !Obj_IsValueExists(gap,"DeleteGap")){
+			while(glowcount < glowdel && dur>0 && !Obj_IsValueExists(gap,"DeleteGap")){
+				dur--;
+				yield;
+			}
+	//		RenderGapOutline(40,128);
+			glowcount=0;
+		}
+		Obj_SetValue(gap,"Blinking",false);
+		loop(15){
+			scale-=dS;
+			ObjRender_SetScaleX(gap,scale);
+			yield;
+		}
+		Obj_Delete(gap);
+	}
+	task RenderGapOutline(duration,alpha0){
+		let glow = ObjPrim_Create(OBJ_SPRITE_2D);
+		ObjPrim_SetTexture(glow, CSD~"../img/gap_outline.png");
+		ObjSprite2D_SetSourceRect(glow,0, 0, 44, 114);
+		Obj_SetRenderPriorityI(glow,30);
+		ObjSprite2D_SetDestCenter(glow);
+		ObjRender_SetBlendType(glow,BLEND_ADD_ARGB);
+		ObjRender_SetPosition(glow,midx,midy,0);
+		
+		let dA = -alpha0/duration;
+		let xscale0 = xscale; let yscale0 = yscale;
+		let xscaleincr = 0.05*xscale0; //xscale / (xscale+yscale)/2;
+		let yscaleincr = 0.05*yscale0; //yscale / (xscale+yscale)/2;
+		if(type==GAP_IN){
+			xscale0 = xscale + xscaleincr*duration;
+			yscale0 = yscale + yscaleincr*duration;
+			xscaleincr*=-1; yscaleincr*=-1;
+			alpha0 = 0; dA*=-1;
+		}
+		ObjRender_SetScaleXYZ(glow,xscale0,yscale0,1);
+		//ObjRender_SetAngleXYZ(glow,Xangle,Yangle,angle);
+		ObjRender_SetAngleZ(glow,angle);
+		
+		alternative(type)
+		case(GAP_IN ){ ObjRender_SetColor(glow,128,128,255); }
+		case(GAP_OUT){ ObjRender_SetColor(glow,255,130,128); }
+		
+		//Start of loop
+		//Expand and fade
+		ascent(i in 0..duration) {
+			ObjRender_SetAlpha(glow,alpha0+dA*i);
+			ObjRender_SetScaleXYZ(glow,xscale+xscaleincr*i,   yscale+yscaleincr*i,1);
+			if(Obj_IsValueExists(gap,"Blinking")){
+			//	ObjRender_SetAngleX(glow,ObjRender_GetAngleX(gap));
+			//	ObjRender_SetAngleXYZ(glow,Xangle,Yangle,angle);
+				if(type==GAP_IN){
+					//xscale1 = xscale + xscaleincr*duration; yscale1 = yscale + yscaleincr*duration;
+			//		ObjRender_SetScaleXYZ(glow,xscale+xscaleincr*i*xscale/xscale0,  yscale+yscaleincr*i*yscale/yscale0,1);
+				}
+			}
+			yield;
+		}
+		Obj_Delete(glow);
+	}
+	
+	
+	//Task responsible for detecting collisions and finding the shot's
+	//relative angle and position along the gap, which are passed into the warp function.
+	//This is where most of the math happens.
+	task TInGap {
+
+		let shots; let shot;
+		let x; let y; let t; let k; let a;
+		
+		while(!Obj_IsDeleted(gap)){
+			//Don't do stuff while the gap is hidden
+			while(Obj_GetValueD(gap,"Blinking",false)){yield;}
+			
+			//First check: Only grab shots in a diameter equal to the gap's length
+			shots = GetShotIdInCircleA2(midx,midy,opening/2,target);
+			ascent(i in 0..length(shots)){
+				shot = shots[i];
+				//Second check: Must be in rectangle with gap's length and max width
+				//Also, filter out shots marked ungappable (usually due to already having been gapped)
+				if(Obj_GetValueD(shot,"CanGap",true) && IsIntersected_Line_Circle(x0,y0,x1,y1,width, ObjMove_GetX(shot),ObjMove_GetY(shot),1)) {   //,width
+					
+					x=ObjMove_GetX(shot); y=ObjMove_GetY(shot);
+					//For loose lasers, wait until they're partway through the gap
+					if(Obj_GetType(shot)==OBJ_LOOSE_LASER){
+						x -= ObjLaser_GetLength(shot)*cos(ObjMove_GetAngle(shot))*0.5;
+						y -= ObjLaser_GetLength(shot)*sin(ObjMove_GetAngle(shot))*0.5;
+					}
+					
+					//t = (((x0-x)^2 + (y1-y)^2)^0.5)/opening;
+					t = (((x0-x)^2 + (y0-y)^2)^0.5)/opening;
+					k = GetDistanceToLine(x0,y0,x1,y1, x,y)/width;
+					a = NormalizeAngle(angle + ObjMove_GetAngle(shots[i]));
+					//Third check: Must be actually touching the gap.
+					//Uses a sine curve that closely follows the gap's sprite
+					//and then divides by four because turns out it looks 
+					//more consistent that way. Oh well.
+					if( k < sin(1.579*114*t)/4) {					
+						if(type==GAP_VOID || Obj_IsDeleted(outgap) || Obj_GetValueD(outgap,"Blinking",false)) {
+							Obj_Delete(shot);
+							Obj_SetValue(WarnShotA1(x,y,7,15),"CanGap",false);
+						}
+						else{
+							GapWarp(shot,t,k*0,a,outgap);
+							Obj_SetValue(WarnShotA1(x,y,6,15),"CanGap",false);
+						}
+					}
+						
+					
+				}
+			}
+			
+			//Now see if there are any straight lasers to gap
+			//Doesn't work yet, but the idea is to check if it intersects the gap,
+			// truncate it to the distance between the source and the point at which
+			// it hits the gap, and warp a shallow copy to the outgap.
+			if(Obj_IsValueExists(gap,"WarpLasers")){
+				// shots = Obj_GetValue(gap,"WarpLasers");
+				// let i = 0; let las;
+				// while(length(shots) > 0){
+					// las = shots[0];
+					// x=ObjMove_GetX(las); y=ObjMove_GetY(las); 
+					// a = ObjMove_GetAngle(las); 
+					// let l = ObjLaser_GetLength(las);
+					
+					// let dist = GetIntersection_Line_Line(x0,y0,x1,y1,   x,y,x+l*cos(a),y+l*sin(a));
+					// x = x+dist*cos(a); y = y+dist*sin(a);
+					// if(dist[0]!=NULL){
+						// ObjLaser_SetLength(las,dist);
+
+						// SE_Play(nyaa,200); //debug nyaas						
+						// t = (((x0-x)^2 + (y1-y)^2)^0.5)/opening;
+						// k = GetDistanceToLine(x0,y0,x1,y1, x,y)/width;
+						// a = NormalizeAngle(angle - ObjMove_GetAngle(las));
+						
+						// GapWarp(shots[i],t,k*0,a,outgap);
+					// }else{
+						// DebugWarnShot(x,y);
+					// }
+					// shots = erase(shots,i); Obj_SetValue(gap,"WarpLasers",shots);
+				// }
+			}
+			
+			yield;
+		}
+		
+	}
+	
+	
+	
+	//Maps the relative angle and position to the outgap and moves the shot.
+	//Also applies any patterns specified in the shot's dictionary.
+	//This is where the rest of the math happens.
+	task GapWarp(shot,t,k,a,outgap) {
+		
+		//Allow for "holding" shots in the gap
+		if(Obj_IsValueExists(outgap,"HoldShots") || Obj_IsValueExists(shot,"HoldShot")) {
+			ObjShot_SetAutoDelete(shot,false);
+			ObjMove_SetX(shot,-1000);
+			if(Obj_IsValueExists(outgap,"HoldShots")) {
+				let del = Obj_GetValue(outgap,"HoldShots"); let count = 0;
+				while(count < del || del<0) { count++; yield; del = Obj_GetValueD(outgap,"HoldShots",0);}
+			}
+			if(Obj_IsValueExists(shot,"HoldShot")){
+				let del = Obj_GetValue(shot,"HoldShot"); let count = 0;
+				while(count < del || del<0) {count++; yield; del = Obj_GetValueD(shot,"HoldShot",0);}
+			}
+			ObjShot_SetAutoDelete(shot,true);
+		}
+		
+		//Assemble information about the destination gap
+		let opening = ObjRender_GetScaleY(outgap)*114;
+		let width   = ObjRender_GetScaleX(outgap)*44;
+		let angle = ObjRender_GetAngleZ(outgap);
+		let endpoints = Obj_GetValueD(outgap,"Endpoints",[0,0,0,0]);	
+		let x0=endpoints[0]; let y0=endpoints[1]; let x1=endpoints[2]; let y1=endpoints[3];
+	
+		//Map the ratios t and k to a destination along the length and width of the gap
+		let outpos = rotate( width*k,opening*t, angle);
+	//	let x = x1-outpos[0]; let y = y1+outpos[1];
+		//let x = x0+outpos[0]; let y = y0-outpos[1];
+		let x = x1+outpos[0]; let y = y1+outpos[1];
+	
+		//If you'd rather the distance be measured from the other end
+		//Mainly useful if you want different shots to be measured from different ends,
+		//since otherwise you could just turn the gap 180 degrees
+		if(Obj_IsValueExists(shot,"MirrorWarpPosition")){x = x0+outpos[0]; y = y0-outpos[1];}
+		
+		//Actually move the shot
+		ObjMove_SetAngle(shot,angle+a);
+		ObjMove_SetPosition(shot,x,y);
+		
+		//Change shot parameters if specified in the shot's dictionary
+		if(Obj_IsValueExists(shot,"GapConvert")) {
+			if(Obj_GetValueD(shot,"ConvertDelay",0) > 0){
+				ObjMove_AddPatternA3(shot, 
+					Obj_GetValueD(shot,"ConvertDelay",0),
+					Obj_GetValueD(shot,"ConvertSpeed",NO_CHANGE), 
+					tern( Obj_IsValueExists(shot,"ConvertAngle") , angle+a+Obj_GetValue(shot,"ConvertAngle") , Obj_GetValueD(shot,"ConvertAngleAbsolute",NO_CHANGE) ), 
+					Obj_GetValueD(shot,"ConvertAcceleration",NO_CHANGE), 
+					Obj_GetValueD(shot,"ConvertAngularVelocity",NO_CHANGE),
+					Obj_GetValueD(shot,"ConvertMaxSpeed",ObjMove_GetSpeed(shot)), 
+					Obj_GetValueD(shot,"ConvertGraphic",NO_CHANGE)
+				); 
+			}else{
+				if(Obj_IsValueExists(shot,"ConvertSpeed")){ObjMove_SetSpeed(shot,Obj_GetValue(shot,"ConvertSpeed"));}
+				if(Obj_IsValueExists(shot,"ConvertAngle")){ObjMove_SetAngle(shot,a+angle+Obj_GetValue(shot,"ConvertAngle"));}else
+				if(Obj_IsValueExists(shot,"ConvertAngleAbsolute")){ObjMove_SetAngle(shot,Obj_GetValue(shot,"ConvertAngleAbsolute"));}else
+				if(Obj_IsValueExists(shot,"ConvertAngleAim")){let targ = Obj_GetValueD(shot,"ConvertAimTarget",[px,py]); ObjMove_SetAngle(shot,a+Obj_GetValue(shot,"ConvertAngleAim")+angleBetween(targ[0],targ[1],x,y) );}else
+				if(Obj_IsValueExists(shot,"ConvertAngleAimAbsolute")){let targ = Obj_GetValueD(shot,"ConvertAimTarget",[px,py]); ObjMove_SetAngle(shot,Obj_GetValue(shot,"ConvertAngleAim")+angleBetween(targ[0],targ[1],x,y) );}
+				if(Obj_IsValueExists(shot,"ConvertAngularVelocity")){ObjMove_SetAngularVelocity(shot,Obj_GetValue(shot,"ConvertAngularVelocity"));}
+				if(Obj_IsValueExists(shot,"ConvertMaxSpeed")){ObjMove_SetMaxSpeed(shot,Obj_GetValue(shot,"ConvertMaxSpeed"));}
+				if(Obj_IsValueExists(shot,"ConvertGraphic")){ObjShot_SetGraphic(shot,Obj_GetValue(shot,"ConvertGraphic"));}
+			}
+			if(Obj_IsValueExists(shot,"ConvertSpellResist")){ObjShot_SetSpellResist(shot,Obj_GetValue(shot,"ConvertSpellResist"));}	
+			if(Obj_IsValueExists(shot,"ConvertIntersection")){ObjShot_SetIntersectionEnable(shot,Obj_GetValue(shot,"ConvertIntersection"));}	
+			
+			if(Obj_IsValueExists(shot,"ConvertScaleXYZ")){let xyz = Obj_GetValue(shot,"ConvertScaleXYZ"); ObjRender_SetScaleXYZ(shot,xyz[0],xyz[1],xyz[2]); }
+			if(Obj_IsValueExists(shot,"ConvertColor")){let rgba = Obj_GetValue(shot,"ConvertColor"); ObjRender_SetColor(shot,rgba[0],rgba[1],rgba[2]); if(length(rgba)>3){ ObjRender_SetAlpha(shot,rgba[3]); } }
+			if(Obj_IsValueExists(shot,"ConvertAlpha")){ObjRender_SetAlpha(shot,Obj_GetValue(shot,"ConvertAlpha")); }
+			if(Obj_IsValueExists(shot,"ConvertBlendType")){ObjRender_SetBlendType(shot,Obj_GetValue(shot,"ConvertBlendType")); }
+			
+			if(Obj_IsValueExists(shot,"ConvertDeleteFrame")){ ObjShot_SetDeleteFrame(shot,Obj_GetValue(shot,"ConvertDeleteFrame")); }else
+			if(Obj_IsValueExists(shot,"ConvertFadeDeleteFrame")){ DelayFadeDelete(shot,Obj_GetValue(shot,"ConvertFadeDeleteFrame")); }
+			
+			
+		}
+		
+		//Make sure it doesn't get gapped again unless it's flagged as being allowed to do that
+		if(Obj_GetValueD(shot,"NoRepeatGap",true)){
+			Obj_SetValue(shot,"CanGap",false);
+		}
+		//Check this to wait for the shot to be gapped if you want to do something else with it
+		Obj_SetValue(shot,"WasGapped",Obj_GetValueD(shot,"WasGapped",0)+1);
+		
+		//Glow effect
+		Obj_SetValue(WarnShotA1(x,y,2,15),"CanGap",false);
+		
+		//Play a sound if one was provided through dictionary args
+		if(Obj_IsValueExists(shot,"WarpSE")){
+			if(Obj_IsValueExists(gap,"WarpSEObject")){
+				let seobj=Obj_GetValue(gap,"WarpSEObject");
+				SE_PlayA2( Obj_GetValueD(shot,"WarpSE",Obj_GetValue(gap,"WarpSE")), Obj_GetValueD(shot,"WarpSEVol",Obj_GetValueD(gap,"WarpSEVol",60)),seobj,Obj_GetValueD(shot,"WarpSEDur",Obj_GetValueD(gap,"WarpSEDur",10)));
+			}else{
+				SE_Play( Obj_GetValueD(shot,"WarpSE",Obj_GetValue(gap,"WarpSE")), Obj_GetValueD(shot,"WarpSEVol",Obj_GetValueD(gap,"WarpSEVol",60)));
+			}
+			 
+		}
+		else if(Obj_IsValueExists(gap,"WarpSE")){
+			SE_PlayA2(Obj_GetValue(gap,"WarpSE"),Obj_GetValueD(gap,"WarpSEVol",60),seobj,Obj_GetValueD(gap,"WarpSEDur",10)); 
+		}
+		
+	}
+}
+//////////////////////////////////////////////////////////////////////////
+//Various functions to manipulate gaps
+//////////////////////////////////////////////////////////////////////////
+
+
+//Pattern is applied when bullet is warped
+function ObjMove_AddPatternGapA3(shot,delay,speed,angle,accel,angv,mspd,graph){
+	Obj_SetValue(shot,"GapConvert",delay>0);
+	Obj_SetValue(shot,"CanGap",true);
+	if(delay>0){Obj_SetValue(shot,"ConvertDelay",delay);}
+	if(speed!=NO_CHANGE){Obj_SetValue(shot,"ConvertSpeed",speed);}
+	if(angle!=NO_CHANGE){Obj_SetValue(shot,"ConvertAngle",angle);}
+	if(accel!=NO_CHANGE){Obj_SetValue(shot,"ConvertAcceleration",accel);}
+	if(angv !=NO_CHANGE){Obj_SetValue(shot,"ConvertAngularVelocity",angv);}
+	if(mspd !=NO_CHANGE){Obj_SetValue(shot,"ConvertMaxSpeed",mspd);}
+	if(graph!=NO_CHANGE){Obj_SetValue(shot,"ConvertGraphic",graph);}
+}
+
+
+
+
+//Get a reference to the gap's render object
+function ObjGap_GetRenderObject(gap){return Obj_GetValue(gap,"RenderObject");}
+
+
+//Assign a new outgap
+function ObjGap_SetDestinationGap(ingap,outgap){
+	Obj_SetValue(ingap,"NewOutGap",outgap);
+}
+
+
+//Set gap's x and y position
+function ObjGap_SetPosition(gap,x,y){
+	Obj_SetValue(gap,"NewPosition",[x,y]);
+	Obj_SetValue(gap,"UpdateCheck","");
+}
+//Set angle of gap
+//When aiming gaps, remember that a shot hitting the BACK of the ingap will come out the front of the outgap
+function ObjGap_SetAngle(gap,angle){
+	Obj_SetValue(gap,"NewAngleXYZ",[NO_CHANGE,NO_CHANGE,angle]);
+	Obj_SetValue(gap,"UpdateCheck","");
+}
+function ObjGap_SetAngleXYZ(gap,angle_xyz){ 	//array [x,y,z]
+	Obj_SetValue(gap,"NewAngleXYZ",angle_xyz);	//NO_CHANGE can be used
+	Obj_SetValue(gap,"UpdateCheck","");
+}
+//Set gap's x, y, and angle
+function ObjGap_SetPositionXYA(gap,x,y,a){
+	Obj_SetValue(gap,"NewPosition",[x,y]);
+	Obj_SetValue(gap,"NewAngleXYZ",[NO_CHANGE,NO_CHANGE,a]);
+	Obj_SetValue(gap,"UpdateCheck","");
+}
+
+
+//Set scale of gap
+//Gaps do not need to have the same scale;
+//shots are mapped to a point x% along the outgap regardless of scale
+function ObjGap_SetScaleXYZ(gap,scale_xyz){ 	//array [x,y,z]
+	Obj_SetValue(gap,"NewScaleXYZ",scale_xyz);	//NO_CHANGE can be used
+	Obj_SetValue(gap,"UpdateCheck","");		//z doesn't actually do anything, it's just convention
+}												
+
+//Closes and deletes gap
+function ObjGap_Delete(gap){
+	Obj_SetValue(gap,"DeleteGap",true);
+}
+
+
+//Gap "blinks" shut for time
+//A ratio of 0.05 blinks it 95% shut
+task ObjGap_Blink(gap,ratio,closetime,opentime,del){
+	let scale = ObjRender_GetScaleX(gap);
+	let dS = absolute((1-ratio)*scale)/closetime;
+	Obj_SetValue(gap,"Blinking",false);
+	loop(closetime){
+		scale-=dS;
+		Obj_SetValue(gap,"NewScaleXYZ",[scale,NO_CHANGE,NO_CHANGE]);
+		Obj_SetValue(gap,"UpdateCheck","");
+		yield;
+	}
+	Obj_SetValue(gap,"Blinking",true);
+	if(del>0){wait(del);}
+	else{ while(del<0 && Obj_GetValueD(gap,"Blinking",true)){yield;}}
+	
+	Obj_SetValue(gap,"Blinking",false);
+	if(Obj_IsValueExists(gap,"BlinkSE")){SE_Play(Obj_GetValue(gap,"BlinkSE"),Obj_GetValueD(gap,"BlinkSEVol",100));}
+	dS = dS*closetime/opentime;
+	loop(opentime){
+		scale+=dS;
+		Obj_SetValue(gap,"NewScaleXYZ",[scale,NO_CHANGE,NO_CHANGE]);
+		Obj_SetValue(gap,"UpdateCheck","");
+		yield;
+	}
+	Obj_DeleteValue(gap,"Blinking");
+}
+
+task ObjGap_SetDestAtBlink(gap,x,y,a,ratio,closetime,opentime,del){
+	ObjGap_Blink(gap,ratio,closetime,opentime,del);
+	wait(closetime);
+	if(a!=NO_CHANGE){ObjGap_SetPositionXYA(gap,x,y,a);}else{ObjGap_SetPosition(gap,x,y);}
+}
+
+//////////////////////////////////////////////////////////////////////////
+//End of gap functions
+//////////////////////////////////////////////////////////////////////////

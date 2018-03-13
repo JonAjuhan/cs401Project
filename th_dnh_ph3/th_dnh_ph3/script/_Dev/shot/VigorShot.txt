@@ -1,0 +1,278 @@
+#UserShotData
+
+shot_image = "./img/VigorBullet.png"
+
+//delay_rect = (448,256,512,320)
+
+//Color order :
+//xx0 - Red
+//xx1 - Green
+//xx2 - Blue
+//xx3 - Yellow
+//xx4 - Cyan
+//xx5 - Violet
+//xx6 - Orange
+//xx7 - Pink
+//xx8 - Mint
+//xx9 - Forest
+//xx10 - Marine
+//xx11 - Purple
+//xx12 - Dark Gray
+//xx13 - Medium Gray
+//xx14 - Light Gray
+//xx15 - White
+
+//Registered bullet list : 
+//  0- 15  R  Medium     Round
+// 20- 35  D  Small      Round
+// 40- 45  P  Single     Pellet
+// 50- 65  T  Twin       Pellet
+// 70- 85  H  Halo       Round
+// 90-105  V  Void       Round
+//110-125  A  Amulet     Square
+//130-145  S  Arrowhead  Triangle
+//150-165  O  Large      Round
+//170-185  E  Large      Pellet
+//190-205  K  Knife      Triangle
+//210-225  L  Thin       Laser
+//230-245  B  Giant      Round
+
+//16x16 size
+
+// R-ound
+ShotData{ id=0  rect=(  0,0, 16,16) render=ALPHA delay_color=(255,  0,  0) collision = 6}
+ShotData{ id=1  rect=( 16,0, 32,16) render=ALPHA delay_color=(  0,255,  0) collision = 6}
+ShotData{ id=2  rect=( 32,0, 48,16) render=ALPHA delay_color=(  0,  0,255) collision = 6}
+ShotData{ id=3  rect=( 48,0, 64,16) render=ALPHA delay_color=(255,255,  0) collision = 6}
+ShotData{ id=4  rect=( 64,0, 80,16) render=ALPHA delay_color=(  0,255,255) collision = 6}
+ShotData{ id=5  rect=( 80,0, 96,16) render=ALPHA delay_color=(255,  0,255) collision = 6}
+ShotData{ id=6  rect=( 96,0,112,16) render=ALPHA delay_color=(255,128, 64) collision = 6}
+ShotData{ id=7  rect=(112,0,128,16) render=ALPHA delay_color=(255, 64,128) collision = 6}
+ShotData{ id=8  rect=(128,0,144,16) render=ALPHA delay_color=(128,255, 64) collision = 6}
+ShotData{ id=9  rect=(144,0,160,16) render=ALPHA delay_color=( 64,255,128) collision = 6}
+ShotData{ id=10 rect=(160,0,176,16) render=ALPHA delay_color=( 64,128,255) collision = 6}
+ShotData{ id=11 rect=(176,0,192,16) render=ALPHA delay_color=(128, 64,255) collision = 6}
+ShotData{ id=12 rect=(192,0,208,16) render=ALPHA delay_color=( 64, 64, 64) collision = 6}
+ShotData{ id=13 rect=(208,0,224,16) render=ALPHA delay_color=(128,128,128) collision = 6}
+ShotData{ id=14 rect=(224,0,240,16) render=ALPHA delay_color=(192,192,192) collision = 6}
+ShotData{ id=15 rect=(240,0,256,16) render=ALPHA delay_color=(255,255,255) collision = 6}
+
+// D-ot
+ShotData{ id=20 rect=(256,0,272,16) render=ALPHA delay_color=(255,  0,  0) collision = 4}
+ShotData{ id=21 rect=(272,0,288,16) render=ALPHA delay_color=(  0,255,  0) collision = 4}
+ShotData{ id=22 rect=(288,0,304,16) render=ALPHA delay_color=(  0,  0,255) collision = 4}
+ShotData{ id=23 rect=(304,0,320,16) render=ALPHA delay_color=(255,255,  0) collision = 4}
+ShotData{ id=24 rect=(320,0,336,16) render=ALPHA delay_color=(  0,255,255) collision = 4}
+ShotData{ id=25 rect=(336,0,352,16) render=ALPHA delay_color=(255,  0,255) collision = 4}
+ShotData{ id=26 rect=(352,0,368,16) render=ALPHA delay_color=(255,128, 64) collision = 4}
+ShotData{ id=27 rect=(368,0,384,16) render=ALPHA delay_color=(255, 64,128) collision = 4}
+ShotData{ id=28 rect=(384,0,400,16) render=ALPHA delay_color=(128,255, 64) collision = 4}
+ShotData{ id=29 rect=(400,0,416,16) render=ALPHA delay_color=( 64,255,128) collision = 4}
+ShotData{ id=30 rect=(416,0,432,16) render=ALPHA delay_color=( 64,128,255) collision = 4}
+ShotData{ id=31 rect=(432,0,448,16) render=ALPHA delay_color=(128, 64,255) collision = 4}
+ShotData{ id=32 rect=(448,0,464,16) render=ALPHA delay_color=( 64, 64, 64) collision = 4}
+ShotData{ id=33 rect=(464,0,480,16) render=ALPHA delay_color=(128,128,128) collision = 4}
+ShotData{ id=34 rect=(480,0,496,16) render=ALPHA delay_color=(192,192,192) collision = 4}
+ShotData{ id=35 rect=(496,0,512,16) render=ALPHA delay_color=(255,255,255) collision = 4}
+
+// H-alo
+ShotData{ id=40 rect=(  0,16, 16,32) render=ALPHA delay_color=(255,  0,  0) collision = 5}
+ShotData{ id=41 rect=( 16,16, 32,32) render=ALPHA delay_color=(  0,255,  0) collision = 5}
+ShotData{ id=42 rect=( 32,16, 48,32) render=ALPHA delay_color=(  0,  0,255) collision = 5}
+ShotData{ id=43 rect=( 48,16, 64,32) render=ALPHA delay_color=(255,255,  0) collision = 5}
+ShotData{ id=44 rect=( 64,16, 80,32) render=ALPHA delay_color=(  0,255,255) collision = 5}
+ShotData{ id=45 rect=( 80,16, 96,32) render=ALPHA delay_color=(255,  0,255) collision = 5}
+ShotData{ id=46 rect=( 96,16,112,32) render=ALPHA delay_color=(255,128, 64) collision = 5}
+ShotData{ id=47 rect=(112,16,128,32) render=ALPHA delay_color=(255, 64,128) collision = 5}
+ShotData{ id=48 rect=(128,16,144,32) render=ALPHA delay_color=(128,255, 64) collision = 5}
+ShotData{ id=49 rect=(144,16,160,32) render=ALPHA delay_color=( 64,255,128) collision = 5}
+ShotData{ id=50 rect=(160,16,176,32) render=ALPHA delay_color=( 64,128,255) collision = 5}
+ShotData{ id=51 rect=(176,16,192,32) render=ALPHA delay_color=(128, 64,255) collision = 5}
+ShotData{ id=52 rect=(192,16,208,32) render=ALPHA delay_color=( 64, 64, 64) collision = 5}
+ShotData{ id=53 rect=(208,16,224,32) render=ALPHA delay_color=(128,128,128) collision = 5}
+ShotData{ id=54 rect=(224,16,240,32) render=ALPHA delay_color=(192,192,192) collision = 5}
+ShotData{ id=55 rect=(240,16,256,32) render=ALPHA delay_color=(255,255,255) collision = 5}
+
+// V-oid
+ShotData{ id=60 rect=(256,16,272,32) render=ALPHA delay_color=(255,  0,  0) collision = 6}
+ShotData{ id=61 rect=(272,16,288,32) render=ALPHA delay_color=(  0,255,  0) collision = 6}
+ShotData{ id=62 rect=(288,16,304,32) render=ALPHA delay_color=(  0,  0,255) collision = 6}
+ShotData{ id=63 rect=(304,16,320,32) render=ALPHA delay_color=(255,255,  0) collision = 6}
+ShotData{ id=64 rect=(320,16,336,32) render=ALPHA delay_color=(  0,255,255) collision = 6}
+ShotData{ id=65 rect=(336,16,352,32) render=ALPHA delay_color=(255,  0,255) collision = 6}
+ShotData{ id=66 rect=(352,16,368,32) render=ALPHA delay_color=(255,128, 64) collision = 6}
+ShotData{ id=67 rect=(368,16,384,32) render=ALPHA delay_color=(255, 64,128) collision = 6}
+ShotData{ id=68 rect=(384,16,400,32) render=ALPHA delay_color=(128,255, 64) collision = 6}
+ShotData{ id=69 rect=(400,16,416,32) render=ALPHA delay_color=( 64,255,128) collision = 6}
+ShotData{ id=70 rect=(416,16,432,32) render=ALPHA delay_color=( 64,128,255) collision = 6}
+ShotData{ id=71 rect=(432,16,448,32) render=ALPHA delay_color=(128, 64,255) collision = 6}
+ShotData{ id=72 rect=(448,16,464,32) render=ALPHA delay_color=( 64, 64, 64) collision = 6}
+ShotData{ id=73 rect=(464,16,480,32) render=ALPHA delay_color=(128,128,128) collision = 6}
+ShotData{ id=74 rect=(480,16,496,32) render=ALPHA delay_color=(192,192,192) collision = 6}
+ShotData{ id=75 rect=(496,16,512,32) render=ALPHA delay_color=(255,255,255) collision = 6}
+
+// P-ellet
+ShotData{ id=80 rect=(  0,32, 16,48) render=ALPHA delay_color=(255,  0,  0) collision = (3,0,-2) collision = (3,0,2)}
+ShotData{ id=81 rect=( 16,32, 32,48) render=ALPHA delay_color=(  0,255,  0) collision = (3,0,-2) collision = (3,0,2)}
+ShotData{ id=82 rect=( 32,32, 48,48) render=ALPHA delay_color=(  0,  0,255) collision = (3,0,-2) collision = (3,0,2)}
+ShotData{ id=83 rect=( 48,32, 64,48) render=ALPHA delay_color=(255,255,  0) collision = (3,0,-2) collision = (3,0,2)}
+ShotData{ id=84 rect=( 64,32, 80,48) render=ALPHA delay_color=(  0,255,255) collision = (3,0,-2) collision = (3,0,2)}
+ShotData{ id=85 rect=( 80,32, 96,48) render=ALPHA delay_color=(255,  0,255) collision = (3,0,-2) collision = (3,0,2)}
+ShotData{ id=86 rect=( 96,32,112,48) render=ALPHA delay_color=(255,128, 64) collision = (3,0,-2) collision = (3,0,2)}
+ShotData{ id=87 rect=(112,32,128,48) render=ALPHA delay_color=(255, 64,128) collision = (3,0,-2) collision = (3,0,2)}
+ShotData{ id=88 rect=(128,32,144,48) render=ALPHA delay_color=(128,255, 64) collision = (3,0,-2) collision = (3,0,2)}
+ShotData{ id=89 rect=(144,32,160,48) render=ALPHA delay_color=( 64,255,128) collision = (3,0,-2) collision = (3,0,2)}
+ShotData{ id=90 rect=(160,32,176,48) render=ALPHA delay_color=( 64,128,255) collision = (3,0,-2) collision = (3,0,2)}
+ShotData{ id=91 rect=(176,32,192,48) render=ALPHA delay_color=(128, 64,255) collision = (3,0,-2) collision = (3,0,2)}
+ShotData{ id=92 rect=(192,32,208,48) render=ALPHA delay_color=( 64, 64, 64) collision = (3,0,-2) collision = (3,0,2)}
+ShotData{ id=93 rect=(208,32,224,48) render=ALPHA delay_color=(128,128,128) collision = (3,0,-2) collision = (3,0,2)}
+ShotData{ id=94 rect=(224,32,240,48) render=ALPHA delay_color=(192,192,192) collision = (3,0,-2) collision = (3,0,2)}
+ShotData{ id=95 rect=(240,32,256,48) render=ALPHA delay_color=(255,255,255) collision = (3,0,-2) collision = (3,0,2)}
+
+// T-win
+ShotData{ id=100 rect=(256,32,272,48) render=ALPHA delay_color=(255,  0,  0) collision = (2.5,-4.5,-1) collision = (2.5,-4.5,1) collision = (2.5,4.5,-1) collision = (2.5,4.5,1)}
+ShotData{ id=101 rect=(272,32,288,48) render=ALPHA delay_color=(  0,255,  0) collision = (2.5,-4.5,-1) collision = (2.5,-4.5,1) collision = (2.5,4.5,-1) collision = (2.5,4.5,1)}
+ShotData{ id=102 rect=(288,32,304,48) render=ALPHA delay_color=(  0,  0,255) collision = (2.5,-4.5,-1) collision = (2.5,-4.5,1) collision = (2.5,4.5,-1) collision = (2.5,4.5,1)}
+ShotData{ id=103 rect=(304,32,320,48) render=ALPHA delay_color=(255,255,  0) collision = (2.5,-4.5,-1) collision = (2.5,-4.5,1) collision = (2.5,4.5,-1) collision = (2.5,4.5,1)}
+ShotData{ id=104 rect=(320,32,336,48) render=ALPHA delay_color=(  0,255,255) collision = (2.5,-4.5,-1) collision = (2.5,-4.5,1) collision = (2.5,4.5,-1) collision = (2.5,4.5,1)}
+ShotData{ id=105 rect=(336,32,352,48) render=ALPHA delay_color=(255,  0,255) collision = (2.5,-4.5,-1) collision = (2.5,-4.5,1) collision = (2.5,4.5,-1) collision = (2.5,4.5,1)}
+ShotData{ id=106 rect=(352,32,368,48) render=ALPHA delay_color=(255,128, 64) collision = (2.5,-4.5,-1) collision = (2.5,-4.5,1) collision = (2.5,4.5,-1) collision = (2.5,4.5,1)}
+ShotData{ id=107 rect=(368,32,384,48) render=ALPHA delay_color=(255, 64,128) collision = (2.5,-4.5,-1) collision = (2.5,-4.5,1) collision = (2.5,4.5,-1) collision = (2.5,4.5,1)}
+ShotData{ id=108 rect=(384,32,400,48) render=ALPHA delay_color=(128,255, 64) collision = (2.5,-4.5,-1) collision = (2.5,-4.5,1) collision = (2.5,4.5,-1) collision = (2.5,4.5,1)}
+ShotData{ id=109 rect=(400,32,416,48) render=ALPHA delay_color=( 64,255,128) collision = (2.5,-4.5,-1) collision = (2.5,-4.5,1) collision = (2.5,4.5,-1) collision = (2.5,4.5,1)}
+ShotData{ id=110 rect=(416,32,432,48) render=ALPHA delay_color=( 64,128,255) collision = (2.5,-4.5,-1) collision = (2.5,-4.5,1) collision = (2.5,4.5,-1) collision = (2.5,4.5,1)}
+ShotData{ id=111 rect=(432,32,448,48) render=ALPHA delay_color=(128, 64,255) collision = (2.5,-4.5,-1) collision = (2.5,-4.5,1) collision = (2.5,4.5,-1) collision = (2.5,4.5,1)}
+ShotData{ id=112 rect=(448,32,464,48) render=ALPHA delay_color=( 64, 64, 64) collision = (2.5,-4.5,-1) collision = (2.5,-4.5,1) collision = (2.5,4.5,-1) collision = (2.5,4.5,1)}
+ShotData{ id=113 rect=(464,32,480,48) render=ALPHA delay_color=(128,128,128) collision = (2.5,-4.5,-1) collision = (2.5,-4.5,1) collision = (2.5,4.5,-1) collision = (2.5,4.5,1)}
+ShotData{ id=114 rect=(480,32,496,48) render=ALPHA delay_color=(192,192,192) collision = (2.5,-4.5,-1) collision = (2.5,-4.5,1) collision = (2.5,4.5,-1) collision = (2.5,4.5,1)}
+ShotData{ id=115 rect=(496,32,512,48) render=ALPHA delay_color=(255,255,255) collision = (2.5,-4.5,-1) collision = (2.5,-4.5,1) collision = (2.5,4.5,-1) collision = (2.5,4.5,1)}
+
+// A-mulet
+ShotData{ id=120 rect=(  0,48, 16,64) render=ALPHA delay_color=(255,  0,  0) collision = (4,0,-2) collision = (4,0,2)}
+ShotData{ id=121 rect=( 16,48, 32,64) render=ALPHA delay_color=(  0,255,  0) collision = (4,0,-2) collision = (4,0,2)}
+ShotData{ id=122 rect=( 32,48, 48,64) render=ALPHA delay_color=(  0,  0,255) collision = (4,0,-2) collision = (4,0,2)}
+ShotData{ id=123 rect=( 48,48, 64,64) render=ALPHA delay_color=(255,255,  0) collision = (4,0,-2) collision = (4,0,2)}
+ShotData{ id=124 rect=( 64,48, 80,64) render=ALPHA delay_color=(  0,255,255) collision = (4,0,-2) collision = (4,0,2)}
+ShotData{ id=125 rect=( 80,48, 96,64) render=ALPHA delay_color=(255,  0,255) collision = (4,0,-2) collision = (4,0,2)}
+ShotData{ id=126 rect=( 96,48,112,64) render=ALPHA delay_color=(255,128, 64) collision = (4,0,-2) collision = (4,0,2)}
+ShotData{ id=127 rect=(112,48,128,64) render=ALPHA delay_color=(255, 64,128) collision = (4,0,-2) collision = (4,0,2)}
+ShotData{ id=128 rect=(128,48,144,64) render=ALPHA delay_color=(128,255, 64) collision = (4,0,-2) collision = (4,0,2)}
+ShotData{ id=129 rect=(144,48,160,64) render=ALPHA delay_color=( 64,255,128) collision = (4,0,-2) collision = (4,0,2)}
+ShotData{ id=130 rect=(160,48,176,64) render=ALPHA delay_color=( 64,128,255) collision = (4,0,-2) collision = (4,0,2)}
+ShotData{ id=131 rect=(176,48,192,64) render=ALPHA delay_color=(128, 64,255) collision = (4,0,-2) collision = (4,0,2)}
+ShotData{ id=132 rect=(192,48,208,64) render=ALPHA delay_color=( 64, 64, 64) collision = (4,0,-2) collision = (4,0,2)}
+ShotData{ id=133 rect=(208,48,224,64) render=ALPHA delay_color=(128,128,128) collision = (4,0,-2) collision = (4,0,2)}
+ShotData{ id=134 rect=(224,48,240,64) render=ALPHA delay_color=(192,192,192) collision = (4,0,-2) collision = (4,0,2)}
+ShotData{ id=135 rect=(240,48,256,64) render=ALPHA delay_color=(255,255,255) collision = (4,0,-2) collision = (4,0,2)}
+
+// S-pike
+ShotData{ id=140 rect=(256,48,272,64) render=ALPHA delay_color=(255,  0,  0) collision = (5,0,1) collision = (3,0,-3)}
+ShotData{ id=141 rect=(272,48,288,64) render=ALPHA delay_color=(  0,255,  0) collision = (5,0,1) collision = (3,0,-3)}
+ShotData{ id=142 rect=(288,48,304,64) render=ALPHA delay_color=(  0,  0,255) collision = (5,0,1) collision = (3,0,-3)}
+ShotData{ id=143 rect=(304,48,320,64) render=ALPHA delay_color=(255,255,  0) collision = (5,0,1) collision = (3,0,-3)}
+ShotData{ id=144 rect=(320,48,336,64) render=ALPHA delay_color=(  0,255,255) collision = (5,0,1) collision = (3,0,-3)}
+ShotData{ id=145 rect=(336,48,352,64) render=ALPHA delay_color=(255,  0,255) collision = (5,0,1) collision = (3,0,-3)}
+ShotData{ id=146 rect=(352,48,368,64) render=ALPHA delay_color=(255,128, 64) collision = (5,0,1) collision = (3,0,-3)}
+ShotData{ id=147 rect=(368,48,384,64) render=ALPHA delay_color=(255, 64,128) collision = (5,0,1) collision = (3,0,-3)}
+ShotData{ id=148 rect=(384,48,400,64) render=ALPHA delay_color=(128,255, 64) collision = (5,0,1) collision = (3,0,-3)}
+ShotData{ id=149 rect=(400,48,416,64) render=ALPHA delay_color=( 64,255,128) collision = (5,0,1) collision = (3,0,-3)}
+ShotData{ id=150 rect=(416,48,432,64) render=ALPHA delay_color=( 64,128,255) collision = (5,0,1) collision = (3,0,-3)}
+ShotData{ id=151 rect=(432,48,448,64) render=ALPHA delay_color=(128, 64,255) collision = (5,0,1) collision = (3,0,-3)}
+ShotData{ id=152 rect=(448,48,464,64) render=ALPHA delay_color=( 64, 64, 64) collision = (5,0,1) collision = (3,0,-3)}
+ShotData{ id=153 rect=(464,48,480,64) render=ALPHA delay_color=(128,128,128) collision = (5,0,1) collision = (3,0,-3)}
+ShotData{ id=154 rect=(480,48,496,64) render=ALPHA delay_color=(192,192,192) collision = (5,0,1) collision = (3,0,-3)}
+ShotData{ id=155 rect=(496,48,512,64) render=ALPHA delay_color=(255,255,255) collision = (5,0,1) collision = (3,0,-3)}
+
+//32x32 size
+
+// O-rb
+ShotData{ id=160 rect=(  0,64, 32,96) render=ALPHA delay_color=(255,  0,  0) collision = 10}
+ShotData{ id=161 rect=( 32,64, 64,96) render=ALPHA delay_color=(  0,255,  0) collision = 10}
+ShotData{ id=162 rect=( 64,64, 96,96) render=ALPHA delay_color=(  0,  0,255) collision = 10}
+ShotData{ id=163 rect=( 96,64,128,96) render=ALPHA delay_color=(255,255,  0) collision = 10}
+ShotData{ id=164 rect=(128,64,160,96) render=ALPHA delay_color=(  0,255,255) collision = 10}
+ShotData{ id=165 rect=(160,64,192,96) render=ALPHA delay_color=(255,  0,255) collision = 10}
+ShotData{ id=166 rect=(192,64,224,96) render=ALPHA delay_color=(255,128, 64) collision = 10}
+ShotData{ id=167 rect=(224,64,256,96) render=ALPHA delay_color=(255, 64,128) collision = 10}
+ShotData{ id=168 rect=(256,64,288,96) render=ALPHA delay_color=(128,255, 64) collision = 10}
+ShotData{ id=169 rect=(288,64,320,96) render=ALPHA delay_color=( 64,255,128) collision = 10}
+ShotData{ id=170 rect=(320,64,352,96) render=ALPHA delay_color=( 64,128,255) collision = 10}
+ShotData{ id=171 rect=(352,64,384,96) render=ALPHA delay_color=(128, 64,255) collision = 10}
+ShotData{ id=172 rect=(384,64,416,96) render=ALPHA delay_color=( 64, 64, 64) collision = 10}
+ShotData{ id=173 rect=(416,64,448,96) render=ALPHA delay_color=(128,128,128) collision = 10}
+ShotData{ id=174 rect=(448,64,480,96) render=ALPHA delay_color=(192,192,192) collision = 10}
+ShotData{ id=175 rect=(480,64,512,96) render=ALPHA delay_color=(255,255,255) collision = 10}
+
+// E-llipse
+ShotData{ id=180 rect=(  0,96, 32,128) render=ALPHA delay_color=(255,  0,  0) collision = 5  collision = (4,0,0) collision = (4,0,-4) collision = (4,0,4) collision = (3,0,-8) collision = (3,0,8)}
+ShotData{ id=181 rect=( 32,96, 64,128) render=ALPHA delay_color=(  0,255,  0) collision = 5  collision = (4,0,0) collision = (4,0,-4) collision = (4,0,4) collision = (3,0,-8) collision = (3,0,8)}
+ShotData{ id=182 rect=( 64,96, 96,128) render=ALPHA delay_color=(  0,  0,255) collision = 5  collision = (4,0,0) collision = (4,0,-4) collision = (4,0,4) collision = (3,0,-8) collision = (3,0,8)}
+ShotData{ id=183 rect=( 96,96,128,128) render=ALPHA delay_color=(255,255,  0) collision = 5  collision = (4,0,0) collision = (4,0,-4) collision = (4,0,4) collision = (3,0,-8) collision = (3,0,8)}
+ShotData{ id=184 rect=(128,96,160,128) render=ALPHA delay_color=(  0,255,255) collision = 5  collision = (4,0,0) collision = (4,0,-4) collision = (4,0,4) collision = (3,0,-8) collision = (3,0,8)}
+ShotData{ id=185 rect=(160,96,192,128) render=ALPHA delay_color=(255,  0,255) collision = 5  collision = (4,0,0) collision = (4,0,-4) collision = (4,0,4) collision = (3,0,-8) collision = (3,0,8)}
+ShotData{ id=186 rect=(192,96,224,128) render=ALPHA delay_color=(255,128, 64) collision = 5  collision = (4,0,0) collision = (4,0,-4) collision = (4,0,4) collision = (3,0,-8) collision = (3,0,8)}
+ShotData{ id=187 rect=(224,96,256,128) render=ALPHA delay_color=(255, 64,128) collision = 5  collision = (4,0,0) collision = (4,0,-4) collision = (4,0,4) collision = (3,0,-8) collision = (3,0,8)}
+ShotData{ id=188 rect=(256,96,288,128) render=ALPHA delay_color=(128,255, 64) collision = 5  collision = (4,0,0) collision = (4,0,-4) collision = (4,0,4) collision = (3,0,-8) collision = (3,0,8)}
+ShotData{ id=189 rect=(288,96,320,128) render=ALPHA delay_color=( 64,255,128) collision = 5  collision = (4,0,0) collision = (4,0,-4) collision = (4,0,4) collision = (3,0,-8) collision = (3,0,8)}
+ShotData{ id=190 rect=(320,96,352,128) render=ALPHA delay_color=( 64,128,255) collision = 5  collision = (4,0,0) collision = (4,0,-4) collision = (4,0,4) collision = (3,0,-8) collision = (3,0,8)}
+ShotData{ id=191 rect=(352,96,384,128) render=ALPHA delay_color=(128, 64,255) collision = 5  collision = (4,0,0) collision = (4,0,-4) collision = (4,0,4) collision = (3,0,-8) collision = (3,0,8)}
+ShotData{ id=192 rect=(384,96,416,128) render=ALPHA delay_color=( 64, 64, 64) collision = 5  collision = (4,0,0) collision = (4,0,-4) collision = (4,0,4) collision = (3,0,-8) collision = (3,0,8)}
+ShotData{ id=193 rect=(416,96,448,128) render=ALPHA delay_color=(128,128,128) collision = 5  collision = (4,0,0) collision = (4,0,-4) collision = (4,0,4) collision = (3,0,-8) collision = (3,0,8)}
+ShotData{ id=194 rect=(448,96,480,128) render=ALPHA delay_color=(192,192,192) collision = 5  collision = (4,0,0) collision = (4,0,-4) collision = (4,0,4) collision = (3,0,-8) collision = (3,0,8)}
+ShotData{ id=195 rect=(480,96,512,128) render=ALPHA delay_color=(255,255,255) collision = 5  collision = (4,0,0) collision = (4,0,-4) collision = (4,0,4) collision = (3,0,-8) collision = (3,0,8)}
+
+// K-nife
+ShotData{ id=200 rect=(  0,128, 32,160) render=ALPHA delay_color=(255,  0,  0) collision = (2,0,-12) collision = (2,0,-10) collision = (2,0,-8) collision = (2,0,-6) collision = (2,0,-4) collision = (2,0,-2) collision = (2,0,0) collision = (2,0,2) collision = (3,0,6) collision = (2,-5,5) collision = (2,5,5) collision = (2,0,10) collision = (2,0,12)}
+ShotData{ id=201 rect=( 32,128, 64,160) render=ALPHA delay_color=(  0,255,  0) collision = (2,0,-12) collision = (2,0,-10) collision = (2,0,-8) collision = (2,0,-6) collision = (2,0,-4) collision = (2,0,-2) collision = (2,0,0) collision = (2,0,2) collision = (3,0,6) collision = (2,-5,5) collision = (2,5,5) collision = (2,0,10) collision = (2,0,12)}
+ShotData{ id=202 rect=( 64,128, 96,160) render=ALPHA delay_color=(  0,  0,255) collision = (2,0,-12) collision = (2,0,-10) collision = (2,0,-8) collision = (2,0,-6) collision = (2,0,-4) collision = (2,0,-2) collision = (2,0,0) collision = (2,0,2) collision = (3,0,6) collision = (2,-5,5) collision = (2,5,5) collision = (2,0,10) collision = (2,0,12)}
+ShotData{ id=203 rect=( 96,128,128,160) render=ALPHA delay_color=(255,255,  0) collision = (2,0,-12) collision = (2,0,-10) collision = (2,0,-8) collision = (2,0,-6) collision = (2,0,-4) collision = (2,0,-2) collision = (2,0,0) collision = (2,0,2) collision = (3,0,6) collision = (2,-5,5) collision = (2,5,5) collision = (2,0,10) collision = (2,0,12)}
+ShotData{ id=204 rect=(128,128,160,160) render=ALPHA delay_color=(  0,255,255) collision = (2,0,-12) collision = (2,0,-10) collision = (2,0,-8) collision = (2,0,-6) collision = (2,0,-4) collision = (2,0,-2) collision = (2,0,0) collision = (2,0,2) collision = (3,0,6) collision = (2,-5,5) collision = (2,5,5) collision = (2,0,10) collision = (2,0,12)}
+ShotData{ id=205 rect=(160,128,192,160) render=ALPHA delay_color=(255,  0,255) collision = (2,0,-12) collision = (2,0,-10) collision = (2,0,-8) collision = (2,0,-6) collision = (2,0,-4) collision = (2,0,-2) collision = (2,0,0) collision = (2,0,2) collision = (3,0,6) collision = (2,-5,5) collision = (2,5,5) collision = (2,0,10) collision = (2,0,12)}
+ShotData{ id=206 rect=(192,128,224,160) render=ALPHA delay_color=(255,128, 64) collision = (2,0,-12) collision = (2,0,-10) collision = (2,0,-8) collision = (2,0,-6) collision = (2,0,-4) collision = (2,0,-2) collision = (2,0,0) collision = (2,0,2) collision = (3,0,6) collision = (2,-5,5) collision = (2,5,5) collision = (2,0,10) collision = (2,0,12)}
+ShotData{ id=207 rect=(224,128,256,160) render=ALPHA delay_color=(255, 64,128) collision = (2,0,-12) collision = (2,0,-10) collision = (2,0,-8) collision = (2,0,-6) collision = (2,0,-4) collision = (2,0,-2) collision = (2,0,0) collision = (2,0,2) collision = (3,0,6) collision = (2,-5,5) collision = (2,5,5) collision = (2,0,10) collision = (2,0,12)}
+ShotData{ id=208 rect=(256,128,288,160) render=ALPHA delay_color=(128,255, 64) collision = (2,0,-12) collision = (2,0,-10) collision = (2,0,-8) collision = (2,0,-6) collision = (2,0,-4) collision = (2,0,-2) collision = (2,0,0) collision = (2,0,2) collision = (3,0,6) collision = (2,-5,5) collision = (2,5,5) collision = (2,0,10) collision = (2,0,12)}
+ShotData{ id=209 rect=(288,128,320,160) render=ALPHA delay_color=( 64,255,128) collision = (2,0,-12) collision = (2,0,-10) collision = (2,0,-8) collision = (2,0,-6) collision = (2,0,-4) collision = (2,0,-2) collision = (2,0,0) collision = (2,0,2) collision = (3,0,6) collision = (2,-5,5) collision = (2,5,5) collision = (2,0,10) collision = (2,0,12)}
+ShotData{ id=210 rect=(320,128,352,160) render=ALPHA delay_color=( 64,128,255) collision = (2,0,-12) collision = (2,0,-10) collision = (2,0,-8) collision = (2,0,-6) collision = (2,0,-4) collision = (2,0,-2) collision = (2,0,0) collision = (2,0,2) collision = (3,0,6) collision = (2,-5,5) collision = (2,5,5) collision = (2,0,10) collision = (2,0,12)}
+ShotData{ id=211 rect=(352,128,384,160) render=ALPHA delay_color=(128, 64,255) collision = (2,0,-12) collision = (2,0,-10) collision = (2,0,-8) collision = (2,0,-6) collision = (2,0,-4) collision = (2,0,-2) collision = (2,0,0) collision = (2,0,2) collision = (3,0,6) collision = (2,-5,5) collision = (2,5,5) collision = (2,0,10) collision = (2,0,12)}
+ShotData{ id=212 rect=(384,128,416,160) render=ALPHA delay_color=( 64, 64, 64) collision = (2,0,-12) collision = (2,0,-10) collision = (2,0,-8) collision = (2,0,-6) collision = (2,0,-4) collision = (2,0,-2) collision = (2,0,0) collision = (2,0,2) collision = (3,0,6) collision = (2,-5,5) collision = (2,5,5) collision = (2,0,10) collision = (2,0,12)}
+ShotData{ id=213 rect=(416,128,448,160) render=ALPHA delay_color=(128,128,128) collision = (2,0,-12) collision = (2,0,-10) collision = (2,0,-8) collision = (2,0,-6) collision = (2,0,-4) collision = (2,0,-2) collision = (2,0,0) collision = (2,0,2) collision = (3,0,6) collision = (2,-5,5) collision = (2,5,5) collision = (2,0,10) collision = (2,0,12)}
+ShotData{ id=214 rect=(448,128,480,160) render=ALPHA delay_color=(192,192,192) collision = (2,0,-12) collision = (2,0,-10) collision = (2,0,-8) collision = (2,0,-6) collision = (2,0,-4) collision = (2,0,-2) collision = (2,0,0) collision = (2,0,2) collision = (3,0,6) collision = (2,-5,5) collision = (2,5,5) collision = (2,0,10) collision = (2,0,12)}
+ShotData{ id=215 rect=(480,128,512,160) render=ALPHA delay_color=(255,255,255) collision = (2,0,-12) collision = (2,0,-10) collision = (2,0,-8) collision = (2,0,-6) collision = (2,0,-4) collision = (2,0,-2) collision = (2,0,0) collision = (2,0,2) collision = (3,0,6) collision = (2,-5,5) collision = (2,5,5) collision = (2,0,10) collision = (2,0,12)}
+
+// L-ead
+ShotData{ id=220 rect=(  0,160, 32,192) render=ALPHA delay_color=(255,  0,  0) collision = (2,0,-12) collision = (2,0,-10) collision = (2,0,-8) collision = (2,0,-6) collision = (2,0,-4) collision = (2,0,-2) collision = (2,0,0) collision = (2,0,12) collision = (2,0,10) collision = (2,0,8) collision = (2,0,6) collision = (2,0,4) collision = (2,0,2)}
+ShotData{ id=221 rect=( 32,160, 64,192) render=ALPHA delay_color=(  0,255,  0) collision = (2,0,-12) collision = (2,0,-10) collision = (2,0,-8) collision = (2,0,-6) collision = (2,0,-4) collision = (2,0,-2) collision = (2,0,0) collision = (2,0,12) collision = (2,0,10) collision = (2,0,8) collision = (2,0,6) collision = (2,0,4) collision = (2,0,2)}
+ShotData{ id=222 rect=( 64,160, 96,192) render=ALPHA delay_color=(  0,  0,255) collision = (2,0,-12) collision = (2,0,-10) collision = (2,0,-8) collision = (2,0,-6) collision = (2,0,-4) collision = (2,0,-2) collision = (2,0,0) collision = (2,0,12) collision = (2,0,10) collision = (2,0,8) collision = (2,0,6) collision = (2,0,4) collision = (2,0,2)}
+ShotData{ id=223 rect=( 96,160,128,192) render=ALPHA delay_color=(255,255,  0) collision = (2,0,-12) collision = (2,0,-10) collision = (2,0,-8) collision = (2,0,-6) collision = (2,0,-4) collision = (2,0,-2) collision = (2,0,0) collision = (2,0,12) collision = (2,0,10) collision = (2,0,8) collision = (2,0,6) collision = (2,0,4) collision = (2,0,2)}
+ShotData{ id=224 rect=(128,160,160,192) render=ALPHA delay_color=(  0,255,255) collision = (2,0,-12) collision = (2,0,-10) collision = (2,0,-8) collision = (2,0,-6) collision = (2,0,-4) collision = (2,0,-2) collision = (2,0,0) collision = (2,0,12) collision = (2,0,10) collision = (2,0,8) collision = (2,0,6) collision = (2,0,4) collision = (2,0,2)}
+ShotData{ id=225 rect=(160,160,192,192) render=ALPHA delay_color=(255,  0,255) collision = (2,0,-12) collision = (2,0,-10) collision = (2,0,-8) collision = (2,0,-6) collision = (2,0,-4) collision = (2,0,-2) collision = (2,0,0) collision = (2,0,12) collision = (2,0,10) collision = (2,0,8) collision = (2,0,6) collision = (2,0,4) collision = (2,0,2)}
+ShotData{ id=226 rect=(192,160,224,192) render=ALPHA delay_color=(255,128, 64) collision = (2,0,-12) collision = (2,0,-10) collision = (2,0,-8) collision = (2,0,-6) collision = (2,0,-4) collision = (2,0,-2) collision = (2,0,0) collision = (2,0,12) collision = (2,0,10) collision = (2,0,8) collision = (2,0,6) collision = (2,0,4) collision = (2,0,2)}
+ShotData{ id=227 rect=(224,160,256,192) render=ALPHA delay_color=(255, 64,128) collision = (2,0,-12) collision = (2,0,-10) collision = (2,0,-8) collision = (2,0,-6) collision = (2,0,-4) collision = (2,0,-2) collision = (2,0,0) collision = (2,0,12) collision = (2,0,10) collision = (2,0,8) collision = (2,0,6) collision = (2,0,4) collision = (2,0,2)}
+ShotData{ id=228 rect=(256,160,288,192) render=ALPHA delay_color=(128,255, 64) collision = (2,0,-12) collision = (2,0,-10) collision = (2,0,-8) collision = (2,0,-6) collision = (2,0,-4) collision = (2,0,-2) collision = (2,0,0) collision = (2,0,12) collision = (2,0,10) collision = (2,0,8) collision = (2,0,6) collision = (2,0,4) collision = (2,0,2)}
+ShotData{ id=229 rect=(288,160,320,192) render=ALPHA delay_color=( 64,255,128) collision = (2,0,-12) collision = (2,0,-10) collision = (2,0,-8) collision = (2,0,-6) collision = (2,0,-4) collision = (2,0,-2) collision = (2,0,0) collision = (2,0,12) collision = (2,0,10) collision = (2,0,8) collision = (2,0,6) collision = (2,0,4) collision = (2,0,2)}
+ShotData{ id=230 rect=(320,160,352,192) render=ALPHA delay_color=( 64,128,255) collision = (2,0,-12) collision = (2,0,-10) collision = (2,0,-8) collision = (2,0,-6) collision = (2,0,-4) collision = (2,0,-2) collision = (2,0,0) collision = (2,0,12) collision = (2,0,10) collision = (2,0,8) collision = (2,0,6) collision = (2,0,4) collision = (2,0,2)}
+ShotData{ id=231 rect=(352,160,384,192) render=ALPHA delay_color=(128, 64,255) collision = (2,0,-12) collision = (2,0,-10) collision = (2,0,-8) collision = (2,0,-6) collision = (2,0,-4) collision = (2,0,-2) collision = (2,0,0) collision = (2,0,12) collision = (2,0,10) collision = (2,0,8) collision = (2,0,6) collision = (2,0,4) collision = (2,0,2)}
+ShotData{ id=232 rect=(384,160,416,192) render=ALPHA delay_color=( 64, 64, 64) collision = (2,0,-12) collision = (2,0,-10) collision = (2,0,-8) collision = (2,0,-6) collision = (2,0,-4) collision = (2,0,-2) collision = (2,0,0) collision = (2,0,12) collision = (2,0,10) collision = (2,0,8) collision = (2,0,6) collision = (2,0,4) collision = (2,0,2)}
+ShotData{ id=233 rect=(416,160,448,192) render=ALPHA delay_color=(128,128,128) collision = (2,0,-12) collision = (2,0,-10) collision = (2,0,-8) collision = (2,0,-6) collision = (2,0,-4) collision = (2,0,-2) collision = (2,0,0) collision = (2,0,12) collision = (2,0,10) collision = (2,0,8) collision = (2,0,6) collision = (2,0,4) collision = (2,0,2)}
+ShotData{ id=234 rect=(448,160,480,192) render=ALPHA delay_color=(192,192,192) collision = (2,0,-12) collision = (2,0,-10) collision = (2,0,-8) collision = (2,0,-6) collision = (2,0,-4) collision = (2,0,-2) collision = (2,0,0) collision = (2,0,12) collision = (2,0,10) collision = (2,0,8) collision = (2,0,6) collision = (2,0,4) collision = (2,0,2)}
+ShotData{ id=235 rect=(480,160,512,192) render=ALPHA delay_color=(255,255,255) collision = (2,0,-12) collision = (2,0,-10) collision = (2,0,-8) collision = (2,0,-6) collision = (2,0,-4) collision = (2,0,-2) collision = (2,0,0) collision = (2,0,12) collision = (2,0,10) collision = (2,0,8) collision = (2,0,6) collision = (2,0,4) collision = (2,0,2)}
+
+//64x64 size
+
+// B-ubble
+ShotData{ id=240 rect=(  0,192, 64,256) render=ALPHA delay_color=(255,  0,  0) collision = 20}
+ShotData{ id=241 rect=( 64,192,128,256) render=ALPHA delay_color=(  0,255,  0) collision = 20}
+ShotData{ id=242 rect=(128,192,192,256) render=ALPHA delay_color=(  0,  0,255) collision = 20}
+ShotData{ id=243 rect=(192,192,256,256) render=ALPHA delay_color=(255,255,  0) collision = 20}
+ShotData{ id=244 rect=(256,192,320,256) render=ALPHA delay_color=(  0,255,255) collision = 20}
+ShotData{ id=245 rect=(320,192,384,256) render=ALPHA delay_color=(255,  0,255) collision = 20}
+ShotData{ id=246 rect=(384,192,448,256) render=ALPHA delay_color=(255,128, 64) collision = 20}
+ShotData{ id=247 rect=(448,192,512,256) render=ALPHA delay_color=(255, 64,128) collision = 20}
+ShotData{ id=248 rect=(  0,256, 64,320) render=ALPHA delay_color=(128,255, 64) collision = 20}
+ShotData{ id=249 rect=( 64,256,128,320) render=ALPHA delay_color=( 64,255,128) collision = 20}
+ShotData{ id=250 rect=(128,256,192,320) render=ALPHA delay_color=( 64,128,255) collision = 20}
+ShotData{ id=251 rect=(192,256,256,320) render=ALPHA delay_color=(128, 64,255) collision = 20}
+ShotData{ id=252 rect=(256,256,320,320) render=ALPHA delay_color=( 64, 64, 64) collision = 20}
+ShotData{ id=253 rect=(320,256,384,320) render=ALPHA delay_color=(128,128,128) collision = 20}
+ShotData{ id=254 rect=(384,256,448,320) render=ALPHA delay_color=(192,192,192) collision = 20}
+ShotData{ id=255 rect=(448,256,512,320) render=ALPHA delay_color=(255,255,255) collision = 20}

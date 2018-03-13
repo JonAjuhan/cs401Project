@@ -1,0 +1,185 @@
+#TouhouDanmakufu[Single]
+#ScriptVersion[3]
+#Title["Pendulum \"Shining Prism Star\""]
+#Text["series 7: scales with difficulty"] 
+#BGM["./bgm/bgm - CC-CGR-loop.ogg"]
+#System["./system/Default_System.txt"]
+#Background["./system/Background_Sky.txt"]
+
+#include "./Index.txt"
+
+let timer = 42; //37
+
+@Event
+{
+	alternative(GetEventType())
+	case(EV_REQUEST_LIFE){				SetScriptResult(2000);		}
+	case(EV_REQUEST_SPELL_SCORE){		SetScriptResult(5000000);	}
+	case(EV_REQUEST_TIMER) {			SetScriptResult(timer*60);	}
+	case(EV_REQUEST_IS_DURABLE_SPELL) {	SetScriptResult(false);		}
+}
+@Initialize
+{
+	if(noPlural){SetCommonData("Difficulty","Hard");}
+	if(rank>2){SetCommonData("CurrentSC","Rainbow \"Spectra Pendulum\"");}
+	else{	   SetCommonData("CurrentSC","Pendulum \"Shining Prism Star\"");}
+	boss = spawnBoss();
+	
+	ObjEnemy_SetDamageRate(boss,0,0);
+	// SetShotAutoDeleteClip(16,16,16,16);
+	SetShotAutoDeleteClip(64,128,64,8);
+	
+	MainTask;
+	
+
+}
+@MainLoop
+{
+
+	if(ObjEnemy_GetInfo(boss, INFO_LIFE) <= 0 && !finishing)
+	{
+		finishing = true;
+		TBreakSpell([]);
+	}
+	else {
+		SetBossHitbox(boss,ex,ey);
+	}
+	frame++;
+	yield;
+}
+
+
+task MainTask {
+	ObjEnemy_SetDamageRate(boss,0,0);
+	//ObjMove_SetDestAtFrame(boss, cx, cy-120, 60);
+	ObjMove_SetDestAtFrame(boss, cx, cy-100, 60);
+	
+	SetSpellCard;
+	MCircNextAlpha = 80;
+	Obj_SetValue(objSpellCircle,"MaxAlpha",64);
+	
+	ObjEnemyBossScene_StartSpell(objScene);
+	ObjEnemyBossScene_SetSpellTimer(objScene,timer*60); //5760
+	
+	//SetCaution;
+	//SetBossBlur(true);
+	AuraRainbow(boss,255,255,255);
+	TSpellImmune;
+
+	//ConcentrationA2(boss,"HEXAGON",90,3,10,[255,0,255]);
+		
+	wait(90);
+//	Tmovement(cx-120,cx+120, cy-90,cy-60, 60,240, [MOVE_PLAYERBIAS,2,0,MOVE_MAXSPEED,1.5] );
+	// ObjEnemy_SetDamageRate(boss,24,8);
+	ObjEnemy_SetDamageRate(boss,8,0);
+	frame = 0;
+	
+	
+	//TShoot;
+	TSword;
+	
+}
+
+
+
+
+task TSword{
+	wait(60);
+
+	let las; let shot; let lasers=[]; let las0; let las1;
+	let dir=1; let count=1;
+	
+	let gap;
+	alternative(rank)
+	case(1){gap=10;}	//10
+	case(2){gap=5;}		//5
+	case(3){gap=5;}		//4
+	case(4){gap=3;}		//3
+	case(5){gap=2;}		//2
+	others{ gap=2;}		//1
+	
+	SetAttackPose(-1);
+	
+	loop(7){	
+		las = CreateStraightLaserA1(swdx,swdy,270,0,30,9999,LAS_C_WHITE,60);
+		ObjLaser_SetExtendAcceleration(las,0.15);
+		ObjLaser_SetMaxExtendLength(las,200);
+		SE_Play(se_charge2,100);
+		wait(60);
+		SE_Play(se_laser,100);
+		
+		UpdateLaser(las);
+		wait(60);
+		SwingLaser(las,dir*(1+count/10),count);
+		
+		lasers=lasers~[las];
+		ObjEnemy_SetDamageRate(boss,lerp(8,24,count/7),0);
+		dir*=-1; count++;
+		wait(133);
+	}
+	ObjEnemy_SetDamageRate(boss,32,0);
+
+	////////////////////////////////////////////
+	
+	
+	
+	task SwingLaser(las,dir,c){
+		let count=0;
+		let a=270; let da; let r; let t; let x; let y; 
+		let x1; let y1; let a1;
+		Obj_SetValue(las,"c",c);
+		let diff = rank; let scl;
+		while(!Obj_IsDeleted(las)){
+				scl = sqrt(diff/4);
+				r = 150*scl+100*cos(count*dir)*scl;
+				da = 3*(sin(count));
+				a+=da*dir;
+				
+				x = swdx + r*cos(a);
+				y = swdy + r*sin(a);
+				
+				
+				ObjStLaser_SetTipPosition(las,x,y);
+				ObjLaser_SetRenderWidth(las,30*scl+15*cos(count*dir)*scl);
+				
+				if(count%gap==0){
+					ascent(i in 0..3){
+						shot = CreateShotA2(x,y, 0,a+120*i, 0.015,2.5, SCALE_WHITE+500+c, 15);
+					}
+					SE_Play(se_chime,60);
+					
+					if(diff>2 && count%(2*gap)<=2){ 
+						a1 = a+180+180*sin(count*dir*-3); //180*sin(count*dir*-1)
+						x1 = x+25*r/150*cos(a1); y1 = y+25*r/150*sin(a1);
+					
+						las1 = CreateStraightLaserA1(x,y,a1,25*r/150,25+7.5*cos(count*dir),10,LAS_C_WHITE+c,100);
+						ObjStLaser_SetSource(las1,false);
+						ObjShot_FadeDelete(las1);
+						las1 = CreateStraightLaserA1(x1,y1,a1+180,25*r/150,25+7.5*cos(count*dir),10,LAS_C_WHITE+c,100);
+						ObjStLaser_SetSource(las1,false);
+						ObjShot_FadeDelete(las1);
+						
+						ascent(i in 0..3){
+							shot = CreateShotA2(x1,y1, 0,a+(120)*i, 0.015,2.5, SCALE_WHITE+500+c, 15);
+						}
+					}
+					
+				}
+				
+			yield; count++;
+		}
+	}
+	
+	task UpdateLaser(las){
+		while(!Obj_IsDeleted(las)){
+			ObjMove_SetDestAtZeno(las,swdx,swdy,0.25);
+			yield;
+		}
+	}
+	
+	
+}
+
+
+
+

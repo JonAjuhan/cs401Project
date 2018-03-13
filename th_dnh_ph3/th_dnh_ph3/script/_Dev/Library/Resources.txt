@@ -1,0 +1,382 @@
+let CSD = GetCurrentScriptDirectory;
+
+
+
+let MinX=32;
+let MaxX=380;
+let MinY=0;
+let MaxY=464;
+let GetCenterX = GetStgFrameWidth/2;
+let GetCenterY = GetStgFrameHeight/2;
+
+
+
+
+//(384, 448)
+let sx = GetStgFrameWidth(); let sy = GetStgFrameHeight();
+let cx = sx/2; let cy = sy/2;
+let ex=0; let ey=0; let px=0; let py=0;
+// let swdx=0; let swdy = 0;
+
+
+//Undocumented object types - more testing needed
+let OBJ_REAL = -1; let OBJ_ARRAY = -2;
+
+
+
+
+
+let boss=NULL; let player = GetPlayerObjectID;
+let frame=0;
+let objScene = GetEnemyBossSceneObjectID();
+let finishing = false; 
+
+
+
+//everything should be set to this
+SetAutoDeleteObject(true);
+
+
+
+
+
+
+function wait(w) { loop(w){ yield; } } 
+
+//Andi - Interpolates extra frames with fractional part,
+//allowing wait times to be easily/accurately adjusted to, e.g.,
+//shoot a certain number of times in the same number of frames.
+function waitr(w,counter){
+	let q = trunc(w);
+	let r = w-q;
+	loop(q){yield;}
+	if((r*counter)%1 < r){
+		yield;
+	}
+}
+
+// function Distance(x1, y1, x2, y2){return ((x1-x2)^2 + (y1-y2)^2)^0.5;}
+
+function getangle(x0,y0,x1,y1){return atan2(y1-y0,x1-x0);}
+function getdistance(x0,y0,x1,y1){return ((x0-x1)^2 + (y0-y1)^2)^0.5;}
+
+function GetAngleTo(let object1, let object2) { return atan2(ObjMove_GetY(object2)-ObjMove_GetY(object1), ObjMove_GetX(object2)-ObjMove_GetX(object1));}
+
+//more conventional typeof
+function typeof(obj){return Obj_GetType(obj);}
+//check whether an object is safe to dereference
+function isnull(obj){
+	//do something		//if it hasn't been set
+	if(!obj){return true;} //if it equals null
+	if(Obj_IsDeleted(obj)){return true;} //if it's been deleted
+	return false;
+}
+
+
+//Rand, alt, and sign functions
+
+//TODO! fix undefined behavior for 0/0
+//divide by the absolute value - fast
+function sign(n){ return floor(n/((|n|)+1)) - floor(-n/((|-n|)+1)); }
+// function sign(n){ return trunc(n/((|n|)+0.0001^2)); } 
+// function sign(n){ return n/(|n|); } //undefined behavior for n=0
+
+function altSign(i) { return 2*(i%2-0.5); }  //Alternates between 1 and -1
+function randSign() { return (round(rand(0,1)))*2-1; }  //Returns 1 or -1
+
+function randint(min,max){ return trunc(rand(min,max+1)); }  //Random integer from a..b inclusive
+function randarr(arr){ return arr[randint(0,length(arr)-1)]; }  //random value from an array
+
+//For when zero messes things up
+function tononzero(num,def){if(num==0){return def;}else{return num;}}
+function signNZ(n){ alternative(n)   //guaranteed nonzero
+	case(0){ return (round(rand(0,1)))*2-1; }
+	others { return n/(|n|); }
+}
+
+
+//Working with angles
+function norma(a){ return ((a%360)+360)%360; } //make angle 0-360 - Andi
+function NormalizeAngle(angle){ angle %= 360; if(angle<0){angle += 360;} return angle; } //Ultima
+
+//TODO: test this
+function getadist(a0,a1){
+	return (((a1-a0-180)%360)+360)%360+180;
+}
+//Blargel - positive=clockwise, negative=counterclockwise
+function GetAngularDistance(angle1, angle2){
+	let distance = NormalizeAngle(angle2 - angle1);
+	if(distance>180){ distance-=360; }
+	return distance;
+}
+
+//Andi - Uses a rotation matrix to rotate around the specified point
+//Returns an array [x,y]
+function rotate(x,y,a) { return [x*cos(a)-y*sin(a), x*sin(a)+y*cos(a)]; }
+function rotateC(x,y,cx,cy,theta) { return [cx+(x-cx)*cos(theta)-(y-cy)*sin(theta), cy+(x-cx)*sin(theta)+(y-cy)*cos(theta)]; }
+
+//Lerp blerp derp - (bi)linear interpolation by Andi
+function lerp(start,end,t){return (1-t)*start+t*end;}
+function blerp(x0,y0,x1,y1,t){return [lerp(x0,x1,t),lerp(y0,y1,t)];}
+//Quadratic intERPolation (bezier)
+function qerp(start,control,end,t){return (1 - t)^2 * start + 2*(1-t)*t * control + t^2 * end;}
+function bqerp(x0,y0,x1,y1,x2,y2,t){return [qerp(x0,x1,x2,t),qerp(y0,y1,y2,t)];}
+//Lerp between two angles, taking the shortest path
+function lerpa(starta,enda,t){return starta+t*getadist(starta,enda);}
+
+
+
+
+
+//ShedPH93 - returns the angle of reflection, given the angle of incidence and the angle of the "mirror"
+function reflect (angle, mirror)  {return 2*mirror-angle;}
+
+
+
+//Working with strings
+
+function tost(n){ if(n%1==0){return itoa(n);}else{return ToString(n);} } //smarter, easier-to-remember tostring
+
+
+//Aliases emulating other conventions
+function sqrt(n){return n^(1/2);}
+function abs(n){return (|n|);}
+//Ternary operator - does not short-circuit! for convenience only
+function tern(cond, iftrue, iffalse){ if(cond){return iftrue;}else{return iffalse;} }
+
+
+function mean(arr){
+	let n=length(arr); let total=0;
+	ascent(i in 0..n){total+=arr[i];}
+	return total/n;
+}
+
+//Check if an array contains the value, and if so, return its index - linear search
+function checkarr(arr,targ) {
+	if(length(arr)<1){return -1;}
+	let type = Obj_GetType(targ); if(Obj_GetType(arr[0])!=type){return -1;}
+	ascent(i in 0..length(arr)){ if(arr[i]==targ){return i;} }
+	return -1;
+}
+
+//check if an object is offscreen
+function isOffScreen(obj) {
+	let x = ObjMove_GetX(obj); let y = ObjMove_GetY(obj);
+	return (x<0 || y<0 || x>sx || y > sy);
+}
+
+
+
+
+//for doing lazy shit like {FOO,BAR,BAZ}[i]
+function anon(args){return args;}
+
+function IsInRange(num, bound0,bound1){
+	if(bound1<bound0){let tmp=bound0; bound0=bound1; bound1=tmp;}
+	return ( bound0 <= num&&num <= bound1 );
+}
+function IsAngleInRange(ang, bound0,bound1){
+	if(NormalizeAngle(bound1-bound0) > 180){let tmp=bound0; bound0=bound1; bound1=tmp;}
+	return ( NormalizeAngle(bound0 - ang) <= 0  && NormalizeAngle(ang - bound1) >= 0 );
+}
+
+
+/////////////////////////////////////////////////////////////////////
+//Less-frequently used resources
+/////////////////////////////////////////////////////////////////////
+
+
+
+
+
+function isCoordOffScreen(x,y) {
+	return (x<0 || y<0 || x>sx || y > sy);
+}
+function isCoordInRect(x,y,  x0,y0,x1,y1) {
+	return (x>x0 && x<x1 && y>y0 && y<y1);
+}
+
+
+
+
+//randomly returns one of the arguments
+function randexpr(expr1,expr2){ return tern(randbool,expr1,expr2); }
+
+
+function randbool(){return rand(0,1)<0.5;}
+function altBin(i){ return i%2; }
+function randBin{return randint(0,1);}
+
+function boolSign(b){ if(b){return 1;}else{return -1;} }
+function tobool(val){
+	if(typeof(val)==OBJ_REAL){
+		return val==0;
+	}else{return !(val=="" || val=="false" || val=="0" || val=="f");}
+}
+function frombool(bl){if(bl){return 1;}else{return 0;}}
+
+
+
+
+function CatchInfiniteLoop{
+	let tries = GetCommonData("Tries",0);
+	if(tries==0){ TReset; }
+	tries++; if(tries>100){break;}
+	task TReset{ yield; SetCommonData("Tries",0); }
+}
+
+
+
+
+
+function isint(n){return n%1==0;}
+
+
+/////////////////////////////////////////////////////////////////////
+//Infrequently/never used resources
+/////////////////////////////////////////////////////////////////////
+
+
+//convert between xspeed,yspeed and speed,angle
+function toxy(s,a){return [s*cos(a),s*sin(a)];}
+function tosa(x,y){let a=atan2(y,x); return [x/cos(a)+y/sin(a),a];}
+
+function torad(a){return a*2*pi/360;}
+function todeg(a){return a*360/(2*pi);}
+
+function topolar(x,y){ return [ sqrt(x^2+y^2), atan2(y,x) ]; }
+function tocart(r,a) { return [ r*cos(a), r*sin(a) ]; }
+
+function ln(n){return log(n);} //wait hold on what base is that
+/////////////////////////////////////////////////////////////////////
+//Other resources
+/////////////////////////////////////////////////////////////////////
+
+
+
+function GetHighestScriptType{
+	if     (GetCommonData("IsPackage",false)){return "Package";}
+	else if(GetCommonData("IsStage"  ,false)){return "Stage"  ;}
+	else if(GetCommonData("IsPlural" ,false)){return "Plural" ;}
+	else{ return "Single"; }
+}
+function noPlural{return GetHighestScriptType=="Single";}
+function noStage {return GetHighestScriptType=="Stage"; }
+
+
+
+
+/////////////////////////////////////////////////////////
+
+
+//Bounce a shot just once
+//Use this repeatedly if you want to do something when it bounces
+function bounce(shot) {
+	let x = ObjMove_GetX(shot); let y = ObjMove_GetY(shot);
+	if(y<sy && y>0 && x>0 && x<sx){return false;}
+	let a = ObjMove_GetAngle(shot);
+	if(x<0||x>sx) { a=reflect(a,90); }
+	if(y<0||y>sy) { a=reflect(a,0 ); }
+	ObjMove_SetAngle(shot,a);
+	return true;
+}
+//Again, use this repeatedly to do something when it wraps
+function wrap(shot) {
+	let x = ObjMove_GetX(shot); let y = ObjMove_GetY(shot);
+	if(y<sy && y>0 && x>0 && x<sx){return false;}	
+	if(x<0||x>sx){ObjMove_SetX(shot,cx+(cx-x));}
+	if(y<0||y>sy){ObjMove_SetY(shot,cy+(cy-y));}
+	return true;
+}
+
+//Same deal for if you only want it to bounce off certain walls
+function bounceW(shot,walls) {
+	let x = ObjMove_GetX(shot); let y = ObjMove_GetY(shot);
+	if(y<sy && y>0 && x>0 && x<sx){return false;}
+	let lft=checkarr(walls,0)!=-1; let top = checkarr(walls,1)!=-1; let rgt = checkarr(walls,2)!=-1; let btm = checkarr(walls,3)!=-1;
+	let angle = ObjMove_GetAngle(shot);
+	let speed = ObjMove_GetSpeed(shot);
+	let vx = cos(angle)*speed;
+	let vy = sin(angle)*speed;
+	if(x<=0 &&lft) { vx*=-1; }
+	if(y<=0 &&top) { vy*=-1; }
+	if(x>=sx&&rgt) { vx*=-1; }
+	if(y>=sy&&btm) { vy*=-1; }
+	ObjMove_AddPatternB1(shot,0,vx,vy);
+	return true;
+}
+function wrapW(shot,walls) {
+	let x = ObjMove_GetX(shot); let y = ObjMove_GetY(shot);
+	if(y<sy && y>0 && x>0 && x<sx){return false;}
+	let lft=checkarr(walls,0)!=-1; let top = checkarr(walls,1)!=-1; let rgt = checkarr(walls,2)!=-1; let btm = checkarr(walls,3)!=-1;
+	if(x<=0 &&lft) { ObjMove_SetX(shot,sx); }
+	if(y<=0 &&top) { ObjMove_SetX(shot,sy); }
+	if(x>=sx&&rgt) { ObjMove_SetY(shot, 0); }
+	if(y>=sy&&btm) { ObjMove_SetY(shot, 0); }
+	
+	//if(x<0||x>sx){ObjMove_SetX(shot,cx+(cx-x));}
+	//if(y<0||y>sy){ObjMove_SetY(shot,cy+(cy-y));}
+	return true;
+}
+
+
+
+
+
+function GetTimer{return ObjEnemyBossScene_GetInfo(objScene,INFO_TIMER);}
+function GetLifePercent{return ObjEnemyBossScene_GetInfo(objScene,INFO_CURRENT_LIFE) / ObjEnemyBossScene_GetInfo(objScene,INFO_CURRENT_LIFE_MAX);}
+
+function GetDistanceToLine(x,y, x0,y0,x1,y1) { //x,y used to be last two params
+	return (absolute( (x1-x0)*(y0-y)-(x0-x)*(y1-y0) ) ) / ( ( (x1-x0)^2 + (y1-y0)^2 )^0.5 );
+}
+
+
+
+
+function CreateDummyShot(x,y){
+	let shot = CreateShotA1(x,y,0,0,0,0);
+	ObjShot_SetSpellResist(shot,true);
+	ObjShot_SetAutoDelete(shot,false);
+	Obj_SetValue(shot,"IsDummy",true);
+	Obj_SetValue(shot,"NoInfluence",true);
+	return shot;
+}
+
+//Darkness1/Blargel - Makes an object/shot/laser turn until it points at a given point
+//Doesn't loop by itself, keep calling it
+function TurnToPoint(shot, speed, PointX, PointY){
+	let a0 = ObjMove_GetAngle(shot);
+	let a1 = atan2(PointY-ObjMove_GetY(shot), PointX-ObjMove_GetX(shot));
+    let dA = GetAngularDistance(a0,a1);
+	if((|dA|)<speed){ObjMove_SetAngle(shot,a1);}
+	else{ObjMove_SetAngle(shot,a0+speed*sign(dA));}
+}
+
+
+
+
+
+function GetDelayColor(shot) {
+	if(isnull(shot)){return [0,0,0];}
+	return GetShotDataInfoA1(ObjShot_GetImageID(shot),TARGET_ENEMY,INFO_DELAY_COLOR);
+}
+
+function GetShotHitboxRadius(shot) {
+	if(isnull(shot)){return 0;}
+	return GetShotDataInfoA1(max(1,ObjShot_GetImageID(shot)),TARGET_ENEMY,INFO_COLLISION);
+}
+
+
+
+function CreateSprite(x, y, img, source, priority){
+	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjPrim_SetTexture(obj, img);
+	Obj_SetRenderPriorityI(obj, priority);
+	ObjSprite2D_SetSourceRect(obj, source[0], source[1], source[2], source[3]);
+	ObjSprite2D_SetDestCenter(obj);
+	ObjRender_SetPosition(obj, x, y, 0);
+	return obj;
+}
+
+
+

@@ -1,0 +1,269 @@
+let home = 0;
+
+function wait(n){loop(n){yield;}}
+
+function GetDistance(x1,y1,x2,y2){
+return(((x2-x1)^2+(y2-y1)^2)^(1/2));
+}
+
+function angleToPlayer{
+	let angle=atan2(GetPlayerY-GetEnemyY,GetPlayerX-GetEnemyX);
+	return angle;
+}
+
+function angleToEnemy(obj){
+	let angle=atan2(GetEnemyY-ObjMove_GetY(obj),GetEnemyX-ObjMove_GetX(obj));
+	return angle;
+}
+
+let objPlayer;
+objPlayer=GetPlayerObjectID();
+
+function GetAtanAngle(obj,obj2){
+	let angle=atan2(ObjMove_GetY(obj2)-ObjMove_GetY(obj),ObjMove_GetX(obj2)-ObjMove_GetX(obj));
+	return angle;
+}
+
+function GetPointAngle(x1,y1,x2,y2){
+	let angle=atan2(y1-y2,x1-x2);
+	return angle;
+}
+
+function GetEnemyX{
+	if(ObjMove_GetX(objBoss)!=0){return ObjMove_GetX(objBoss);}
+	else{return -1000;}
+}
+
+function GetEnemyY{
+	if(ObjMove_GetY(objBoss)!=0){return ObjMove_GetY(objBoss);}
+	else{return -1000;}
+}
+
+task DelayDelete(obj,time){
+	wait(time);
+	Obj_Delete(obj);
+	}
+	
+function GetLineBorderPoint(px, py, tx, ty){
+
+	let ta = atan2(ty-py, tx-px);
+
+	if( ta>= atan2(0 - py, 0 - px) && ta<=  atan2(0 - py, 384 - px)){
+		return [px - (0-py)*tan(ta+90), 0];
+	}
+	if( ta>= atan2(0 - py, 384 - px) && ta<=  atan2(448 - py, 384 - px)){
+		return [384, py + (384-px)*tan(ta)];
+	}
+	if( ta>= atan2(448 - py, 384 - px) && ta<=  atan2(448 - py, 0 - px)){
+		return [px - (448-py)*tan(ta-90), 448];
+	}
+	if( ta> atan2(448 - py, 0 - px) || ta<  atan2(0 - py, 0 - px)){
+		return [0, py + (0-px)*tan(ta+180)];
+	}
+}
+
+function TMovement(x,y,speed){
+		let resultx=rand(0,1);
+		resultx=round(resultx);
+		let resulty=rand(0,1);
+		resulty=round(resulty);
+		let posx=rand(20,-20);
+		if(posx<=10&&posx>=-10){
+			if(resultx==1){
+				posx=x;
+			}else{
+				posx=-x;
+			}
+		}
+		if((GetEnemyX+posx)<=128||(GetEnemyX+posx)>=(GetStgFrameWidth()-96)){
+			posx=-posx;
+		}
+		
+		let posy=rand(20,-20);
+		if(posy<=7.5&&posy>=-7.5){
+			if(resulty==1){
+				posy=y;
+			}else{
+				posy=-y;
+			}
+		}
+		if((GetEnemyY+posy)<=32||(GetEnemyY+posy)>=GetStgFrameHeight()/3){
+			posy=-posy;
+		}
+		ObjMove_SetDestAtWeight(objBoss,GetEnemyX+posx,GetEnemyY+posy,10,speed);
+}
+
+function TAccel(x,y,acc,frame){
+		let resultx=rand(0,1);
+		resultx=round(resultx);
+		let resulty=rand(0,1);
+		resulty=round(resulty);
+		let posx=rand(20,-20);
+		if(posx<=10&&posx>=-10){
+			if(resultx==1){
+				posx=x;
+			}else{
+				posx=-x;
+			}
+		}
+		if((GetEnemyX+posx)<=96||(GetEnemyX+posx)>=(GetStgFrameWidth()-96)){
+			posx=-posx;
+		}
+		
+		let posy=rand(20,-20);
+		if(posy<=7.5&&posy>=-7.5){
+			if(resulty==1){
+				posy=y;
+			}else{
+				posy=-y;
+			}
+		}
+		if((GetEnemyY+posy)<=64||(GetEnemyY+posy)>=GetStgFrameHeight()/3){
+			posy=-posy;
+		}
+		AccelMove(objBoss,GetEnemyX+posx,GetEnemyY+posy,acc,frame);
+}
+
+function ReturnColor(type){
+	if(type==0){return [255,0,0];}
+	if(type==1){return [255,128,0];}
+	if(type==2){return [255,255,0];}
+	if(type==3){return [0,255,0];}
+	if(type==4){return [0,0,255];}
+	if(type==5){return [255,0,255];}
+	if(type==6){return [255,255,255];}
+	}
+
+task AccelMove(obj,x,y,acc,frame){
+	ascent(i in 0..frame){
+	ObjMove_SetDestAtWeight(obj,x,y,10,acc*i);
+	yield;
+	}
+	ObjMove_SetDestAtWeight(obj,x,y,10,frame*acc);
+}
+
+task DelayDamageRate(shot,bomb,frame){
+	wait(frame);
+	while(IsPlayerSpellActive){yield;}
+	ObjEnemy_SetDamageRate(objBoss, shot,bomb);
+	}
+
+task DamageRateAtFrame(shot,bomb,frame)
+{
+let time=frame;
+	while(IsPlayerSpellActive)
+	{
+	ObjEnemy_SetDamageRate(objBoss, 0,0);
+	time--;
+	yield;
+	}
+	while(time>0)
+	{
+	time--;
+	yield;
+	}
+SetCommonData("shot",shot);
+SetCommonData("bomb",bomb);
+ObjEnemy_SetDamageRate(objBoss, shot,bomb);
+}
+
+task ManageSpeed(time){
+	//TMotionBlur(time);
+	descent(n in 0..time){
+	SetCommonData("bgspeed",-n/10);
+	yield;
+	}
+	SetCommonData("bgspeed",0);
+	wait(15);
+	SetCommonData("bgspeed",0.5);
+	}
+	
+function Sound(path){
+	let obj = ObjSound_Create;
+	ObjSound_Load(obj,path);
+	ObjSound_SetSoundDivision(obj, SOUND_BGM);
+	ObjSound_SetRestartEnable(obj, true);
+	ObjSound_SetLoopEnable(obj, true);
+	ObjSound_SetLoopTime(obj, 0,605);
+	ObjSound_Play(obj);
+	ObjSound_SetVolumeRate(obj,95);
+	return obj;
+	}
+	
+function GetLevel{
+	return GetCommonData("Difficulty","Easy");
+	}
+	
+function Level
+{
+	if(GetCommonData("Difficulty","Easy")=="Easy"){return -1;}
+	if(GetCommonData("Difficulty","Easy")=="Normal"){return 0;}
+	if(GetCommonData("Difficulty","Easy")=="Hard"){return 1;}
+	if(GetCommonData("Difficulty","Easy")=="Lunatic"){return 2;}
+}
+	
+task ObjRender_SetDestAtFrame(obj, x, y, frames){
+    let ox = ObjRender_GetX(obj);
+    let oy = ObjRender_GetY(obj);
+    let xc = (x-ox)/frames;
+    let yc = (y-oy)/frames;
+    loop(frames){
+        ox += xc;
+        oy += yc;
+        ObjRender_SetX(obj, ox);
+        ObjRender_SetY(obj, oy);
+        yield;
+    }
+}
+
+task SetHoming(obj,maxTraverse,time,delay){ 
+	wait(delay);
+	let angle = ObjMove_GetAngle(obj);
+	let c = 0;
+    while(! Obj_IsDeleted(obj) && c<time) {
+		c++;
+        ObjMove_SetAngle(obj, angle);
+        yield;
+        // direction angle to player's character
+        let dir = atan2(GetPlayerY - ObjMove_GetY(obj),
+                        GetPlayerX - ObjMove_GetX(obj));
+        // difference between 'dir' and 'angle'
+        let diff = dir - angle;
+        while(diff >= 180) { diff -= 360; }    // adjust the range
+        while(diff < -180) { diff += 360; }
+        let diffAbs = (|diff|);
+        if(diffAbs < maxTraverse) {
+            // if the difference is small,
+            // the bullet turns to the player's character
+            angle = dir;
+        } else {
+            // otherwise, the bullet turns 'maxTraverse' degrees
+            angle += maxTraverse * diff / diffAbs;
+        }
+    }
+	}
+	
+////////////// Shadow's functions ////////////////////
+
+function GetGapX2(x,gapLength,gapWidth,gapAngle,gapAlign){
+	return x+gapWidth*cos(gapAngle)*cos(gapAlign)-gapLength*sin(gapAngle)*sin(gapAlign);
+}
+
+function GetGapY2(y,gapLength,gapWidth,gapAngle,gapAlign){
+	return y+gapWidth*cos(gapAngle)*sin(gapAlign)+gapLength*sin(gapAngle)*cos(gapAlign);
+}
+
+function CheckBoundaries(sX,sY,rLimit){
+	if(sX <= 0-rLimit || sX >= 384+rLimit || sY <= 0-rLimit || sY >= 448+rLimit){
+		return false;
+	}else{
+		return true;
+	}
+}
+
+////////////// Ultima's functions ////////////////////
+
+function GetQuadraticBezierPoint(start,control,end,t)
+{
+ return (1 - t)^2*start+ 2*(1-t)*t*control+t^2*end
+}

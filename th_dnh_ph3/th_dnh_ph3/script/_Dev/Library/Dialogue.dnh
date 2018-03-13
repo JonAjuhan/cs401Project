@@ -1,0 +1,280 @@
+#include "./Interpolation.dnh"
+
+let portrait_player = [];
+let portrait_enemy = [];
+
+let dialogue_box;
+
+let playerobjects = [];
+let enemyobjects = [];
+
+let dialogue_text = "";
+
+let globalspeaker = 0; //0 is player, 1 is enemy
+
+let speakerplayer = 0;
+let speakerenemy = 0;
+
+function SetPortraitNumber(numplayer, numenemy){
+	ascent(i in 0 .. numplayer){
+		let obj = CreatePortrait;
+		playerobjects = playerobjects ~ [obj];
+	}
+	ascent(i in 0 .. numenemy){
+		let obj = CreatePortrait;
+		ObjRender_SetAngleY(obj, 180);
+		enemyobjects = enemyobjects ~ [obj];
+	}
+
+	ascent(i in 0 .. numplayer){
+		let path = "";
+		portrait_player = portrait_player ~ [path];
+	}
+	ascent(i in 0 .. numenemy){
+		let path = "";
+		portrait_enemy = portrait_enemy ~ [path];
+	}
+}
+
+sub InitiateDialogueSequence{
+	SetForbidPlayerShot(true);
+	SetForbidPlayerSpell(true);
+	SetCommonData("IsDialogueSequenceActive", true);
+
+	dialogue_box = DialogueBox;
+	ObjRender_SetAngleX(dialogue_box, 90);
+	let x = 90;
+	loop(20){
+		ObjRender_SetAngleX(dialogue_box, x);
+		x -= 90/20;
+		yield;
+	}
+	ObjRender_SetAngleX(dialogue_box, 0);
+	loop(30){yield;}
+}
+
+sub EndDialogueSequence{
+	SetCommonData("IsDialogueSequenceActive", false);
+
+	ObjRender_SetAngleX(dialogue_box, 0);
+	let x = 0;
+	loop(20){
+		ObjRender_SetAngleX(dialogue_box, x);
+		x -= 90/20;
+		yield;
+	}
+	Obj_Delete(dialogue_box);
+	ascent(i in 0 .. length(playerobjects)){
+		RemovePlayerPort(i);
+	}
+	ascent(i in 0 .. length(enemyobjects)){
+		RemoveEnemyPort(i);
+	}
+	loop(30){yield;}
+
+	ascent(i in 0 .. length(playerobjects)){
+		Obj_Delete(playerobjects[i]);
+	}
+	ascent(i in 0 .. length(enemyobjects)){
+		Obj_Delete(enemyobjects[i]);
+	}
+	playerobjects = [];
+	enemyobjects = [];
+
+	SetForbidPlayerShot(false);
+	SetForbidPlayerSpell(false);
+}
+
+function DialogueBox{
+	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjPrim_SetTexture(obj, GetCurrentScriptDirectory ~ "../System/img/diabox.png");
+	ObjSprite2D_SetSourceRect(obj, 0, 0, 384, 96);
+	ObjSprite2D_SetDestCenter(obj);
+	ObjRender_SetPosition(obj, GetStgFrameWidth/2, GetStgFrameHeight - 48, 0);
+	Obj_SetRenderPriorityI(obj, 76);
+	return obj;
+}
+
+function CreatePortrait{
+	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjPrim_SetTexture(obj, "");
+	ObjSprite2D_SetSourceRect(obj, 0, 0, GetTextureWidth(""), GetTextureHeight(""));
+	ObjSprite2D_SetDestCenter(obj);
+	//ObjRender_SetScaleXYZ(obj, 0.5, 0.5, 0);
+	Obj_SetRenderPriorityI(obj, 75);
+	return obj;
+}
+
+function SetSpeaker(value){
+	globalspeaker = value;
+	if(globalspeaker ==  0){
+		ascent(i in 0 .. length(playerobjects)){
+			if(i == speakerplayer){
+				moveDeceleration(playerobjects[i], GetStgFrameWidth/2 - 64, GetStgFrameHeight - 160, 30, false);
+				ObjRender_SetAlpha(playerobjects[i], 256);
+				Obj_SetRenderPriorityI(playerobjects[i], 75);
+			}else{
+				moveDeceleration(playerobjects[i], GetStgFrameWidth/2 - 192, GetStgFrameHeight - 64, 30, false);
+				ObjRender_SetAlpha(playerobjects[i], 160);
+				Obj_SetRenderPriorityI(playerobjects[i], 74);
+			}
+		}
+		ascent(i in 0 .. length(enemyobjects)){
+			moveDeceleration(enemyobjects[i], GetStgFrameWidth/2 + 192, GetStgFrameHeight - 64, 30, false);
+			ObjRender_SetAlpha(enemyobjects[i], 160);
+			Obj_SetRenderPriorityI(enemyobjects[i], 74);
+		}
+	}else{
+		ascent(i in 0 .. length(enemyobjects)){
+			if(i == speakerenemy){
+				moveDeceleration(enemyobjects[i], GetStgFrameWidth/2 + 64, GetStgFrameHeight - 160, 30, false);
+				ObjRender_SetAlpha(enemyobjects[i], 256);
+				Obj_SetRenderPriorityI(enemyobjects[i], 75);
+			}else{
+				moveDeceleration(enemyobjects[i], GetStgFrameWidth/2 + 192, GetStgFrameHeight - 64, 30, false);
+				ObjRender_SetAlpha(enemyobjects[i], 160);
+				Obj_SetRenderPriorityI(enemyobjects[i], 74);
+			}
+		}
+
+		ascent(i in 0 .. length(playerobjects)){
+			moveDeceleration(playerobjects[i], GetStgFrameWidth/2 - 192, GetStgFrameHeight - 64, 30, false);
+			ObjRender_SetAlpha(playerobjects[i], 160);
+			Obj_SetRenderPriorityI(playerobjects[i], 74);
+		}
+	}
+}
+
+function SetPlayerSpeaker(value){
+	speakerplayer = value;
+}
+
+function SetEnemySpeaker(value){
+	speakerenemy = value;
+}
+
+function SetDialogueTextA1(text, color){ //event will advance only upon button press
+	dialogue_text = text;
+
+	let obj = ObjText_Create();
+	ObjText_SetText(obj, dialogue_text);
+	ObjText_SetFontType(obj, "MonoFonto-Regular");
+	ObjText_SetFontSize(obj, 16);
+	ObjText_SetFontColorTop(obj, 255, 255, 255);
+	ObjText_SetFontColorBottom(obj, color[0], color[1], color[2]);
+	ObjText_SetFontBorderType(obj, BORDER_FULL);
+	ObjText_SetFontBorderWidth(obj, 1);
+	ObjText_SetFontBorderColor(obj, 0, 0, 0);
+	ObjText_SetMaxWidth(obj, 345);
+	Obj_SetRenderPriorityI(obj, 76);
+
+	ObjRender_SetPosition(obj, 6, GetStgFrameHeight - 90, 0);
+
+	loop(5){yield;}
+	while(GetVirtualKeyState(VK_OK) != KEY_PUSH) {
+		yield;
+	}
+	Obj_Delete(obj);
+}
+
+function SetDialogueTextA2(text, color, time){ //event will advance after set time
+	dialogue_text = text;
+
+	let obj = ObjText_Create();
+	ObjText_SetText(obj, dialogue_text);
+	ObjText_SetFontType(obj, "MonoFonto-Regular");
+	ObjText_SetFontSize(obj, 16);
+	ObjText_SetFontColorTop(obj, 255, 255, 255);
+	ObjText_SetFontColorBottom(obj, color[0], color[1], color[2]);
+	ObjText_SetFontBorderType(obj, BORDER_FULL);
+	ObjText_SetFontBorderWidth(obj, 1);
+	ObjText_SetFontBorderColor(obj, 0, 0, 0);
+	ObjText_SetMaxWidth(obj, 345);
+	Obj_SetRenderPriorityI(obj, 76);
+
+	ObjRender_SetPosition(obj, 6, GetStgFrameHeight - 90, 0);
+
+	loop(time){yield;}
+	Obj_Delete(obj);
+}
+
+function SetNewPlayerPort(img, i){ //moves in the player portrait from below
+	portrait_player[i] = img;
+	ObjRender_SetPosition(playerobjects[i], GetStgFrameWidth/2 - 64, GetStgFrameHeight + 384, 0); //start position
+
+	ObjPrim_SetTexture(playerobjects[i], portrait_player[i]);
+	ObjSprite2D_SetSourceRect(playerobjects[i], 0, 0, GetTextureWidth(portrait_player[i]), GetTextureHeight(portrait_player[i]));
+	ObjSprite2D_SetDestCenter(playerobjects[i]);
+
+	moveDeceleration(playerobjects[i], GetStgFrameWidth/2 - 64, GetStgFrameHeight - 160, 20, false);
+}
+
+function SetNewEnemyPort(img, i){ //moves in the enemy portrait from below
+	portrait_enemy[i] = img;
+	ObjRender_SetPosition(enemyobjects[i], GetStgFrameWidth/2 + 64, GetStgFrameHeight + 384, 0); //start position
+
+	ObjPrim_SetTexture(enemyobjects[i], portrait_enemy[i]);
+	ObjSprite2D_SetSourceRect(enemyobjects[i], 0, 0, GetTextureWidth(portrait_enemy[i]), GetTextureHeight(portrait_enemy[i]));
+	ObjSprite2D_SetDestCenter(enemyobjects[i]);
+
+	moveDeceleration(enemyobjects[i], GetStgFrameWidth/2 + 64, GetStgFrameHeight - 160, 20, false);
+}
+
+function SetPlayerPort(img, i){
+	portrait_player[i] = img;
+	ObjPrim_SetTexture(playerobjects[i], portrait_player[i]);
+	ObjSprite2D_SetSourceRect(playerobjects[i], 0, 0, GetTextureWidth(portrait_player[i]), GetTextureHeight(portrait_player[i]));
+	ObjSprite2D_SetDestCenter(playerobjects[i]);
+}
+
+function SetEnemyPort(img, i){
+	portrait_enemy[i] = img;
+	ObjPrim_SetTexture(enemyobjects[i], portrait_enemy[i]);
+	ObjSprite2D_SetSourceRect(enemyobjects[i], 0, 0, GetTextureWidth(portrait_enemy[i]), GetTextureHeight(portrait_enemy[i]));
+	ObjSprite2D_SetDestCenter(enemyobjects[i]);
+}
+
+function RemovePlayerPort(i){ //moves out the player portrait
+	portrait_player[i] = "";
+
+	moveDeceleration(playerobjects[i], ObjRender_GetX(playerobjects[i]), GetStgFrameHeight + 384, 20, false);
+}
+
+function RemoveEnemyPort(i){ //moves out the enemy portrait
+	portrait_enemy[i] = "";
+
+	moveDeceleration(enemyobjects[i], ObjRender_GetX(enemyobjects[i]), GetStgFrameHeight + 384, 20, false);
+}
+
+task DisplayEnemyTitle(img, time){
+	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjPrim_SetTexture(obj, img);
+	ObjSprite2D_SetSourceRect(obj, 0, 0, GetTextureWidth(img), GetTextureHeight(img));
+	ObjSprite2D_SetDestCenter(obj);
+	ObjRender_SetPosition(obj, GetStgFrameWidth/2 + 32, GetStgFrameHeight - 160, 0);
+	ObjRender_SetAlpha(obj, 0);
+	ObjRender_SetScaleXYZ(obj, 0.75, 0.75, 0);
+	Obj_SetRenderPriorityI(obj, 77);
+	moveSmoother(obj, GetStgFrameWidth, GetStgFrameHeight - 160, time*3, false);
+
+	let a = 0;
+	while(a < 256){
+		ObjRender_SetAlpha(obj, a);
+		a += 8;
+		yield;
+	}
+	loop(time){
+		if(!GetCommonData("IsDialogueSequenceActive", false)){break;}
+		yield;
+	}
+	while(a > 0){
+		ObjRender_SetAlpha(obj, a);
+		a -= 8;
+		yield;
+	}
+	Obj_Delete(obj);
+}
+
+function RetrieveDistance(x1,y1,x2,y2) {
+	return ((x1-x2)^2+(y1-y2)^2)^(1/2);
+}

@@ -1,0 +1,445 @@
+#TouhouDanmakufu[Stage]
+#ScriptVersion[3]
+#Title["Stage-7b"]
+#Text["An example stage"]
+#Image["./ExRumia(星符「ミッドナイトレヴァリエ」).jpg"]
+
+#include "./Index.txt"
+#System["./system/Default_System.txt"]
+#Background["./system/Background_Sky.txt"]
+
+#BGM["./bgm/bgm - CC-CGR-loop.ogg"]
+
+//Fairy library
+#include "./Library/Fairies.txt"
+//Some test fairy patterns
+#include "./Library/FairyPatterns.dnh"
+
+let bossScript;
+
+@Loading{
+	InstallFont(GetCurrentScriptDirectory() ~ "img/Helvetica.otf"); //.otf for One True Font
+	//Preload the boss plural
+	bossScript = LoadScriptInThread(GetCurrentScriptDirectory~"./Plural-Test.dnh");
+}
+
+@Initialize
+{
+	SetCommonData("IsStage",true);
+	SetCommonData("Difficulty",NORMAL);
+	TStage();
+}
+
+@MainLoop{
+	yield;
+}
+
+@Finalize
+{
+}
+
+
+
+//Alright, so stage scripts do stuff similar to both singles and plurals
+//They call plurals like plurals call singles,
+//but they also do shots in the stage script itself.
+
+//Unlike in most singles, the shots are (usu.) created by individual "enemy" tasks,
+//which are reused in different places/times.
+//Enemy tasks can be defined in the stage script file itself 
+//or imported from another file - here I've done both.
+//Other patterns used here are defined in Library/FairyPatterns.dnh
+	
+
+
+
+
+task TStage
+{
+	let csd = GetCurrentScriptDirectory();
+
+	loop(60){yield;}//1秒くらいあれば、コンパイル完了すると思われる。
+	
+	
+	/////////////////////////////////////////////////////
+	//The bit where you say where to put enemies
+	/////////////////////////////////////////////////////
+	
+	let x; let N; let dx; let dir;
+
+	
+	
+	
+	// //buncha fams - test
+	// x = 10; N=18; dx = (sx-2*x)/N; dir = 1;
+	// ascent(j in 0..5){ //3,5
+		// ascent(i in 0..N){
+			// x += dx * dir;
+			// // let fam = TFam1(x,cy-15*j,(j+1)/3,90+10*(j+1)*i*-dir,  1,1,2.5,30,20*-dir,DOT_YELLOW);
+			// let fam = TFam1(x,cy,2.5,270+10*(j+1)*(i-N/2)*-dir,  3,1,2.5,30,20*-dir,DOT_YELLOW);
+			// // let fam = TFam1(x,cy,2.5,360/N*i,  3,1,2.5,30,20*-dir,DOT_YELLOW);
+			// // let fam = TFam1(cx,cy,2.5,135+rand(-45,45),  3,1,2.5,30,20*-dir,DOT_YELLOW);
+			// // BounceA1(fam,1,[LFT,TOP,RGT,BTM]);
+			// SE_Play(se_fam,100);
+			// wait(5);
+		// }
+		// dir*=-1;
+		// wait(120);
+	// }
+	
+	
+	
+	
+	//buncha fams
+	x = 10; N=18; dx = (sx-2*x)/N; dir = 1;
+	ascent(j in 0..5){ //3,5
+		ascent(i in 0..N){
+			x += dx * dir;
+						// TFam1(x,y,s,a,  N,M,ss,sd,da,type)
+			// let fam = TFam1(x,cy-15*j,(j+1)/3,90+10*(j+1)*i*-dir,  1,1,2.5,30,20*-dir,DOT_YELLOW);
+			let fam = TFam1(x,cy-15*j,2.5,90+10*(j+1)*i*-dir,  3,1,2.5,30,20*-dir,DOT_YELLOW);
+			// BounceA1(fam,1,[LFT,TOP,RGT,BTM]);
+			SE_Play(se_fam,100);
+			wait(5);
+		}
+		dir*=-1;
+		wait(120);
+	}
+	
+	
+	
+	
+	
+
+	//row of spirits
+	x = 10; N=18; dx = (sx-2*x)/N; dir = 1;
+	ascent(j in 0..5){ //3,5
+		ascent(i in 0..N){
+			x += dx * dir;
+			let hd = TSpirit3(x,cy-15*j,(j+1)/3,90+10*(j+1)*i*-dir,"red",180,  1,1,2.5,30,20*-dir,DOT_YELLOW);
+			BounceA1(hd,1,[LFT,TOP,RGT,BTM]);
+			SE_Play(se_hornshort,100);
+			wait(5);
+		}
+		dir*=-1;
+		wait(120);
+	}
+	wait(180);
+
+	
+	
+	x = 10; N=6; dx = (sx-2*x)/N; dir = 1;
+	ascent(j in 0..5){ //3,5
+		ascent(i in 0..N){
+			x += dx * -altSign(j);
+			TYinYang3(x,sy,3,270+10*altSign(j)*i, 60, 1,2.5,3,10*altSign(j),DOT_YELLOW);
+			TBasicFairy1(cx-(cx+30)*altSign(j),cy+90-30*i,2,270+45*altSign(j)-5*altSign(j)*i);
+			wait(10);
+		}
+		wait(180);
+	}
+
+	
+	
+	//row of spirits
+	x = 10; N=18; dx = (sx-2*x)/N; dir = 1;
+	ascent(j in 0..2){ //3,5
+		ascent(i in 0..N){
+			x += dx * dir;
+			let hd = TSpirit2(x,cy-15*j,j/3,90+10*j*i*-dir,"blue",90);
+			SE_Play(se_hornshort,100);
+			wait(5);
+		}
+		dir*=-1;
+		// wait(60);
+	}
+	wait(180);
+	
+	
+	
+	
+	//row of spirits
+	x = 10; N=18; dx = (sx-2*x)/N; dir = 1;
+	ascent(j in 5..10){ //3,5
+		ascent(i in 0..N){
+			x += dx * dir;
+			let hd = TSpirit3(x,cy-15*j,(j+1)/3,90+10*(j+1)*i*-dir,"red",180,  1,1,2.5,30,20*-dir,DOT_YELLOW);
+			BounceA1(hd,1,[LFT,TOP,RGT,BTM]);
+			SE_Play(se_hornshort,100);
+			wait(5);
+		}
+		dir*=-1;
+		wait(60);
+	}
+	wait(180);
+
+	
+	
+
+	
+	x = 10; N=6; dx = (sx-2*x)/N; dir = 1;
+	ascent(j in 0..3){ //3,5
+		ascent(i in 0..N){
+			x += dx * dir;
+			TYinYang3(x,sy,3,270, 60, 1,2.5,3,10*-dir,DOT_YELLOW);
+			wait(10);
+		}
+		dir*=-1;
+	}
+	
+	wait(180);
+	
+	ascent(i in 0..6){
+		TYinYang2(cx+(100+20*i)*altSign(i),cy*2/3,1,270, 60);
+		wait(30);
+	}
+	wait(120);
+	
+	
+	x = 10; N=6; dx = (sx-2*x)/N; dir = 1;
+	ascent(j in 0..5){ //3,5
+		ascent(i in 0..N){
+			x += dx * dir;
+			TYinYang3(x,sy,3,270+10*-dir*i, 60, 1,2.5,3,10*-dir,DOT_YELLOW);
+			wait(10);
+		}
+		dir*=-1;
+		wait(60);
+	}
+	
+	wait(360);
+	
+	
+	
+
+	
+	
+	//A bunch of basic fairies coming down randomly
+	ascent(i in 0..15){
+		//aimed shots, with some extra wingy bits
+		TFairy1(cx+(cx-20)*sin(i*1120)*cos(i*115),-30,1.5,90+45*sin(i*1220)*cos(i*215));
+		wait(30);
+	}
+	wait(60);
+	
+	wait(300); //wait for leftover enemies to finish
+	
+	/////////////////////////////////////////////////////
+	//End of the aforementioned bit where you say where to put enemies
+	/////////////////////////////////////////////////////
+	
+	//Clean up any leftover shots and wait a moment before starting boss
+	//There shouldn't be any enemies left by the time we get here
+	loop(150){
+		DeleteShotAll(TYPE_ALL,TYPE_FADE);
+		yield;
+	}
+	//Start the boss plural
+	StartScript(bossScript);
+	while(!IsCloseScript(bossScript) && GetPlayerState() != STATE_END)
+	{
+		yield;
+	}
+	loop(240){yield;}
+	CloseStgScene();
+}
+
+
+
+
+
+
+//A basic fairy that fires aimed shots
+//I put this one together to be simple/easy to modify
+function TSampleFairy1(x,y,s,a){
+	let fairy = SpawnFairy(x,y,"red","PoFV",10,100); //x,y,color,type,hitbox,life
+	ObjMove_SetSpeed(fairy,s);
+	ObjMove_SetAngle(fairy,a);
+	//By doing it this way, you can use ObjMove_Foo on created fairies if you want
+	TDoFairy;
+	return fairy;
+	
+	task TDoFairy{
+		wait(30); //delay before starting to shoot
+		let shot; let fx; let fy; let count=0;
+		while(!(ObjEnemy_GetLife(fairy)==0)){
+			fx=ObjMove_GetX(fairy); fy=ObjMove_GetY(fairy); //update each frame with the fairy's position
+			SE_Play(se_shot,60); //(se constant, volume%)
+			
+			a = GetAngleToPlayer(fairy);
+			//Do the shots
+			ascent(i in 0..3){
+				shot = CreateShotA1(fx,fy,2.5,a-5+5*i,BALL_O_RED,10);
+			}
+			//Those were the shots
+			
+			wait(15); count++; //delay before doing more shots
+		}
+	}
+}
+
+//A basic fairy that fires aimed shots and extra aimed streams going around
+task TFairy1(x,y,s,a){
+	let fairy = SpawnFairy(x,y,"red","PoFV",10,100);
+	let col = randint(0,7); //slapdash measure to make it easier to see what they're doing - make each one fire a random color of shots
+	ObjMove_SetSpeed(fairy,s);
+	ObjMove_SetAngle(fairy,a);
+	wait(60);
+	let shot; let fx; let fy; let count=0; let off=0; let da=13;
+	while(!(ObjEnemy_GetLife(fairy)==0)){
+		fx=ObjMove_GetX(fairy); fy=ObjMove_GetY(fairy); //update each frame with the fairy's position
+		a = GetAngleToPlayer(fairy);
+		SE_Play(se_shot3,50);
+		
+		let n = altBin(count); //0 or 1
+		ascent(i in n..2){ //only shoot the ones aimed straight at the player every other time
+			shot = CreateShotA1(fx,fy,2.5,a+off*i,DOT_WHITE+col,5);
+			shot = CreateShotA1(fx,fy,2.5,a-off*i,DOT_WHITE+col,5);
+		}
+		wait(10); off+=da; count++;
+	}
+}
+
+//A fairy that slows to a stop, pauses, and goes off in another direction
+task TFairy2(x,y,s,a,del,pause,s2,a2){
+	let fairy = SpawnFairy(x,y,"blue","PoFV",10,200);
+	Move;
+	wait(60);
+	let shot; let fx; let fy; let count=0; let off=0; let da=13;
+	while(!(ObjEnemy_GetLife(fairy)==0)){
+		fx=ObjMove_GetX(fairy); fy=ObjMove_GetY(fairy); //update each frame with the fairy's position
+		SE_Play(se_shot2,50);
+		
+		ascent(i in 1..3){
+			shot = CreateShotA1(fx,fy,2.5,90+off*i,PEL_BLUE,5);
+			shot = CreateShotA1(fx,fy,2.5,90-off*i,PEL_BLUE,5);
+		}
+		wait(10); off+=da; count++;
+		// wait(max(30-sqrt(3*count),10)); off+=da; count++;
+	}
+	
+	task Move{
+		ObjMove_SetDestAtWeight(fairy,x+s*del*cos(a),y+s*del*sin(a),del,10);
+		wait(del);
+		wait(pause);
+		ObjMove_SetSpeed(fairy,s2);
+		ObjMove_SetAngle(fairy,a2);
+	}
+}
+
+//A fairy that goes to a point, sprays a burst of semirandom shots at the player, and goes off in another direction
+task TFairy3(x,y,x1,y1,del,pause,s2,a2){
+	let fairy = SpawnFairy(x,y,"big","PoFV",10,300);
+	Move;
+	let shot; let fx; let fy; let count=0; let a;
+
+	wait(del);
+	loop(40){
+		if(Obj_IsDeleted(fairy)){break;}
+		fx=ObjMove_GetX(fairy); fy=ObjMove_GetY(fairy); //update each frame with the fairy's position
+		SE_Play(se_shot,60);
+		
+		a = GetAngleToPlayer(fairy);
+		ascent(i in 0..3){
+			shot = CreateShotA1(fx,fy,2.5,a+120*i+rand(-15,15),BALL_O_GREEN,10);
+			shot = CreateShotA1(fx,fy,2.5,a-120*i+rand(-15,15),BALL_O_AQUA+500,10);
+		}
+		wait(3); count++;
+	}
+	
+	task Move{
+		ObjMove_SetDestAtWeight(fairy,x1,y1,del,10);
+		wait(del);
+		wait(pause);
+		ObjMove_SetSpeed(fairy,s2);
+		ObjMove_SetAngle(fairy,a2);
+	}
+}
+
+
+function TYinYangTest1(x,y,s,a, N,M,ss,sd,da,type){
+	// let fam = SpawnFamiliar(x,y,"red",150);
+	let fam = SpawnYinYang(x,y,"red",150,0);
+	ObjMove_SetSpeed(fam,s);
+	ObjMove_SetAngle(fam,a);
+	DoTask;
+	// TFollow;
+	return fam;
+	
+	task DoTask{
+		wait(30+sd);
+		let shot; let fx; let fy; let count=0;
+		while(!(ObjEnemy_GetLife(fam)==0)){
+			fx=ObjMove_GetX(fam); fy=ObjMove_GetY(fam);
+			SE_Play(se_shot2,60);
+			
+			if(da==0){
+				a = rand(0,360);
+			}else{
+				a += da;
+			}
+			ascent(i in 0..N){
+				ascent(j in 0..M){
+					shot = CreateShotA1(fx,fy,ss*(1-j/(2*M)),a+i*360/N,type,5);
+				}
+			}
+			loop(sd){yield;}
+			count++;
+		}
+	}
+	
+	task TFollow{
+		loop(15){
+			DebugWarnShot(ObjMove_GetX(fam),ObjMove_GetY(fam));
+			wait(5);
+		}
+	}
+}
+
+
+
+
+
+//pretty versatile
+function TFam1(x,y,s,a, N,M,ss,sd,da,type){
+	let fam = SpawnFamiliarC1(x,y,"blue",150);
+	FFlashIn(x,y,s*0.75,a,"red");
+	FFlashIn(x,y,s*0.25,a+rand(-5,5),"red");
+	FFlashIn(x,y,s*1.00,a+rand(-15,15),"red");
+	// let fam = SpawnFairy(x,y,"red","PoFV",10,150);
+	DoTask;
+	// TFollow;
+	return fam;
+	
+	task DoTask{
+		// wait(20); //15,16
+		ObjMove_SetSpeed(fam,s);
+		ObjMove_SetAngle(fam,a);
+		wait(30+sd);
+		let shot; let fx; let fy; let count=0;
+		while(!(ObjEnemy_GetLife(fam)==0)){
+			fx=ObjMove_GetX(fam); fy=ObjMove_GetY(fam);
+			SE_Play(se_shot2,60);
+			
+			if(da==0){
+				a = rand(0,360);
+			}else{
+				a += da;
+			}
+			ascent(i in 0..N){
+				ascent(j in 0..M){
+					shot = CreateShotA1(fx,fy,ss*(1-j/(2*M)),a+i*360/N,type,5);
+				}
+			}
+			loop(sd){yield;}
+			count++;
+		}
+	}
+	
+	task TFollow{
+		loop(15){
+			DebugWarnShot(ObjMove_GetX(fam),ObjMove_GetY(fam));
+			wait(5);
+		}
+	}
+}

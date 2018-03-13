@@ -1,0 +1,747 @@
+//---------------------------
+//Function for Normallize Angles
+//---------------------------
+function GetAngle(obj){
+return NormalizeAngle(ObjMove_GetAngle(obj))
+}
+// function NormalizeAngle(angle){
+  // angle %= 360;
+  // if(angle<0){ angle += 360; }
+
+  // return angle;
+
+// }
+//---------------------------
+//Animation of Normal Enemies
+//---------------------------
+//let csd = GetCurrentScriptDirectory;
+task LoadAllImg{
+	LoadTexture("./enemy/INenemy1.png");
+	LoadTexture("./enemy/INenemy2.png");
+	LoadTexture("./enemy/INenemy.png");
+	LoadTexture("./enemy/fairy.png");
+	LoadTexture("./enemy/fairy2.png");
+	LoadTexture("./enemy/FairyB.png");
+	LoadTexture("./enemy/fairy3.png");
+	LoadTexture("./enemy/fairy4.png");
+	LoadTexture("./enemy/fairy5.png");
+	LoadTexture("./enemy/enemy.png"); //used by other functions
+	LoadTexture("./enemy/hitodama.png");
+}
+LoadAllImg; //todo: put this somewhere better
+
+////////////////////////////////////////////////////////
+//This is the part that figures out what sprite to use//
+////////////////////////////////////////////////////////
+task AnimateFairy(obj,fairy,type){
+	let a = 0;
+	alternative(type)
+	case("INSet1"){
+		ObjPrim_SetTexture(obj,csd~"./enemy/INenemy1.png");
+		AnimateFairyINloop(obj,fairy);
+	}
+	case("INSet2"){
+		ObjPrim_SetTexture(obj,csd~"./enemy/INenemy2.png");
+		AnimateFairyINloop(obj,fairy);
+	}
+	case("INFam"){
+		ObjPrim_SetTexture(obj,csd~"./enemy/INenemy.png");
+		AnimateFairyFamloop(obj,fairy);
+		return; //don't fuck with Yangle
+	}
+	case("PoFV"){
+		ObjPrim_SetTexture(obj,csd~"./enemy/fairy.png");
+		alternative(fairy)
+		case("yellow","purple"){
+			ObjPrim_SetTexture(obj,csd~"./enemy/fairy2.png");
+		}
+		case("big"){
+			ObjPrim_SetTexture(obj,csd~"./enemy/FairyB.png");
+		}
+		AnimateFairyPoFVloop(obj,fairy);
+	}
+	case("MoF"){
+		ObjPrim_SetTexture(obj,csd~"./enemy/fairy3.png");
+		AnimateFairyMoFloop(obj,fairy);
+	}
+	case("DDC"){
+		ObjPrim_SetTexture(obj,csd~"./enemy/fairy4.png");
+		alternative(fairy)
+		case("green","purple"){
+			ObjPrim_SetTexture(obj,csd~"./enemy/fairy5.png");
+		}
+		AnimateFairyDDCloop(obj,fairy);
+	}
+
+	while(!Obj_IsDeleted(obj)){
+		// SetCommonData("s",ObjMove_GetAngle(obj)); //what is this?
+		if(ObjMove_GetSpeed(obj)> 0){
+			a = 1;
+			if(GetAngle(obj)<=95&&GetAngle(obj)>=85){
+				a = 0;
+			}
+			if(GetAngle(obj)<=275&&GetAngle(obj)>=265){
+				a = 0;
+			}
+			if(GetAngle(obj)>272&&GetAngle(obj)<=360){
+				ObjRender_SetAngleY(obj,0);
+			}
+			if(GetAngle(obj)>5&&GetAngle(obj)<85){
+				ObjRender_SetAngleY(obj,0);
+			}
+			if(GetAngle(obj)<175&&GetAngle(obj)>95){
+				ObjRender_SetAngleY(obj,180);
+			}
+			if(GetAngle(obj)>185&&GetAngle(obj)<265){
+				ObjRender_SetAngleY(obj,180);
+			}
+			if(GetAngle(obj)<=5&&GetAngle(obj)>=0){
+				ObjRender_SetAngleY(obj,0);
+			}
+			if(GetAngle(obj)<=360&&GetAngle(obj)>=355){
+				ObjRender_SetAngleY(obj,0);
+			}
+			if(GetAngle(obj)<=185&&GetAngle(obj)>=175){
+				ObjRender_SetAngleY(obj,180);
+			}
+		}
+
+		if(ObjMove_GetSpeed(obj)==0){
+			a = 0;
+			alternative(type)
+			case("INSet1","INSet2"){
+				ObjRender_SetAngleY(obj,180);
+			}
+			others{
+				ObjRender_SetAngleY(obj,0);
+			}
+		}
+		yield;
+	}
+
+
+	task AnimateFairyDDCloop(obj,fairy){
+		//0 = idle
+		//1 = moving
+		while(!Obj_IsDeleted(obj)){
+			alternative(a)
+			case(0){
+				alternative(fairy)
+				case("red","green"){
+					ascent(i in 0..4){
+						ObjSprite2D_SetSourceRect(obj,48*i,0,48*(i+1),48);
+						ObjSprite2D_SetDestCenter(obj);
+						loop(4){yield;}
+					}
+				}
+				case("blue","purple"){
+					ascent(i in 0..4){
+						ObjSprite2D_SetSourceRect(obj,48*i,48*3,48*(i+1),48*4);
+						ObjSprite2D_SetDestCenter(obj);
+						loop(4){yield;}
+					}
+				}
+			}
+			case(1){
+				alternative(fairy)
+				case("red","green"){
+					ascent(i in 0..4){
+						ObjSprite2D_SetSourceRect(obj,48*i,48*2,48*(i+1),48*3);
+						ObjSprite2D_SetDestCenter(obj);
+						loop(4){yield;}
+					}
+				}
+				case("blue","purple"){
+					ascent(i in 0..4){
+						ObjSprite2D_SetSourceRect(obj,48*i,48*5,48*(i+1),48*6);
+						ObjSprite2D_SetDestCenter(obj);
+						loop(4){yield;}
+					}
+				}
+			}
+			ObjSprite2D_SetDestCenter(obj);
+			yield;
+		}
+	}
+
+	task AnimateFairyPoFVloop(obj,fairy){
+		//0 = idle
+		//1 = moving
+		while(!Obj_IsDeleted(obj)){
+			alternative(a)
+			case(0){
+				alternative(fairy)
+				case("blue","yellow"){
+					ascent(i in 0..4){
+						ObjSprite2D_SetSourceRect(obj,48*i,0,48*(i+1),32);
+						ObjSprite2D_SetDestCenter(obj);
+						loop(4){yield;}
+					}
+				}
+				case("red","purple"){
+					ascent(i in 0..4){
+						ObjSprite2D_SetSourceRect(obj,48*i,32*3,48*(i+1),32*4);
+						ObjSprite2D_SetDestCenter(obj);
+						loop(4){yield;}
+					}
+				}
+				case("big"){
+					ascent(i in 1..5){
+						ObjSprite2D_SetSourceRect(obj,64*i,0,64*(i+1),64);
+						ObjSprite2D_SetDestCenter(obj);
+						loop(4){yield;}
+					}
+				}
+			}
+			case(1){
+				alternative(fairy)
+				case("blue","yellow"){
+					ascent(i in 0..4){
+						ObjSprite2D_SetSourceRect(obj,48*i,32*2,48*(i+1),32*3);
+						ObjSprite2D_SetDestCenter(obj);
+						loop(4){yield;}
+					}
+				}
+				case("red","purple"){
+					ascent(i in 0..4){
+						ObjSprite2D_SetSourceRect(obj,48*i,32*5,48*(i+1),32*6);
+						ObjSprite2D_SetDestCenter(obj);
+						loop(4){yield;}
+					}
+				}
+				case("big"){
+					ascent(i in 8..12){
+						ObjSprite2D_SetSourceRect(obj,64*i,0,64*(i+1),64);
+						ObjSprite2D_SetDestCenter(obj);
+						loop(4){yield;}
+					}
+				}
+			}
+			ObjSprite2D_SetDestCenter(obj);
+			yield;
+		}
+	}
+	task AnimateFairyMoFloop(obj,fairy){
+		//0 = idle
+		//1 = moving
+		while(!Obj_IsDeleted(obj)){
+			alternative(a)
+			case(0){
+				alternative(fairy)
+				case("blue"){
+					ascent(i in 0..4){
+						ObjSprite2D_SetSourceRect(obj,32*i,0,32*(i+1),32);
+						ObjSprite2D_SetDestCenter(obj);
+						loop(4){yield;}
+					}
+				}
+				case("red"){
+					ascent(i in 0..4){
+						ObjSprite2D_SetSourceRect(obj,32*i,32,32*(i+1),32*2);
+						ObjSprite2D_SetDestCenter(obj);
+						loop(4){yield;}
+					}
+				}
+				case("green"){
+					ascent(i in 0..4){
+						ObjSprite2D_SetSourceRect(obj,32*i,32*2,32*(i+1),32*3);
+						ObjSprite2D_SetDestCenter(obj);
+						loop(4){yield;}
+					}
+				}
+				case("yellow"){
+					ascent(i in 0..4){
+						ObjSprite2D_SetSourceRect(obj,32*i,32*3,32*(i+1),32*4);
+						ObjSprite2D_SetDestCenter(obj);
+						loop(4){yield;}
+					}
+				}
+			}
+			case(1){
+				alternative(fairy)
+				case("blue"){
+					ascent(i in 8..12){
+						ObjSprite2D_SetSourceRect(obj,32*i,0,32*(i+1),32);
+						ObjSprite2D_SetDestCenter(obj);
+						loop(4){yield;}
+					}
+				}
+				case("red"){
+					ascent(i in 8..12){
+						ObjSprite2D_SetSourceRect(obj,32*i,32,32*(i+1),32*2);
+						ObjSprite2D_SetDestCenter(obj);
+						loop(4){yield;}
+					}
+				}
+				case("green"){
+					ascent(i in 8..12){
+						ObjSprite2D_SetSourceRect(obj,32*i,32*2,32*(i+1),32*3);
+						ObjSprite2D_SetDestCenter(obj);
+						loop(4){yield;}
+					}
+				}
+				case("yellow"){
+					ascent(i in 8..12){
+						ObjSprite2D_SetSourceRect(obj,32*i,32*3,32*(i+1),32*4);
+						ObjSprite2D_SetDestCenter(obj);
+						loop(4){yield;}
+					}
+				}
+			}
+			ObjSprite2D_SetDestCenter(obj);
+			yield;
+		}
+	}
+	task AnimateFairyINloop(obj,fairy){
+		//0 = idle
+		//1 = moving
+		while(!Obj_IsDeleted(obj)){
+			alternative(a)
+			case(0){
+				alternative(fairy)
+				case("blue"){
+					ascent(i in 0..4){
+						ObjSprite2D_SetSourceRect(obj,32*i,0,32*(i+1),32);
+						ObjSprite2D_SetDestCenter(obj);
+						loop(4){yield;}
+					}
+				}
+				case("red"){
+					ascent(i in 0..4){
+						ObjSprite2D_SetSourceRect(obj,32*i,32,32*(i+1),32*2);
+						ObjSprite2D_SetDestCenter(obj);
+						loop(4){yield;}
+					}
+				}
+				case("green"){
+					ascent(i in 0..4){
+						ObjSprite2D_SetSourceRect(obj,32*i,32*2,32*(i+1),32*3);
+						ObjSprite2D_SetDestCenter(obj);
+						loop(4){yield;}
+					}
+				}
+				case("yellow"){
+					ascent(i in 0..4){
+						ObjSprite2D_SetSourceRect(obj,32*i,32*3,32*(i+1),32*4);
+						ObjSprite2D_SetDestCenter(obj);
+						loop(4){yield;}
+					}
+				}
+			}
+			case(1){
+				alternative(fairy)
+				case("blue"){
+					ascent(i in 12..13){
+						ObjSprite2D_SetSourceRect(obj,32*i,0,32*(i+1),32);
+						ObjSprite2D_SetDestCenter(obj);
+						loop(4){yield;}
+					}
+				}
+				case("red"){
+					ascent(i in 12..16){
+						ObjSprite2D_SetSourceRect(obj,32*i,32,32*(i+1),32*2);
+						ObjSprite2D_SetDestCenter(obj);
+						loop(4){yield;}
+					}
+				}
+				case("green"){
+					ascent(i in 15..16){
+						ObjSprite2D_SetSourceRect(obj,32*i,32*2,32*(i+1),32*3);
+						ObjSprite2D_SetDestCenter(obj);
+						loop(4){yield;}
+					}
+				}
+				case("yellow"){
+					ascent(i in 12..16){
+						ObjSprite2D_SetSourceRect(obj,32*i,32*3,32*(i+1),32*4);
+						ObjSprite2D_SetDestCenter(obj);
+						loop(4){yield;}
+					}
+				}	
+			}
+			ObjSprite2D_SetDestCenter(obj);
+			yield;
+		}
+	}
+
+
+	task AnimateFairyFamloop(obj,fairy){
+		//0 = idle
+		//1 = moving
+		yield; //so it doesn't get stuck as the wrong sprite (moving/still) for the first 16 frames
+		let i = 0; let j = 0; let dj = 1; //animation counter
+		while(!Obj_IsDeleted(obj)){
+			// ObjSprite2D_SetDestCenter(obj);
+			
+			alternative(Obj_GetValueD(obj,"IsIntersectionEnable",true))
+			//If collision - bird ghost things
+			case(true){			
+				alternative(ObjMove_GetSpeed(obj)!=0)
+				case(false){
+					alternative(fairy)
+					case("red"){
+						ObjSprite2D_SetSourceRect(obj,256+32*i,128,256+32*(i+1),128+32);
+					}
+					case("green"){
+						ObjSprite2D_SetSourceRect(obj,256+32*i,128+32,256+32*(i+1),128+64);
+					}
+					case("blue"){
+						ObjSprite2D_SetSourceRect(obj,256+32*i,128+64,256+32*(i+1),128+96);
+					}
+					case("yellow"){
+						ObjSprite2D_SetSourceRect(obj,256+32*i,128+96,256+32*(i+1),128+128);
+					}
+				}
+				case(true){
+					alternative(fairy)
+					case("red"){
+						ObjSprite2D_SetSourceRect(obj,128+32*j,128,128+32*(j+1),128+32);
+					}
+					case("green"){
+						ObjSprite2D_SetSourceRect(obj,128+32*j,128+32,128+32*(j+1),128+64);
+					}
+					case("blue"){
+						ObjSprite2D_SetSourceRect(obj,128+32*j,128+64,128+32*(j+1),128+96);
+					}
+					case("yellow"){
+						ObjSprite2D_SetSourceRect(obj,128+32*j,128+96,128+32*(j+1),128+128);
+					}
+					others{yield;}
+					
+					ObjRender_SetAngleZ(obj,ObjMove_GetAngle(obj));
+				}
+				ObjSprite2D_SetDestCenter(obj);
+				loop(4){yield;}
+				
+				
+			}
+			//If no collision - magic circles
+			case(false){
+				
+				ObjSprite2D_SetSourceRect(obj,0,127,64,191);
+				ObjSprite2D_SetDestCenter(obj);
+				ObjRender_SetAngleZ(obj,ObjRender_GetAngleZ(obj)+15); //10
+				
+				alternative(fairy)
+				case("red"){
+					ObjRender_SetColor(obj,255,128,128);
+				}
+				case("green"){
+					ObjRender_SetColor(obj,150,255,150);
+				}
+				case("blue"){
+					ObjRender_SetColor(obj,150,150,255);
+				}
+				case("yellow"){
+					ObjRender_SetColor(obj,255,255,128);
+				}
+				yield;
+				
+			}
+			
+			i++; i%=4;
+			j+=dj; if(j==0||j==3){dj*=-1;}
+			
+			
+			// ObjSprite2D_SetDestCenter(obj);
+			// yield;
+		}
+	}
+	
+	
+}	//end of AnimateFairy
+
+
+
+////////////////////////////////////////////////////////
+//End of fairy animations///////////////////////////////
+////////////////////////////////////////////////////////
+
+//---------------------------
+//Animation of Spirit Enemies
+//---------------------------
+task AnimateSpirit(obj,y){
+	ObjPrim_SetTexture(obj,csd~"./enemy/hitodama.png");	//csd~"./enemy/enemy2.png");
+	loopanimspirit(obj,y);
+	AnimIn;
+	let arrstil = [0,4,5]; 
+	let arrmove = [2,6,3,7,3,6]; 
+	let i=0; let x; let s;
+	while(!Obj_IsDeleted(obj)){
+		if(ObjMove_GetSpeed(obj)==0){
+			x = 32*arrstil[i%length(arrstil)];			
+		}else{
+			x = 32*arrmove[i%length(arrmove)];			
+			ObjRender_SetAngleZ(obj,ObjMove_GetAngle(obj)+180-45);
+		}
+		
+		ObjSprite2D_SetSourceRect(obj,x,y,x+32,32+y-3);
+		ObjSprite2D_SetDestCenter(obj);
+		loop(3){yield;}
+		i++;
+	}
+	
+	task AnimIn{
+		descent(i in 0..8){
+			ObjRender_SetAngleY(obj,90*i/8); 
+			yield;
+		}
+	}
+	
+	
+	
+	task loopanimspirit(obj,y){
+		yield; 
+		let a; let upweight;
+		while(!Obj_IsDeleted(obj)){
+			a = ObjMove_GetAngle(obj); upweight = min((|GetAngularDistance(a,90)|),90)/90;
+			AnimateSpirit2(obj,ObjMove_GetAngle(obj)+rand(-10,10),y);
+			loop(6){yield;}
+		}
+	}
+	task AnimateSpirit2(obj,a,y){
+		let objs = ObjPrim_Create(OBJ_SPRITE_2D);
+		Move(obj,objs,a);
+		Obj_SetRenderPriorityI(objs,Obj_GetRenderPriorityI(obj)-1);
+		ObjPrim_SetTexture(objs,csd~"./enemy/enemy_aura.png");
+		ObjRender_SetBlendType(objs,BLEND_ADD_ARGB);
+		// ObjRender_SetAlpha(objs,64);
+		ObjRender_SetScaleXYZ(objs,0.5,0.5,1);
+		ObjRender_SetPosition(objs,ObjMove_GetX(obj)+round(rand(-3,3)),ObjMove_GetY(obj),0);
+		while(!Obj_IsDeleted(objs)){
+			ascent(i in 0..8){
+				ObjSprite2D_SetSourceRect(objs,64*i,-1,64*(i+1),63);
+				ObjSprite2D_SetDestCenter(objs);
+				loop(3){yield;}
+			}
+			yield;
+		}
+	}
+	task Move(obj,objs,a){
+		let si = 1;
+		// let speed = max(ObjMove_GetSpeed(obj),3); //4
+		let speed = min(4-ObjMove_GetSpeed(obj),3); //4
+
+		let angle = NormalizeAngle(a+180);
+		if(ObjMove_GetSpeed(obj) == 0){angle = 270; speed = 3;}
+		let mx = speed*cos(angle);
+		let my = speed*sin(angle);
+			
+		if(angle>180){
+			ObjRender_SetAngleZ(objs, (angle+270/2)/1.5 +90);
+		}else{
+			ObjRender_SetAngleZ(objs, angle+90);
+		}
+			
+		while(si >0){
+			si-=0.07;
+			if(si < 0){Obj_Delete(objs);}
+			ObjRender_SetPosition(objs,ObjRender_GetX(objs)+mx,ObjRender_GetY(objs)+my,0);
+			ObjRender_SetScaleXYZ(objs,si,si,0);
+			yield;
+		}
+	}
+	
+}
+
+//---------------------------
+//Animation of Kedama enemies
+//---------------------------
+task AnimateKedama(obj,color){
+	ObjPrim_SetTexture(obj,csd~"./enemy/INenemy.png");
+	AnimIn;
+	
+	let x; let y;
+	alternative(color)
+	case("blue")  { x=64; y=128; }
+	case("red")   { x=96; y=128; }
+	case("green") { x=64; y=160; }
+	case("yellow"){ x=96; y=160; }
+	ObjSprite2D_SetSourceRect(obj,x,y,x+32,y+32);
+	ObjSprite2D_SetDestCenter(obj);
+	
+	let count = 0;
+	while(!Obj_IsDeleted(obj)){
+		ObjRender_SetAngleZ(obj,-20*count);
+		
+		loop(3){yield;}
+		count++;
+	}
+	return;
+	
+	task AnimIn{
+		descent(i in 0..8){
+			ObjRender_SetAngleY(obj,90*i/8); 
+			yield;
+		}
+	}	
+	
+}
+
+
+//---------------------------
+//Animation of Yin Yang Enemies
+//---------------------------
+task CreateEnemy_Onmyou_Texture(id,life,color,del){
+	let csd			= GetCurrentScriptDirectory;
+	let opt			= [ObjPrim_Create(OBJ_SPRITE_2D),ObjPrim_Create(OBJ_SPRITE_2D)];
+	let flg			= false;	//not sure what this does
+	let alpha1		= 0;		//ratio 0..1 of alpha
+	let alphaA		= 0;		//sin(0..90) sets alpha1
+	let dAlphaA		= 2; 
+	let enx			= ObjMove_GetX(id);
+	let eny			= ObjMove_GetY(id);
+	let spin		= 0;
+	let i			= 0;
+	let px			= 0;	//cell in spritesheet?
+	let py			= 0;
+	let rgbeff1		= [255,255,255];
+	let rgbeff2		= [255,255,255];
+	let rgbeff3		= [64,64,64];
+	
+	if(del>0){ 
+		dAlphaA=90/del; 
+	}
+	
+	ObjRender_SetPosition(id,enx,eny,0);
+	ObjPrim_SetTexture(id,csd~"./enemy/yingyang.png");
+	ObjRender_SetBlendType(id,BLEND_ALPHA);
+	Obj_SetRenderPriorityI(id,41);
+	ObjRender_SetAngleXYZ(id,0,0,0);
+	ObjRender_SetAlpha(id,alpha1);
+	
+	loop(length(opt)){
+		ObjRender_SetPosition(opt[i],enx,eny,0);
+		ObjPrim_SetTexture(opt[i],csd~"./enemy/yingyang.png");
+		Obj_SetRenderPriorityI(opt[i],40);
+		ObjRender_SetBlendType(opt[i],BLEND_ADD_RGB);
+		ObjRender_SetAlpha(opt[i],alpha1);
+		i++;
+	}
+	i=0;
+	
+	alternative(color)
+	case("red"){
+		px = 0;
+		py = 0;
+		rgbeff1 = [255,255,255];
+		rgbeff2 = [255,0,0];
+		rgbeff3 = [64,0,0];
+	}
+	case("orange"){
+		px = 1;
+		py = 0;
+		rgbeff1 = [255,255,255];
+		rgbeff2 = [255,128,0];
+		rgbeff3 = [64,32,0];
+	}
+	case("yellow"){
+		px = 2;
+		py = 0;
+		rgbeff1 = [255,255,255];
+		rgbeff2 = [255,255,0];
+		rgbeff3 = [64,64,0];
+	}
+	case("green"){
+		px = 3;
+		py = 0;
+		rgbeff1 = [255,255,255];
+		rgbeff2 = [0,255,0];
+		rgbeff3 = [0,64,0];
+	}
+	case("aqua"){
+		px = 0;
+		py = 1;
+		rgbeff1 = [255,255,255];
+		rgbeff2 = [0,255,255];
+		rgbeff3 = [0,64,64];
+	}
+	case("blue"){
+		px = 1;
+		py = 1;
+		rgbeff1 = [255,255,255];
+		rgbeff2 = [0,0,255];
+		rgbeff3 = [0,0,64];
+	}
+	case("purple"){
+		px = 2;
+		py = 1;
+		rgbeff1 = [255,255,255];
+		rgbeff2 = [255,0,255];
+		rgbeff3 = [64,0,64];
+	}
+	case("white"){
+		px = 3;
+		py = 1;
+		rgbeff1 = [255,255,255];
+		rgbeff2 = [255,255,255];
+		rgbeff3 = [64,64,64];
+	}
+	
+	ObjRender_SetScaleXYZ(id,0,0,0);
+	ObjRender_SetScaleXYZ(opt[0],0,0,0);
+	ObjRender_SetScaleXYZ(opt[1],0,0,0);
+	
+	ObjSprite2D_SetSourceRect(id,(0+32*px),(0+32*py)+1,(32+32*px),(32+32*py));
+	ObjSprite2D_SetDestCenter(id);
+	loop(length(opt)){
+		ObjSprite2D_SetSourceRect(opt[i],0+32*px,128+32*py,32+32*px,160+32*py);
+		ObjSprite2D_SetDestCenter(opt[i]);
+		i++;
+	}
+	i=0;
+	
+	//@๑“]อOชEA’ชถ
+	
+	while(ObjEnemy_GetInfo(id,INFO_LIFE)>0){
+		enx		= ObjMove_GetX(id);
+		eny		= ObjMove_GetY(id);
+		
+		//@ฟ”ป’่ฦ‘ฬ“–ฝ่”ป’่๐•tฏ้
+		// ObjEnemy_SetIntersectionCircleToShot(id,enx,eny,16);
+		// ObjEnemy_SetIntersectionCircleToPlayer(id,enx,eny,16);
+		
+		//@
+		ObjRender_SetPosition(id,enx,eny,0);
+		ObjRender_SetPosition(opt[0],enx,eny,0);
+		ObjRender_SetPosition(opt[1],enx,eny,0);
+		
+		spin+=4;
+		ObjRender_SetAngleXYZ(opt[0],0,0,-spin*2);
+		ObjRender_SetAngleXYZ(opt[1],0,0,spin*3);
+		
+		// if(alpha1<1){
+		if(alphaA<90){
+			// alphaA+=2;
+			alphaA+=dAlphaA;
+			alpha1=1*sin(alphaA);
+		}
+		else{
+			ObjEnemy_SetIntersectionCircleToShot(id,enx,eny,16);
+			ObjEnemy_SetIntersectionCircleToPlayer(id,enx,eny,16);
+			alpha1=1;
+		}
+		
+		ObjRender_SetAlpha(id,alpha1*255);
+		ObjRender_SetAlpha(opt[0],alpha1*255);
+		ObjRender_SetAlpha(opt[1],alpha1*255);
+		ObjRender_SetColor(opt[0],alpha1*255,alpha1*255,alpha1*255);
+		ObjRender_SetColor(opt[1],alpha1*255,alpha1*255,alpha1*255);
+		
+		ObjRender_SetScaleXYZ(id,alpha1*0.6,alpha1*0.6,0);
+		ObjRender_SetScaleXYZ(opt[0],alpha1*1.4,alpha1*1.4,0);
+		ObjRender_SetScaleXYZ(opt[1],alpha1,alpha1,0);
+		if(CheckOutsideScreen(id,64)){
+			Obj_Delete(id);
+			Obj_Delete(opt[0]);
+			Obj_Delete(opt[1])
+		}
+		yield;
+	}
+	if(!Obj_IsDeleted(id)){
+		FinalizeFairy(id,ObjMove_GetX(id), ObjMove_GetY(id), color, 1);
+	}
+	Obj_Delete(id);
+	Obj_Delete(opt[0]);
+	Obj_Delete(opt[1]);
+}

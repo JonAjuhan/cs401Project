@@ -1,0 +1,232 @@
+//background script by kirbio
+
+let spellbg1 = GetCurrentScriptDirectory ~ "cardbg1.png";
+let spellbg2 = GetCurrentScriptDirectory ~ "cardbg2.png";
+let bg1 = GetCurrentScriptDirectory ~ "world01a.png";
+let bg2 = GetCurrentScriptDirectory ~ "world01b.png";
+let bg3 = GetCurrentScriptDirectory ~ "world01c.png";
+let spellactive = false;
+
+@Initialize{
+	LoadTexture(spellbg1);
+	LoadTexture(spellbg2);
+	LoadTexture(bg1);
+	LoadTexture(bg2);
+	LoadTexture(bg3);
+	bgcall;
+}
+@MainLoop{
+	let objScene = GetEnemyBossSceneObjectID();
+	spellactive = (ObjEnemyBossScene_GetInfo(objScene, INFO_IS_SPELL));
+	yield;
+}
+
+task bgcall{
+
+	loop{ //Check what bg it should call
+		if(!spellactive){
+			cave1;
+			TTreeGenerator;
+			TDarkness;
+		}
+		while(!spellactive){ yield; }
+		if(spellactive){
+			spellBG1;
+			spellBG2;
+			spellBG3;
+		}
+		while(spellactive){ yield; }
+		yield;
+	}
+}
+
+task cave1{
+	let bg = ObjPrim_Create(OBJ_SPRITE_3D);
+	let a = 0;
+	let s =0;
+	let slide = 0;
+	ObjRender_SetBlendType(bg,BLEND_ALPHA);
+	Obj_SetRenderPriority(bg,0.21);
+	ObjPrim_SetTexture(bg,bg1);
+	ObjRender_SetAngleXYZ(bg,100,75,0);
+	// ObjSprite3D_SetSourceRect(bg,0,0,512,256);
+	ObjSprite3D_SetSourceDestRect(bg,0,0,1024,1024);
+	ObjRender_SetScaleXYZ(bg,1,1,1);
+	// ObjRender_SetPosition(bg,0,0,1);
+	ObjRender_SetPosition(bg,0,0,-50);
+	while(!spellactive){
+		if(a<255){
+			s+=2;
+			ObjRender_SetAlpha(bg,s);
+		}
+		// ObjSprite3D_SetSourceRect(bg,0,0-slide*2,1024,1024-slide*2);
+		ObjSprite3D_SetSourceRect(bg,0+50,0-slide*2,1024+50,1024-slide*2);
+		// ObjSprite3D_SetSourceRect(bg,1024-256,0-slide*2,256,1024-slide*2);
+		slide+=1;
+		a++;
+		yield;
+	}
+	Obj_Delete(bg);
+}
+
+task TDarkness{
+	let obj=ObjPrim_Create(OBJ_SPRITE_2D);
+	let c = 0;
+	let s = 0;
+	ObjRender_SetBlendType(obj,BLEND_ALPHA);
+	Obj_SetRenderPriority(obj,0.22);
+	ObjPrim_SetTexture(obj,bg3);
+	ObjSprite2D_SetSourceRect(obj,0,0,384,448);
+	ObjSprite2D_SetDestCenter(obj);
+	ObjRender_SetScaleXYZ(obj,1,1,1);
+	ObjRender_SetX(obj,GetStgFrameWidth()/2);
+	ObjRender_SetY(obj,GetStgFrameHeight()/2);
+	while(!spellactive){
+		if(c<192){ ObjRender_SetColor(obj,c,c,c); }
+		ObjSprite2D_SetSourceRect(obj,0,0,384,448);
+		c+=1;
+		yield;
+	}
+	descent(i in 0..60){
+		ObjRender_SetColor(obj,i*2,i*2,i*2);
+		yield;
+	}
+	Obj_Delete(obj);
+}
+
+task TStage1Tree(x,y,z){
+	let c=0;
+	let obj=ObjPrim_Create(OBJ_SPRITE_3D);
+	ObjRender_SetBlendType(obj,BLEND_ALPHA);
+	ObjRender_SetAlpha(obj,255);
+	Obj_SetRenderPriorityI(obj,22);
+	ObjPrim_SetTexture(obj,bg2);
+	ObjRender_SetPermitCamera(obj,true);
+	ObjSprite3D_SetSourceRect(obj,0,0,128,128);
+	ObjSprite3D_SetDestRect(obj,0,0,128,128);
+	ObjRender_SetScaleXYZ(obj,1,-1,1);
+	ObjRender_SetPosition(obj,x,y,z);
+	ObjRender_SetZWrite(obj,true);
+	ObjRender_SetZTest(obj,true);
+	ObjSprite3D_SetBillboard(obj,true);
+	
+	//ObjRender_SetFogEnable(obj,false);
+	while(ObjRender_GetY(obj)>-200){
+		while(!spellactive){
+			if(c<192){ObjRender_SetColor(obj,c,c,c);}
+			//ObjRender_SetAngleXYZ(obj,0,90,90);
+			let fspeed = 2;
+			c++;
+			ObjRender_SetPosition(obj,ObjRender_GetX(obj)+fspeed,ObjRender_GetY(obj),ObjRender_GetZ(obj)+fspeed/4);
+			yield;
+		}
+		descent(i in 0..60){
+			ObjRender_SetColor(obj,i*2,i*2,i*2);
+			yield;
+		}
+		ObjRender_SetColor(obj,0,0,0);
+		Obj_Delete(obj);
+	}
+	Obj_Delete(obj);
+	break; //this doesn't do anything?
+}
+
+
+task TTreeGenerator{
+	while(!spellactive){
+		TStage1Tree(-512,80,-50);
+		TStage1Tree(-512,120,-30);
+		TStage1Tree(-512,150,-10);
+		TStage1Tree(-512,80,-320);
+		TStage1Tree(-512,120,-340);
+		TStage1Tree(-512,150,-360);
+		loop(150){
+			yield;
+		}		
+	}	
+}
+
+
+
+task spellBG1{
+	let bg = ObjPrim_Create(OBJ_SPRITE_2D);
+	let a = 0;
+	let s =0;
+	let slide = 0;
+	ObjRender_SetBlendType(bg,BLEND_ALPHA);
+	Obj_SetRenderPriority(bg,0.21);
+	ObjPrim_SetTexture(bg,spellbg1);
+	ObjSprite2D_SetSourceRect(bg,0,0,384,1024*3);
+	ObjSprite2D_SetDestCenter(bg);
+	ObjRender_SetScaleXYZ(bg,1,1,1);
+	ObjRender_SetX(bg,GetCenterX);
+	ObjRender_SetY(bg,GetCenterY);
+	ObjRender_SetColor(bg,175, 134, 15);
+	while(!Obj_IsDeleted(bg)){
+		if(a<150){s+=2;}
+		ObjRender_SetAlpha(bg,s);
+		ObjRender_SetY(bg,GetCenterY-slide);
+		ObjRender_SetY(bg,GetCenterX+slide);
+		slide-=0.10;
+		a++;
+		yield;
+	}
+}
+
+task spellBG2{
+	let bg = ObjPrim_Create(OBJ_SPRITE_2D);
+	let a = 0;
+	let s =0;
+	let slide = 0;
+	ObjRender_SetBlendType(bg,BLEND_ALPHA);
+	Obj_SetRenderPriority(bg,0.21);
+	ObjPrim_SetTexture(bg,spellbg2);
+	ObjSprite2D_SetSourceRect(bg,0,0,512,512*30);
+	ObjSprite2D_SetDestCenter(bg);
+	ObjRender_SetScaleXYZ(bg,1,1,1);
+	ObjRender_SetX(bg,GetCenterX);
+	ObjRender_SetY(bg,GetCenterY);
+	ObjRender_SetColor(bg,00,0,0);
+	while(!Obj_IsDeleted(bg)){
+		if(a<255){s+=2;}
+		ObjRender_SetAlpha(bg,s);
+		ObjRender_SetY(bg,GetCenterY+slide);
+		slide+=0.80;
+		a++;
+		yield;
+	}
+}
+
+task spellBG3{
+	let bg = ObjPrim_Create(OBJ_SPRITE_2D);
+	let a = 0;
+	let s =0;
+	let slide = 0;
+	ObjRender_SetBlendType(bg,BLEND_ALPHA);
+	Obj_SetRenderPriority(bg,0.21);
+	ObjPrim_SetTexture(bg,spellbg2);
+	ObjSprite2D_SetSourceRect(bg,0,0,512*30,512*30);
+	ObjSprite2D_SetDestCenter(bg);
+	ObjRender_SetScaleXYZ(bg,1,1,1);
+	ObjRender_SetX(bg,GetCenterX);
+	ObjRender_SetY(bg,GetCenterY);
+	while(!Obj_IsDeleted(bg)){
+		if(a<255){s+=2;}
+		ObjRender_SetAlpha(bg,s);
+		ObjRender_SetX(bg,GetCenterX+slide);
+		ObjRender_SetY(bg,GetCenterY-slide);
+		slide+=0.80;
+		a++;
+		yield;
+	}
+}
+
+function GetCenterX{
+	let x = GetStgFrameWidth / 2;
+	return x;
+}
+
+function GetCenterY{
+	let y = GetStgFrameHeight / 2; 
+	return y; 
+}

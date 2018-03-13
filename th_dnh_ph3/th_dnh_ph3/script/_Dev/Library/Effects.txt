@@ -1,0 +1,474 @@
+//#include"..\selibrary.txt"
+
+task AfterImage_1(tobj,texture,color,scaleinc,time,x1,y1,x2,y2,Yangle,alpha){
+	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	let scale = 1;
+	let Red = color[0];
+	let Green = color[1];
+	let Blue = color[2];
+	
+	ObjPrim_SetTexture(obj, texture);
+	ObjSprite2D_SetSourceRect(obj, x1, y1, x2, y2);
+	ObjRender_SetScaleXYZ(obj,scale,scale,0);
+	Obj_SetRenderPriorityI(obj,Obj_GetRenderPriorityI(tobj)-1);
+	ObjSprite2D_SetDestCenter(obj);
+	ObjRender_SetPosition(obj,ObjRender_GetX(tobj),ObjRender_GetY(tobj),0);
+	ObjRender_SetAlpha(obj,alpha);
+	ObjRender_SetBlendType(obj,BLEND_ADD_ARGB);
+	ObjRender_SetColor(obj,Red,Green,Blue);
+	ObjRender_SetAngleY(obj,Yangle);
+	
+	loop(time){
+	scale+=scaleinc/time;
+	ObjRender_SetScaleXYZ(obj,scale,scale,0);
+	
+	while(GetCommonData("EndScript",false)==true){yield;}
+	
+	alpha-=alpha/time;
+	ObjRender_SetAlpha(obj,alpha);
+	yield;}
+	Obj_Delete(obj);
+}
+
+task AfterImage_2(tobj,texture,color,origscale,scaleinc,time,x1,y1,x2,y2,Yangle){
+	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	let scale = origscale;
+	let alpha = 255;
+	let Red = color[0];
+	let Green = color[1];
+	let Blue = color[2];
+	
+	ObjPrim_SetTexture(obj, texture);
+	ObjSprite2D_SetSourceRect(obj, x1, y1, x2, y2);
+	ObjRender_SetScaleXYZ(obj,scale,scale,0);
+	Obj_SetRenderPriorityI(obj,23);
+	ObjSprite2D_SetDestCenter(obj);
+	ObjRender_SetPosition(obj,ObjRender_GetX(tobj),ObjRender_GetY(tobj),0);
+	ObjRender_SetAlpha(obj,alpha);
+	ObjRender_SetBlendType(obj,BLEND_ADD_ARGB);
+	ObjRender_SetColor(obj,Red,Green,Blue);
+	ObjRender_SetAngleY(obj,Yangle);
+	
+	loop(time){
+	scale+=scaleinc/time;
+	ObjRender_SetScaleXYZ(obj,scale,scale,0);
+	
+	alpha-=255/time;
+	ObjRender_SetAlpha(obj,alpha);
+	yield;}
+	Obj_Delete(obj);
+}
+
+/*
+task Flame_Aura(tobj,color,scale){	
+	let angle = rand(0,360);
+	
+	while(!Obj_IsDeleted(tobj)){
+		flame(tobj,color,scale);
+		flamebase(tobj,color,scale,angle);
+		angle+=rand(45,90);
+		wait(10);}
+}
+
+task flame(tobj,color,scale){
+	let frame = 0;
+	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	let Xscale = scale/2;
+	let Yscale = scale/6;
+	let trans = 255;
+	
+	ObjPrim_SetTexture(obj, GetCurrentScriptDirectory~"../img/Aura.png");
+	ObjSprite2D_SetSourceRect(obj,0, 0, 48, 64);
+	ObjRender_SetScaleXYZ(obj,Xscale,Yscale,1);
+	Obj_SetRenderPriorityI(obj,23);
+	ObjSprite2D_SetDestCenter(obj);
+	ObjRender_SetBlendType(obj,BLEND_ADD_ARGB);
+	ObjRender_SetPosition(obj,ObjMove_GetX(tobj),ObjMove_GetY(tobj),0);
+	ObjRender_SetAngleXYZ(obj,0,0,rand(-5,5));
+	ObjRender_SetColor(obj,color[0],color[1],color[2]);
+	loop(30){
+		ObjRender_SetScaleXYZ(obj,Xscale,Yscale,1);
+		ObjRender_SetAlpha(obj,trans);
+		ObjRender_SetPosition(obj,ObjMove_GetX(tobj),ObjMove_GetY(tobj),0);
+		trans-=255/30;
+		Xscale+=(scale/4)/30;
+		Yscale+=(scale*2)/30;
+		yield;
+	}
+	Obj_Delete(obj);
+}
+
+task flamebase(tobj,color,scale,angle){
+	let frame = 0;
+	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	let Xscale = scale/6;
+	let Yscale = scale/6;
+	let trans = 255;
+	
+	ObjPrim_SetTexture(obj, GetCurrentScriptDirectory~"../img/Aura.png");
+	ObjSprite2D_SetSourceRect(obj,48, 0, 96, 48);
+	ObjRender_SetScaleXYZ(obj,Xscale,Yscale,1);
+	Obj_SetRenderPriorityI(obj,23);
+	ObjSprite2D_SetDestCenter(obj);
+	ObjRender_SetBlendType(obj,BLEND_ADD_ARGB);
+	ObjRender_SetPosition(obj,ObjMove_GetX(tobj),ObjMove_GetY(tobj),0);
+	ObjRender_SetAngleXYZ(obj,0,0,angle);
+	ObjRender_SetColor(obj,color[0],color[1],color[2]);
+	loop(30){
+		ObjRender_SetScaleXYZ(obj,Xscale,Yscale,1);
+		ObjRender_SetAlpha(obj,trans);
+		ObjRender_SetPosition(obj,ObjMove_GetX(tobj),ObjMove_GetY(tobj)+20,0);
+		trans-=255/30;
+		Xscale+=scale*1.1/30;
+		Yscale+=scale*1.1/30;
+		yield;
+	}
+	Obj_Delete(obj);
+}
+
+task AuraY(tobj){
+	let frame = 0;
+	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	let Xscale = 1;
+	let Yscale = 1;
+	
+	ObjPrim_SetTexture(obj, GetCurrentScriptDirectory~"../img/snowflake.png");
+	ObjSprite2D_SetSourceRect(obj,0, 0, 125, 125);
+	ObjRender_SetScaleXYZ(obj,1,1,1);
+	Obj_SetRenderPriorityI(obj,30);
+	ObjSprite2D_SetDestCenter(obj);
+	ObjRender_SetBlendType(obj,BLEND_ALPHA);
+	ObjRender_SetPosition(obj,ObjMove_GetX(tobj),ObjMove_GetY(tobj),0);
+	ObjRender_SetAngleXYZ(obj,0,0,0);
+	while(!Obj_IsDeleted(tobj)){
+		frame++;
+		ObjRender_SetScaleXYZ(obj,2.0+0.4*cos(frame*1.4),2.0+0.4*cos(frame*1.4),1);
+		ObjRender_SetAngleXYZ(obj,0,0,frame*-0.5);
+		ObjRender_SetAlpha(obj,205-50*cos(frame*1.4));
+		//ObjRender_SetPosition(obj,ObjRender_GetX(obj)+mx,ObjRender_GetY(obj)+my,0);
+		ObjRender_SetPosition(obj,ObjMove_GetX(tobj),ObjMove_GetY(tobj),0);
+		yield;
+	}
+	Obj_Delete(obj);
+}
+
+task StartAuraT(tobj){
+	let frame = 0;
+	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	let Xscale = 0;
+	let Yscale = Xscale;
+	
+	ObjPrim_SetTexture(obj, GetCurrentScriptDirectory~"../img/spellcircle.png");
+	ObjSprite2D_SetSourceRect(obj,0, 0, 59, 59);
+	ObjRender_SetScaleXYZ(obj,Xscale,Yscale,1);
+	Obj_SetRenderPriorityI(obj,23);
+	ObjSprite2D_SetDestCenter(obj);
+	ObjRender_SetBlendType(obj,BLEND_ADD_ARGB);
+	ObjRender_SetPosition(obj,ObjMove_GetX(tobj),ObjMove_GetY(tobj),0);
+	ObjRender_SetAngleXYZ(obj,0,0,0);
+	while(!Obj_IsDeleted(tobj)){
+		frame++;
+		if(Xscale<2){Xscale+=2/20;
+		Yscale=Xscale;}
+		ObjRender_SetScaleXYZ(obj,Xscale+(Xscale/10)*cos(frame*3),Yscale+(Yscale/10)*cos(frame*3),1);
+		ObjRender_SetAngleXYZ(obj,0,0,frame*5);
+		ObjRender_SetAlpha(obj,155-50*cos(frame*3));
+		//ObjRender_SetPosition(obj,ObjRender_GetX(obj)+mx,ObjRender_GetY(obj)+my,0);
+		ObjRender_SetPosition(obj,ObjMove_GetX(tobj),ObjMove_GetY(tobj),0);
+		yield;
+	}
+	Obj_Delete(obj);
+}
+
+task AuraT(tobj){
+	let frame = 0;
+	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	let Xscale = 1;
+	let Yscale = Xscale;
+	
+	ObjPrim_SetTexture(obj, GetCurrentScriptDirectory~"../img/spellcircle.png");
+	ObjSprite2D_SetSourceRect(obj,0, 0, 256, 256);
+	ObjRender_SetScaleXYZ(obj,Xscale,Yscale,1);
+	Obj_SetRenderPriorityI(obj,23);
+	ObjSprite2D_SetDestCenter(obj);
+	ObjRender_SetBlendType(obj,BLEND_ADD_ARGB);
+	ObjRender_SetPosition(obj,ObjMove_GetX(tobj),ObjMove_GetY(tobj),0);
+	ObjRender_SetAngleXYZ(obj,0,0,0);
+	while(!Obj_IsDeleted(tobj)){
+		frame++;
+		ObjRender_SetScaleXYZ(obj,Xscale+(Xscale/10)*cos(frame*3),Yscale+(Yscale/10)*cos(frame*3),1);
+		ObjRender_SetAngleXYZ(obj,0,0,frame*5);
+		ObjRender_SetAlpha(obj,155-50*cos(frame*3));
+		//ObjRender_SetPosition(obj,ObjRender_GetX(obj)+mx,ObjRender_GetY(obj)+my,0);
+		ObjRender_SetPosition(obj,ObjMove_GetX(tobj),ObjMove_GetY(tobj),0);
+		yield;
+	}
+	Obj_Delete(obj);
+}
+*/
+
+task shockwave(tobj){
+	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	let Xscale = 0.2;
+	let Yscale = 0.2;
+	let alpha = 255;
+	
+	ObjPrim_SetTexture(obj, GetCurrentScriptDirectory~"../img/shockwave.png");
+	ObjSprite2D_SetSourceRect(obj,0, 0, 256, 256);
+	ObjRender_SetScaleXYZ(obj,Xscale,Yscale,0);
+	Obj_SetRenderPriorityI(obj,50);
+	ObjSprite2D_SetDestCenter(obj);
+	ObjRender_SetAlpha(obj,alpha);
+	ObjRender_SetBlendType(obj,BLEND_ADD_ARGB);
+	ObjRender_SetPosition(obj,ObjMove_GetX(tobj),ObjMove_GetY(tobj),0);
+	ObjRender_SetAngleXYZ(obj,0,0,0);
+	loop(30){
+		ObjRender_SetScaleXYZ(obj,Xscale,Yscale,0);
+		ObjRender_SetAlpha(obj,alpha);
+		Xscale+=0.1;
+		Yscale+=0.1;
+		alpha-=8.5;
+		yield;
+	}
+	Obj_Delete(obj);
+}
+
+task CherryExplosion(tobj){
+	let spiral =0;
+	 
+	StartSlow(TARGET_ALL,30);	
+	SE_Play(explode, 100);
+	loop(4){
+	ascent(i in 0..30){
+	CherryCharge(tobj,ObjMove_GetX(tobj),ObjMove_GetY(tobj),i*360/30,rand(2,12));
+	}
+	wait(2);
+	}     
+}
+
+task MapleExplosion(tobj){
+	let spiral =0;
+	 		
+	//SE_Play(explosion, 100);
+	loop(4){
+	ascent(i in 0..30){
+	Maple(ObjMove_GetX(tobj),ObjMove_GetY(tobj),i*360/30,rand(2,12));
+	}
+	wait(2);
+	}
+}
+  
+// speed, mx, and my variables are used to make effect objects move across the screen
+task Maple(xpos,ypos,angle,speed){
+        let mx = speed*cos(angle);
+        let my = speed*sin(angle);
+        let alpha = 220;
+		
+		let angleX = rand(0,360);
+		let angleY = rand(0,360);
+		let angleZ = rand(0,360);
+		let Xrot = rand(-2,2);
+		let Yrot = rand(-2,2);
+		let Zrot = rand(-2,2);
+		let Xscale = 1;
+		let Yscale = 1;
+		let Zscale = 1;
+ 
+        let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+        ObjPrim_SetTexture(obj, GetCurrentScriptDirectory~"../img/maple.png");
+        ObjSprite2D_SetSourceRect(obj,0, 0, 34, 31);
+		ObjRender_SetScaleXYZ(obj,1,1,1);
+        Obj_SetRenderPriorityI(obj,60);
+        ObjSprite2D_SetDestCenter(obj);
+		ObjRender_SetBlendType(obj,BLEND_ADD_ARGB);
+        ObjRender_SetPosition(obj,xpos,ypos,0);
+        ObjRender_SetAngleXYZ(obj,angleX,angleY,angleZ);
+        while(!Obj_IsDeleted(obj)&&alpha>0){
+			ObjRender_SetAngleXYZ(obj,angleX,angleY,angleZ);
+			ObjRender_SetAlpha(obj,alpha);
+			alpha-=rand(5,7);
+			ObjRender_SetPosition(obj,ObjRender_GetX(obj)+mx,ObjRender_GetY(obj)+my,0);
+			angleX+=Xrot;
+			angleY+=Yrot;
+			angleZ+=Zrot;
+			ObjRender_SetScaleXYZ(obj,Xscale,Yscale,Zscale);
+			Xscale+=0.04;
+			Yscale+=0.04;
+			Zscale+=0.04;
+			wait(1);
+        }
+	wait(20);
+	Obj_Delete(obj);
+}
+
+task CherryConcentration(tobj,frames){
+let spiral =0;
+let dir =0;
+loop(frames){
+
+loop(1){
+loop(3){
+if(!Obj_IsDeleted(tobj)){CherryCharge(tobj,ObjMove_GetX(tobj)+cos(dir+spiral)*rand(170,180),ObjMove_GetY(tobj)+sin(dir+spiral)*rand(170,180),dir+spiral,-rand(5.25,5.5));
+dir+=360/3;}
+}}
+spiral+=rand(30,40);
+yield;
+}	
+}
+
+task CherryConcentration2(tobj,xpos,ypos,frames){
+let spiral =0;
+let dir =0;
+loop(frames){
+
+loop(1){
+loop(3){
+if(!Obj_IsDeleted(tobj)){CherryCharge(tobj,xpos+cos(dir+spiral)*rand(170,180),ypos+sin(dir+spiral)*rand(170,180),dir+spiral,-rand(5.25,5.5));
+dir+=360/3;}
+}}
+spiral+=rand(30,40);
+yield;
+}	
+}
+ 
+ 
+// speed, mx, and my variables are used to make effect objects move across the screen
+task CherryCharge(tobj,xpos,ypos,angle,speed){
+        let mx = speed*cos(angle);
+        let my = speed*sin(angle);
+        let alpha = 20;
+		let s = 2;
+        let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+        let angleX = rand(0,360);
+		let angleY = rand(0,360);
+		let angleZ = rand(0,360);
+		let Xrot = rand(-3,3);
+		let Yrot = rand(-3,3);
+		let Zrot = rand(-3,3);
+		
+		ObjPrim_SetTexture(obj, GetCurrentScriptDirectory~"../img/cherry.png");
+        ObjSprite2D_SetSourceRect(obj,0, 0, 100, 100);
+        Obj_SetRenderPriorityI(obj,60);
+        ObjSprite2D_SetDestCenter(obj);
+        ObjRender_SetPosition(obj,xpos,ypos,0);
+        ObjRender_SetAngleZ(obj,angle);
+
+        while(!Obj_IsDeleted(obj)&&alpha<180){
+        ObjRender_SetAlpha(obj,alpha);
+		ObjRender_SetScaleXYZ(obj,s,s,s);
+        ObjRender_SetAngleXYZ(obj,angleX,angleY,angleZ);
+		
+		angleX+=Xrot;
+		angleY+=Yrot;
+		angleZ+=Zrot;
+		alpha+=rand(4.8,6);
+		s-=0.04;
+        ObjRender_SetPosition(obj,ObjRender_GetX(obj)+mx,ObjRender_GetY(obj)+my,0);
+        wait(1);
+ 
+                }
+
+Obj_Delete(obj);
+
+}
+
+task MapleConcentration(tobj,frames){
+let spiral =0;
+let dir =0;
+loop(frames){
+
+loop(1){
+loop(3){
+Maple(ObjMove_GetX(tobj)+cos(dir+spiral)*rand(170,180),ObjMove_GetY(tobj)+sin(dir+spiral)*rand(170,180),dir+spiral,-rand(5.25,5.5));
+dir+=360/3;
+}}
+spiral+=rand(30,40);
+yield;
+}  
+ 	
+}
+ 
+/*
+// speed, mx, and my variables are used to make effect objects move across the screen
+task Maple(tobj,xpos,ypos,angle,speed){
+        let mx = speed*cos(angle);
+        let my = speed*sin(angle);
+        let alpha = 50;
+		let s = 3;
+        let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+        let angleX = rand(0,360);
+		let angleY = rand(0,360);
+		let angleZ = rand(0,360);
+		let Xrot = rand(-3,3);
+		let Yrot = rand(-3,3);
+		let Zrot = rand(-3,3);
+		
+		ObjPrim_SetTexture(obj, GetCurrentScriptDirectory~"../img/maple.png");
+        ObjSprite2D_SetSourceRect(obj,0, 0, 34, 31);
+        Obj_SetRenderPriorityI(obj,60);
+		ObjRender_SetBlendType(obj,BLEND_ADD_ARGB);
+        ObjSprite2D_SetDestCenter(obj);
+        ObjRender_SetPosition(obj,xpos,ypos,0);
+        ObjRender_SetAngleZ(obj,angle);
+
+        while(!Obj_IsDeleted(obj)&&alpha<230){
+        ObjRender_SetAlpha(obj,alpha);
+		ObjRender_SetScaleXYZ(obj,s,s,s);
+        ObjRender_SetAngleXYZ(obj,angleX,angleY,angleZ);
+		
+		angleX+=Xrot;
+		angleY+=Yrot;
+		angleZ+=Zrot;
+		alpha+=rand(4.8,6);
+		s-=0.1;
+        ObjRender_SetPosition(obj,ObjRender_GetX(obj)+mx,ObjRender_GetY(obj)+my,0);
+        wait(1);
+ 
+                }
+
+Obj_Delete(obj);
+
+}
+*/
+
+task SWRConcentration(tobj,frames){
+let spiral =0;
+let dir =0;
+loop(frames){
+
+loop(1){
+loop(3){
+SWRorb(tobj,ObjMove_GetX(tobj)+cos(dir+spiral)*rand(190,200),ObjMove_GetY(tobj)+sin(dir+spiral)*rand(190,200),dir+spiral,-6.5);
+dir+=360/3;
+}}
+spiral+=rand(30,40);
+yield;
+}	
+}
+
+task SWRorb(tobj,xpos,ypos,angle,speed){
+        let mx = speed*cos(angle);
+        let my = speed*sin(angle);
+        let alpha = 50;
+		let s = 0.5;
+        let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+		
+		ObjPrim_SetTexture(obj, GetCurrentScriptDirectory~"../img/swrcharge.png");
+        ObjSprite2D_SetSourceRect(obj,0, 0, 45, 45);
+        Obj_SetRenderPriorityI(obj,60);
+		ObjRender_SetBlendType(obj,BLEND_ADD_ARGB);
+        ObjSprite2D_SetDestCenter(obj);
+        ObjRender_SetPosition(obj,xpos,ypos,0);
+
+        loop(30){
+        ObjRender_SetAlpha(obj,alpha);
+		ObjRender_SetScaleXYZ(obj,s,s,s);
+		
+		alpha+=rand(3,4);
+		s+=0.05;
+        ObjRender_SetPosition(obj,ObjRender_GetX(obj)+mx,ObjRender_GetY(obj)+my,0);
+        wait(1);}
+
+Obj_Delete(obj);
+
+}

@@ -1,0 +1,157 @@
+//SECTION 1:
+//INDENTATION
+
+
+//Definition: A code block is anything which is opened by a left curly bracket { and closed by a right curly bracket }.
+//An alternative is not a code block, but each case is.
+
+
+//The inside of any code block MUST have indentation exactly one level greater than its header.
+//Exception: A particularly simple block of code may be reduced to one line to save space. In this case, the closing bracket must be on the same line.
+
+//Examples:
+//Acceptable:
+while(foo){
+	if(bar){
+		baz;
+	}
+	yield;
+}
+//NOT acceptable:
+while(foo){
+if(bar){
+	baz;
+}
+yield;
+}
+
+//Exception examples:
+//Acceptable:
+if(foo){return false;}
+//Acceptable:
+while(foo){yield;}
+//Acceptable:
+ascent(i in 0..10){foo(30*i);}
+//NOT acceptable:
+while(foo){
+	if(bar){baz();
+	}
+	yield;
+}
+
+
+
+//Indentation MUST remain consistent within the same code block.
+//That is, indentation MUST not change except when closing a code block or after opening a code block
+
+//Acceptable:
+while(foo){
+	if(bar && !baz){
+		qux+=frame;
+		quux(corge);
+	}
+	yield;
+}
+//NOT acceptable:
+while(foo){
+	if(bar){
+		return baz;
+	}
+yield;
+}
+//NOT acceptable:
+ascent(i in 0..N){
+	foo(bar);
+baz();
+yield;}
+
+
+
+
+
+
+
+//The header of any code block MUST have the same indentation as the matching closing bracket.
+
+//Examples:
+//Acceptable:
+while(foo){
+	if(bar){
+		baz;
+	}
+	yield;
+}
+//Not acceptable:
+while(foo){
+	if(foo){
+	bar;
+	}
+	yield;
+	}
+
+	
+	
+	
+//SECTION 2:
+//Flow of control
+
+//Tasks and functions MUST NEVER be called outside of code blocks.
+//A main task SHOULD be called from @Initialize and other tasks SHOULD be called from that main task or other tasks.
+
+//Examples:
+//Acceptable
+@Initialize{
+	MainTask;
+}
+task MainTask{
+	foo;
+	TShoot;
+}
+TShoot{
+	let shot; let shots;
+	while(foo){
+		shots=[];
+		ascent(i in 0..N){
+			shot = CreateShotA2(args);
+			shots = shots ~ [shot];
+		}
+		//Defining and immediately calling a task is acceptable inside other tasks or functions
+		task TrackShots(shots){
+			while(length(shots)>0){
+				ascent(i in 0..length(shots)){
+					foo(shots[i]);
+				}
+				yield;
+			}
+		}
+		TrackShots(shots);
+		yield;
+	}
+}
+//NOT acceptable:
+TShoot{
+	while(foo){
+		ascent(i in 0..N){
+			CreateShotA2(args);
+		}
+		yield;
+	}
+}
+TShoot;
+
+
+
+//A task MAY be defined and called within a function. This allows continued execution while still returning a value.
+//Example:
+function MyShot(x,y,a){
+	let shot0 = CreateShotA2(x,y,0,a, 0.1,3, BUBBLE_RED,25);
+	TExtraShots{
+		while(!Obj_IsDeleted(shot0)){
+			x = ObjMove_GetX(shot0); y = ObjMove_GetY(shot0);
+			CreateShotA1(x,y,2,rand(0,360), DOT_YELLOW,10);
+			yield;
+		}
+	}
+	TExtraShots;
+	return shot0; //allows parent task to get a reference to the created object
+}

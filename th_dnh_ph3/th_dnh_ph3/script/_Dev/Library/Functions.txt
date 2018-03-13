@@ -1,0 +1,3544 @@
+//REQUIRES:
+//Resources.txt
+//Cutin.txt
+//?
+
+
+//Functions to do things rather than be used by other functions
+
+
+function SetSpellCard() {
+	ObjCutin_SetSpellcardS3(GetCommonData("CurrentSC",""), 255, 128, 128);
+	let diff = GetCommonData("Difficulty","Normal");
+	ObjCutin_LaunchS3("AYA", "", diff);
+	TMagicCircle();
+	// Difficulty();
+	NotifyEventAll(EV_REQUEST_SPELL_SCORE,"");
+}
+function SetSurvivalCard() {
+	ObjCutin_SetSpellcardS5(GetCommonData("CurrentSC",""),"","", 255, 128, 128, true);
+	let diff = GetCommonData("Difficulty","Normal");
+	ObjCutin_LaunchS3("AYA", "", diff);
+	// Difficulty();
+	NotifyEventAll(EV_REQUEST_SPELL_SCORE,"");
+	TMagicCircle();
+}
+function SetCaution() {
+	CautionCutin(51, cy-30, CSD~"../img/caution.png");
+	SE_Play(se_caution,120);
+}
+
+
+let BREAK_DELAY = 999901; let BREAK_DEAD = 999902;
+//"standardized" TFinalize
+task TBreakSpell(args) {
+	let del=checkarr(args,BREAK_DELAY);if(del==-1){del=15;}else{del=args[del+1];}
+	let ded=checkarr(args,BREAK_DEAD);
+	if(ded==-1){
+		SE_Play(spellbreak,100);
+	}else{
+		del=1; //
+		//SE_Play(defeated,100);
+		//SetAutoDeleteObject(false);
+	}
+	
+	DeleteShotAll(TYPE_ALL, TYPE_ITEM);
+	//AfterImageCircle(ex,ey,[255,255,255,255],1,20,30,BLEND_ADD_ARGB,79);
+	let eff = GlowCircle(ex,ey,[255,255,255,255],1,20,30);
+	Obj_SetRenderPriorityI(eff,79);
+	
+	wait(del);
+	
+	if(!Obj_IsDeleted(boss)){Obj_Delete(boss);}
+	CloseScript(GetOwnScriptID());
+	return;
+}
+task TBreakNonspell(args) {
+	let doeffect = checkarr(args,NULL)==-1;
+	if(doeffect){
+		SE_Play(spellbreak,100);
+		//AfterImageCircle(ex,ey,[255,255,255,255],1,20,30,BLEND_ADD_ARGB,79);
+		let eff = GlowCircle(ex,ey,[255,255,255,255],1,20,30);
+		Obj_SetRenderPriorityI(eff,79);
+	}
+	// DeleteShotAll(TYPE_ALL, TYPE_FADE);
+	DeleteShotAll(TYPE_ALL, TYPE_ITEM);
+	
+	let del=checkarr(args,BREAK_DELAY); if(del==-1){del=15;}else{del=args[del+1];}
+	// wait(del);
+	loop(del){ DeleteShotAll(TYPE_ALL, TYPE_ITEM); yield; }
+	
+	if(!Obj_IsDeleted(boss)){Obj_Delete(boss);}
+	CloseScript(GetOwnScriptID());
+	return;
+}
+
+
+//TODO: Maybe stick this in a file called SystemInterface or something?
+
+//Format:
+// DropItems(x,y, [ITEM_TYPE,number,radius,angle] );
+// DropItems(x,y, [ITEM_TYPE,(n,r,a),ITEM_TYPE,(n,r,a),ITEM_TYPE,(n,r,a),...] );
+function DropItems(x,y,args){
+	function IsItemType(v){ 
+		alternative(v)
+		case(ITEM_1UP,ITEM_1UP_S,ITEM_SPELL,ITEM_SPELL_S,ITEM_POINT,ITEM_POINT_S,ITEM_POWER,ITEM_POWER_S){ return true; }
+		// case(ITEM_USER,ITEM_USER+1,ITEM_USER+2){ return true; } //in case I end up defining some - but this may conflict since ITEM_USER=0
+		others{ return false; }
+	}
+	
+	let type=NULL; let number=1; let radius=20; let angle=90;
+	let items = [];
+	let i = 0;
+	while(i < length(args)){
+		if(IsItemType(args[i])){
+			type = args[i]; i++;
+			//Get whichever extra arguments are
+			//between this and the next item type
+			if(i<length(args) && !IsItemType(args[i])){   number = args[i]; i++;
+			 if(i<length(args) && !IsItemType(args[i])){  radius = args[i]; i++;
+			  if(i<length(args) && !IsItemType(args[i])){ angle  = args[i]; i++;
+			}}}
+			//Get score of the item type
+			let score;
+			alternative(type)
+			case(ITEM_POINT){   score = 10*trunc(GetCommonData("PointValue",10000+100*GetGraze)/10 ); }
+			case(ITEM_POINT_S){ score = 10*trunc(GetCommonData("PointValue",10000+100*GetGraze)/160); }
+			case(ITEM_POWER){   score = 10*trunc(800*GetPlayerPower/400); }
+			case(ITEM_POWER_S){ score = 10*trunc(100*GetPlayerPower/400); }
+			case(ITEM_SPELL){   score = 10*trunc(10000*GetPlayerSpell/GetCommonData("MaxBombCount",9)); }
+			case(ITEM_SPELL_S){ score = 10*trunc(10000*GetPlayerSpell/GetCommonData("MaxBombCount",9)/GetCommonData("SpellPiecesPerBomb",8)); }
+			case(ITEM_1UP){     score = 10*trunc(10000*GetPlayerSpell/GetCommonData("MaxLifeCount",9)); }
+			case(ITEM_1UP_S){   score = 10*trunc(10000*GetPlayerSpell/GetCommonData("MaxLifeCount",9)/GetCommonData("LifePiecesPerExtend",8)); }
+			others{             score = GetCommonData("PointValueOf"~itoa(type),0); }
+			//Notify system script to create the item
+			let da = 360/number;
+			ascent(j in 0..number){
+				// NotifyEvent(GetCommonData("SystemScriptID",NULL),EV_SPAWN_ITEM,[type,x,y,x+radius*cos(angle+j*da),y+radius*sin(angle+j*da),score]);
+				NotifyEventAll(EV_SPAWN_ITEM,[type,x,y,x+radius*cos(angle+j*da),y+radius*sin(angle+j*da),score]);
+				// items = items ~ [GetScriptResult(GetCommonData("SystemScriptID",NULL))]; //Crashed here
+			}
+		}
+		else{ //if the args didn't start with an item type for some reason
+			i++;
+			// return items;
+		}
+	}
+	return items;	
+}
+
+
+function DropItemsSpellEnd{
+	DropItems(ex,ey,[ITEM_POINT,16,35, ITEM_POWER_S,8,20, ITEM_1UP_S,1,0]);
+}
+function DropItemsNonspellEnd{
+	DropItems(ex,ey,[ITEM_POINT,16,35, ITEM_POWER_S,8,20, ITEM_SPELL_S,1,0]);
+}
+
+
+
+
+
+//Display "Item Get Border Line" - TresserT
+task ShowPointOfCollection{
+	// loop(30){yield;}
+	let height = GetCommonData("PointOfCollection",GetStgFrameHeight/2-110);
+	let text = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjPrim_SetTexture(text,dirsys~"img/Default_System.png");
+	ObjSprite2D_SetSourceRect(text,18,130,174,152);
+	// ObjSprite2D_SetDestRect(text,-78*1.5,-6*1.5,78*1.5,6*1.5);
+	ObjSprite2D_SetDestRect(text,-78,-7, 78,9);
+	ObjRender_SetPosition(text,GetStgFrameWidth/2,height-15,0); //-20
+	Obj_SetRenderPriority(text,0.29);
+	
+	let spread = 3; let opacity = 0.5;
+	let obj = [];
+	ascent(i in 0..spread){
+		obj = obj ~ [ObjPrim_Create(OBJ_SPRITE_2D)];
+		ObjPrim_SetTexture(obj[i],dirsys~"img/Default_System.png");
+		ObjSprite2D_SetSourceRect(obj[i],0,158,168,166);
+		ObjRender_SetColorHSV(obj[i],(spread-i)*135/spread,255,255);
+		ObjRender_SetAlpha(obj[i],255*opacity);
+		Obj_SetRenderPriority(obj[i],0.29);
+	}
+	
+	let blend = BLEND_ALPHA;
+	ascent(t in 0..135){
+		let alpha = min(255,t*255/30) * opacity;
+		if(t > 105){ alpha = (135-t)*255/30 * opacity; }
+		let dist = min(1,t*1/30);
+		ascent(i in 0..spread){
+			ObjSprite2D_SetDestRect(obj[i],GetStgFrameWidth/2-t*GetStgFrameWidth/2,height-1.5+(i*i)*2/(spread*spread),GetStgFrameWidth/2+t*GetStgFrameWidth/2,height+1.5+(i*i)*2/(spread*spread));
+			ObjRender_SetAlpha(obj[i],alpha);
+			ObjRender_SetBlendType(obj[i],blend);
+		}
+		ObjRender_SetAlpha(text,alpha);
+		ObjRender_SetBlendType(text,blend);
+		// if(t%10 == 0){ blend = BLEND_ALPHA; }
+		// else if(t%10 == 5){ blend = BLEND_ADD_ARGB; }
+		if(t%20 == 0){ blend = BLEND_ALPHA; }
+		else if(t%20 == 10){ blend = BLEND_ADD_ARGB; }
+		yield;
+	}
+	Obj_Delete(text);
+	ascent(i in 0..spread){ Obj_Delete(obj[i]); }
+}
+
+
+
+
+
+
+function rainbow(i,N) {
+	i = i * (360/N) %360;	//convert to period of 0..360
+	let r = sin(i+0)  * 127 + 128;
+	let g = sin(i+120)* 127 + 128;
+	let b = sin(i+240)* 127 + 128;
+	return [r,g,b];
+}
+
+function rainbow2(i,N) {
+	let r; let g; let b;
+	i = i * (360/N) %360;	//convert to period of 0..360
+	if(i < 90) {
+		r = cos(i)+1;
+		g = i/360;
+		b = 0;
+	}else if(i < 120) {
+		r = cos(i)+1;
+		g = sin(i)+1;
+		b = 0;
+	}else if(i < 270) {
+		r = 0;
+		g = sin(i)+1;
+		b = cos(i)+1;
+	}else {
+		r = sin(i)+1;
+		g = 0;
+		b = cos(i)+1;
+	}
+	r*=255; g*=255; b*=255;
+	return [r,g,b];
+}
+
+function makeText(x,y,size,color,align,alpha,text) {
+	let sx = GetStgFrameWidth(); let sy = GetStgFrameHeight();
+	let width = 384; //default stage frame width (height is 448)
+	let tx;
+	if( align == ALIGNMENT_LEFT) { tx = x; }
+	else if( align == ALIGNMENT_RIGHT ) { tx = x - width; }
+	else if( align == ALIGNMENT_CENTER) { tx = x - width/2;	}
+	let objText = ObjText_Create();
+	ObjText_SetHorizontalAlignment(objText, align);
+	ObjText_SetMaxWidth(objText, width);
+	ObjRender_SetX(objText, tx);
+	ObjRender_SetY(objText, y);
+	ObjText_SetFontSize(objText, size);
+	// ObjText_SetFontType(objText, "Helvetica");
+	ObjText_SetFontType(objText, "Cirno");
+	ObjText_SetFontColorTop(objText, 255, 255, 255);
+	ObjText_SetFontColorBottom(objText, 255, 255, 255);
+	ObjText_SetFontBorderType(objText, BORDER_FULL);
+	ObjText_SetFontBorderColor(objText, color[0],color[1],color[2]); //224, 64, 192
+	ObjText_SetFontBorderWidth(objText, 1);
+	ObjRender_SetAlpha(objText,alpha);
+	ObjText_SetText(objText,text);
+	Obj_SetRenderPriorityI(objText,GetCameraFocusPermitPriorityI()+1);
+	return objText;
+}
+
+
+
+
+
+task ShowBGMTitle(title){
+	let obj = makeText(sx-15,sy-20,16,[0,0,255],ALIGNMENT_RIGHT, 0, title);
+	ObjText_SetFontColorTop(   obj, 180, 180, 255);
+	ObjText_SetFontColorBottom(obj,  64,  64, 255);
+	ObjText_SetFontBorderColor(obj,   0,   0, 255);
+	// ObjText_SetFontBorderType(obj,BORDER_SHADOW);
+	ObjText_SetFontType(obj, "Cirno");
+	descent(i in 0..40){ //100
+		ObjRender_SetY(obj,sy-20+i);
+		ObjRender_SetAlpha(obj,200-2*i);
+		yield;
+	}
+	wait(180); //120
+	ascent(i in 0..120){ //120
+		// ObjRender_SetX(obj,-(15+sx/120*i) );
+		ObjRender_SetX(obj,qerp(-15,-15+(0.15*sx),-15-sx,i/120));
+		yield;
+	}
+	Obj_Delete(obj);
+}
+
+
+
+
+
+
+//image rect should be around 160 by 160		//"rose.png",[0,0,64,64]
+task StageIntro(stagetext,titletext,subtitletext,img,source){
+	// let img = dirimg~"StageIntro.png";
+	let pic = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjPrim_SetTexture(pic, img);
+	// ObjSprite2D_SetSourceRect(pic, 320, 0, 480, 160);
+	ObjSprite2D_SetSourceRect(pic, source[0], source[1], source[2], source[3]);
+	ObjSprite2D_SetDestCenter(pic);
+	
+	let xscale = 160/(source[2]-source[0]);
+	// let yscale = 160/(source[3]-source[1]);
+	
+	let stage = makeText(cx-60,cy-114,    14,[0,0,255],ALIGNMENT_CENTER, 0, stagetext);
+	ObjText_SetFontColorTop(   stage, 255, 255, 255);
+	ObjText_SetFontColorBottom(stage, 180, 180, 255);
+	ObjText_SetFontBorderColor(stage,   0,   0, 255);
+	// ObjText_SetFontBorderType( stage,BORDER_SHADOW);
+	// ObjText_SetFontType(stage, "Gyosho");
+	ObjText_SetFontType(stage, "Gyosho");
+	
+	let title = makeText(cx,cy-96,    32,[0,0,255],ALIGNMENT_CENTER, 0, titletext);
+	ObjText_SetFontColorTop(   title, 255, 255, 200);
+	ObjText_SetFontColorBottom(title, 255, 255, 128);
+	ObjText_SetFontBorderColor(title,  64,  64, 200);
+	// ObjText_SetFontBorderType( title,BORDER_SHADOW);
+	ObjText_SetFontBold(title,true);
+	// ObjText_SetFontType(title, "Gyosho");
+	// ObjText_SetFontType(title, "SpinCycleOT");
+	ObjText_SetFontType(title, "Gyosho");
+	
+	let desc = makeText(cx+60,cy-24,  16,[0,0,255],ALIGNMENT_CENTER, 0, subtitletext);
+	ObjText_SetFontColorTop(   desc, 255, 255, 255);
+	ObjText_SetFontColorBottom(desc, 180, 180, 255);
+	ObjText_SetFontBorderColor(desc,   0,   0, 255);
+	// ObjText_SetFontBorderType( desc,BORDER_SHADOW);
+	// ObjText_SetFontType(desc, "Gyosho");
+	ObjText_SetFontType(desc, "Gyosho");
+	
+
+	ObjRender_SetPosition(pic, GetCenterX + 80, GetCenterY - 64, 0);
+	ObjRender_SetAngleZ(pic, 90);
+	// ObjRender_SetPosition(title, GetCenterX, GetCenterY - 96, 0);
+	// ObjRender_SetPosition(desc, GetCenterX, GetCenterY, 0);
+
+	ObjRender_SetAlpha(pic, 0);
+	ObjRender_SetAlpha(title, 0);
+	ObjRender_SetAlpha(desc, 0);
+
+	Obj_SetRenderPriority(pic, 0.3);
+	Obj_SetRenderPriority(title, 0.31);
+	Obj_SetRenderPriority(desc, 0.31);
+
+	renderpic;
+	wait(90);
+	renderstage;
+	wait(30);
+	rendertitle;
+	wait(60);
+	rendertext;
+
+	task renderpic{
+		let alpha = 0;
+		let a = 90;
+		let scale = 2;
+		while(alpha < 255){
+			ObjRender_SetScaleXYZ(pic, scale*xscale, scale*xscale, scale);
+			ObjRender_SetAlpha(pic, alpha);
+			ObjRender_SetAngleZ(pic, a);
+			alpha += 2;
+			a -= 0.7;
+			scale -= 1/128;
+			yield;
+		}
+		wait(150);
+		while(alpha > 0){
+			ObjRender_SetScaleXYZ(pic, scale*xscale, scale*xscale, scale);
+			ObjRender_SetAlpha(pic, alpha);
+			alpha -= 2;
+			scale -= 1/128;
+			if(scale <= 0){Obj_Delete(pic);}
+			yield;
+		}
+	}
+	task rendertitle{
+		let alpha = 0;
+		while(alpha < 255){
+			ObjRender_SetAlpha(title, alpha*1.0);
+			alpha += 5;
+			yield;
+		}
+		wait(120);
+		while(alpha > 0){
+			ObjRender_SetAlpha(title, alpha*1.0);
+			alpha -= 5;
+			yield;
+		}
+		Obj_Delete(title);
+	}
+	task rendertext{
+		let alpha = 0;	
+		while(alpha < 255){
+			ObjRender_SetAlpha(desc, alpha*0.8);
+			alpha += 5;
+			yield;
+		}
+		wait(60);
+		while(alpha > 0){
+			ObjRender_SetAlpha(desc, alpha*0.8);
+			alpha -= 5;
+			yield;
+		}
+		Obj_Delete(desc);
+	}
+	task renderstage{
+		let alpha = 0;	
+		while(alpha < 255){
+			ObjRender_SetAlpha(stage, alpha*0.8);
+			alpha += 5;
+			yield;
+		}
+		wait(150);
+		while(alpha > 0){
+			ObjRender_SetAlpha(stage, alpha*0.8);
+			alpha -= 5;
+			yield;
+		}
+		Obj_Delete(stage);
+	}
+}
+
+
+
+
+
+
+
+
+
+///////////////////////////////////////////////////////////////
+
+
+
+
+//good values for intensity are 1-3 or so for something with long duration like a spark
+//10 is good for a more intense shaking
+task ScreenShake(time, xintensity, yintensity) {
+	let xdir = 2*(round(rand(0,1)))-1; let ydir = 2*(round(rand(0,1)))-1;
+	//Prevents screen edges from showing
+	let zoom = max(xintensity,yintensity);
+	task zoomin{
+		ascent(i in 0..zoom){Set2DCameraRatio(1+i/125);wait(i);}
+	}
+	zoomin;
+	while(time>0) {
+		Set2DCameraFocusX(GetStgFrameWidth/2 + sin(10*time*xdir)*cos(20*time*xdir)*xintensity);
+		Set2DCameraFocusY(GetStgFrameHeight/2 + sin(20*time*ydir)*cos(10*time*ydir)*yintensity);
+		time--; yield;
+	}
+	//Restore the camera to normal
+	Set2DCameraFocusX(GetStgFrameWidth/2);
+	Set2DCameraFocusY(GetStgFrameHeight/2);
+	task zoomout{
+		descent(i in 0..zoom){
+			Set2DCameraRatio(1+i/125);
+			ascent(j in 0..zoom-i){
+				yield;
+				Set2DCameraRatio(1+i/125 - (j/125/(zoom-i)) );
+			}
+		}
+		Reset2DCamera;
+	}
+	zoomout;
+}
+task Zoom(x,y,mag,time){
+	let x0 = Get2DCameraX; let y0 = Get2DCameraY;
+	let magx0 = Get2DCameraRatioX; let magy0 = Get2DCameraRatioY;
+	let dx = (x-x0)/time; let dy = (y-y0)/time;
+	let dmagx = (mag-magx0)/time; let dmagy = (mag-magy0)/time;
+	ascent(i in 0..time){
+		Set2DCameraFocusX(x0+dx*i);
+		Set2DCameraFocusY(y0+dy*i);
+		Set2DCameraRatioX(magx0+dmagx*i);
+		Set2DCameraRatioY(magy0+dmagy*i);
+		yield;
+	}
+}
+task RotateScreen(change, time, dir) {
+    loop(time) {
+        Set2DCameraAngleZ(Get2DCameraAngleZ() + change/time * dir);
+        yield;
+    }
+}
+
+
+
+
+/*
+function bulletLine(x1, y1, x2, y2, n, a, c){
+	let dx = (x2 - x1) / (n - 1);
+	let dy = (y2 - y1) / (n - 1);
+	let shot;
+	ascent(i in 0..n){
+		shot = CreateShotA1(x1 + i*dx, y1+ i*dy, 0, a, c, 10); //193
+		ObjShot_SetDeleteFrame(shot,5);
+		ObjRender_SetBlendType(shot, BLEND_ADD_ARGB);
+	}
+	SE_Play(shot,30);
+}
+//bulletArc(ex, ey, x, y, Distance(ex,ey,x,y)/5,-1, 90, 533, 255, [255,150,200], 0);		
+function bulletArc(x1, y1, x2, y2, n, dir0, ang, type, alpha, color, dur, durScale, del){
+	let dir = dir0;
+	if(dir0 == 0) {
+		if(absolute(x1-x2) > absolute(y1-y2)) { dir = sign(cx-x1); }
+		else {dir = sign(cy-y1); }
+	}
+	
+	let x = (x1+x2)/2; let y = (y1+y2)/2;
+	let rad = absolute(Distance(x,y,x1,y1));
+	let a0 = angleBetween(x,y,x1,y1);
+	let aF = angleBetween(x,y,x2,y2);
+	
+	if(dir0 == 0) {
+		let mx = x+rad*cos(a0+90*dir);
+		let my = y+rad*sin(a0+90*dir);
+		if(x<0||y<0||x>sx||y>sy){ dir*=-1; }
+	}
+	
+	let dA = absolute(aF - a0) / n * dir;
+	
+	let shot; let shots = [];
+	ascent(i in 0..n){
+		shot = CreateShotA1(x+rad*cos(a0+dA*i),y+rad*sin(a0+dA*i), 0, ang+aF+dA*i, type, del); //193
+	if(dur==0&&durScale==0){ObjShot_FadeDelete(shot);}else if(del>0){DelayFadeDelete(shot,dur+i*durScale*n/100);}else{ObjShot_SetDeleteFrame(shot,dur+i*durScale*n/100);}
+		ObjRender_SetBlendType(shot, BLEND_ADD_ARGB);
+		ObjRender_SetAlpha(shot,alpha);
+		ObjRender_SetColor(shot,color[0],color[1],color[2]);
+		ObjShot_SetSpellResist(shot,true);
+		ObjShot_SetIntersectionEnable(shot,false);
+		shots = shots ~ [shot];
+	}
+	//SE_Play(se_shot,30);
+	
+	return(shots);
+}
+*/
+
+
+function AfterImageShot(shot,color,scale,scaleinc,time,blend,layer)  {
+	let rect = GetShotDataInfoA1(ObjShot_GetImageID(shot),TARGET_ENEMY,INFO_RECT);
+	// return AfterImageB2(shot,GetCurrentScriptDirectory~"../shot/img/AllStarShot.png",color,scale,scaleinc,time,rect[0],rect[1],rect[2],rect[3],0,blend,layer);
+	let eff = AfterImageA1(ObjMove_GetX(shot),ObjMove_GetY(shot),GetCurrentScriptDirectory~"../shot/img/AllStarShot.png",color,scale,scaleinc,time,rect[0],rect[1],rect[2],rect[3],0);
+	Obj_SetRenderPriority(eff,layer);
+	ObjRender_SetBlendType(eff,blend);
+	return eff;
+}
+function AfterImageBoss(boss,color,scale,scaleinc,time,blend,layer) {
+	let eff = AfterImageA1(ObjMove_GetX(boss),ObjMove_GetY(boss),GetCurrentScriptDirectory()~"../boss.png",color,scale,scaleinc,time,1,1,64,64,0);	
+	Obj_SetRenderPriority(eff,layer);
+	ObjRender_SetBlendType(eff,blend);
+	return eff;
+	//return AfterImageB2(boss,GetCurrentScriptDirectory()~"../boss.png",color,scale,scaleinc,time,1,1,64,64,0,blend,layer);	
+}
+/*
+function AfterImagePlayer(img,rect,color,scale,scaleinc,time,blend,layer) {
+	return AfterImageB2(GetPlayerObjectID(),img,color,scale,scaleinc,time,rect[0],rect[1],rect[2],rect[3],0,blend,layer);
+}
+function AfterImageCircle(x,y,color,scale,scaleinc,time,blend,layer) {
+	return AfterImageA2(x,y,CSD~"../img/gradientcircle.png",color,scale,scaleinc,time, 1,1,300,300 ,0, blend,layer);
+}
+
+task TAfterImageShot(shot,color,scale,scaleinc,time,blend,layer) {
+	if(layer==0){layer=23;}
+	while(!Obj_IsDeleted(shot)) {
+		AfterImageShot(shot,color,scale,scaleinc,time,blend,layer);
+		yield;
+	}
+}
+task TAfterImageBoss(boss,color,scale,scaleinc,time,del,blend,layer) {
+	if(layer==0){layer=23;}
+	while(!Obj_IsDeleted(boss)) {
+		AfterImageBoss(boss,color,scale,scaleinc,time,blend,layer);
+		wait(del);
+	}
+}
+task TAfterImagePlayer(color,scale,scaleinc,time,del,blend,layer) {
+	if(layer==0){layer=43;}
+	while(!Obj_IsDeleted(boss)) {
+		AfterImagePlayer(CSD~"../img/PlayerSilhouette.png",[1,1,32,46],color,scale,scaleinc,time,blend,layer);
+		wait(del);
+	}
+}
+*/
+//AJS
+function AfterImageA1(tobjx,tobjy,texture,color,scale,scaleinc,time,x1,y1,x2,y2,Yangle){
+	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	task TAfterImage(tobjx,tobjy,texture,color,scaleinc,time,x1,y1,x2,y2,Yangle){
+		let alpha0 = 255;
+		let Red = color[0]; let Green = color[1]; let Blue = color[2];
+		if(length(color)>3){alpha0=color[3];}
+		let alpha = alpha0;
+		ObjPrim_SetTexture(obj, texture);
+		ObjSprite2D_SetSourceRect(obj, x1, y1, x2, y2);
+		ObjRender_SetScaleXYZ(obj,scale,scale,0);
+		Obj_SetRenderPriorityI(obj,23);
+		ObjSprite2D_SetDestCenter(obj);
+		ObjRender_SetPosition(obj,tobjx,tobjy,0);
+		ObjRender_SetAlpha(obj,alpha);
+		ObjRender_SetBlendType(obj,BLEND_ADD_ARGB);
+		ObjRender_SetColor(obj,Red,Green,Blue);
+		ObjRender_SetAngleY(obj,Yangle);	
+		loop(time){
+			scale+=scaleinc/time;
+			ObjRender_SetScaleXYZ(obj,scale,scale,0);
+			alpha-=alpha0/time;
+			ObjRender_SetAlpha(obj,alpha);
+			yield;
+		}
+		Obj_Delete(obj);
+	}
+	TAfterImage(tobjx,tobjy,texture,color,scaleinc,time,x1,y1,x2,y2,Yangle);
+	return obj;
+}
+
+// function AfterImageB1(tobj,texture,color,scale,scaleinc,time,x1,y1,x2,y2,Yangle) {
+	// let obj = AfterImageA1(ObjRender_GetX(tobj),ObjRender_GetY(tobj),texture,color,scale,scaleinc,time,x1,y1,x2,y2,Yangle);
+	// return obj;
+// }
+// function AfterImageA2(x,y,texture,color,scale,scaleinc,time,x1,y1,x2,y2,Yangle,blend,layer) {
+	// let obj = AfterImageA1(x,y,texture,color,scale,scaleinc,time,x1,y1,x2,y2,Yangle);
+	// ObjRender_SetBlendType(obj,blend);
+	// Obj_SetRenderPriorityI(obj,layer);
+	// return obj;
+// }
+// function AfterImageB2(tobj,texture,color,scale,scaleinc,time,x1,y1,x2,y2,Yangle,blend,layer) {
+	// let obj = AfterImageB1(tobj,texture,color,scale,scaleinc,time,x1,y1,x2,y2,Yangle);
+	// ObjRender_SetBlendType(obj,blend);
+	// Obj_SetRenderPriorityI(obj,layer);
+	// return obj;
+// }
+
+
+function GlowCircle(x,y,color,scale,scaleinc,time){
+	return AfterImageA1(x,y,dirimg~"gradientcircle.png",color,scale,scaleinc,time, 1,1,300,300 ,0);
+	//AfterImageCircle(x,y,color,scale,scaleinc,time,blend,layer);
+}
+function GlowCircle2(x,y,color,scale,scaleinc,time,img,rect){
+	if(rect==[0,0,0,0]){rect=[1,1,300,300];}
+	return AfterImageA1(x,y,img,color,scale,scaleinc,time, rect[0],rect[1],rect[2],rect[3] ,0);
+	//AfterImageCircle(x,y,color,scale,scaleinc,time,blend,layer);
+}
+
+function TintScreen(color,time) {
+	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	let scale = 2; let alpha0 = 255;
+	let Red = color[0]; let Green = color[1]; let Blue = color[2];
+	if(length(color)>3){alpha0=color[3];}
+	let alpha = alpha0;
+	ObjPrim_SetTexture(obj, GetCurrentScriptDirectory()~"../img/gradient.png");
+	ObjSprite2D_SetSourceRect(obj, 0, 0, 300, 300);
+	ObjRender_SetScaleXYZ(obj,scale,scale,0);
+	Obj_SetRenderPriorityI(obj,79);
+	ObjSprite2D_SetDestCenter(obj);
+	ObjRender_SetPosition(obj,cx,cy,0);
+	ObjRender_SetAlpha(obj,alpha);
+	ObjRender_SetBlendType(obj,BLEND_ADD_ARGB);
+	ObjRender_SetColor(obj,Red,Green,Blue);
+	ObjRender_SetAngleY(obj,0);
+	task TTint(obj,color,scale,scaleinc,time,alpha0,alpha) {
+		loop(time){
+			scale+=scaleinc/time;
+			ObjRender_SetScaleXYZ(obj,scale,scale,0);
+			alpha-=alpha0/time;
+			ObjRender_SetAlpha(obj,alpha);
+			yield;
+		}
+		Obj_Delete(obj);
+	}
+	if(time>=0){TTint(obj,color,scale,0,time,alpha0,alpha);}
+	return obj;
+}
+
+
+function killplayer{
+	let shot=CreateDummyShot(px,py); Obj_SetVisible(shot,false);
+	ObjShot_SetIntersectionCircleA1(shot,15);
+}
+task exterminateplayer{
+	while(GetPlayerState!=STATE_HIT && !IsPlayerSpellActive){killplayer;yield;}
+}
+
+
+
+
+//Deletes all objects in an array, rather than just removing references to them
+function DeleteInArray(arr){
+	while(length(arr)>0){Obj_Delete(arr[0]);arr=erase(arr,0);}
+	return arr;
+}
+function FadeDeleteInArray(arr){
+	while(length(arr)>0){Obj_FadeDelete(arr[0]);arr=erase(arr,0);}
+	return arr;
+}
+function DeleteFamInArray(arr){
+	while(length(arr)>0){
+		Obj_FadeDelete(arr[0]);
+		//FamExpandDelete(arr[0],3,35);
+		arr=erase(arr,0);}
+	return arr;
+}
+
+
+/*
+//See also: 
+//	IsIntersected_Line_Circle
+//	IsIntersected_Obj_Obj
+function CrossLineA1(shot,m1,m2) {
+	return CrossLineA3(ObjMove_GetX(shot),ObjMove_GetY(shot),ObjMove_GetX(m1),ObjMove_GetY(m1),ObjMove_GetX(m2),ObjMove_GetY(m2), 10);
+}
+function CrossLineA2(x,y,m1,m2) {
+	return CrossLineA3(x,y,ObjMove_GetX(m1),ObjMove_GetY(m1),ObjMove_GetX(m2),ObjMove_GetY(m2), 10);
+}
+function CrossLineA3(x,y, m1x,m1y,m2x,m2y, width) {
+	//mathematically find distance from shot to line
+	let d = (absolute( (m2x-m1x)*(m1y-y)-(m1x-x)*(m2y-m1y) ) ) / ( ( (m2x-m1x)^2 + (m2y-m1y)^2 )^0.5 );
+	let close = (d<width);
+	return close;
+}
+*/
+
+
+
+///////////////////////////////////////////////////////////////
+//Bounce/Wrap Functions
+///////////////////////////////////////////////////////////////
+let LFT = 999900; let TOP = 999901; let RGT = 999902; let BTM = 999903;
+let CLIP = 999910;
+
+//Finds the angle needed to bounce a shot so that it hits the specified coords
+//Does not actually bounce the shot, so do that separately
+function AimBounce(x0,y0,x1,y1,wall) {
+	let wcoord;
+	alternative(wall)
+	case(LFT){wcoord=0;}
+	case(TOP){wcoord=0;}
+	case(RGT){wcoord=sx;}
+	case(BTM){wcoord=sy;}
+	
+	let xdist; let ydist;
+	if(wall == LFT || wall == RGT) {
+		xdist = wcoord-x0 + wcoord-x1;
+		ydist = y1-y0;
+	}
+	else if(wall == TOP || wall == BTM) {
+		xdist = x1-x0;
+		ydist = wcoord-y0 + wcoord-y1;
+	}
+	return atan2(ydist,xdist);
+}
+//Finds the angle needed to wrap a shot across the stage boundaries and hit the specified coords
+//Again, does not actually wrap the shot, so do that separately
+function AimWrap(x0,y0,x1,y1,wall) {
+	let off;
+	alternative(wall)
+	case(LFT){off=-sx;}
+	case(TOP){off=-sy;}
+	case(RGT){off=sx;}
+	case(BTM){off=sy;}
+	
+	let xdist; let ydist;
+	if(wall == LFT || wall == RGT) {
+		xdist = x0 + off-x1;
+		ydist = y1-y0;
+	}
+	else if(wall == TOP || wall == BTM) {
+		xdist = x1-x0;
+		ydist = y1 + off-y1;
+	}
+	return atan2(ydist,xdist);
+}
+
+//----------------------------------------------------------------
+//Bounce off the walls of the stage frame
+//Changes only angle
+task BounceA1(shot, bounces, walls) {
+	while(isOffScreen(shot)&&!Obj_IsDeleted(shot)){yield;} //wait for shot to move away from walls
+	let lft=checkarr(walls,LFT)!=-1; let top = checkarr(walls,TOP)!=-1; let rgt = checkarr(walls,RGT)!=-1; let btm = checkarr(walls,BTM)!=-1;
+	let x = ObjMove_GetX(shot); let y = ObjMove_GetY(shot);
+	let x0 = 0; let y0 = 0; let x1 = sx; let y1 = sy;
+	let clip=checkarr(walls,CLIP);
+	if(clip!=-1){
+		x0=walls[clip+1];
+		y0=walls[clip+2];
+		x1=walls[clip+3];
+		y1=walls[clip+4];
+	}
+	//WriteLog("x0="~itoa(x0)~" y0="~itoa(y0)~" x1="~itoa(x1)~" y1="~itoa(y1));
+	
+	while(bounces!=0 && !Obj_IsDeleted(shot)) {
+		//Wait for shot to reach boundary
+		while( x>x0 && y>y0 && x<x1 && y<y1 ) { 
+			yield;
+			x = ObjMove_GetX(shot); y = ObjMove_GetY(shot);
+		}
+
+		let offLft=(x<=x0); let offTop=(y<=y0); let offRgt=(x>=x1); let offBot=(y>=y1);
+	
+		let a = ObjMove_GetAngle(shot);
+		if(offLft&&lft) { a=reflect(a,90); }
+		if(offTop&&top) { a=reflect(a,0 ); }
+		if(offRgt&&rgt) { a=reflect(a,90); }
+		if(offBot&&btm) { a=reflect(a,0 ); }
+		ObjMove_SetAngle(shot,a);
+
+		yield; //wait for bullet to move away from bound before checking again
+		x = ObjMove_GetX(shot); y = ObjMove_GetY(shot);
+		bounces--;
+	}
+	return;
+}
+task WrapA1(shot, wraps, walls) {
+	let lft=checkarr(walls,LFT)!=-1; let top = checkarr(walls,TOP)!=-1; let rgt = checkarr(walls,RGT)!=-1; let btm = checkarr(walls,BTM)!=-1;
+	//let clip = checkarr(walls,CLIP); //if(clip!=-1){clip = walls[clip+1];}else{clip=0;}
+	let x = ObjMove_GetX(shot); let y = ObjMove_GetY(shot);
+	let x0 = 0; let y0 = 0; let x1 = sx; let y1 = sy;
+	let clip=checkarr(walls,CLIP);
+	if(clip!=-1){x0=walls[clip+1];y0=walls[clip+2];x1=walls[clip+3];y1=walls[clip+4];}
+	
+	while(wraps!=0 && !Obj_IsDeleted(shot)) {
+		//Wait for shot to reach boundary
+		while( x>x0 && y>y0 && x<x1 && y<y1 ) { 
+			yield;
+			x = ObjMove_GetX(shot); y = ObjMove_GetY(shot);
+		}
+
+		let offLft = (x<=x0); 
+		let offTop = (y<=y0); 
+		let offRgt = (x>=x1); 
+		let offBot = (y>=y1);
+		
+		if(offLft&&lft) { x+=2*(cx-x); }
+		if(offTop&&top) { y+=2*(cy-y); }
+		if(offRgt&&rgt) { x+=2*(cx-x); }
+		if(offBot&&btm) { y+=2*(cy-y); }
+		ObjMove_SetPosition(shot,x,y);
+		
+		yield; //wait for bullet to move away from bound before checking again
+		x = ObjMove_GetX(shot); y = ObjMove_GetY(shot);
+		wraps--;
+	}
+	return;
+}
+
+
+
+//----------------------------------------------------------------
+
+
+//Kyouko reflecty circles
+let BOUNCE_INNER = 999901; let BOUNCE_OUTER = 999902; let SCALE_MANUAL = 999903;
+let BOUNCE_ASSIST= 999904;
+function BounceCircleA1(cx,cy,rad0,rad1,dur,exargs){
+	let drad = (rad1-rad0)/dur;
+	let rad; let x; let y; let a; let d; let dir; let da;
+	let shots; let shot;
+	let controller = CreateSprite(cx, cy, dirimg~"circle.png", [0,0,256,256], 41);
+	setpos(controller,cx,cy);
+	ObjRender_SetAlpha(controller,128);
+	ObjRender_SetColor(controller,255,0,255);
+	
+	let isarg; let bounceinner=true; let bounceouter=false; let scalemanual=false; let aimassist=true;
+
+	isarg = checkarr(exargs,BOUNCE_INNER); if(isarg!=-1){bounceinner=tobool(exargs[isarg+1]);}
+	isarg = checkarr(exargs,BOUNCE_OUTER); if(isarg!=-1){bounceouter=tobool(exargs[isarg+1]);}
+	isarg = checkarr(exargs,SCALE_MANUAL); if(isarg!=-1){scalemanual=tobool(exargs[isarg+1]);}
+	isarg = checkarr(exargs,BOUNCE_ASSIST);if(isarg!=-1){aimassist  =tobool(exargs[isarg+1]);}
+		
+	TCircle;
+	return controller;
+	
+	task TCircle{
+		let i=dur;
+		let isinside; let s; let errmargin;
+		while(i!=0){
+			rad = rad1-drad*i;
+			ObjRender_SetScaleXYZ(controller,rad/128,rad/128,1);
+			shots = GetShotIdInCircleA2(cx,cy,rad+10,TARGET_ENEMY);
+			ascent(j in 0..length(shots)){
+				shot = shots[j]; s=sof(shot);
+				if(frame-getvald(shot,"LastBounced",-99) < s){break;} 
+				x=getx(shot); y=gety(shot); a=norma(geta(shot));
+				d = getdist(cx,cy,x,y); 
+				
+				errmargin = GetShotHitboxRadius(shot)*2+s;
+				if( d < rad+errmargin && d >= rad-errmargin ){
+					//dir = getangle(cx,cy,x,y); //da = GetAngularDistance(dir,da);
+					let isinside = (getdist(cx,cy,x+10*s*cos(a),y+10*s*sin(a)) >= d)  &&  (d < rad);
+					if( (isinside && bounceinner) || (!isinside && bounceouter) ){
+						//WriteLog("Reflected shot from "~tost(a)~" to "~tost( reflect( a, getangle(x,y,xof(shot),yof(shot))+90 )  )~" at radius="~tost(rad)~", distance="~tost(d)~", rad0="~tost(rad0)~", rad1="~tost(rad1)~", drad="~tost(drad)~", cx="~tost(cx)~", cy="~tost(cy)~", x="~tost(x)~", y="~tost(y)  );
+						seta(shot, reflect( a, getangle(x,y,cx,cy)+90 ) );
+						
+						if(aimassist){TurnToPoint(shot,10,cx,cy);}
+						
+						if(isval(controller,"BounceSound")){SE_Play(getval(controller,"BounceSound"),getvald(controller,"BounceSoundVolume",40));}
+						//if(isinside){SE_Play(se_chime,40);}
+						//if(!isinside){SE_Play(nodamage,60);}
+					}	//else{WriteLog("Did NOT reflect shot from "~tost(a)~" because !( (( "~tost(d)~" < "~tost(getdist(cx,cy,x+sof(shot)*cos(a),y+sof(shot)*sin(a)))~" ) && "~tost(isinside)~"==true) || (("~tost(d)~" >= "~tost(getdist(cx,cy,x+sof(shot)*cos(a),y+sof(shot)*sin(a)))~") && "~tost(isinside)~"==false) )   ; to "~tost( reflect( a, getangle(x,y,xof(shot),yof(shot))+90 )  )~" at radius="~tost(rad)~", distance="~tost(d)~", rad0="~tost(rad0)~", rad1="~tost(rad1)~", drad="~tost(drad)~", cx="~tost(cx)~", cy="~tost(cy)~", x="~tost(x)~", y="~tost(y)  ); }
+					setval(shot,"LastBounced",frame);
+					
+				}
+			}
+			
+			yield; i--; cx = getrx(controller); cy = getry(controller);
+		}
+		Obj_Delete(controller);
+	}
+}
+
+///////////////////////////////////////////////////////////////////////
+//Andi
+///////////////////////////////////////////////////////////////////////
+let INFL_REVOLVE    = 9999010; 	//Revolve shots around the center. subarg is how much to change angle (ratio of mag)
+let INFL_GRAV       = 9999020; 	//Accelerate shots toward center. subarg is how much to change angle
+let INFL_ACCEL      = 9999030; 	//Accelerate shots. subarg is direction of acceleration (NO_CHANGE can be used)
+let INFL_ADDPATTERN = 9999040;	//Add a pattern to shots. subarg is an array:
+								//	[spd,ang,acc,angv,mspd,graphic]. 
+								//	mag is the targeting mode: AIM_REL, AIM_ABS, AIM_OBJ, or AIM_PNT.
+								//	in the case of AIM_OBJ and AIM_PNT, give target object or target x,y at end of subarg.
+								//	Set Rand[Parametername] in the circle's dictionary to add a random value [a,b] to the parameter for each shot.
+let INFL_AIMACCEL	= 9999050;  //Accelerate shots and aim them at an object.
+								//	Subarg is target object; mag is [acc,angv]
+let AIM_REL=9999041; let AIM_ABS=9999042; let AIM_OBJ=9999043; let AIM_PNT=9999044;
+//TODO: use diff. circle graphic for revolve, spin angleZ with spd/dir of rotation
+function InfluenceCircleA1(cx,cy,rad,type,mag,subarg){ //[spd,ang,acc,angv,mspd,graphic]
+	let x; let y; let a; let d; let dir; let tmp; let isinside; let s; //let errmargin;
+	let shots; let shot;
+	let cnt = CreateSprite(cx, cy, dirimg~"Circle.png", [0,0,256,256], 41);
+	let whl;
+	ObjRender_SetAlpha(cnt,128);
+	ObjRender_SetColor(cnt,255,0,255);
+	ObjRender_SetScaleXYZ(cnt,rad/128,rad/128,1);
+
+	TCircle;
+	if(type==INFL_REVOLVE){TWheel;}
+	return cnt;
+	
+	task TCircle{
+		yield;
+		
+		while(!Obj_IsDeleted(cnt)){
+			
+			if(isval(cnt,"Update")){
+				if(isval(cnt,"Type")){type = getval(cnt,"Type");}
+				if(isval(cnt,"Mag")){mag = getval(cnt,"Mag");}
+				if(isval(cnt,"Subarg")){subarg = getval(cnt,"Subarg");}
+				
+				if(!getval(cnt,"Update")){remval(cnt,"Update");}
+			}
+			
+			
+			rad=ObjRender_GetScaleX(cnt)*128; //128
+			cx = ObjRender_GetX(cnt); cy = ObjRender_GetY(cnt);
+			//if(type==INFL_REVOLVE){ObjRender_SetAngleZ(cnt,ObjRender_GetAngleZ(cnt)+mag);}
+			//if(type==INFL_REVOLVE){ObjRender_SetPosition(whl,cx,cy,0);}
+			
+			if(!getvald(cnt,"IsProp",false)){
+				shots = GetShotIdInCircleA2(cx,cy,rad*0.8984375,TARGET_ENEMY);
+				ascent(j in 0..length(shots)){
+					shot = shots[j]; 
+					
+					if(!isval(shot,"NoInfluence")){
+						setval(shot,"LastInfluenced",frame);
+						
+						x=getx(shot); y=gety(shot); //a=norma(geta(shot));
+						
+						alternative(type)
+						case(INFL_REVOLVE){
+							a = getangle(cx,cy,x,y);
+							d = getdist(cx,cy,x,y); 
+							setpos(shot, cx+d*cos(a+mag), cy+d*sin(a+mag));
+							seta(shot, geta(shot)+mag*subarg);
+						}
+						
+						case(INFL_ACCEL){
+							let acc; let maxsp=9999; let minsp=-9999;
+							if(typeof(mag)==OBJ_ARRAY){
+								maxsp = mag[2]; minsp = mag[1]; acc = mag[0];
+							}else{acc=mag[0];}
+							
+							s=getsp(shot);
+							if(acc>0 && s<maxsp || acc<0 && s>minsp){
+								if(subarg==NO_CHANGE){
+									setsp(shot,getsp(shot)+acc);
+								}else{
+									a = geta(shot);
+									let tmp = toxy(s,a);
+									tmp = tosa(tmp[0]+acc*cos(subarg),tmp[1]+acc*sin(subarg));
+									setsp(shot,tmp[0]);
+									seta(shot,tmp[1]);	
+								}
+							}
+							
+						}
+						
+						case(INFL_GRAV){
+							a = geta(shot); s=getsp(shot);
+							let tmp = toxy(s,a);
+							dir = getangle(x,y,cx,cy);
+							tmp = tosa(tmp[0]+mag*cos(dir),tmp[1]+mag*sin(dir));
+							setsp(shot,tmp[0]);
+							seta(shot,a+(tmp[1]-a)*subarg);
+						}
+						
+						case(INFL_ADDPATTERN){
+							let s1; let a1; let acc1; let angv1; let mspd1; let graph1;
+							let args = subarg;
+							
+							s1    = args[0]; if(s1==NO_CHANGE){s1=getsp(shot);}
+							a1    = args[1]; if(a1==NO_CHANGE){a1=geta(shot);}
+							acc1  = args[2]; if(acc1==NO_CHANGE){acc1=getacc(shot);}
+							angv1 = args[3]; if(angv1==NO_CHANGE){angv1=getangv(shot);}
+							mspd1 = args[4]; if(mspd1==NO_CHANGE){mspd1=getmspd(shot);}
+							graph1= args[5]; 
+							
+							if(isval(cnt,"CheckRand")){
+								s1+=randrngarr(getvald(cnt,"RandSpeed",[0,0]));
+								a1+=randrngarr(getvald(cnt,"RandAngle",[0,0]));
+								acc1+=randrngarr(getvald(cnt,"RandAcceleration",[0,0]));
+								angv1+=randrngarr(getvald(cnt,"RandAngularVelocity",[0,0]));
+								mspd1+=randrngarr(getvald(cnt,"RandMaxSpeed",[0,0]));
+								graph1+=randrngarr(getvald(cnt,"RandGraphic",[0,0]));
+							}
+							if(isval(cnt,"CheckExtra")){
+								if(isval(cnt,"ConvertColor")){setcolor(shot,getval(cnt,"ConvertColor"));}
+							}
+							
+							alternative(mag)
+							case(AIM_REL){a1+=geta(shot);}
+							case(AIM_OBJ){a1+=getangle(x,y,xof(args[6]),yof(args[6]));}
+							case(AIM_PNT){a1+=getangle(x,y,args[6],args[7]);}
+							
+							ObjMove_AddPatternA3(shot,0,s1,a1,acc1,angv1,mspd1,graph1);
+						}
+						
+						case(INFL_AIMACCEL){
+							TurnToPoint(shot,mag[1],xof(subarg),yof(subarg));
+							a = geta(shot); s=getsp(shot);
+							setsp(shot,s+mag[0]);
+						}
+					}	
+				}
+			}
+			
+			yield;
+		}
+		Obj_Delete(cnt);
+	}
+	
+	
+	task TWheel{
+		whl = CreateSprite(cx, cy, dirimg~"CircleSpokes.png", [0,0,256,256], 41);
+		ObjRender_SetColor(whl,16,16,16);
+		ObjRender_SetScaleXYZ(whl,rad/128,rad/128,1);
+		ObjRender_SetBlendType(whl,BLEND_ADD_RGB);
+		Obj_SetValue(cnt,"RenderObject",whl);
+		BindPos(whl,cnt);
+		
+		while(!Obj_IsDeleted(cnt)){
+			ObjRender_SetScaleXYZ(whl,ObjRender_GetScaleX(cnt)*0.95,ObjRender_GetScaleY(cnt)*0.95,1);
+			ObjRender_SetPosition(whl,getrx(cnt),getry(cnt),0);
+			//ObjRender_SetPosition(whl,cx,cy,0);
+			ObjRender_SetAngleZ(whl,ObjRender_GetAngleZ(whl)+mag);
+			//ObjRender_SetAngleZ(cnt,ObjRender_GetAngleZ(cnt)+mag);
+			
+			yield;
+		}
+		Obj_Delete(whl);
+		
+		//if(type==INFL_REVOLVE){ObjPrim_SetTexture(cnt,dirimg~"CirclePizza.png");}
+	}
+	
+	
+}
+///////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+
+
+
+task BindPos(obj2,obj1){
+	while(!Obj_IsDeleted(obj1) && !Obj_IsDeleted(obj2)){
+		ObjRender_SetPosition(obj2,getrx(obj1),getry(obj1),0);
+		yield;
+	}
+}
+
+
+
+
+
+
+//Andi - Bounce straight lasers, works ok-ish last I checked
+function LasBounceA1(las, width,dur,del, rgt,top,lft,btm, wrap) {
+	let x = ObjMove_GetX(las); let y = ObjMove_GetY(las);
+	let a = ObjStLaser_GetAngle(las);
+	let length = ObjLaser_GetLength(las);
+	let dx = length*cos(a); let dy = length*sin(a);
+	let tx = x+dx; let ty = y+dy; //tip x/y
+
+	//determine point at which las crosses boundary
+	let offLft; let offTop; let offRgt; let offBot;
+	let n = 1; //num bounds crossed
+	while(n>0 && length>0) {
+		n = 0;
+		offLft=(tx<=0); offTop=(ty<=0); offRgt=(tx>=sx); offBot=(ty>=sy);
+		if(offLft){n++;} if(offTop){n++;} if(offRgt){n++;} if(offBot){n++;}
+		if(n>0) {
+			length--;
+			dx = length*cos(a); dy = length*sin(a);
+			tx = x+dx; ty = y+dy;
+		}
+		else { 
+			length++;
+			dx = length*cos(a); dy = length*sin(a);
+			tx = x+dx; ty = y+dy;
+			offLft=(tx<=0); offTop=(ty<=0); offRgt=(tx>=sx); offBot=(ty>=sy);
+			//Now figure out what angle it should bounce at
+			let nx=0; let ny=0; //point on reflected line
+			
+			if(wrap) {
+				if(offLft) { tx=sx-50*cos(a); ty-=50*sin(a); }
+				if(offTop) { ty=sy-50*sin(a); tx-=50*cos(a); }
+				if(offRgt) { tx=0-50*cos(a); ty-=50*sin(a); }
+				if(offBot) { ty=0-50*sin(a); tx-=50*cos(a); }
+				return CreateStraightLaserA1(tx,ty,a,600,width,dur,ObjShot_GetImageID(las),del);
+			}
+			
+			if(offLft) { ny = y + 2*dy; nx = x; }
+			if(offTop) { nx = x + 2*dx;	ny = y; }
+			if(offRgt) { ny = y + 2*dy; nx = x; }
+			if(offBot) { nx = x + 2*dx; ny = y; }
+			let a1 = angleBetween(tx,ty,nx,ny);
+			//At this point we know we want a laser at tx,ty,a1	
+			return CreateStraightLaserA1(tx,ty,a1,600,width,dur,ObjShot_GetImageID(las),del);
+		}
+	}
+	//If the laser cannot be bounced, return an invisible laser to avoid errors
+	return CreateStraightLaserA1(174,0,90,0,0,0,0,0);
+}
+///////////////////////////////////////////////////////////////
+
+//Set a bullet on a stable orbit around a point
+//Based on real math!
+function setOrbit(shot,cx,cy,speed, nudge) {
+	//reach 360 after traveling (circumference)
+	let sx = ObjMove_GetX(shot); let sy = ObjMove_GetY(shot);
+	let radius = getdist(sx,sy,cx,cy);
+	let circumf = 2*pi()*radius;
+	let period = circumf / speed;
+	let angv = 2*pi() / period * 57.2958 * nudge;
+	let angle = angleBetween(cx,cy,sx,sy) + 90*nudge;
+	ObjMove_AddPatternA2(shot,0,speed,angle,0,angv,speed);
+}
+
+function setOrbitB1(shot,c,speed, nudge) {setOrbit(shot,ObjMove_GetX(c),ObjMove_GetY(c),speed,nudge);}
+task setOrbitA2(shot,cx,cy,speed,nudge,delay) {wait(delay);setOrbit(shot,cx,cy,speed,nudge);}
+task setOrbitB2(shot,c,speed,nudge,delay) {wait(delay);setOrbitB1(shot,c,speed,nudge);}
+//Try to get shots with different radii orbit at the same RPM
+function syncOrbit(rad,spd) {
+	let n = 500/spd; //500 probably isn't exactly the right constant
+	return 2*pi()*rad/n;
+}
+
+//Another from TalosMistake
+task SetHoming(obj,maxTraverse,time,delay){ 
+	wait(delay);
+	let angle = ObjMove_GetAngle(obj);
+	let c = 0;
+    while(! Obj_IsDeleted(obj) && c<time) {
+		c++;
+        ObjMove_SetAngle(obj, angle);
+        yield;
+        // direction angle to player's character
+        let dir = atan2(GetPlayerY - ObjMove_GetY(obj),
+                        GetPlayerX - ObjMove_GetX(obj));
+        // difference between 'dir' and 'angle'
+        let diff = dir - angle;
+        while(diff >= 180) { diff -= 360; }    // adjust the range
+        while(diff < -180) { diff += 360; }
+        let diffAbs = (|diff|);
+        if(diffAbs < maxTraverse) {
+            // if the difference is small,
+            // the bullet turns to the player's character
+            angle = dir;
+        } else {
+            // otherwise, the bullet turns 'maxTraverse' degrees
+            angle += maxTraverse * diff / diffAbs;
+        }
+    }
+}
+
+
+//Temporarily phase a bullet out, making it transparent and non-colliding
+task Phase(shot,frames,alpha1, alpha2) {
+	ObjRender_SetAlpha(shot,alpha1);
+	ObjShot_SetIntersectionEnable(shot,false);
+	ObjShot_SetAutoDelete(shot,false);
+	let resist = ObjShot_IsSpellResist(shot);
+	ObjShot_SetSpellResist(shot,true);
+	wait(frames);
+	ObjRender_SetAlpha(shot,alpha2);
+	ObjShot_SetIntersectionEnable(shot,true);
+	ObjShot_SetAutoDelete(shot,true);
+	ObjShot_SetSpellResist(shot,resist);
+}
+//Fade in rather than suddenly setting alpha
+task Phase2(shot,frames,alpha1, alpha2) {
+	let dAlpha = (alpha2-alpha1)/frames;
+	let resist = ObjShot_IsSpellResist(shot);
+	ObjShot_SetIntersectionEnable(shot,false);
+	ObjShot_SetAutoDelete(shot,false);
+	ObjShot_SetSpellResist(shot,true);
+	ascent(i in 0..frames) {
+		ObjRender_SetAlpha(shot,alpha1+dAlpha*i);
+		yield;
+	}
+	ObjShot_SetIntersectionEnable(shot,true);
+	ObjShot_SetAutoDelete(shot,true);
+	ObjShot_SetSpellResist(shot,resist);
+}
+
+task DelayFadeDelete(shot,del) {
+	wait(del);
+	ObjShot_FadeDelete(shot);
+}
+task ObjShot_SetFadeDeleteFrame(shot,del) {
+	wait(del);
+	ObjShot_FadeDelete(shot);
+}
+task Obj_SetFadeDeleteFrame(obj,del) {
+	wait(del);
+	Obj_FadeDelete(obj);
+}
+task Obj_SetRGBFadeDeleteFrame(obj,del) {
+	wait(del);
+	Obj_FadeDeleteRGB(obj);
+}
+
+
+//Scale a shot over time
+task GrowShot(shot,scale0,scale1,dur){
+	let dScale = (scale1-scale0)/dur;
+	let i=0; let flipx=1; let flipy=1;
+	while(i<dur && !Obj_IsDeleted(shot)){
+		flipx=tononzero(sign(ObjRender_GetScaleX(shot)),1); flipy=tononzero(sign(ObjRender_GetScaleY(shot)),1);
+		ObjRender_SetScaleXYZ(shot,(scale0+i*dScale)*flipx,(scale0+i*dScale)*flipy,1);
+		yield; i++;
+	}
+	//ObjRender_SetScaleXYZ(shot,scale1,scale1,1);
+}
+
+
+function WarnShot(shot) {
+	let warn = CreateShotA1(ObjMove_GetX(shot),ObjMove_GetY(shot),0,0,ObjShot_GetImageID(shot),15);
+	ObjShot_SetIntersectionEnable(warn,false);
+	ObjShot_SetSpellResist(shot,true);
+	ObjShot_FadeDelete(warn);
+	return shot;
+}
+function WarnShotA1(x,y,color,delay) {
+	let shot = CreateShotA1(x,y,0,0,701+color,delay);
+	ObjShot_SetIntersectionEnable(shot,false);
+	ObjShot_SetSpellResist(shot,true);
+	ObjShot_FadeDelete(shot);
+	return shot;
+}
+function WarnShotA2(x,y,type,angle,color,shotdelay,fadedelay) {
+	let shot = CreateShotA1(x,y,0,angle,type,shotdelay);
+	ObjShot_SetIntersectionEnable(shot,false);
+	ObjShot_SetSpellResist(shot,true);
+	ObjRender_SetColor(shot,color[0],color[1],color[2]);
+	if(length(color)>3){ObjRender_SetAlpha(shot,color[3]);}
+	DelayFadeDelete(shot,fadedelay);
+	return shot;
+}
+
+function DebugWarnShot(x,y) {
+	let shot = WarnShotA1(x,y,[255,255,255],15);
+	Obj_SetValue(shot,"CanGap",false);
+}
+function DebugWarnShot2(pos) {
+	let shot = WarnShotA1(pos[0],pos[1],[255,255,255],15);
+	Obj_SetValue(shot,"CanGap",false);
+}
+
+
+//set a shot's color according to its delay color
+function TintShot(shot,brightness){
+	let color = GetDelayColor(shot);
+	color = [brightness+color[0],brightness+color[1],brightness+color[2]];
+	setcolor(shot,color);
+}
+
+function SetMagicCircleAlpha(m,s){
+	MCircNextAlpha = m; //80
+	Obj_SetValue(objSpellCircle,"MaxAlpha",s); //64
+}
+
+//smooth out the movement from ObjMove_SetDestAtFrame
+//accelerate at start/end while keeping same total frames
+function smooth(obj,frames,smoothness) {
+	let spd = ObjMove_GetSpeed(obj);
+	let acc = spd/smoothness;
+	ObjMove_AddPatternA2(obj,0,0,NO_CHANGE,acc,0,spd);
+	ObjMove_AddPatternA2(obj,frames-smoothness,NO_CHANGE,NO_CHANGE,-1*acc,0,0);
+	return spd;
+}
+
+
+
+
+task Drain(cx,cy,r,time){
+	loop(time){
+		DeleteShotInCircle(TYPE_SHOT,TYPE_IMMEDIATE,cx,cy,r);
+		yield;
+	}
+}
+
+
+//Make a shot appear to "tremble" without moving its hitbox
+//Done by creating a non-colliding shot with the same sprite/color/alpha/scale
+function Tremble(shot,xmag,ymag,dur){
+	if(isnull(shot)){return;}
+	let mx; let my; let rx; let ry;
+	mx = ObjMove_GetX(shot);
+	my = ObjMove_GetY(shot);
+	let xdir = randSign; let ydir = randSign;
+	
+	let shotid = ObjShot_GetImageID(shot);
+	let rshot = CreateShotA1(mx,my,0,0,shotid,0);
+	ObjShot_SetIntersectionEnable(rshot,false);
+	ObjShot_SetSpellResist(rshot,ObjShot_IsSpellResist(shot));
+	Obj_SetVisible(shot,false);
+	UpdateGraphic;
+	
+	RenderTremble;
+	return rshot;
+	
+	task RenderTremble{
+		ascent(i in 0..dur) {
+			mx = ObjMove_GetX(shot);
+			my = ObjMove_GetY(shot);
+			rx = mx+sin(10*i*xdir)*cos(20*i*xdir)*xmag;
+			ry = my+sin(20*i*ydir)*cos(10*i*ydir)*ymag;
+			ObjMove_SetPosition(rshot,rx,ry);
+			ObjMove_SetAngle(rshot,ObjMove_GetAngle(shot));
+			if(Obj_IsValueExists(shot,"UpdateRender")){UpdateGraphic;}
+			yield;
+		}	
+		Obj_SetVisible(shot,true);
+		Obj_Delete(rshot);
+	}
+	
+	
+	function UpdateGraphic{
+		//No getter for color, so stick it in the shot's dictionary when you set it
+		let color = Obj_GetValueD(shot,"Color",[255,255,255,Obj_GetValueD(shot,"Alpha",255)]);
+		ObjRender_SetColor(rshot,color[0],color[1],color[2]);
+		if(length(color)>3){ObjRender_SetAlpha(rshot,color[3]);}
+		else{ObjRender_SetAlpha(rshot,Obj_GetValueD(shot,"Alpha",255));}
+		ObjRender_SetScaleXYZ(rshot,ObjRender_GetScaleX(shot),ObjRender_GetScaleY(shot),1);
+	}
+	
+}
+
+
+function NightBlindA1(rad0,rad1,shrinktime, alpha0,alpha1,alphatime){
+	let fog = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjPrim_SetTexture(fog,CSD~"../img/low_visibility_sub.png");
+	ObjSprite2D_SetSourceRect(fog,0,0,1024,1024);
+	ObjSprite2D_SetDestCenter(fog);
+	
+	let dRad = (rad1-rad0)/shrinktime;
+	let rad = rad0;
+	let scale = rad*(1/70);
+	
+	let dAlpha = (alpha1-alpha0)/alphatime;
+	let alpha = alpha0;
+	
+	ObjRender_SetScaleXYZ(fog,scale,scale,0);
+	ObjRender_SetBlendType(fog,BLEND_SUBTRACT);
+	Obj_SetRenderPriority(fog,0.695); //Above player hitbox but below UI
+	let ang = 0;
+	ObjRender_SetAngleZ(fog,ang);
+	ObjRender_SetPosition(fog,px,py,0);
+	
+	let rotspd = 1;
+	
+	let targ = GetPlayerObjectID;
+	
+	RenderFog;
+	return fog;
+	
+	task RenderFog() {
+		while(!Obj_IsDeleted(fog)){
+			
+			rad += dRad;
+			if(tern(dRad<0, rad<rad1, rad>rad1)){rad=rad1;}
+			scale = rad*(1/70);
+			ObjRender_SetScaleXYZ(fog,scale,scale,0);
+			
+			alpha += dAlpha;
+			if(tern(dAlpha<0, alpha<alpha1, alpha>alpha1)){alpha=alpha1;}
+			ObjRender_SetAlpha(fog,alpha);
+			
+			ang += rotspd;
+			ObjRender_SetAngleZ(fog,ang);
+			
+			if(!Obj_IsValueExists(fog,"NoFollow") && !Obj_IsValueExists(fog,"Target")){
+				ObjRender_SetPosition(fog,px,py,0);		
+			}else if(Obj_IsValueExists(fog,"Target")){
+				targ = Obj_GetValue(fog,"Target");
+				if(!Obj_IsDeleted(targ)){
+					ObjRender_SetPosition(fog,ObjRender_GetX(targ),ObjRender_GetY(targ),0);
+				}
+			}
+			
+			yield;
+			
+			//Set this if you want to update values
+			//Give it value true to keep checking, or false to check once
+			if(Obj_IsValueExists(fog,"Check")){
+				if(Obj_GetValue(fog,"Check")==false){Obj_DeleteValue(fog,"Check");}
+				
+				if(Obj_IsValueExists(fog,"Radius")){
+					rad1 = Obj_GetValue(fog,"Radius");
+					rad0 = rad;
+					dRad = (rad1-rad0)/shrinktime;
+				}
+				if(Obj_IsValueExists(fog,"Alpha")){
+					alpha1 = Obj_GetValue(fog,"Alpha");
+					alpha0 = alpha;
+					dAlpha = (alpha1-alpha0)/alphatime;
+				}
+				if(Obj_IsValueExists(fog,"ShrinkTime") || Obj_IsValueExists(fog,"GrowTime")){
+					shrinktime = Obj_GetValueD(fog,"ShrinkTime",Obj_GetValue(fog,"GrowTime"));
+					dRad = (rad1-rad0)/shrinktime;
+				}
+				if(Obj_IsValueExists(fog,"AlphaTime")){
+					alphatime = Obj_GetValue(fog,"AlphaTime");
+					dAlpha = (alpha1-alpha0)/alphatime;
+				}
+				rotspd = Obj_GetValueD(fog,"RotSpeed",rotspd);
+			}
+			
+		}
+	}
+}
+
+
+function ObjFog_SetFogAtFrame(fog,r,a, time){
+	Obj_SetValue(fog,"Radius",r);
+	Obj_SetValue(fog,"Alpha",a);
+	Obj_SetValue(fog,"ShrinkTime",time);
+	Obj_SetValue(fog,"AlphaTime",time);
+	Obj_SetValue(fog,"Check",false);
+}
+function ObjFog_SetRadiusAtFrame(fog,r,time){
+	Obj_SetValue(fog,"Radius",r);
+	Obj_SetValue(fog,"ShrinkTime",time);
+	Obj_SetValue(fog,"Check",false);
+}
+function ObjFog_SetAlphaAtFrame(fog,a,time){
+	Obj_SetValue(fog,"Alpha",a);
+	Obj_SetValue(fog,"AlphaTime",time);
+	Obj_SetValue(fog,"Check",false);
+}
+
+
+task ObjFog_SetDestAtFrameA1(fog,x,y, time){
+	let x0 = ObjRender_GetX(fog); let y0 = ObjRender_GetY(fog);
+	let dx = (x-x0)/time; let dy = (y-y0)/time;
+	Obj_SetValue(fog,"NoFollow",true);
+	let f0 = frame; Obj_SetValue(fog,"MoveSetAt",f0); //for aborting if new dest set
+	ascent(i in 0..time){
+		ObjRender_SetPosition(fog,x0+i*dx,y0+i*dy,0);
+		yield;
+		if(Obj_GetValueD(fog,"MoveSetAt",f0)!=f0){break;} //abort if been set again
+	}
+}
+task ObjFog_SetTargAtFrameA1(fog,targ, time){
+	let x0 = ObjRender_GetX(fog); let y0 = ObjRender_GetY(fog);
+	let x1 = ObjRender_GetX(targ);let y1 = ObjRender_GetY(targ);
+	let dt = 1/time;
+	let x; let y;
+	Obj_SetValue(fog,"NoFollow",true);
+	Obj_SetValue(fog,"Target",targ);
+	let f0 = frame; Obj_SetValue(fog,"MoveSetAt",f0); //for aborting if new dest set
+	ascent(i in 0..time){
+		x1 = ObjRender_GetX(targ); y1 = ObjRender_GetY(targ);
+		x = lerp(x0,x1,i*dt); y = lerp(y0,y1,i*dt);
+		ObjRender_SetPosition(fog,x,y,0);
+		yield;
+		if(Obj_GetValueD(fog,"MoveSetAt",f0)!=f0){break;} //abort if been set again
+	}
+	Obj_SetValue(fog,"Target",targ);
+	Obj_DeleteValue(fog,"NoFollow");
+}
+task ObjFog_SetDestAtFrameA2(fog,x,y,r,a, time){
+	let x0 = ObjRender_GetX(fog); let y0 = ObjRender_GetY(fog);
+	let dx = (x-x0)/time; let dy = (y-y0)/time;
+	Obj_SetValue(fog,"NoFollow",true);
+	Obj_SetValue(fog,"Radius",r);
+	Obj_SetValue(fog,"Alpha",a);
+	Obj_SetValue(fog,"ShrinkTime",time);
+	Obj_SetValue(fog,"AlphaTime",time);
+	Obj_SetValue(fog,"Check",false);
+	let f0 = frame; Obj_SetValue(fog,"MoveSetAt",f0); //for aborting if new dest set
+	ascent(i in 0..time){
+		ObjRender_SetPosition(fog,x0+i*dx,y0+i*dy,0);
+		yield;
+		if(Obj_GetValueD(fog,"MoveSetAt",f0)!=f0){break;} //abort if been set again
+	}
+}
+task ObjFog_SetTargAtFrameA2(fog,targ,r,a, time){
+	let x0 = ObjRender_GetX(fog); let y0 = ObjRender_GetY(fog);
+	let x1 = ObjRender_GetX(targ);let y1 = ObjRender_GetY(targ);
+	let dt = 1/time;
+	let x; let y;
+	Obj_SetValue(fog,"NoFollow",true);
+	Obj_SetValue(fog,"Target",targ);
+	Obj_SetValue(fog,"Radius",r);
+	Obj_SetValue(fog,"Alpha",a);
+	Obj_SetValue(fog,"ShrinkTime",time);
+	Obj_SetValue(fog,"AlphaTime",time);
+	Obj_SetValue(fog,"Check",false);
+	let f0 = frame; Obj_SetValue(fog,"MoveSetAt",f0); //for aborting if new dest set
+	ascent(i in 0..time){
+		x1 = ObjRender_GetX(targ); y1 = ObjRender_GetY(targ);
+		x = lerp(x0,x1,i*dt); y = lerp(y0,y1,i*dt);
+		ObjRender_SetPosition(fog,x,y,0);
+		yield;
+		if(Obj_GetValueD(fog,"MoveSetAt",f0)!=f0){break;} //abort if been set again
+	}
+	Obj_SetValue(fog,"Target",targ);
+	Obj_DeleteValue(fog,"NoFollow");
+}
+
+
+
+function GetFigureEightPoint(x0,y0, x1,y1, t){
+	let rad = getdist(x0,y0,x1,y1)/2;
+	let ang = getangle(x0,y0,x1,y1); let dir;
+	let cx; let cy; let x; let y;
+	t%=2;
+	if(t<1){
+		cx=x0; cy=y0; dir=1;
+		t--;
+	}else{
+		cx=x1; cy=y1;
+		ang+=180; dir=-1;
+	}
+	
+	x = cx+rad*cos(ang+360*t*dir); 
+	y = cy+rad*sin(ang+360*t*dir);
+	return [x,y];
+}
+
+
+//How many shots can you dodge in the stopped time?
+let TimeFlowing = true;
+setdat("TimeFlowing",true);
+let TimeCenter = NULL;
+
+task TimeStop{
+	let shots = GetShotIdInCircleA2(cx,cy,9999,TARGET_ALL);
+	let shot;
+
+	//ZA WARUDO!
+	ascent(i in 0..length(shots)){
+		shot = shots[i];
+		setval(shot,"StopSpeed",getsp(shot));
+		setval(shot,"StopAcceleration",getvald(shot,"Acceleration",0));
+		setval(shot,"StopAngularVelocity",getvald(shot,"AngularVelocity",0));
+		setval(shot,"StopSpellResist",ObjShot_IsSpellResist(shot));
+		setval(shot,"StopIntersection",Obj_GetValueD(shot,"IsIntersectionEnable",true));
+		ObjMove_SetSpeed(shot,0);
+		ObjMove_SetAcceleration(shot,0);
+		ObjMove_SetAngularVelocity(shot,0);
+		ObjShot_SetSpellResist(shot,true);
+		ObjShot_SetIntersectionEnable(shot,false);
+	}
+	let OSpd = GetPlayerSpeed;
+	let OLft = GetVirtualKeyState(VK_LEFT); if(OLft==KEY_PUSH){OLft = KEY_HOLD;}
+	let ORgt = GetVirtualKeyState(VK_RIGHT);if(ORgt==KEY_PUSH){ORgt = KEY_HOLD;}
+	let OFoc = GetVirtualKeyState(VK_SLOWMOVE);if(OFoc==KEY_PUSH){OFoc = KEY_HOLD;}
+	let OTime = ObjEnemyBossScene_GetInfo(objScene,INFO_TIMERF);
+	let OX = ObjRender_GetX(GetPlayerObjectID); let OY = ObjRender_GetY(GetPlayerObjectID);
+	
+	TEffect;
+	TimeFlowing = false; setdat("TimeFlowing",false);	
+	
+	//Toki yo tomare!
+	while(!TimeFlowing){
+		frame--;
+		if(OSpd[0]==0 && GetPlayerSpeed[0]!=0){OSpd=GetPlayerSpeed;}
+		SetPlayerSpeed(0,0);
+		ObjRender_SetPosition(GetPlayerObjectID,OX,OY,0);
+		SetVirtualKeyState(VK_LEFT,OLft);
+		SetVirtualKeyState(VK_RIGHT,ORgt);
+		SetVirtualKeyState(VK_UP,KEY_FREE);
+		SetVirtualKeyState(VK_DOWN,KEY_FREE);
+		SetVirtualKeyState(VK_SHOT,KEY_FREE);
+		SetVirtualKeyState(VK_BOMB,KEY_FREE);
+		SetVirtualKeyState(VK_SLOWMOVE,OFoc);
+		ObjEnemyBossScene_SetSpellTimer(objScene,OTime);
+		if(GetPlayerInvincibilityFrame>0){SetPlayerInvincibilityFrame(GetPlayerInvincibilityFrame+1);}
+		//if(GetPlayerDownStateFrame>0){SetPlayerDownStateFrame(GetPlayerDownStateFrame+1);}
+		
+		yield;
+	}
+
+	//Soshite, toki wo ugokidasu.
+	if(isdat("StopShots")){shots = shots ~ getdat("StopShots"); remdat("StopShots");}
+	ascent(i in 0..length(shots)){
+		shot = shots[i];
+		ObjMove_SetSpeed(shot,getvald(shot,"StopSpeed",getsp(shot)));
+		ObjMove_SetAcceleration(shot,getvald(shot,"StopAcceleration",getvald(shot,"Acceleration",0)));
+		ObjMove_SetAngularVelocity(shot,getvald(shot,"StopAngularVelocity",getvald(shot,"AngularVelocity",0)));
+		ObjShot_SetSpellResist(shot,getvald(shot,"StopSpellResist",false));
+		ObjShot_SetIntersectionEnable(shot,getvald(shot,"StopIntersection",true));
+	}
+	if(OSpd[0]!=0 && OSpd[1]!=0){SetPlayerSpeed(OSpd[0],OSpd[1]);}
+	//get rid of any shots that are RIGHT on top of the player
+	shots = GetShotIdInCircleA2(px,py,20,TARGET_ENEMY);
+	ascent(i in 0..length(shots)){
+		if(Obj_GetValueD(shots[i],"StopIntersection",true)){
+			ObjShot_FadeDelete(shots[i]);
+		}
+	}
+	setdat("TimeFlowing",true);
+	//Done
+	
+	//Manages invert effect
+	task TEffect{
+		SE_Play(se_timestop,100);
+		let circ = CreateSprite(cx,cy,dirimg~"circle.png",[0,0,256,256],73); let scl;
+		ObjRender_SetBlendType(circ,BLEND_ALPHA);
+		ObjRender_SetAlpha(circ,128);
+		let hamon = CreateSprite(cx,cy,dirimg~"ripple_rgb.png",[0,0,480,480],73);
+		ObjRender_SetBlendType(hamon,BLEND_INV_DESTRGB);
+		//setdat("TimeEffect",[circ,hamon]);
+		ascent(i in 0..60){
+			scl = i*6/60; //4/45 
+			ObjRender_SetScaleXYZ(circ,scl,scl,1); 
+			ObjRender_SetScaleXYZ(hamon,scl,scl,1);
+			if(TimeCenter!=NULL){
+				setrpos(circ,getrx(TimeCenter),getry(TimeCenter),0);
+				setrpos(hamon,getrx(TimeCenter),getry(TimeCenter),0);
+			}
+			yield;
+		}
+		while(!TimeFlowing){yield;}
+		descent(i in 0..30){
+			scl = i*6/30; 
+			ObjRender_SetScaleXYZ(circ,scl,scl,1); 
+			ObjRender_SetScaleXYZ(hamon,scl,scl,1);
+			if(TimeCenter!=NULL){
+				setrpos(circ,getrx(TimeCenter),getry(TimeCenter),0);
+				setrpos(hamon,getrx(TimeCenter),getry(TimeCenter),0);
+			}
+			yield;
+		}
+		Obj_Delete(circ);
+		Obj_Delete(hamon);
+		//remdat("TimeEffect");
+	}
+}
+function TimeResume{
+	TimeFlowing = true;
+}
+//Freeze additional shots in time, and unfreeze them when time resumes
+function TimeAddShots(shots){
+	let shot;
+	ascent(i in 0..length(shots)){
+		shot = shots[i];
+		setval(shot,"StopSpeed",getsp(shot));
+		setval(shot,"StopAcceleration",getvald(shot,"Acceleration",0));
+		setval(shot,"StopAngularVelocity",getvald(shot,"AngularVelocity",0));
+		setval(shot,"StopSpellResist",ObjShot_IsSpellResist(shot));
+		setval(shot,"StopIntersection",Obj_GetValueD(shot,"IsIntersectionEnable",true));
+		ObjMove_SetSpeed(shot,0);
+		ObjMove_SetAcceleration(shot,0);
+		ObjMove_SetAngularVelocity(shot,0);
+		ObjShot_SetSpellResist(shot,true);
+		ObjShot_SetIntersectionEnable(shot,false);
+	}
+	setdat("StopShots",getdatd("StopShots",[]) ~ shots);
+}
+
+
+
+
+//From Koishitale
+task ObjPlayer_SetDestAtFrame(px,py,frame){
+	let originalposition = [GetPlayerX,GetPlayerY];
+	let distance = [  px-GetPlayerX ,py-GetPlayerY ];
+	ascent(i in 0..frame){
+		SetVirtualKeyState(VK_LEFT,KEY_FREE);
+		SetVirtualKeyState(VK_RIGHT,KEY_FREE);
+		SetVirtualKeyState(VK_UP,KEY_FREE);
+		SetVirtualKeyState(VK_DOWN,KEY_FREE);
+		ObjMove_SetPosition(GetPlayerObjectID,originalposition[0]+distance[0]*i/frame,originalposition[1]+distance[1]*i/frame);
+		yield;
+	}
+}
+task ObjPlayer_DisableControl(frame){
+	loop(frame){
+		SetVirtualKeyState(VK_LEFT,KEY_FREE);
+		SetVirtualKeyState(VK_RIGHT,KEY_FREE);
+		SetVirtualKeyState(VK_UP,KEY_FREE);
+		SetVirtualKeyState(VK_DOWN,KEY_FREE);
+		SetVirtualKeyState(VK_SHOT,KEY_FREE);
+		SetVirtualKeyState(VK_BOMB,KEY_FREE);
+		SetVirtualKeyState(VK_SLOWMOVE,KEY_FREE);
+		yield;
+	}
+}
+
+
+
+
+function InvertRipple(x,y,scl0,scl1,time){
+	let hamon = CreateSprite(x,y,dirimg~"ripple_rgb.png",[0,0,480,480],73);
+	ObjRender_SetBlendType(hamon,BLEND_INV_DESTRGB);
+	let hamon2 = CreateSprite(x,y,dirimg~"ripple_rgb.png",[0,0,480,480],73);
+	ObjRender_SetBlendType(hamon2,BLEND_ADD_RGB);
+	ObjRender_SetColor(hamon2,64,64,64);
+	TRipple;
+	
+	task TRipple{
+		let scl; let dScl = (scl1 - scl0)/time;
+		ascent(i in 0..time){
+			scl = scl0+i*dScl;
+			ObjRender_SetScaleXYZ(hamon,scl,scl,1);
+			ObjRender_SetScaleXYZ(hamon2,scl,scl,1);
+			yield;
+		}
+		Obj_Delete(hamon);
+		Obj_Delete(hamon2);
+	}
+	
+	setval(hamon,"RenderObject",hamon2);
+	return hamon;
+}
+
+
+
+
+
+//Extra-advanced sun function for all your crazy movement needs (heavily tweaked version of　an already heavily tweaked version of Frenticpony's)
+function CreateSunShotA1(x, y, speed, angle, type, initScale, sizePerFrame, endScale, texture2, texture, r, g, b){
+    let loc_scale = initScale;
+    let growToInit = 0;
+	let rad = 128 * endScale;
+    
+    let objShot = ObjShot_Create(OBJ_SHOT);
+    ObjShot_Regist(objShot);
+    ObjShot_SetSpellResist(objShot, true);
+    ObjMove_SetPosition(objShot, x, y);
+    ObjMove_SetSpeed(objShot, speed);
+    ObjMove_SetAngle(objShot, angle);
+	
+    //I don't think there's anything like IsIntersectionEnable
+	//So use Obj_SetValue(objShot,"IntersectionEnable",false) to disable collision
+	//This way it can be changed from the calling script after creating the shot
+	//Similarly:
+	//Set "Alpha1" and "Alpha2" to set alpha of sun and glow, respectively
+	//Set "Delete" to "Fade","Expand", or others I add later to fade delete/etc
+		//"DeleteTime" and "ExpandRate" modify those
+	
+	//There'll be plenty of other frames to set the hitbox on
+	//So probably don't set it on the first frame to avoid it clipping the player before you can disable it
+	if(!(type=="GROW" || type == "SHRINK") && Obj_GetValueD(objShot,"IntersectionEnable",false)){ObjShot_SetIntersectionCircleA1(objShot, 92 * initScale);}
+           
+    let objRender = ObjPrim_Create(OBJ_SPRITE_2D);
+	let objRender2 = ObjPrim_Create(OBJ_SPRITE_2D);
+    if(texture != "NONE"){
+    	ObjPrim_SetTexture(objRender, texture);
+    	ObjSprite2D_SetSourceRect(objRender, 0, 0, 256, 256);
+    	ObjSprite2D_SetDestCenter(objRender);
+    	ObjRender_SetScaleXYZ(objRender, growToInit, growToInit, 0);
+    	ObjRender_SetBlendType(objRender, BLEND_ADD_ARGB);
+    	Obj_SetRenderPriorityI(objRender, 49);
+    	ObjRender_SetAngleZ(objRender, ObjMove_GetAngle(objShot));
+		if(texture2=="NONE"){ ObjRender_SetColor(objRender, r, g, b); }
+    }
+	if(texture2 != "NONE"){
+		ObjPrim_SetTexture(objRender2, texture2);
+		ObjSprite2D_SetSourceRect(objRender2, 0, 0, 256, 256);
+		ObjSprite2D_SetDestCenter(objRender2);
+		ObjRender_SetColor(objRender2, r, g, b);
+		ObjRender_SetScaleXYZ(objRender2, growToInit, growToInit, 0);
+		ObjRender_SetBlendType(objRender2, BLEND_ADD_ARGB);
+		Obj_SetRenderPriorityI(objRender2, 49);
+		ObjRender_SetAngleZ(objRender2, ObjMove_GetAngle(objShot));
+	}
+	
+	//holy shit this is so convenient 
+	//now I can grab a reference to the render shit from the calling script without just returning an array or some shit
+	Obj_SetValue(objShot,"SunRenderObject",objRender);
+	Obj_SetValue(objShot,"GlowRenderObject",objRender2);
+	
+    renderSunStuff;
+
+    return objShot;
+
+    task renderSunStuff{
+    	let z = 0; let alpha1 = Obj_GetValueD(objShot,"Alpha1",255); let alpha2 = Obj_GetValueD(objShot,"Alpha2",64);
+    	
+		//You would not BELIEVE how much unnecessary code duplication there was before I got here.
+		//ALLLL that rendering code was written out twice, in two separate while loops
+		//The ONLY difference was that one said    if(loc_scale<endScale){loc_scale += sizePerFrame;}
+		//                   and the other said    if(loc_scale>endScale){loc_scale -= sizePerFrame;}
+		//What the heck
+		//WHY would you do that instead of just doing this:
+		let dScaleSign = 0;
+		if(type=="GROW"){
+			dScaleSign=1;
+		} 
+		else if(type=="SHRINK"){
+			dScaleSign=-1;
+		}
+		//if(loc_scale*dScaleSign < endScale*dScaleSign){loc_scale += sizePerFrame*dScaleSign;}
+		//WAS THAT SO HARD?
+		//I forget whose script I got this from but consider yourself complained to -_-
+		
+		//Render shot
+		while(!Obj_IsDeleted(objShot) && !(Obj_IsValueExists(objShot,"Delete") && growToInit>0 ) ){
+			if(growToInit < loc_scale){
+				growToInit += 0.2;
+
+				if(Obj_GetValueD(objShot,"IntersectionEnable",true)){
+					ObjShot_SetIntersectionCircleA1(objShot, 91 * growToInit);
+				}
+				ObjRender_SetScaleXYZ(objRender, growToInit, growToInit, 0);
+				ObjRender_SetPosition(objRender, ObjMove_GetX(objShot), ObjMove_GetY(objShot), 0);
+				ObjRender_SetAngleZ(objRender, z);
+
+				ObjRender_SetScaleXYZ(objRender2, growToInit, growToInit, 0);
+				ObjRender_SetPosition(objRender2, ObjMove_GetX(objShot), ObjMove_GetY(objShot), 0);
+				ObjRender_SetAngleZ(objRender2, z);
+
+				//So that the current scale can be used by the calling script
+				ObjRender_SetScaleXYZ(objShot, growToInit, growToInit, 0);
+				//So the calling script can set its alpha
+				alpha1 = Obj_GetValueD(objShot,"Alpha1",255); alpha2 = Obj_GetValueD(objShot,"Alpha2",64);
+				ObjRender_SetAlpha(objRender,alpha1); ObjRender_SetAlpha(objRender2,alpha2);
+				
+				z++;
+				//yield;   //this makes it look all jittery, not sure why it was here
+			}
+			if(loc_scale*dScaleSign < endScale*dScaleSign){
+				loc_scale += sizePerFrame * dScaleSign;
+			}
+			if(loc_scale <= 0){
+				Obj_Delete(objShot);
+				Obj_Delete(objRender);
+				Obj_Delete(objRender2);;
+			}
+
+			if(Obj_GetValueD(objShot,"IntersectionEnable",true)){
+				ObjShot_SetIntersectionCircleA1(objShot, 91 * loc_scale);
+			}
+			ObjRender_SetScaleXYZ(objRender, loc_scale, loc_scale, 0);
+			ObjRender_SetPosition(objRender, ObjMove_GetX(objShot), ObjMove_GetY(objShot), 0);
+			ObjRender_SetAngleZ(objRender, z);
+
+			ObjRender_SetScaleXYZ(objRender2, loc_scale, loc_scale, 0);
+			ObjRender_SetPosition(objRender2, ObjMove_GetX(objShot), ObjMove_GetY(objShot), 0);
+			ObjRender_SetAngleZ(objRender2, z);
+			
+			//So that the current scale can be used by the calling script
+			ObjRender_SetScaleXYZ(objShot, loc_scale, loc_scale, 0);
+			//So the calling script can set its alpha
+			alpha1 = Obj_GetValueD(objShot,"Alpha1",255); alpha2 = Obj_GetValueD(objShot,"Alpha2",64);
+			ObjRender_SetAlpha(objRender,alpha1); ObjRender_SetAlpha(objRender2,alpha2);
+			
+			z++;
+			
+			if(x<-1*rad || y<-1*rad || x>sx+rad || y>sy+rad){Obj_Delete(objShot);}
+			
+			yield;
+		}
+		
+		
+		//Delete shot	
+		if(Obj_IsDeleted(objShot)){
+			Obj_Delete(objRender);
+			Obj_Delete(objRender2);
+		}else{
+			let type = Obj_GetValue(objShot,"Delete");
+			if(type=="Fade" || type=="Expand"){
+				let curScale = ObjRender_GetScaleX(objRender);
+				let rate = 1+Obj_GetValueD(objShot,"ExpandRate",0.05);
+				let time = Obj_GetValueD(objShot,"DeleteTime",60);
+				ascent(i in 0..time){
+					
+					ObjRender_SetAlpha(objRender,alpha1-i*alpha1/time);
+					ObjRender_SetAlpha(objRender2,alpha2-i*alpha2/time);
+					
+					if(type=="Expand"){
+						ObjRender_SetScaleXYZ(objRender, curScale*rate, curScale*1.05, 0);
+						ObjRender_SetScaleXYZ(objRender2, curScale*rate, curScale*1.05, 0);
+						curScale*=rate;
+					}
+					
+					//keep spinning and such
+					ObjRender_SetAngleZ(objRender, z);
+					ObjRender_SetAngleZ(objRender2, z);
+					z++;
+					ObjRender_SetPosition(objRender, ObjMove_GetX(objShot), ObjMove_GetY(objShot), 0);
+					ObjRender_SetPosition(objRender2, ObjMove_GetX(objShot), ObjMove_GetY(objShot), 0);
+					
+					yield;
+				}
+				Obj_Delete(objShot);
+				Obj_Delete(objRender);
+				Obj_Delete(objRender2);
+			}
+			else {
+				Obj_Delete(objShot);
+				Obj_Delete(objRender);
+				Obj_Delete(objRender2);
+			}
+		}
+		
+    }
+}
+//For when you don't want to bother specifying the texture
+function CreateSunShotA2(x, y, speed, angle, type, initScale, sizePerFrame, endScale, enableGlow, r, g, b) {
+	let path2; if(!enableGlow){path2="NONE";}else{path2=CSD~"../img/Sun2.png";}
+	return CreateSunShotA1(x, y, speed, angle, type, initScale, sizePerFrame, endScale, path2, CSD~"../img/Sun.png", r, g, b)
+}
+//------------------------------------------------------------
+//Utsuho caution cutin.
+//Made by AJS
+task CautionCutin(render, yposition, img){	
+	Tcaution(GetStgFrameWidth/2, yposition+90, render, img);
+	Tcaution(GetStgFrameWidth/2-250, yposition+90, render, img);
+	Tcaution(GetStgFrameWidth/2+250, yposition+90, render, img);
+	
+	Tcaution(GetStgFrameWidth/2, yposition-90, render, img);
+	Tcaution(GetStgFrameWidth/2-250, yposition-90,render, img);
+	Tcaution(GetStgFrameWidth/2+250, yposition-90, render, img);
+	
+	radiation(GetStgFrameWidth/2, yposition, render, img);
+	radiation(GetStgFrameWidth/2-250, yposition, render, img);
+	radiation(GetStgFrameWidth/2+250, yposition, render, img);
+	yield;
+}
+task Tcaution(xpos, ypos, renderpriority, img){
+	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	let counter = 0;
+	let size = 0;
+	let alpha = 0;
+	
+	ObjPrim_SetTexture(obj, img);
+	ObjSprite2D_SetSourceRect(obj,0, 216, 256, 256);
+	ObjRender_SetScaleXYZ(obj,1,1,0);
+	Obj_SetRenderPriorityI(obj,renderpriority);
+	ObjSprite2D_SetDestCenter(obj);
+	ObjRender_SetBlendType(obj,BLEND_ALPHA);
+	ObjRender_SetPosition(obj,xpos,ypos,0);
+	ObjRender_SetAngleXYZ(obj,0,0,0);	
+	ObjRender_SetAlpha(obj,alpha);
+	
+	loop(20){		
+		counter++;
+		alpha+=255/20;
+		ObjRender_SetAlpha(obj,alpha);
+		ObjRender_SetPosition(obj,xpos+(counter),ypos,0);		
+		yield;
+	}
+	loop(120){		
+		counter++;
+		ObjRender_SetPosition(obj,xpos+(counter),ypos,0);		
+		yield;
+	}
+	loop(20){		
+		counter++;
+		alpha-=255/20;
+		ObjRender_SetAlpha(obj,alpha);
+		ObjRender_SetPosition(obj,xpos+(counter),ypos,0);		
+		yield;
+	}
+	Obj_Delete(obj);
+}
+task radiation(xpos, ypos, renderpriority, img){
+	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	let counter = 0;
+	let size = 0;
+	let alpha = 0;
+	
+	ObjPrim_SetTexture(obj, img);
+	ObjSprite2D_SetSourceRect(obj,0, 0, 256, 128);
+	ObjRender_SetScaleXYZ(obj,1,1,0);
+	Obj_SetRenderPriorityI(obj,renderpriority);
+	ObjSprite2D_SetDestCenter(obj);
+	ObjRender_SetBlendType(obj,BLEND_ALPHA);
+	ObjRender_SetPosition(obj,xpos,ypos,0);
+	ObjRender_SetAngleXYZ(obj,0,0,0);	
+	ObjRender_SetAlpha(obj,alpha);
+	
+	loop(20){		
+		counter++;
+		alpha+=255/20;
+		ObjRender_SetAlpha(obj,alpha);
+		ObjRender_SetPosition(obj,xpos-(counter),ypos,0);		
+		yield;
+	}
+	loop(120){		
+		counter++;
+		ObjRender_SetPosition(obj,xpos-(counter),ypos,0);		
+		yield;
+	}
+	loop(20){		
+		counter++;
+		alpha-=255/20;
+		ObjRender_SetAlpha(obj,alpha);
+		ObjRender_SetPosition(obj,xpos-(counter),ypos,0);		
+		yield;
+	}
+	Obj_Delete(obj);
+}
+//------------------------------------------------------------
+
+
+
+
+//Create a "box" of lasers sticking out of a circle
+//Does NOT move on it's own. Movement needs to be assigned with ObjMove functions
+function CreateBoxA1(x, y, dist, ang, dir,dir0, sides, l, w, dt, g, d){
+	let boxcontrol = ObjShot_Create(OBJ_SHOT);
+	ObjShot_Regist(boxcontrol);
+	ObjShot_SetSpellResist(boxcontrol, true);
+	ObjShot_SetAutoDelete(boxcontrol,false);
+
+	let boxX = 0;
+	let boxY = 0;
+	let a = dir0;
+
+	ObjMove_SetPosition(boxcontrol, x, y);
+
+	laserbox;
+	return boxcontrol;
+
+	task laserbox{
+		loop(sides){
+			laser(a);
+			a += 360/sides;
+		}
+		task laser(a2){
+			let obj = CreateStraightLaserA1(x, y, a2+ang, l, w, dt, g, d);
+			ObjLaser_SetInvalidLength(obj, 0, 0);
+			ObjStLaser_SetSource(obj, false);
+			ObjShot_SetAutoDelete(obj,false);
+			
+			Obj_SetValue(boxcontrol,"Lasers",Obj_GetValueD(boxcontrol,"Lasers",[]) ~ [obj]);
+			Obj_SetValue(obj,"Controller",boxcontrol);
+
+			while(!Obj_IsDeleted(boxcontrol)){
+				boxX = ObjMove_GetX(boxcontrol);
+				boxY = ObjMove_GetY(boxcontrol);
+
+				ObjMove_SetPosition(obj, boxX+dist*cos(a2), boxY+dist*sin(a2));
+				ObjMove_SetPosition(obj, boxX+dist*cos(a2), boxY+dist*sin(a2));
+				ObjStLaser_SetAngle(obj, a2+ang);
+				a2 += dir;
+				yield;
+			}
+			ObjShot_FadeDelete(obj);
+		}
+	}
+}
+
+function DelayLaser(x,y,ang,len,wid,dur,graph){
+	let las = CreateStraightLaserA1(x,y,ang,len,wid,dur,graph,dur+10);
+	ObjStLaser_SetSource(las,false);
+	return las;
+}
+function DelayLaserBetween(x0,y0,x1,y1,wid,dur,graph){
+	let ang = getangle(x0,y0,x1,y1); 
+	let len = getdist (x0,y0,x1,y1);
+	let las = CreateStraightLaserA1(x0,y0,ang,len,wid,dur,graph,dur+10);
+	ObjStLaser_SetSource(las,false);
+	return las;
+}
+
+// function DelayLaser(x, y, ang, l, w, dt, graph, delay){
+	// let objlaser = CreateStraightLaserA1(x, y, ang, l, w, dt, graph, delay);
+	// TDelayLaser; 
+	// return objlaser;
+	// task TDelayLaser{
+		// wait(delay-1);//So that the graphic never enlarges. 
+		// Obj_Delete(objlaser);
+	// }
+// }
+
+//from Akakyu's Suika
+task Mist(x,y,dur){
+	let angle = 0;
+	let angleR = rand(-2, 2);	
+	let up = 1;
+	let alpha = 40;
+	
+	let fog = ObjPrim_Create(OBJ_SPRITE_2D);
+	let mist = dirimg~"mist.png";
+	ObjPrim_SetTexture(fog, mist);
+	ObjSprite2D_SetSourceRect(fog, 0, 0, 128, 128);
+	ObjSprite2D_SetDestCenter(fog);
+	ObjRender_SetPosition(fog, x, y, 0);
+	ObjRender_SetBlendType(fog, BLEND_ADD_ARGB);
+	ObjRender_SetScaleXYZ(fog, 1, 1, 0);
+	
+	loop(dur){
+		ObjRender_SetScaleXYZ(fog, up, up, 0);
+		ObjRender_SetAlpha(fog, alpha);
+		ObjRender_SetAngleZ(fog, angle);
+		angle += angleR;
+		up -= 0.015;
+		alpha -= 40/60;
+		yield;
+	}
+	Obj_Delete(fog);
+}
+
+
+//From Akakyu's Suika
+//num = num sides, bside = bullets per side
+function ShootShape(spawnX, spawnY, v, angle, num, bside, graphic, delay) {
+	let shots = [];
+	ascent(i in 0..num) {
+		let sx = spawnX+cos(angle+i*360/num);
+		let sy = spawnY+sin(angle+i*360/num);
+		let sxN = spawnX+cos(angle+(i+1)*360/num);
+		let syN = spawnY+sin(angle+(i+1)*360/num);
+		shots = shots ~ [CreateShotA1(spawnX, spawnY, v*(((sx-spawnX)^2+(sy-spawnY)^2)^0.5), atan2(sy-spawnY,sx-spawnX), graphic, delay)];
+		ascent(j in 0..bside) {
+			let toAngle = atan2(syN-sy,sxN-sx);
+			let toDist = (((sxN-sx)^2+(syN-sy)^2)^0.5);
+			let sx2 = sx+toDist/bside*j*cos(toAngle);
+			let sy2 = sy+toDist/bside*j*sin(toAngle);
+			shots = shots ~ [ CreateShotA1(spawnX, spawnY, v*(((sx2-spawnX)^2+(sy2-spawnY)^2)^0.5), atan2(sy2-spawnY,sx2-spawnX), graphic, delay) ];
+		}
+	}
+	return shots;
+} 
+
+//Get a collection of points forming a shape
+//Returns an array with x,y,dist,ang for each point; use i*4+0 for start of each point
+function GetShape(x, y, rad, angle, num, bside) {
+	let vectors = [];
+	ascent(i in 0..num) {
+		let sx = x+cos(angle+i*360/num);
+		let sy = y+sin(angle+i*360/num);
+		let sxN = x+cos(angle+(i+1)*360/num);
+		let syN = y+sin(angle+(i+1)*360/num);
+		ascent(j in 0..bside) {
+			let toAngle = atan2(syN-sy,sxN-sx);
+			let toDist = (((sxN-sx)^2+(syN-sy)^2)^0.5);
+			let dx = toDist/bside*j*cos(toAngle);
+			let dy = toDist/bside*j*sin(toAngle);
+			let sx2 = sx+dx;
+			let sy2 = sy+dy;
+		
+			//vectors = vectors ~ [sx2,sy2,toDist,toAngle];
+			let ang = atan2(sy2-y,sx2-x);
+			vectors = vectors ~ [ sx+dx*rad,  sy+dy*rad,  ((sx2-x)^2+(sy2-y)^2)^0.5, ang ];
+		}
+	}
+	return vectors;
+}
+
+//based on formula for equation of an n-gon in polar coordinates
+//works going out, but can't get the hang of extending it to spawn at bigger radius
+function GetShape2(cx,cy,rad,ang0,sides,pps) {
+	let points = []; let tmp = [0,0];
+	let ang; let dist; let x; let y;
+	let dA = 360/sides/pps;
+	ascent(i in 0..sides) {
+		ascent(j in 0..pps) {
+			ang  = (ang0+dA*pps*i+dA*j)%360;
+			dist = cos(180/sides)/cos(ang-360/sides*floor((sides*ang+180)/360));
+			x = dist*cos(ang);
+			y = dist*sin(ang);
+			tmp = rotate(x,y,ang0);
+			x=tmp[0];y=tmp[1];
+			points = points ~ [x,y,dist,ang+ang0];
+		}
+	}
+	return points;
+}
+
+
+
+
+
+//Drake - Fire wedge of bullets, like Seiran
+// let wedge = CreateShotWedgeA1(192, 150, 5, 10, 3, 45, SHOT_RICE_RED, 6, 6);
+function CreateShotWedgeA1(x, y, rows, gap, speed, angle, graphic, row_delay, shot_delay){
+	let a = [];
+	ascent(i in 0..rows){
+		ascent(j in 0..(i+1)){
+			let shot = ObjShot_Create(OBJ_SHOT);
+			ObjMove_SetPosition(shot, x + (j*gap - (i*gap)/2) * cos(angle+90), y + (j*gap - (i*gap)/2) * sin(angle+90));
+			ObjMove_SetSpeed(shot, speed);
+			ObjMove_SetAngle(shot, angle);
+			ObjShot_SetGraphic(shot, graphic);
+			ObjShot_SetDelay(shot, shot_delay);
+
+			task run(shot){
+				loop(i*row_delay){yield;}
+				if(!Obj_IsDeleted(shot)){
+					ObjShot_Regist(shot);
+				}
+			}
+			
+			run(shot);
+			a = a ~ [shot];
+		}
+	}
+	return a;
+}
+
+
+
+
+
+/////////////////////////////////////////////////////////////////////////
+//Extra shot functions - train, sign, fist, shikigami, fidget spinner
+/////////////////////////////////////////////////////////////////////////
+//Train shot function
+function CreateTrainA2(x,y,spd,ang,acc,mspd,angv,del){
+	let train = ObjEnemy_Create(OBJ_ENEMY);
+	ObjEnemy_Regist(train);
+	ObjMove_SetPosition(train,x,y);
+	ObjMove_SetAngle(train,ang); ObjRender_SetAngleZ(train,ang); //ObjRender_SetScaleY(train,-1);
+	ObjMove_AddPatternA2(train,del,spd,ang,acc,angv,mspd);
+	renderTrain(train);
+	trainhitbox(train);
+	trainautodelete( train,500 );
+	return train;
+	
+	task renderTrain(train){	
+		ObjPrim_SetTexture(train,CSD~"../img/train.png");
+		ObjSprite2D_SetSourceRect(train,0, 0, 554, 175);
+		ObjSprite2D_SetDestCenter(train);	
+		ObjRender_SetScaleXYZ(train,0.75,0.75,0);
+	//	if(IsAngleInRange(ang,  0-45,  0+45)){ObjRender_SetAngleY(train,180);}else
+	//	if(IsAngleInRange(ang,180-45,180+45)){ObjRender_SetAngleY(train,  0);}
+	//	else{ObjRender_SetAngleY(train,180);}
+		
+		let flip;
+		if((|GetAngularDistance(ang,0  )|)<45){flip=1;}else
+		if((|GetAngularDistance(ang,180)|)<45){flip=-1;}
+		else{flip=randSign;}
+		
+		while(!Obj_IsDeleted(train)){
+	
+			ObjRender_SetScaleY(train, flip*(|ObjRender_GetScaleY(train)|));
+		
+			ObjRender_SetAngleZ(train,ObjMove_GetAngle(train));
+			yield;
+		}
+	}
+	task trainhitbox(train){
+		let tx; let ty; let ta;
+		let x0; let y0; let x1; let y1; let length; let height;
+		let dummy = CreateDummyShot(cx,cy);
+		while(!Obj_IsDeleted(train)){
+			tx = ObjMove_GetX(train); ty = ObjMove_GetY(train); ta = ObjMove_GetAngle(train);
+			length = -205*0.9*ObjRender_GetScaleX(train);
+			height = 87.5*0.9*ObjRender_GetScaleY(train);
+				
+			//Find endpoints
+			x0 = tx - length*cos(ta); y0 = ty - length*sin(ta);
+			x1 = tx + length*cos(ta); y1 = ty + length*sin(ta);
+			//Set an intersection line with a width equal to the height of the train,
+			//going from one end to the other
+			ObjShot_SetIntersectionLine(dummy,x0,y0,x1,y1,height);	
+			
+			yield;
+		}
+		Obj_Delete(dummy);
+	}
+	task trainautodelete(train,clip){
+		let tx = ObjMove_GetX(train); let ty = ObjMove_GetY(train);
+		while(tx>-clip&&ty>-clip&&tx<sx+clip&&ty<sy+clip){yield;tx=ObjMove_GetX(train);ty=ObjMove_GetY(train);}
+		Obj_Delete(train);	//WriteLog("Train: Delet dis");
+	}	
+}
+//Sign shot function
+let SIGN_YIELD = 0; let SIGN_STOP = 1; let SIGN_ROUNDABOUT = 2;
+function CreateSignA2(x,y,spd,ang,acc,mspd,type,del){
+	let shot = CreateShotA2(x,y,spd,ang,acc,mspd, LARGE_GRAY, 0);
+	Obj_SetVisible(shot,false);
+	
+	let sign = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjPrim_SetTexture(sign,CSD~"../img/signs.png");
+	
+	// ObjSprite2D_SetSourceRect(sign,0,20,30,106);
+	// ObjSprite2D_SetDestRect(sign,-15,-16,15,69);
+
+	ObjSprite2D_SetSourceRect(sign,-6+40*type,20,36+40*type,106);
+	ObjSprite2D_SetDestRect(sign,-21,-16,21,69);
+
+	
+	ObjRender_SetPosition(sign,x,y,0);
+	ObjRender_SetAngleZ(sign,ang+90);
+	
+	task TRenderSign{
+		while(!Obj_IsDeleted(shot)){
+			ObjRender_SetPosition(sign,ObjRender_GetX(shot),ObjRender_GetY(shot),0);
+			ObjRender_SetAngleZ(sign,ObjMove_GetAngle(shot)+90);
+			ObjRender_SetScaleXYZ(sign,ObjRender_GetScaleX(shot),ObjRender_GetScaleY(shot),1);
+			yield;
+		}
+		Obj_Delete(sign);
+	}
+	task TGrowSign{
+		ObjRender_SetScaleXYZ(shot,0,0,1);
+		ObjRender_SetScaleXYZ(sign,0,0,1);
+		ascent(i in 0..del){
+			ObjRender_SetScaleXYZ(shot,i/del,i/del,1);
+			ObjRender_SetScaleXYZ(sign,i/del,i/del,1);
+			yield;
+		}
+		ObjRender_SetScaleXYZ(shot,1,1,1);
+		ObjRender_SetScaleXYZ(sign,1,1,1);
+	}
+	TRenderSign;
+	if(del>0){TGrowSign;}
+	Obj_SetValue(shot,"RenderObject",sign);
+	return shot;
+}
+//Create a fist bullet
+function CreateFistA2(x,y,spd,ang,acc,mspd,scale,del){
+	ang = NormalizeAngle(ang);
+	let shot = CreateShotA2(x,y,spd,ang,acc,mspd, LARGE_GRAY, 0);
+	Obj_SetVisible(shot,false);
+	ObjRender_SetScaleXYZ(shot,scale,scale,1);
+	
+	let fist = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjPrim_SetTexture(fist,CSD~"../img/unzanfist.png");
+	ObjSprite2D_SetSourceRect(fist,0,0,416,256);
+	ObjSprite2D_SetDestRect(fist,-326,-128,110,128);
+	ObjRender_SetScaleXYZ(fist,scale,scale,1);
+	
+	task TRenderFist{
+		if(IsAngleInRange(ang,  0-45,  0+45)){ObjRender_SetAngleY(fist,0);}else
+		if(IsAngleInRange(ang,180-45,180+45)){ObjRender_SetAngleY(fist,180);}//else
+//		if(IsAngleInRange(ang, 90-45, 90+45)){ObjRender_SetAngleY(fist,180*randint(0,1));}
+		let a=0;
+		while(!Obj_IsDeleted(shot)){
+			x = ObjMove_GetX(shot); y = ObjMove_GetY(shot); 
+			a = ObjRender_GetAngleZ(shot);
+			ObjRender_SetPosition(fist,x,y,0);
+			ObjRender_SetAngleZ  (fist,ang);
+			ObjRender_SetScaleXYZ(fist,ObjRender_GetScaleX(shot),ObjRender_GetScaleY(shot),1);
+			ObjShot_SetIntersectionCircleA1(shot,70*ObjRender_GetScaleX(shot));
+			yield;
+		}
+		Obj_FadeDelete(fist);
+		
+		while(!Obj_IsDeleted(fist)){
+			ObjRender_SetPosition(fist,ObjRender_GetX(fist)+mspd*cos(ang),ObjRender_GetY(fist)+mspd*sin(ang),0);
+			yield;
+		}
+	}
+	
+	TRenderFist;
+	Obj_SetValue(shot,"RenderObject",fist);
+	if(del>0){GrowShot(shot,0,scale,del);GrowShot(shot,0,scale,del);}
+	return shot;
+}
+//I'm sorry mother
+function CreateSpinnerA2(x,y,spd,ang,acc,mspd,type,spin,del){
+	let shot = CreateShotA2(x,y,spd,ang,acc,mspd, LARGE_GRAY, 0);
+	Obj_SetVisible(shot,false);
+	
+	let spinner = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjPrim_SetTexture(spinner,CSD~"../img/Misc/fidget.png");
+	ObjSprite2D_SetSourceRect(spinner,0+64*type,0,64+64*type,64);
+	ObjSprite2D_SetDestCenter(spinner);	
+	ObjRender_SetPosition(spinner,x,y,0);
+	ObjRender_SetAngleZ(spinner,ang+90);
+	
+	task TRenderSpinner{
+		let count=0;
+		let x; let y; let a; let scale;
+		let x0; let x1; let x2;
+		let y0; let y1; let y2;
+		let arr;
+		
+		while(!Obj_IsDeleted(shot)){
+			x = ObjRender_GetX(shot);
+			y = ObjRender_GetY(shot);
+			a = ObjMove_GetAngle(shot)+count;
+			scale = ObjRender_GetScaleX(shot);
+			
+			ObjRender_SetPosition(spinner,x,y,0);
+			ObjRender_SetAngleZ(  spinner,a);
+		//	ObjRender_SetScaleXYZ(spinner,scale,scale,1);
+			
+			arr = rotate( 0 ,-14,a); x0=arr[0]; y0=arr[1];
+			arr = rotate( 14, 10,a); x1=arr[0]; y1=arr[1];
+			arr = rotate(-14, 14,a); x2=arr[0]; y2=arr[1];
+			
+			ObjShot_SetIntersectionCircleA1(shot,6*ObjRender_GetScaleX(shot));
+			ObjShot_SetIntersectionCircleA2(shot,x+x0, y+y0, 6*ObjRender_GetScaleX(shot));
+			ObjShot_SetIntersectionCircleA2(shot,x+x1, y+y1, 6*ObjRender_GetScaleX(shot));
+			ObjShot_SetIntersectionCircleA2(shot,x+x2, y+y2, 6*ObjRender_GetScaleX(shot));
+			
+			//DebugWarnShot(x+x0,y+y0);DebugWarnShot(x+x1,y+y1);DebugWarnShot(x+x2,y+y2);
+			
+			yield; count+=spin; 
+		}
+		Obj_Delete(spinner);
+	}
+	TRenderSpinner;
+	Obj_SetValue(shot,"RenderObject",spinner);
+	if(del>0){GrowShot(shot,0,1,del);GrowShot(spinner,0,1,del);}
+	return spinner;
+}
+//Spinning Ran/Chen - spin should be high, like 20 or 30 or something
+function CreateShikigamiA2(x,y,spd,ang,acc,mspd,angv,type,spin,collision,del){
+	let shiki = ObjEnemy_Create(OBJ_ENEMY);
+	ObjEnemy_Regist(shiki);
+	//ObjEnemy_SetLife(shiki,100);
+	ObjMove_SetPosition(shiki,x,y);
+	ObjMove_SetAngle(shiki,ang); ObjRender_SetAngleZ(shiki,ang); //ObjRender_SetScaleY(train,-1);
+	ObjMove_AddPatternA2(shiki,del,spd,ang,acc,angv,mspd);
+	renderShikigami(shiki);
+	shikigamiAutodelete(shiki,100 );
+	return shiki;
+	
+	task renderShikigami(shiki){
+		if(type=="Ran"){
+			ObjPrim_SetTexture(shiki,dirgizmo~"dot_ran.png");
+		}else if(type=="Chen"){
+			ObjPrim_SetTexture(shiki,dirgizmo~"dot_chen.png");
+		}else{ObjPrim_SetTexture(shiki,dirgizmo~type~".png");}		
+		let flip = 1+sign(spin);
+		ObjSprite2D_SetSourceRect(shiki,256, 128+128*flip, 383, 255+128*flip);
+		ObjSprite2D_SetDestCenter(shiki);	
+		//ObjRender_SetScaleXYZ(shiki,0.75,0.75,0);
+	
+		while(!Obj_IsDeleted(shiki)){
+			ObjRender_SetAngleZ(shiki,ObjMove_GetAngle(shiki)+ang);
+			if(collision){ObjEnemy_SetIntersectionCircleToPlayer(shiki,ObjMove_GetX(shiki),ObjMove_GetY(shiki),12);}
+			ang+=spin;
+			yield;
+		}
+	}
+	
+	task shikigamiAutodelete(shiki,clip){
+		let gx = ObjMove_GetX(shiki); let gy = ObjMove_GetY(shiki);
+		while(gx>-clip&&gy>-clip&&gx<gx+clip&&gy<sy+clip){yield;gx=ObjMove_GetX(shiki);gy=ObjMove_GetY(shiki);}
+		Obj_Delete(shiki);
+	}	
+}
+//Spinning loli - spin should be high, like 20 or 30 or something
+//Easily use arbitrary sprites
+function CreateShikigamiA3(x,y,spd,ang,acc,mspd,angv,type,celsize,cell,spin,collision,del){
+	let shiki = ObjEnemy_Create(OBJ_ENEMY);
+	ObjEnemy_Regist(shiki);
+	ObjMove_SetPosition(shiki,x,y);
+	ObjMove_SetAngle(shiki,ang); ObjRender_SetAngleZ(shiki,ang);
+	ObjMove_AddPatternA2(shiki,del,spd,ang,acc,angv,mspd);
+	
+	let width; let height;
+	//if(Obj_GetType(celsize)!=Obj_GetType([0,0])){
+	if(length(celsize)>2){
+		if(celsize=="zun"){			//the usual size for ZUN-style sprites
+			width = 64; height = 80;
+		}else if(celsize=="dot"){	//size for "dot"-style sprites
+			width=128; height=128;
+		}else if(celsize=="zun50"){
+			width=50; height=50;	//another size sometimes found in ZUN-style sprites
+		}else{
+			width=128; height=128;
+		}
+	}else{
+		width=celsize[0]; height=celsize[1];
+	}
+	Obj_SetValue(shiki,"CellWidth",width);Obj_SetValue(shiki,"CellHeight",height);
+	let celx = cell[0]; let cely=cell[1];
+	ObjPrim_SetTexture(shiki,dirgizmo~type~".png");
+	ObjSprite2D_SetSourceRect(shiki,width*celx, height*cely,width*(celx+1), height*(cely+1));
+	ObjSprite2D_SetDestCenter(shiki);
+	
+	renderShikigami(shiki);
+	shikigamiAutodelete(shiki,100 );
+	return shiki;
+	
+	task renderShikigami(shiki){
+		while(!Obj_IsDeleted(shiki)){
+			ObjRender_SetAngleZ(shiki,ObjMove_GetAngle(shiki)+ang);
+			if(Obj_IsValueExists(shiki,"Cell")){
+				cell = Obj_GetValue(shiki,"Cell");
+				celx = cell[0]; cely=cell[1];
+				ObjSprite2D_SetSourceRect(shiki,width*celx, height*cely,width*(celx+1), height*(cely+1));
+				Obj_DeleteValue(shiki,"Cell");
+			}
+			if(collision){ObjEnemy_SetIntersectionCircleToPlayer(shiki,ObjMove_GetX(shiki),ObjMove_GetY(shiki),width/10*ObjRender_GetScaleY(shiki));} //12
+			ang+=spin;
+			yield;
+		}
+	}
+	
+	task shikigamiAutodelete(shiki,clip){
+		let gx = ObjMove_GetX(shiki); let gy = ObjMove_GetY(shiki);
+		while(gx>-clip&&gy>-clip&&gx<gx+clip&&gy<sy+clip){yield;gx=ObjMove_GetX(shiki);gy=ObjMove_GetY(shiki);}
+		Obj_Delete(shiki);
+	}	
+}
+task AnimateShikigami(shiki,del,cells){
+	let width = Obj_GetValueD(shiki,"CellWidth" ,128);
+	let height= Obj_GetValueD(shiki,"CellHeight",128);
+	let num = length(cells);
+	let cell; let celx; let cely;
+	Obj_SetValue(shiki,"IsNewAnim",true);
+	yield;
+	Obj_DeleteValue(shiki,"IsNewAnim");
+	let i=0;
+	while(!Obj_IsDeleted(shiki) && !Obj_IsValueExists(shiki,"IsNewAnim")){
+		cell = cells[i%num]; celx=cell[0]; cely=cell[1];
+		ObjSprite2D_SetSourceRect(shiki,width*celx, height*cely,width*(celx+1), height*(cely+1));
+		if(length(cell)>2){
+			ObjRender_SetScaleX(shiki,cell[2]);
+		}
+		wait(del); i++;
+	}
+}
+///////////////////////////////////////////////////////////////////////
+//End of extra shot functions
+///////////////////////////////////////////////////////////////////////
+
+
+
+function SquareLaser(x0,y0,x1,y1, del,dur,color, numwarn) {
+	let las = CreateStraightLaserA1((x1+x0)/2,y0,90,absolute(x1-x0),y1-y0, dur,  1001, del);
+	ObjStLaser_SetSource(las,false);
+	ObjRender_SetColor(las,color[0],color[1],color[2]);
+	Obj_SetVisible(las,false);
+	TDelVis;
+	
+	let N = numwarn; let M = numwarn;
+	let dx = (x1-x0)/(N-1);   let dy = (y1-y0)/(M-1);
+	
+	//let gap = 10;
+	//let dx = x1-x0;  let N = ceil((x1-x0)/gap);
+	//let dy = y1-y0;  let M = ceil((y1-y0)/gap);  
+	
+	let warn; let warnshots = [];
+	ascent(i in 0..N){
+		warn = CreateStraightLaserA1(x0+dx*i,y0,90,absolute(x1-x0),y1-y0, del-1,  1001, del);
+		ObjStLaser_SetSource(warn,false);
+		ObjRender_SetColor(warn,color[0],color[1],color[2]);
+		ObjShot_SetDeleteFrame(warn,del);
+		warnshots = warnshots ~ [warn];
+	}
+	ascent(i in 0..M){
+		warn = CreateStraightLaserA1(x0,y0+dy*i,0,x1-x0,absolute(y1-y0), del-1,  1001, del);
+		ObjStLaser_SetSource(warn,false);
+		ObjRender_SetColor(warn,color[0],color[1],color[2]);
+		ObjShot_SetDeleteFrame(warn,del);
+		warnshots = warnshots ~ [warn];
+	}
+	
+	task TDelVis {
+		wait(del);
+		Obj_SetVisible(las,true);
+		loop(length(warnshots)){Obj_Delete(warnshots[0]); warnshots=erase(warnshots,0);}
+	}
+	
+	return las;
+}
+
+
+function TFeathers() {
+	let controller = CreateDummyShot(0,0);
+	TFeathersA1(0.225,0.275,0.75,1.5,0.5,200,15,controller);
+}
+task TFeathersA1(minscl,maxscl,minspd,maxspd,maxdriftspd,alpha1,del, controller) {
+	Obj_SetValue(controller,"Feathers",[]);
+	let feather;
+	let feathers = [];
+	while(!Obj_IsDeleted(controller)){
+		feather = CreateFeather(rand(0,sx), rand(-60,60), rand(-maxdriftspd,maxdriftspd), rand(minspd,maxspd), rand(minscl,maxscl), alpha1);
+		Obj_SetValue(feather,"id",length(Obj_GetValue(controller,"Feathers")));
+		Obj_SetValue(feather,"Controller",controller);
+		feathers = Obj_GetValue(controller,"Feathers");
+		Obj_SetValue(controller,"Feathers", feathers ~ [feather]);
+		loop(del){yield;}
+	}
+	
+	if(!Obj_IsDeleted(boss)){
+		ascent(i in 0..length(feathers)) {
+			Obj_SetValue(feathers[i],"FadeTime",30);
+			Obj_FadeDeleteRGB(feathers[i]);
+		}
+	}else{
+		ascent(i in 0..length(feathers)) {
+			Obj_Delete(feathers[i]);
+		}
+	}
+}
+function CreateFeather(x0,y0,dx,dy,scale,alpha1) {
+	let feather = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjPrim_SetTexture(feather,CSD~"../img/Effect/feather.png");
+	ObjSprite2D_SetSourceRect(feather, 32,32,224,224);
+	ObjSprite2D_SetDestCenter(feather);
+	
+	ObjRender_SetBlendType(feather,BLEND_ADD_RGB);
+	Obj_SetRenderPriority(feather,0.29);
+	ObjRender_SetScaleXYZ(feather,scale,scale,1);
+	
+	let alpha=0;
+	let x=x0; let y=y0;
+	
+	let angX = 0; let angY = 0; let angZ = rand(0,360);
+	let spinX = rand(-1,1); let spinY = rand(-1,1); let spinZ = rand(-1,1);
+	
+	TFeather;
+	return feather;
+	
+	task TFeather{
+		while(y<448) {
+			if(alpha<alpha1){alpha+=3;}
+			ObjRender_SetColor(feather,alpha,alpha,alpha);
+			Obj_SetValue(feather,"Color",[alpha,alpha,alpha]);
+			
+			x+=dx; y+=dy;
+			ObjRender_SetPosition(feather,x,y,0);
+			
+			angX+=spinX; angY+=spinY; angZ+=spinZ;
+			ObjRender_SetAngleXYZ(feather,angX,angY,angZ);
+			
+			yield;
+		}
+		while(alpha>0){
+			alpha-=3;
+			ObjRender_SetColor(feather,alpha,alpha,alpha);
+			Obj_SetValue(feather,"Color",[alpha,alpha,alpha]);
+			yield;
+		}
+		if(Obj_IsValueExists(feather,"Controller") && length(Obj_GetValueD(Obj_IsValueExists(feather,"Controller"),"Feathers",[]))>0) {
+			let controller = Obj_GetValue(feather,"Controller");
+			Obj_SetValue(controller,"Feathers",erase(Obj_GetValueD(controller,"Feathers",[0]),Obj_GetValueD(feather,"id",0)));
+		}
+		Obj_Delete(feather);
+	}
+}
+
+
+
+///////////////////////////////////////////////////////////////
+//Dialogue functions - grabbed from Koishi Heck
+///////////////////////////////////////////////////////////////
+/*
+task DialogueText(posX,posY,controltype,waittime,fontsize,message){
+	let objTxt = ObjText_Create;
+	let alpha = 0;
+	
+	ObjRender_SetAlpha(objTxt,alpha);
+	ObjRender_SetPosition(objTxt,posX,posY,0);
+	
+	ObjText_SetText(objTxt,message);
+	ObjText_SetFontSize(objTxt,fontsize);
+	ObjText_SetFontType(objTxt,"Cirno");
+	ObjText_SetFontColorTop(objTxt,0,0,0);
+	ObjText_SetFontColorBottom(objTxt,0,0,0);
+	ObjText_SetFontBorderType(objTxt,BORDER_NONE);
+	ObjText_SetHorizontalAlignment(objTxt, ALIGNMENT_CENTER);
+	ObjText_SetMaxWidth(objTxt, 400);
+	Obj_SetRenderPriority(objTxt, 100);
+	
+	wait(5);
+	
+	loop(5){
+		alpha+=255/5;
+		ObjRender_SetAlpha(objTxt,alpha);
+	yield;}
+	
+	if(controltype == "TIMED"){
+		loop(waittime){yield;}	
+	}
+	
+	if(controltype == "CONTROL"){
+		while(GetVirtualKeyState(VK_SHOT)!=KEY_PUSH){yield;}
+	}
+	
+	loop(5){
+		alpha-=255/5;
+		ObjRender_SetAlpha(objTxt,alpha);
+	yield;}
+	
+	Obj_Delete(objTxt);
+
+}
+task DialogueText2(posX,posY,controltype,waittime,fontsize,message,priority){
+	let objTxt = ObjText_Create;
+	let alpha = 0;
+	
+	ObjRender_SetAlpha(objTxt,alpha);
+	ObjRender_SetPosition(objTxt,posX,posY,0);
+	
+	ObjText_SetText(objTxt,message);
+	ObjText_SetFontSize(objTxt,fontsize);
+	ObjText_SetFontType(objTxt,"Cirno");
+	ObjText_SetFontColorTop(objTxt,0,0,0);
+	ObjText_SetFontColorBottom(objTxt,0,0,0);
+	ObjText_SetFontBorderType(objTxt,BORDER_NONE);
+	ObjText_SetHorizontalAlignment(objTxt, ALIGNMENT_CENTER);
+	ObjText_SetMaxWidth(objTxt, 400);
+	Obj_SetRenderPriority(objTxt, priority);
+	
+	wait(5);
+	
+	loop(5){
+		alpha+=255/5;
+		ObjRender_SetAlpha(objTxt,alpha);
+	yield;}
+	
+	if(controltype == "TIMED"){
+		loop(waittime){yield;}	
+	}
+	
+	if(controltype == "CONTROL"){
+		while(GetVirtualKeyState(VK_SHOT)!=KEY_PUSH){yield;}
+	}
+	
+	loop(5){
+		alpha-=255/5;
+		ObjRender_SetAlpha(objTxt,alpha);
+	yield;}
+	
+	Obj_Delete(objTxt);
+
+}
+task DialogueBubble(vertangle,posX,posY,Yscale,lengthtimes,controltype,waittime){
+	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	let obj2 = ObjPrim_Create(OBJ_SPRITE_2D);
+	let obj3 = ObjPrim_Create(OBJ_SPRITE_2D);
+	let obj4 = ObjPrim_Create(OBJ_SPRITE_2D);
+	let obj5 = ObjPrim_Create(OBJ_SPRITE_2D);
+	let obj6 = ObjPrim_Create(OBJ_SPRITE_2D);
+	
+	ObjPrim_SetTexture(obj, GetCurrentScriptDirectory~"./img/balloon.png");
+	ObjSprite2D_SetSourceRect(obj,64, 1, 127, 64);
+	ObjRender_SetScaleXYZ(obj,2,Yscale,0);
+	Obj_SetRenderPriorityI(obj,100);
+	ObjSprite2D_SetDestCenter(obj);
+	ObjRender_SetPosition(obj,posX,posY,0);
+	ObjRender_SetAngleX(obj,90);
+	ObjRender_SetBlendType(obj,BLEND_ALPHA);
+		
+	ObjPrim_SetTexture(obj2, GetCurrentScriptDirectory~"./img/balloon.png");
+	ObjSprite2D_SetSourceRect(obj2,1, 1, 63, 64);
+	ObjRender_SetScaleXYZ(obj2,2,Yscale,0);
+	Obj_SetRenderPriorityI(obj2,100);
+	ObjSprite2D_SetDestCenter(obj2);
+	ObjRender_SetPosition(obj2,posX+115,posY,0);
+	ObjRender_SetAngleX(obj2,90);
+	ObjRender_SetBlendType(obj2,BLEND_ALPHA);
+	
+	if(lengthtimes>1){
+		ObjPrim_SetTexture(obj3, GetCurrentScriptDirectory~"./img/balloon.png");
+		ObjSprite2D_SetSourceRect(obj3,1, 1, 63, 64);
+		ObjRender_SetScaleXYZ(obj3,2,Yscale,0);
+		Obj_SetRenderPriorityI(obj3,100);
+		ObjSprite2D_SetDestCenter(obj3);
+		ObjRender_SetPosition(obj3,posX+160,posY,0);
+		ObjRender_SetAngleX(obj3,90);
+		ObjRender_SetBlendType(obj3,BLEND_ALPHA);
+	}	
+	if(lengthtimes>2){
+		ObjPrim_SetTexture(obj4, GetCurrentScriptDirectory~"./img/balloon.png");
+		ObjSprite2D_SetSourceRect(obj4,1, 1, 63, 64);
+		ObjRender_SetScaleXYZ(obj4,2,Yscale,0);
+		Obj_SetRenderPriorityI(obj4,100);
+		ObjSprite2D_SetDestCenter(obj4);
+		ObjRender_SetPosition(obj4,posX+205,posY,0);
+		ObjRender_SetAngleX(obj4,90);
+		ObjRender_SetBlendType(obj4,BLEND_ALPHA);
+	}
+	if(lengthtimes>3){
+		ObjPrim_SetTexture(obj5, GetCurrentScriptDirectory~"./img/balloon.png");
+		ObjSprite2D_SetSourceRect(obj5,1, 1, 63, 64);
+		ObjRender_SetScaleXYZ(obj5,2,Yscale,0);
+		Obj_SetRenderPriorityI(obj5,100);
+		ObjSprite2D_SetDestCenter(obj5);
+		ObjRender_SetPosition(obj5,posX+250,posY,0);
+		ObjRender_SetAngleX(obj5,90);
+		ObjRender_SetBlendType(obj5,BLEND_ALPHA);
+	}
+	
+	let dif = -(90-vertangle);
+	let angleX = 90;
+	
+	SE_Play(se_bubble,100);
+	
+	loop(10){
+		angleX+=dif/10;
+		ObjRender_SetAngleX(obj,angleX);
+		ObjRender_SetAngleX(obj2,angleX);
+		if(lengthtimes>1){ObjRender_SetAngleX(obj3,angleX);}
+		if(lengthtimes>2){ObjRender_SetAngleX(obj4,angleX);}
+		if(lengthtimes>3){ObjRender_SetAngleX(obj5,angleX);}
+		if(lengthtimes>4){ObjRender_SetAngleX(obj6,angleX);}
+	yield;}
+	
+	if(controltype == "TIMED"){
+		loop(waittime){yield;}	
+	}
+	
+	if(controltype == "CONTROL"){
+		while(GetVirtualKeyState(VK_SHOT)!=KEY_PUSH){yield;}
+	}
+	
+	loop(10){
+		angleX+=dif/10;
+		ObjRender_SetAngleX(obj,angleX);
+		ObjRender_SetAngleX(obj2,angleX);
+		if(lengthtimes>1){ObjRender_SetAngleX(obj3,angleX);}
+		if(lengthtimes>2){ObjRender_SetAngleX(obj4,angleX);}
+		if(lengthtimes>3){ObjRender_SetAngleX(obj5,angleX);}
+		if(lengthtimes>4){ObjRender_SetAngleX(obj6,angleX);}
+	yield;}
+	
+	Obj_Delete(obj);
+	Obj_Delete(obj2);
+	Obj_Delete(obj3);
+	Obj_Delete(obj4);
+	Obj_Delete(obj5);
+	Obj_Delete(obj6);
+}
+task DialogueBubble2(horizangle,vertangle,posX,posY,Yscale,lengthtimes,controltype,waittime,priority){
+	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	let obj2 = ObjPrim_Create(OBJ_SPRITE_2D);
+	let obj3 = ObjPrim_Create(OBJ_SPRITE_2D);
+	let obj4 = ObjPrim_Create(OBJ_SPRITE_2D);
+	let obj5 = ObjPrim_Create(OBJ_SPRITE_2D);
+	let obj6 = ObjPrim_Create(OBJ_SPRITE_2D);
+	
+	ObjPrim_SetTexture(obj, GetCurrentScriptDirectory~"./img/balloon.png");
+	ObjSprite2D_SetSourceRect(obj,64, 1, 127, 64);
+	ObjRender_SetScaleXYZ(obj,2,Yscale,0);
+	Obj_SetRenderPriorityI(obj,priority);
+	ObjSprite2D_SetDestCenter(obj);
+	ObjRender_SetPosition(obj,posX,posY,0);
+	ObjRender_SetAngleX(obj,90);
+	ObjRender_SetAngleY(obj,horizangle);
+	ObjRender_SetBlendType(obj,BLEND_ALPHA);
+		
+	ObjPrim_SetTexture(obj2, GetCurrentScriptDirectory~"./img/balloon.png");
+	ObjSprite2D_SetSourceRect(obj2,1, 1, 63, 64);
+	ObjRender_SetScaleXYZ(obj2,2,Yscale,0);
+	Obj_SetRenderPriorityI(obj2,priority);
+	ObjSprite2D_SetDestCenter(obj2);
+	if(horizangle==0){ObjRender_SetPosition(obj2,posX+115,posY,0);}
+	if(horizangle==180){ObjRender_SetPosition(obj2,posX-115,posY,0);}
+	ObjRender_SetAngleX(obj2,90);
+	ObjRender_SetAngleY(obj2,horizangle);
+	ObjRender_SetBlendType(obj2,BLEND_ALPHA);
+	
+	if(lengthtimes>1){
+		ObjPrim_SetTexture(obj3, GetCurrentScriptDirectory~"./img/balloon.png");
+		ObjSprite2D_SetSourceRect(obj3,1, 1, 63, 64);
+		ObjRender_SetScaleXYZ(obj3,2,Yscale,0);
+		Obj_SetRenderPriorityI(obj3,priority);
+		ObjSprite2D_SetDestCenter(obj3);
+		if(horizangle==0){ObjRender_SetPosition(obj3,posX+160,posY,0);}
+		if(horizangle==180){ObjRender_SetPosition(obj3,posX-160,posY,0);}
+		ObjRender_SetAngleX(obj3,90);
+		ObjRender_SetAngleY(obj3,horizangle);
+		ObjRender_SetBlendType(obj3,BLEND_ALPHA);
+	}	
+	if(lengthtimes>2){
+		ObjPrim_SetTexture(obj4, GetCurrentScriptDirectory~"./img/balloon.png");
+		ObjSprite2D_SetSourceRect(obj4,1, 1, 63, 64);
+		ObjRender_SetScaleXYZ(obj4,2,Yscale,0);
+		Obj_SetRenderPriorityI(obj4,priority);
+		ObjSprite2D_SetDestCenter(obj4);
+		if(horizangle==0){ObjRender_SetPosition(obj4,posX+205,posY,0);}
+		if(horizangle==180){ObjRender_SetPosition(obj4,posX-205,posY,0);}
+		ObjRender_SetAngleX(obj4,90);
+		ObjRender_SetAngleY(obj4,horizangle);
+		ObjRender_SetBlendType(obj4,BLEND_ALPHA);
+	}
+	if(lengthtimes>3){
+		ObjPrim_SetTexture(obj5, GetCurrentScriptDirectory~"./img/balloon.png");
+		ObjSprite2D_SetSourceRect(obj5,1, 1, 63, 64);
+		ObjRender_SetScaleXYZ(obj5,2,Yscale,0);
+		Obj_SetRenderPriorityI(obj5,priority);
+		ObjSprite2D_SetDestCenter(obj5);
+		if(horizangle==0){ObjRender_SetPosition(obj5,posX+250,posY,0);}
+		if(horizangle==180){ObjRender_SetPosition(obj5,posX-250,posY,0);}
+		ObjRender_SetAngleX(obj5,90);
+		ObjRender_SetAngleY(obj5,horizangle);
+		ObjRender_SetBlendType(obj5,BLEND_ALPHA);
+	}
+	
+	let dif = -(90-vertangle);
+	let angleX = 90;
+	
+	SE_Play(se_bubble,100);
+	
+	loop(10){
+		angleX+=dif/10;
+		ObjRender_SetAngleX(obj,angleX);
+		ObjRender_SetAngleX(obj2,angleX);
+		if(lengthtimes>1){ObjRender_SetAngleX(obj3,angleX);}
+		if(lengthtimes>2){ObjRender_SetAngleX(obj4,angleX);}
+		if(lengthtimes>3){ObjRender_SetAngleX(obj5,angleX);}
+		if(lengthtimes>4){ObjRender_SetAngleX(obj6,angleX);}
+	yield;}
+	
+	if(controltype == "TIMED"){
+		loop(waittime){yield;}	
+	}
+	
+	if(controltype == "CONTROL"){
+		while(GetVirtualKeyState(VK_SHOT)!=KEY_PUSH){yield;}
+	}
+	
+	loop(10){
+		angleX+=dif/10;
+		ObjRender_SetAngleX(obj,angleX);
+		ObjRender_SetAngleX(obj2,angleX);
+		if(lengthtimes>1){ObjRender_SetAngleX(obj3,angleX);}
+		if(lengthtimes>2){ObjRender_SetAngleX(obj4,angleX);}
+		if(lengthtimes>3){ObjRender_SetAngleX(obj5,angleX);}
+		if(lengthtimes>4){ObjRender_SetAngleX(obj6,angleX);}
+	yield;}
+	
+	Obj_Delete(obj);
+	Obj_Delete(obj2);
+	Obj_Delete(obj3);
+	Obj_Delete(obj4);
+	Obj_Delete(obj5);
+	Obj_Delete(obj6);
+}
+*/
+///////////////////////////////////////////////////////////////
+//End of dialogue functions
+///////////////////////////////////////////////////////////////
+
+
+
+
+
+
+
+
+///////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////
+//BELOW THIS LINE: 
+//ASSORTED BULLSHIT I HAVEN'T REALLY MESSED WITH YET
+///////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////
+/*
+
+//grabbed from Celestial Showdown
+function CurvyLaser(xpos,ypos,speed,angle,length,width,bulletgraphic,trailgraphic,delay) {
+	//let obj = CurvyLaser(GetX,GetY,speed-7,angle,60,50,373,373,0);
+	//ObjMove_AddPatternA2(obj,5,NO_CHANGE,NO_CHANGE,0.5,7*rot,speed);
+	//ObjMove_AddPatternA2(obj,75,NO_CHANGE,NO_CHANGE,-0.3,0.7*rot,speed-5);
+	let obj = CreateShotA1(xpos,ypos,speed,angle,bulletgraphic,delay);
+	LaserTrail;
+	return obj;
+	
+	task LaserTrail {
+		let del = length;
+		let speed = 0;
+		while(!Obj_IsDeleted(obj)) {
+			speed = ObjMove_GetSpeed(obj);
+			if(speed>0) {
+				if(10/speed>=0) {
+					FadeLaser(width,del);
+					loop(10/speed) { yield; }
+				}
+			}
+			else { yield; }
+		}
+	}
+	task FadeLaser(initwidth,del) {
+		let objTrail = CreateStraightLaserA1(ObjMove_GetX(obj)-40*cos(ObjMove_GetAngle(obj)),ObjMove_GetY(obj)-40*sin(ObjMove_GetAngle(obj)),ObjMove_GetAngle(obj),120,initwidth,1200,trailgraphic,0);
+		
+		let initlength = 120;
+		let width = initwidth;
+		let length = initlength;
+		let alpha = 255;
+		loop(del) {
+			//if(alpha<255) { alpha+=255/8; }
+			width-=initwidth/del;
+			length-=initlength/del;
+			ObjRender_SetColor(objTrail,alpha,alpha,alpha);
+			ObjLaser_SetIntersectionWidth(objTrail,width);
+			ObjLaser_SetRenderWidth(objTrail,width);
+			ObjLaser_SetLength(objTrail,length);
+			yield;
+		}
+		Obj_Delete(objTrail);
+	}
+}
+
+
+
+
+
+task widescreen{
+	let left = 32;
+	let top = 16;
+	let right = 416;
+	let bottom = 464;
+	
+	loop{
+		if(left>0){left-=0.51;}
+		if(top>0){top-=0.25;}
+		if(right<GetScreenWidth){right+=4;}
+		if(bottom<GetScreenHeight){bottom+=0.26;}
+		SetStgFrame(left,top,right,bottom,20,80);
+		SetPlayerClip(left,top,right,bottom);
+		
+		yield;
+	}
+}
+
+
+
+function ClearFam {
+	let enemies = GetAllEnemyID;
+	ascent(i in 0..length(enemies)) {
+		if(enemies[i]!=boss){TDelete(enemies[i]);}
+	}
+	
+	task TDelete(fam) {
+		let a0 = Obj_GetValueD(fam,"Alpha",255);
+		ascent(i in 0..60){
+			ObjRender_SetAlpha(fam,a0-(a0/60)*i);
+		}
+		Obj_Delete(fam);
+	}
+}
+
+
+function StageStart(img){ //It's a function so that it stops the script while it's executed
+	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjPrim_SetTexture(obj, img);
+	ObjSprite2D_SetSourceRect(obj, 0, 0, 256, 96);
+	ObjSprite2D_SetDestCenter(obj);
+	Obj_SetRenderPriority(obj, 0.79);
+
+	ObjRender_SetPosition(obj, GetStgFrameWidth/2, GetStgFrameHeight/2, 0);
+	wait(60);
+	ObjPrim_SetTexture(obj, GetCurrentScriptDirectory ~ "./../IMG/go.png");
+	ObjSprite2D_SetSourceRect(obj, 0, 0, 128, 128);
+	ObjSprite2D_SetDestCenter(obj);
+	wait(60);
+	Obj_Delete(obj);
+}
+function StageClear{ //It's a function so that it stops the script while it's executed
+	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjPrim_SetTexture(obj, GetCurrentScriptDirectory ~ "./../IMG/clear.png");
+	ObjSprite2D_SetSourceRect(obj, 0, 0, 256, 64);
+	ObjSprite2D_SetDestCenter(obj);
+	Obj_SetRenderPriority(obj, 0.79);
+
+	ObjRender_SetPosition(obj, GetStgFrameWidth/2, GetStgFrameHeight/2, 0);
+	ObjRender_SetAlpha(obj, 0);
+	let alpha = 0;
+	while(alpha < 255){
+		ObjRender_SetAlpha(obj, alpha);
+		alpha += 5;
+		yield;
+	}
+	wait(60);
+	while(alpha > 0){
+		ObjRender_SetAlpha(obj, alpha);
+		alpha -= 5;
+		yield;
+	}
+	wait(10);
+	Obj_Delete(obj);
+}
+function SetStaticBackground(img, r1, r2, r3, r4, s){
+	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjPrim_SetTexture(obj, img);
+	ObjSprite2D_SetSourceRect(obj, r1, r2, r3, r4);
+	ObjSprite2D_SetDestCenter(obj);
+	Obj_SetRenderPriority(obj, 0.2);
+	ObjRender_SetPosition(obj, GetStgFrameWidth/2, GetStgFrameHeight/2, 0);
+	ObjRender_SetScaleXYZ(obj, s, s, s);
+}
+task FadeToBlack(i){
+	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjPrim_SetTexture(obj, GetCurrentScriptDirectory ~ "./../IMG/black.png");
+	ObjSprite2D_SetSourceRect(obj, 0, 0, 100, 100);
+	ObjSprite2D_SetDestCenter(obj);
+	Obj_SetRenderPriority(obj, 1.0);
+	ObjRender_SetAlpha(obj, 0);
+
+	ObjRender_SetPosition(obj, GetCenterX, GetCenterY, 0);
+	ObjRender_SetScaleXYZ(obj, 8, 8, 0);
+	let a = 0;
+	while(a < 255){
+		ObjRender_SetAlpha(obj, a);
+		a += 2;
+		yield;
+	}
+	wait(i);
+	Obj_Delete(obj);
+}
+
+
+
+
+//modified from TalosMistake's Yuyuko script
+function CallFan(type,expand) {
+	let obj=ObjPrim_Create(OBJ_SPRITE_2D);
+	let img;
+	let count = 0;
+	img = CSD~"../img/ougi.png";
+	LoadTexture(img);
+	ObjPrim_SetTexture(obj,img);
+	ObjSprite2D_SetSourceRect(obj, 0, 0, 512, 256+32);
+	ObjSprite2D_SetDestCenter(obj);
+	ObjRender_SetBlendType(obj,BLEND_ADD_ARGB);
+	Obj_SetRenderPriorityI(obj,22);
+	SetScale;
+	
+	let typenum=0;
+	if(type=="Bright"){typenum=1;}else if(type=="Player"){typenum=2;}
+	
+	TFan;
+	return obj;
+	
+	task TFan {
+		while(!Obj_IsDeleted(obj)){
+			alternative(typenum)
+			case(0) {
+				ObjRender_SetPosition(obj,ex-32-8,ey,0);
+				ObjRender_SetColor(obj,128,128,128);
+			}
+			case(1) {
+				ObjRender_SetPosition(obj,ex-32-8,ey,0);
+				ObjRender_SetColor(obj,255,255,255);
+			}
+			case(2) {
+				ObjRender_SetPosition(obj,GetPlayerX-32-8,GetPlayerY,0);
+				ObjRender_SetColor(obj,128,128,128);
+			}
+			
+			count++;
+			if(count>120 && GetCommonData("IsFan",false)==false){
+				Obj_Delete(obj);
+			}
+			yield;
+		}
+	}
+	
+	task SetScale {
+		if(expand==1){
+			ascent(i in 0..45){
+				ObjRender_SetScaleXYZ(obj,1,0.1*sin(i*2),1);
+				yield;
+			}
+			ascent(i in 0..45){
+				ObjRender_SetScaleXYZ(obj,1,0.1+0.9*sin(i*2),1);
+				yield;
+			}
+			SetCommonData("IsFan",true);
+		}
+		else if(expand==0){
+			ObjRender_SetScaleXYZ(obj,1,1,1);
+			SetCommonData("IsFan",true);
+		}
+		else if(expand==-1){
+			SetCommonData("IsFan",false);
+			ObjRender_SetScaleXYZ(obj,0,0,0);
+			yield;
+			descent(i in 0..45) {
+				ObjRender_SetScaleXYZ(obj,1,sin(i*2),1);
+				yield;
+			}
+			Obj_Delete(obj);
+		}
+		else if(expand==-2){
+			Obj_Delete(obj);
+		}
+	}
+}
+
+
+
+
+*/
+///////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////
+//BELOW THIS LINE: 
+//ASSORTED BULLSHIT THAT JUST PLAIN SUCKS/DOESN'T WORK
+//I DON'T KNOW WHY I STILL KEEP ANY OF THIS AROUND
+///////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////
+/*
+
+//Move all shots within a circle the specified number of degrees around the center
+//Changes only position, not angle
+//Freezes bullets during delay - speed is preserved afterwards, but not acceleration or angular velocity, because there are no getters for those
+task rotateShots(cx,cy,radius,degrees,delay) {
+	let shots = GetShotIdInCircleA2(cx,cy,radius,TARGET_ENEMY);
+	let speeds = [];
+	ascent(i in 0..length(shots)) {
+		let shot = shots[i];
+		speeds = speeds ~ [ ObjMove_GetSpeed(shot) ];
+		ObjMove_SetSpeed(shot,0);
+		ObjMove_SetAcceleration(shot,0); ObjMove_SetAngularVelocity(shot,0);
+	//	ObjRender_SetColor(shot,150,150,150);
+		
+		let x = ObjMove_GetX(shot); let y = ObjMove_GetY(shot); let ang = ObjMove_GetAngle(shot);
+		let a = angleBetween(cx,cy,x,y) + degrees;
+		let dist = Distance(cx,cy,x,y);
+		let tx = cx+dist*cos(a); let ty = cy+dist*sin(a);
+		let type = ObjShot_GetImageID(shot);
+		WarnShotA1(x,y,-1,0);
+		WarnShotA2(tx,ty,type,ang,[255,255,255],10,delay);
+	}
+	wait(delay);
+	ascent(i in 0..length(shots)) {
+		let shot = shots[i];
+		let x = ObjMove_GetX(shot); let y = ObjMove_GetY(shot); 
+		let a = angleBetween(cx,cy,x,y) + degrees;
+		let dist = Distance(cx,cy,x,y);
+		let tx = cx+dist*cos(a); let ty = cy+dist*sin(a);
+		ObjMove_SetPosition(shot, tx, ty);
+		ObjMove_SetSpeed(shot,speeds[i]);
+	//	ObjRender_SetColor(shot,255,255,255);
+		WarnShotA1(tx,ty,-1,0);
+	}
+}
+
+
+
+let ward = true;
+task BulletWard(ward,rad,c) {
+	let seobj = ObjSound_Create;
+	let r=c[0]; let g=c[1]; let b=c[2];
+	
+	let shots; let shot; let arc;
+	let x; let y;
+	let wx; let wy;
+	let arcDir;
+	
+	let spd0; let ang0;
+	
+	while(!Obj_IsDeleted(ward)) {
+		if(ward) {
+			wx = ObjMove_GetX(ward); wy = ObjMove_GetY(ward);
+			shots = GetShotIdInCircleA2(wx,wy,rad,TARGET_PLAYER);
+			ascent(i in 0..length(shots)) {
+				shot = shots[i];
+				y = ObjMove_GetY(shot);
+				if(y > wy) {
+					x = ObjMove_GetX(shot);
+					if(x>wx){arcDir=1;}else{arcDir=-1;}
+					arc = bulletArc(x, y, x, wy-(y-wy), 20, randSign(), arcDir, 533, 55, [r,g,b], 0,10, 1); //533
+					ObjMove_SetY(shot,wy-(y-wy));
+					
+					spd0 = ObjMove_GetSpeed(shot);
+					ang0 = ObjMove_GetAngle(shot);
+					
+					ObjMove_AddPatternA2(shot,0,0,NO_CHANGE,0.1,0,spd0);
+					SE_PlayA2(nodamage,50,seobj,10);
+					
+					//shot = CreateShotA2(x,y,0,ang0+180, 0.1,spd0, 709, 0);
+					//shot = CreateShotA1(x,y,spd0,ang0+180, 709, 0);
+				}
+			}
+		}
+		yield;
+	}
+}
+
+
+//supposed to make bullets kind of drift towards player
+//shitty and doesn't work very well, use TurnToPoint instead
+task BearDown(shot,mangv,arc,angScale){
+	let aShot; let aPlayer; let dir;
+	let angvscl;
+	while(!Obj_IsDeleted(shot)){
+		aShot = GetAngleTo(boss, shot);
+		aPlayer = GetAngleTo(boss, GetPlayerObjectID);
+		dir = sign(GetArcAngle(aShot,aPlayer));
+		angvscl = 1 + angScale*absolute(GetArcAngle(aShot,aPlayer) )/arc;
+		//if( absolute(ObjMove_GetAngle(shot)-aShot) > arc ) { ObjMove_SetAngularVelocity(shot,0); }
+		if( absolute(GetArcAngle(ObjMove_GetAngle(shot),aShot)) > arc) { ObjMove_SetAngularVelocity(shot,0); }
+		else{ ObjMove_SetAngularVelocity(shot,mangv*dir*angvscl); }
+		yield;
+	}
+}
+
+
+
+
+
+//returns the SMALLER angle instead of deciding to fuck up across random lines
+//use GetAngularDistance instead
+function GetArcAngle(ang0,ang1) {
+	//return tern(absolute(ang0-ang1)<absolute(ang1-ang0), ang0-ang1, ang1-ang0);
+	// difference between 'dir' and 'angle'
+	let diff = ang0 - ang1;
+	while(diff >= 180) { diff -= 360; }    // adjust the range
+	while(diff < -180) { diff += 360; }
+	return diff;
+}
+
+
+
+//experimental, doesn't work all that well
+function ShapedLaser(verticesIn,del,dur, color) {
+	//Dummy bullet to attach hitboxes to
+	let dummy = CreateDummyShot(0,0);
+	let countVertex = length(verticesIn);
+	let vert; //temp to hold a vertex, nothing to do with leanbox
+	
+	let objRender = ObjPrim_Create(OBJ_PRIMITIVE_2D);
+	ObjPrim_SetPrimitiveType(objRender,PRIMITIVE_TRIANGLESTRIP);
+	ObjPrim_SetTexture(objRender,CSD~"../img/white.png");
+	ObjRender_SetBlendType(objRender,BLEND_ADD_ARGB);
+	ObjRender_SetColor(objRender, color[0], color[1], color[2]);
+	if(length(color)>3){ObjRender_SetAlpha(objRender, color[3]);}
+	
+	ObjPrim_SetVertexCount(objRender,countVertex);
+	ascent(i in 0..countVertex) {
+		vert = verticesIn[i];
+		ObjPrim_SetVertexUV(objRender, i, i%2, i%2);
+		ObjPrim_SetVertexPosition(objRender,i,vert[0],vert[1],0);
+	}
+	
+	TShapedLaser;
+	Obj_SetValue(objRender,"HitboxDummy",dummy); //in case you want it for something
+	return objRender;
+	
+	task TShapedLaser {
+		while(!Obj_IsDeleted(objRender)) {
+			if(IsTouchPolyEdges(GetPlayerObjectID,verticesIn,countVertex)){ // || IsIntersected_Obj_Polygon(GetPlayerObjectID,verticesIn,countVertex,objRender)) {
+				ObjShot_SetIntersectionCircleA2(dummy,px,py,15);
+SE_Play(nyaa,100);
+			}
+			yield;
+		}
+		Obj_Delete(dummy);
+	}
+	
+}
+
+function IsTouchPolyEdges(obj,vertices,countVertex) {
+	let vert1; let vert2;
+	ascent(i in 0..countVertex-1){
+		vert1 = vertices[i]; vert2 = vertices[i+1];
+		if(CrossLineA3(px,py, vert1[0],vert1[1],vert2[0],vert2[1], 3	)){
+			return true;
+		}
+	}
+	return false;
+}
+
+
+function IsIntersected_Obj_Polygon(obj,vertices,countVertex,dummy) {
+	let x = ObjMove_GetX(obj); 
+	let y = ObjMove_GetY(obj);
+//	let countVertex = length(vertices); //I don't understand why this throws an exception 
+	let vert; let vert2;
+	
+	//First check if it's outside if we treat it as a rectangle
+	let xmax = 0; let xmin = sy; let ymax = 0; let ymin = sy;
+	//Check if we found the bounding rectangle for this polygon already
+	//I recommend just passing in the polygon's render object or something for simplicity
+	if(!Obj_IsDeleted(dummy) && Obj_IsValueExists(dummy,"Bounds")) {
+		let bounds = Obj_GetValue(dummy,"Bounds");
+		xmin=bounds[0]; ymin=bounds[1]; xmax=bounds[2]; ymax=bounds[3];
+	}
+	//Otherwise loop through and find them
+	else {
+		ascent(i in 0..countVertex){
+			vert = vertices[i];
+			if(vert[0]>xmax){xmax=vert[0];}
+			if(vert[0]<xmin){xmin=vert[0];}
+			if(vert[1]>ymax){ymax=vert[1];}
+			if(vert[1]<ymin){ymin=vert[1];}
+		}
+	}
+	//If we somehow wound up with stupid bounds, recheck them
+	if(xmin>xmax || ymin>ymax) {
+	//	WriteLog("~~~~~~~Bounding rectangle is stupid " ~ IntToString(xmin) ~ ",  " ~ IntToString(ymin) ~ ",  " ~ IntToString(xmax) ~ ",  " ~ IntToString(ymax));
+		xmax=0;xmin=sy;ymax=0;ymin=sy;
+		ascent(i in 0..countVertex){vert = vertices[i];if(vert[0]>xmax){xmax=vert[0];}if(vert[0]<xmin){xmin=vert[0];}if(vert[1]>ymax){ymax=vert[1];}if(vert[1]<xmin){ymin=vert[1];}}
+	//	WriteLog("~~~~~~~Rechecked bounding rectangle " ~ IntToString(xmin) ~ ",  " ~ IntToString(ymin) ~ ",  " ~ IntToString(xmax) ~ ",  " ~ IntToString(ymax));
+	}
+	//Save them for next time
+	Obj_SetValue(dummy,"Bounds",[xmin,ymin,xmax,ymax]);
+	
+	//Now do the check
+	//If it's not in that rectangle, it can't be in the polygon
+	if(x<xmin || x>xmax || y<ymin || y>ymax){
+	//	WriteLog("~~~~~~~Not in bounding rectangle " ~ IntToString(xmin) ~ ",  " ~ IntToString(ymin) ~ ",  " ~ IntToString(xmax) ~ ",  " ~ IntToString(ymax) ~ "        " ~ IntToString(px) ~ ",  " ~ IntToString(py) );
+		return false;
+	}
+	
+	//Alright, the point is inside the bounding rectangle, now we get serious.
+	//It's time for some RAY CASTING which as it turns out is actually pretty simple.
+	//We're gonna trace a line through the point and see how many edges it crosses.
+	//If it hits an odd number of edges, it's inside. Even, it's outside.
+	let intersections = 0;
+	vert=vertices[0]; let length; let side;
+	ascent(i in 0..countVertex-1) {
+		vert2=vertices[i+1];
+		//Here's where we check if they intersect
+		if(IsIntersected_Line_Line(-10,-10,x,y,     vert[0],vert[1],vert2[0],vert2[1])) {
+			intersections++;
+			WriteLog("~~~~~~~Found intersection, current count " ~ IntToString(intersections) ~ "  (" ~ ToString(intersections%2==1) ~ ")" );
+		}
+		vert=vert2; //reuse i+1 as the next i so we don't have to get it from the array again
+	}
+	
+	//The moment of truth
+	if(intersections%2==0){	return false;	}
+	else{					return true;	}
+}
+
+
+
+//Use rotation matrix to rotate around the x, y, and z axes
+//Doesn't really work yet
+function rotate3D(x,y,z, ox,oy,oz, angx,angy,angz) {
+	let temp;
+	x-=ox; y-=oy; z-=oz;
+	
+	//rotate around x axis
+	if(angx!=0){
+		temp=y;
+		//x=x;
+		y=y*cos(angx)-z*sin(angx);
+		z=temp*sin(angx)+z*cos(angx);
+	}
+	//rotate around y axis
+	if(angy!=0){
+		temp=x;
+		x=x*cos(angy)+z*sin(angy);
+		//y=y;
+		z=-temp*sin(angy)+z*cos(angy);
+	}
+	//rotate around z axis
+	if(angz!=0){
+		temp=x;
+		x=x*cos(angz)-y*sin(angz);
+		y=temp*sin(angz)-y*cos(angz);
+		//z=z;
+	}
+	
+	return [ox+x,oy+y,oz+z];
+	
+	
+}	
+
+
+//adapted from TalosMistake
+function GetSpherePoint(lat,lon,rad){
+	let x=rad*sin(lat)*cos(lon);
+	let y=rad*sin(lat)*sin(lon);
+	let z=rad*cos(lat);
+	return [x,y,z];
+}
+
+
+
+*/
+
+
+
+
+
+function GetEllipsePoint(x,y,angle1,angle2,radius1,width){
+	let ex = x + ( radius1 * ( width * cos(angle1) * cos(angle2) - 2 * sin(angle1) * sin(angle2)) );
+	let ey = y + ( radius1 * ( width * cos(angle1) * sin(angle2) + 2 * sin(angle1) * cos(angle2)) );	
+	return [ex,ey]
+}
+
+function GetStar(cx,cy,pts,rad,N,a0){
+	let arr=[]; let subarr; let pos; let parts = 1;
+	let type = 2-pts%2;
+	while(pts%2==0 && pts>2){
+		if(pts%3==0){type=1;}
+		if(pts==3 || pts==5){ type=1; break; }
+		else if(pts==4){type=2;break;}
+		else { pts/=2; parts++; }
+	}
+	let istri = (pts%3==0); //triangles are weird for no reason
+	let dA;
+	alternative(type)
+		case(1){dA = 360/pts * 2;}
+		case(2){dA = 90 *pts/4;}
+	let x0; let y0; let x1; let y1; let a1; let ang;
+	loop(parts){
+		ascent(i in 0..pts){
+			subarr=[];
+			a1 = a0 + dA;
+			x0 = cx + rad*cos(a0); y0 = cy + rad*sin(a0);
+			x1 = cx + rad*cos(a1); y1 = cy + rad*sin(a1);
+			ascent(j in 0..N){
+				alternative(istri)
+				case(false){ang=lerp(a0,a1,j/N);}
+				case(true ){ang=getangle(cx,cy,lerp(x0,x1,j/N),lerp(y0,y1,j/N));}
+				pos = [lerp(x0,x1,j/N),lerp(y0,y1,j/N),ang];
+				subarr = subarr ~ [pos];
+			}
+			arr = arr ~ [subarr];
+			a0 = a1;
+		}
+		alternative(type)
+			case(1){a0 += dA/(2*parts); }
+			case(2){a0 += 45*pts/4; }
+	}
+	return arr;
+}
+
+
+function spiral(cx,cy,a0,rt,t){
+	//let rt = a*t;
+	let x = rt*cos(a0+t);
+	let	y = rt*sin(a0+t);
+	return [x+cx,y+cy];
+}
+
+function offsetpoint(point,s,a){
+	return [point[0]+s*cos(a),point[1]+s*sin(a)];
+}
+
+
+
+
+
+
+
+
+function CreateSprite2 ( let texture, let priorityInt, let rects, let center ) {
+	// rects = 1-dimensional, size 4
+	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjPrim_SetTexture(obj, texture);
+	Obj_SetRenderPriorityI(obj, priorityInt);
+	ObjSprite2D_SetSourceRect(obj, rects[0], rects[1], rects[2], rects[3]);
+	ObjSprite2D_SetDestRect(obj, -center[0], -center[1], rects[2]-rects[0]-center[0], rects[3]-rects[1]-center[1]);
+	return obj;
+}

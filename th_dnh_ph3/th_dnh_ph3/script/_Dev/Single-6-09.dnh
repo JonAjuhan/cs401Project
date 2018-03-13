@@ -1,0 +1,485 @@
+#TouhouDanmakufu[Single]
+#ScriptVersion[3]
+#Title["Dream Land \"The Wheel of Time\""]
+#Text["..."] 
+#BGM["./bgm/bgm - SSS.ogg"] //- Bhava-Agra As Seen Through a Child's Mind.mp3"]
+#System["./system/Default_System.txt"]
+#Background["./system/Background_Sky.txt"]
+
+#include "./Index.txt"
+
+let timer = 77; //37
+let shoot=true;
+
+@Event
+{
+	alternative(GetEventType())
+	case(EV_REQUEST_LIFE)
+	{
+		SetScriptResult(2000);
+	}
+	case(EV_REQUEST_SPELL_SCORE){
+        SetScriptResult(5000000);
+    }
+	case(EV_REQUEST_IS_DURABLE_SPELL) {
+		SetScriptResult(true);
+	}
+//	case(EV_REQUEST_IS_LAST_SPELL){
+//		SetScriptResult(true);
+//	}
+	
+	case(EV_REQUEST_TIMER) { SetScriptResult(timer*60); }
+}
+@Initialize
+{
+	SetCommonData("CurrentSC","Dream Land \"The Wheel of Time\"");
+	SetCommonData("Difficulty","Extra");
+	
+	boss = spawnBoss();
+	
+	ObjEnemy_SetDamageRate(boss,0,0);
+	//SetShotAutoDeleteClip(64,96,64,64);
+	//SetShotAutoDeleteClip(16,16,16,16);
+	SetShotAutoDeleteClip(32,32,32,32);
+	
+	MainTask;
+	
+
+}
+@MainLoop
+{
+
+	if(ObjEnemy_GetInfo(boss, INFO_LIFE) <= 0 && !finishing)
+	{
+		finishing = true;
+		TBreakSpell([]);
+	}
+	else {
+		SetBossHitbox(boss,ex,ey);
+	}
+	frame++;
+	yield;
+}
+
+
+task MainTask {
+	
+	ObjEnemy_SetDamageRate(boss,0,0);
+	ObjMove_SetDestAtFrame(boss, cx, cy-120, 60);
+	
+	SetSpellCard;
+	MCircNextAlpha = 80;
+	Obj_SetValue(objSpellCircle,"MaxAlpha",64);
+	
+	ObjEnemyBossScene_StartSpell(objScene);
+	ObjEnemyBossScene_SetSpellTimer(objScene,timer*60); //5760
+	
+	//SetCaution;
+	//SetBossBlur(true);
+	AuraRainbow(boss,255,255,255);
+	TSpellImmune;
+
+	//ConcentrationA2(boss,"HEXAGON",90,3,10,[255,0,255]);
+		
+//	wait(90);
+//	Tmovement(cx-120,cx+120, cy-90,cy-60, 60,240, [MOVE_PLAYERBIAS,2,0,MOVE_MAXSPEED,1.5] );
+	ObjEnemy_SetDamageRate(boss,24,8);
+	frame = 0;
+
+	// SetBossBlur(true);
+	
+	 wait(90);
+	// SetBossBlur(false);
+	// ObjRender_SetBlendType(boss,BLEND_ADD_ARGB);
+	// Obj_SetRenderPriorityI(boss,79);
+	// ascent(i in 0..120){
+		// ObjRender_SetAlpha(boss,i*255/120);
+		// yield;
+	// }
+	TShoot;
+//	TClones;
+	TTime;
+}
+
+
+
+
+
+
+
+task TShoot {
+	
+	let shot;
+
+	//let types = [DOT_MAGENTA+500,DOT_BLUE+500];
+	
+	let count = 0; let dir = 1; let ydir;
+	let sa;
+	
+	while(!Obj_IsDeleted(boss)) {
+		while(!TimeFlowing||!shoot){yield;}
+		//SE_Play(se_chime2,rand(30,rand(50,rand(60,rand(70,100)))));
+		SE_Play(dirse~"shot"~itoa(randint(1,8))~".wav",rand(30,rand(50,rand(60,rand(70,100)))));
+		
+		shot = CreateShotA2(swdx,swdy,0,90+(180*sin(count/180))+count*sin(count), 0.01+sin(count),1.5, BALL_MAGENTA+500, rand(5,10) );
+		setvals(shot,["Acceleration","MaxSpeed"],[sin(count), 1.5]);
+		Trail(shot);
+		loop(5){yield; count++;}
+		
+	}
+}
+
+task Trail(shot){
+	let cpy;
+	wait(rand(0,10));
+	while(!Obj_IsDeleted(shot)){
+		while(!TimeFlowing){yield;}
+		cpy = CopyShot(shot);
+		ObjMove_SetAngle(cpy,geta(shot)+rand(-15,15));
+		//ObjMove_SetAngularVelocity(cpy,rand(-0.15,0.15));
+	//	ObjMove_SetSpeed(cpy,0);
+	//	ObjMove_SetAcceleration(cpy,getval(cpy,"Acceleration")-rand(0,0.5));
+		ObjMove_SetMaxSpeed(cpy,getval(cpy,"MaxSpeed")-rand(0,0.5));
+		wait(rand(20,40));
+		
+	}
+}
+
+
+
+
+
+
+
+
+function TPlayerGap(x,y,rad,spd){
+	//let x = cx; let y = cy+120; let rad = 50; let spd = 0.5;
+	let circ = InfluenceCircleA1(x,y,rad,INFL_REVOLVE,spd,0);
+	//let circ = InfluenceCircleA1(x,y,rad,INFL_AIMACCEL,[0.1,3],GetPlayerObjectID);
+	//let circ = InfluenceCircleA1(x,y,rad,INFL_ACCEL,[0,0],NULL);
+	setval(circ,"IsProp",true);
+	setcolor(circ,[64,0,255]);
+	ObjRender_SetBlendType(circ,BLEND_MULTIPLY);
+	let dist; let ang; //let plr = GetPlayerObjectId;
+	Update;
+	ObjRender_SetColor(getval(circ,"RenderObject"),128,0,64);
+	//TWheel(circ,spd);
+	return circ;
+	
+	task Update{
+		while(!Obj_IsDeleted(circ)){
+			rad = 116*ObjRender_GetScaleX(circ);
+			x=getrx(circ); y=getry(circ);
+			dist = getdist(px,py,x,y);
+			spd = getvald(circ,"Mag",spd);
+			if(dist < rad){
+				ang = getangle(px,py,x,y)+180; //+180
+				setpos(GetPlayerObjectID,x+(dist)*cos(ang+spd),y+(dist)*sin(ang+spd));
+				//Set2DCameraAngleZ(Get2DCameraAngleZ+0.5);
+			//	SE_Play(se_warp,100);
+			}
+			yield;
+		}
+	}
+}
+
+
+
+
+
+function Wall(x0,y0,x1,y1, x2,y2,x3,y3, num, time){
+	let shot; let shots = [];
+	let pos0; let pos1;
+	let ang0 = getangle(x0,y0,x1,y1);
+	let ang1 = getangle(x2,y2,x3,y3);
+	let dist0= getdist(x0,y0,x1,y1);
+	let dist1= getdist(x2,y2,x3,y3);
+	
+	let dist; let ang;
+	
+	ascent(i in 0..num+1){
+		pos0 = blerp(x0,y0,x1,y1, i/num);
+		pos1 = blerp(x2,y2,x3,y3, i/num);
+		dist = getdist(pos0[0],pos0[1],pos1[0],pos1[1]);
+		ang  = getangle(pos0[0],pos0[1],pos1[0],pos1[1]);
+		shot = CreateShotA1(pos0[0],pos0[1],dist/(time+rand(-10,10)),ang, BIGDOT_HOLLOW_RED+500,25);
+		shots = shots ~ [shot];
+	}
+	
+	return shots;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+function spawnClone(x,y) {
+	let clone = ObjEnemy_Create(OBJ_ENEMY);
+	ObjEnemy_Regist(clone);
+	let imgBoss = dirgizmo~"Andi.png";
+	let x0 = 1; let y0 = 1; let x1 = 48; let y1 = 80; let dx = x1-x0; let dy = y1-y0;
+	ObjPrim_SetTexture(clone, imgBoss); 
+	ObjSprite2D_SetSourceRect(clone, x0,y0,x1,y1); 
+	ObjSprite2D_SetDestCenter(clone);
+	ObjRender_SetBlendType(clone,BLEND_ADD_ARGB);
+	Obj_SetRenderPriorityI(clone,79);
+	
+	let arr; let row;
+	arr	= [0,0,0,1,1,1,3,3,3,2,2,2,1,1,1];row = 0;
+	ascent(i in 0..length(arr)){
+		ObjAnim_AddFrameA1(clone, ANIM_IDLE,  x0+x1*arr[i],y0,x1+dx*arr[i],y1);
+	}
+	ObjAnim_SetLoopPointA1(clone, ANIM_IDLE, 0);
+	arr = [0,1,1,2,2,3];row = 1;
+	ascent(i in 0..length(arr)){
+		ObjAnim_AddFrameA1(clone, ANIM_MOVE,  x0+x1*arr[i],y0+dy,x1+dx*arr[i],y1+dy);
+	}
+	ObjAnim_SetLoopPointA1(clone, ANIM_MOVE, length(arr)-1);
+	arr = [2,2,1,1,0];row = 1;
+	ascent(i in 0..length(arr)){
+		ObjAnim_AddFrameA1(clone,ANIM_MOVEEND,x0+x1*arr[i],y0+dy,x1+dx*arr[i],y1+dy);
+	}
+	ObjAnim_SetLoopPointA1(clone, ANIM_MOVEEND, length(arr)-1);
+	arr = [4,5,6,6,7,7];row = 2;
+	ascent(i in 0..length(arr)){
+		ObjAnim_AddFrameA1(clone, ANIM_ATTACK,  x0+x1*arr[i],y0+dy*2,x1+dx*arr[i],y1+dy*2);
+	}
+	ObjAnim_SetLoopPointA1(clone, ANIM_ATTACK, length(arr)-4);
+	arr = [7,6,6,5,5,4];row = 2;
+	ascent(i in 0..length(arr)){
+		ObjAnim_AddFrameA1(clone, ANIM_ATTACKEND,  x0+x1*arr[i],y0+dy*2,x1+dx*arr[i],y1+dy*2);
+	}
+	ObjAnim_SetLoopPointA1(clone, ANIM_ATTACKEND, length(arr)-1);
+	ObjAnim_FlipMoveImage(clone,true);
+	ObjAnim_StartAnimationA1(clone, 10, 0);
+	
+	task WarpIn{
+		ObjRender_SetPosition(clone,x,y,0);
+		ObjMove_SetAngle(clone,180*randBin);
+		ObjMove_SetSpeed(clone,0.15);
+		ObjMove_SetAcceleration(clone,-0.1);
+		
+		SE_Play(se_kira01,100);
+		SE_Play(se_split,80);
+		descent(i in 0..45){
+			ObjRender_SetAngleY(clone,2*i);
+			yield;
+		}
+		CloneHitbox;
+	}
+	task CloneHitbox{
+		while(!Obj_IsDeleted(boss) && !Obj_IsDeleted(clone)){
+			SetBossHitbox(boss,getx(clone),gety(clone));
+			yield;
+		}
+	}
+	
+	WarpIn;
+	return clone;
+}
+
+task DeleteClone(clone){
+	SE_Play(se_vanish,100);
+	//SE_Play(se_timestop,50);
+	SE_Play(se_split,80);
+	ascent(i in 0..45){
+		ObjRender_SetAngleY(clone,2*i);
+		yield;
+	}
+	Obj_Delete(clone);
+}
+
+
+function MakeClone(x,y,time){
+	let clone = spawnClone(x,y);
+	task DoTheThing{
+		wait(time);
+		DeleteClone(clone);
+	}
+	DoTheThing;
+	return clone;
+}
+
+task TClones{
+	let clone1 = NULL; let clone2 = NULL;
+	let fx; let fy; let gx; let gy;
+	let ang; let ang2; let dist; let dist2; let x; let y;
+	while(!Obj_IsDeleted(boss)){
+		clone1 = MakeClone(rx,ry,180); //90
+		wait(45);
+		
+		fx = getx(clone1); fy = gety(clone1);
+		ang = getangle(px,py,avg(ex,fx),avg(ey,fy));
+		dist = getdist(px,py,avg(ex,fx),avg(ey,fy));
+		Wall(ex,ey,fx,fy, px,py,px+2*dist*cos(ang),py+2*dist*sin(ang), 50, 120);
+		
+		if(!isnull(clone2)){
+			ang2 = getangle(px,py,avg(ex,gx),avg(ey,gy));
+			dist2 = getdist(px,py,avg(ex,gx),avg(ey,gy));
+			Wall(ex,ey,gx,gy,  px,py,px+2*dist*cos(ang2),py+2*dist*sin(ang2), 50, 120);
+			
+			Wall(fx,fy,gx,gy,  px+2*dist*cos(ang),py+2*dist*sin(ang),px+2*dist*cos(ang2),py+2*dist*sin(ang2), 50, 120);
+			
+			//ang = getangle(px,py,avg(fx,gx),avg(fy,gy));
+			//dist = getdist(px,py,avg(fx,gx),avg(fy,gy));
+			//Wall(gx,gy,fx,fy,  px,py,px+2*dist*cos(ang),py+2*dist*sin(ang), 50, 120);
+		}
+		
+		wait(75); //75
+		gx = fx; gy = fy; clone2 = clone1;
+	}
+}
+
+task TTime{
+	TimeCenter = boss;
+	let clone1 = NULL; let clone2 = NULL; 
+	let fx; let fy; let gx; let gy; let hx;let hy; let ix;let iy; let jx;let jy; let dist; let ang; let ang1; let ang2; let dist1; let dist2;
+	let ox; let oy;
+	let shots;
+	setdat("HideMagicCircleTime",15);
+	let OPriority = Obj_GetRenderPriorityI(boss);
+	while(!Obj_IsDeleted(boss)){
+		wait(150);
+	//	SE_Play(se_theworld,100);
+		SetAttackPose(60);
+		wait(30);
+		TimeCenter = boss;
+		TimeStop;
+		
+		wait(30);
+		ox=ex; oy=ey;
+		setdat("HideMagicCircle",true);
+		ObjMove_SetDestAtWarp(boss,px+100*cos(270+0),py+100*sin(270+0),100);
+		wait(30);
+		ObjRender_SetBlendType(boss,BLEND_ADD_ARGB);
+		Obj_SetRenderPriorityI(boss,79);
+		clone1 = MakeClone(px+100*cos(270+120),py+100*sin(270+120),150);
+		wait(30);
+		clone2 = MakeClone(px+100*cos(270+240),py+100*sin(270+240),120);
+		wait(30);
+		SE_Play(se_kira01,100);
+		SE_Play(se_split,80);
+	//	setdat("HideMagicCircle",false);
+		
+		SE_Play(se_charge3b,100);
+		
+		wait(20); //40
+		ObjAnim_SetAttackA2(boss,  40);
+		ObjAnim_SetAttackA2(clone1,40);
+		ObjAnim_SetAttackA2(clone2,40);
+		
+		
+		
+		wait(20);
+		
+		SE_Play(se_shift,100);
+		SE_Play(se_slash,100);
+		SE_Play(se_kira01,100);
+		
+	//	shots=shots~ Wall(ex,ey,fx,fy, px,py,px+2*dist1*cos(ang1),py+2*dist1*sin(ang1), 25, 120);
+	//	shots=shots~ Wall(ex,ey,gx,gy,  px,py,px+2*dist1*cos(ang2),py+2*dist1*sin(ang2), 25, 120);		
+	//	shots=shots~ Wall(fx,fy,gx,gy,  px+2*dist1*cos(ang1),py+2*dist1*sin(ang1),px+2*dist1*cos(ang2),py+2*dist1*sin(ang2), 25, 120);
+		//let rot = rand(-90,90);
+	//	let rot = 180;
+		
+		// shots=shots~ Wall(ex,ey,fx,fy,  px                  ,py                  ,px+2*dist1*cos(ang1),py+2*dist1*sin(ang1), 26, 240);
+		// shots=shots~ Wall(ex,ey,gx,gy,  px                  ,py                  ,px+2*dist1*cos(ang2),py+2*dist1*sin(ang2), 26, 240);		
+		// shots=shots~ Wall(fx,fy,gx,gy,  px-0.5*dist1*cos(ang1),py-0.5*dist1*sin(ang1),px-0.5*dist1*cos(ang2),py-0.5*dist1*sin(ang2), 26, 240);
+		
+		ex = getx(boss  ); ey = gety(boss  );
+		fx = getx(clone1); fy = gety(clone1);
+		gx = getx(clone2); gy = gety(clone2);
+		
+		dist= getdist(px,py,ex,ey);
+		
+		ang = getangle(px,py,avg(ex,fx),avg(ey,fy));
+		hx = px+dist*cos(ang); hy = py+dist*sin(ang);
+		ang = getangle(px,py,avg(fx,gx),avg(fy,gy));
+		ix = px+dist*cos(ang); iy = py+dist*sin(ang);
+		ang = getangle(px,py,avg(gx,ex),avg(gy,ey));
+		jx = px+dist*cos(ang); jy = py+dist*sin(ang);
+		
+		// ang1 = getangle(px,py,avg(ex,fx),avg(ey,fy));
+		// ang2 = getangle(px,py,avg(ex,gx),avg(ey,gy));
+		// dist1 = getdist(px,py,avg(ex,fx),avg(ey,fy));
+		// dist2 = getdist(px,py,avg(ex,gx),avg(ey,gy));
+		
+		let N = 25; let del = 240; let rot;
+		ascent(i in 0..9){
+			rot=9*i;
+			
+			shots=[];
+			shots=shots~ Wall(ex,ey,fx,fy, fx,fy,gx,gy, N, del);
+			shots=shots~ Wall(fx,fy,gx,gy, gx,gy,ex,ey, N, del);		
+			shots=shots~ Wall(gx,gy,ex,ey, ex,ey,fx,fy, N, del);
+
+			shots=shots~ Wall(hx,hy,ix,iy, ix,iy,jx,jy, N, del);
+			shots=shots~ Wall(ix,iy,jx,jy, jx,jy,hx,hy, N, del);		
+			shots=shots~ Wall(jx,jy,hx,hy, hx,hy,ix,iy, N, del);
+			ascent(i in 0..length(shots)){seta(shots[i],geta(shots[i])-rot);} 
+			TimeAddShots(shots);
+			
+			shots=[];
+			shots=shots~ Wall(fx,fy,gx,gy, ex,ey,fx,fy, N, del);
+			shots=shots~ Wall(gx,gy,ex,ey, fx,fy,gx,gy, N, del);		
+			shots=shots~ Wall(ex,ey,fx,fy, gx,gy,ex,ey, N, del);
+
+			shots=shots~ Wall(ix,iy,jx,jy, hx,hy,ix,iy, N, del);
+			shots=shots~ Wall(jx,jy,hx,hy, ix,iy,jx,jy, N, del);		
+			shots=shots~ Wall(hx,hy,ix,iy, jx,jy,hx,hy, N, del);
+			ascent(i in 0..length(shots)){seta(shots[i],geta(shots[i])+rot);}
+			TimeAddShots(shots);
+		}
+		
+		//loop(9999){CreateShotA1(ex,ey,0,0,BIGDOT_HOLLOW_YELLOW,0);}
+		
+		wait(60); //120
+		shoot=false;
+		ObjMove_SetDestAtWarp(boss,ox,oy,60);
+		setdat("HideMagicCircle",true);
+		
+		TimeCenter = player;
+		TimeResume;
+		wait(50);
+		ObjRender_SetBlendType(boss,BLEND_ALPHA);
+		Obj_SetRenderPriorityI(boss,OPriority);
+		setdat("HideMagicCircle",false);
+		wait(20);
+		SetAttackPose(40);
+		wait(20);
+		shoot=true;
+	//	Spiral(swdx,swdy,150);
+		
+		wait(150);
+	}
+}
+
+
+
+
+
+
+function Spiral(x,y,time){
+	let pos; let t=90; let shot;
+	task TSpiral{
+		ascent(i in 0..time){
+			pos = spiral(x,y,90,-20+2*sqrt(t),t);
+			shot = CreateShotA1(pos[0],pos[1],0,t-90,BALL_O_MAGENTA+500,0);
+			ObjMove_AddPatternA2(shot,rand(0,time-i),NO_CHANGE,NO_CHANGE,0.05,rand(-0.25,0.25),2);
+			
+			pos = spiral(x,y,90,20+-2*sqrt(t),t);
+			shot = CreateShotA1(pos[0],pos[1],0,t-90,BALL_O_BLUE+500,0);
+			ObjMove_AddPatternA2(shot,rand(0,time-i),NO_CHANGE,NO_CHANGE,0.05,rand(-0.25,0.25),2);
+			
+			yield; t+=rand(5,15);
+		}
+	}
+	TSpiral;
+}

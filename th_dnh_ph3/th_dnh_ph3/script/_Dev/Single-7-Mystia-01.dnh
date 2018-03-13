@@ -1,0 +1,178 @@
+#TouhouDanmakufu[Single]
+#ScriptVersion[3]
+#Title["(Mystia 1) Vocal Sign \"Midnight Sparrow's Song\""]
+#Text["series 7: scales with difficulty"] 
+#BGM["./bgm/bgm - Deaf to All but the Song.ogg"]//"./bgm/bgm - Kid's Festival ~ Innocent Treasures.ogg"] // CC-CGR-loop.ogg"]
+#System["./system/Andi_System.txt"]
+#Background["./system/Background/Mystia/BG_work.txt"]
+
+#include "./Index.txt"
+
+let timer = 37; //37 //47
+let drate = 24; //24
+let mlife = 2000; //2000
+
+@Event
+{
+	alternative(GetEventType())
+	case(EV_REQUEST_LIFE){				SetScriptResult(mlife);		}
+	case(EV_REQUEST_SPELL_SCORE){		SetScriptResult(5000000);	}
+	case(EV_REQUEST_TIMER) {			SetScriptResult(timer*60);	}
+	case(EV_REQUEST_IS_DURABLE_SPELL) {	SetScriptResult(false);		}
+}
+@Initialize
+{
+	if(noPlural){	SetDifficultyD(HARD); }
+	alternative(rank)
+	case(RANK_EASY){	SetCommonData("CurrentSC","Bird Sign \"Tune of Insufficient Light\"");}
+	case(RANK_NORM){	SetCommonData("CurrentSC","Vocal Sign \"Twilight Sparrow\"");}
+	case(RANK_HARD){	SetCommonData("CurrentSC","Vocal Sign \"Midnight Sparrow's Song\"");}
+	others         {	SetCommonData("CurrentSC","Night Sparrow \"Darkest Hour\"");}
+	
+	SetShotAutoDeleteClip(32,32,32,32);
+	
+	// boss = spawnBoss();
+	boss = spawnBossBlank("Mystia Lorelai");
+	renderMystiaIN(boss,1);
+	
+	MainTask;
+	
+
+}
+@MainLoop
+{
+
+	if(ObjEnemy_GetInfo(boss, INFO_LIFE) <= 0 && !finishing)
+	{
+		finishing = true;
+		DropItemsSpellEnd;
+		TBreakSpell([]);
+	}
+	else {
+		SetBossHitbox(boss,ex,ey);
+	}
+	frame++;
+	yield;
+}
+
+
+task MainTask {
+	ObjEnemy_SetDamageRate(boss,0,0);
+	ObjMove_SetDestAtFrame(boss, cx, cy-100, 60); //cy-120
+	
+	SetSpellCard;
+	
+	
+	ObjEnemyBossScene_StartSpell(objScene);
+	ObjEnemyBossScene_SetSpellTimer(objScene,timer*60); //5760
+	
+	//SetCaution;
+	// TSpellImmune;
+	Aura(boss,255,64,255,64);
+	SetMagicCircleAlpha(64,64);
+
+	wait(90);
+		
+	Tmovement(cx-120,cx+120, cy-90,cy-60, 60,240, [MOVE_PLAYERBIAS,2,0,MOVE_MAXSPEED,1.5] );
+	ObjEnemy_SetDamageRate(boss,drate,drate/3);
+	frame = 0;
+	
+	
+	TShoot;
+	
+}
+
+
+
+
+task TShoot{
+	wait(60);
+
+	let shot; 
+	
+	let gap;
+	let diff = rank();	
+	alternative(diff)
+	case(RANK_EASY){	gap=90;}
+	case(RANK_NORM){	gap=60;}
+	case(RANK_HARD){	gap=45;}
+	case(RANK_LUNA){	gap=25;}
+	others{ gap=20;}
+
+	
+	let count=0; let a0;
+	let fog = NightBlindA1(800,800,300, 0,0,300); //not active yet
+	
+	while(!Obj_IsDeleted(boss)){
+		
+		//Create familiars
+		ascent(i in 0..10){
+			let fam = SpawnFamiliarC1(ex,ey,"blue",150+50*diff);
+			// ObjMove_AddPatternA2(fam,0,3.5,15+15*i, -0.05, 0.015*sin(180*(i-5)), 1.5);
+			ObjMove_AddPatternA2(fam,0,3.5,15+15*i, -0.05, 0.55*sign(i-4.5)/cos(((|i-4.5|))), 1.25);
+			ObjMove_AddPatternA2(fam,90,NO_CHANGE,NO_CHANGE, -0.05, -0.55*sign(i-4.5)/cos(((|i-4.5|))), 1.25);
+			SE_Play(se_fam,100);
+			TFamShoot(fam);
+			//Each familiar's shots
+			task TFamShoot(fam){
+				wait(30); let shot; let fx; let fy; let fa; let off=0;
+				while(!Obj_IsDeleted(fam) && !isOffScreen(fam)){
+					fx = ObjMove_GetX(fam); fy = ObjMove_GetY(fam); fa = ObjMove_GetAngle(fam);
+					ascent(i in 0..3){
+						shot = CreateShotA2(fx,fy,0,fa+180+120*i+off, 0.005,1.5, SCALE_BLUE,5);
+						CheckShot(shot,30);
+						// ObjMove_AddPatternA2(shot,90,0,NO_CHANGE, 0.015,0,1.75);
+					}
+					ascent(i in 0..2){
+						ascent(j in -1..2){
+							shot = CreateShotA2(fx,fy,0,fa+90+i*180+25*j+off, 0.015,2, SCALE_RED,10);
+							CheckShot(shot,30);
+						}
+					}
+					wait(gap); //...,60,45,...
+					off += 5*gap;
+				}
+				Obj_Delete(fam);
+			}//end of familiars' shots
+			wait(3);
+		}
+		wait(30);
+		
+		//Tighten night blindness
+		ObjFog_SetTargAtFrameA2(fog,GetPlayerObjectID,100,255-isEasy*64,180);
+		// ObjFog_SetTargAtFrameA2(fog,GetPlayerObjectID,100,255,120);
+		SetAttackPose(POSE_SET);
+		SE_Play(se_charge2,100);
+		EffectBurstOutB2 (boss,2,175,2.5,"MUSIC",200,64,200);
+		EffectBurstInB2 (GetPlayerObjectID,2,120,3.5,"MUSIC",200,64,200);
+		
+		wait(120);
+		SetAttackPose(POSE_END);
+		wait(20);
+		
+		//Aimed wing of big shots
+		let row; let vary;
+		ascent(f in 0..300){
+			if(f%5==0){
+				a0 = GetAngleToPlayer(boss);
+				row = 2*sin(f/5*45);
+				ascent(i in 0..3){
+					vary = f/300*(|sin(f*720/300)|)*i/2;
+					shot = CreateShotA2(ex,ey, 3+4.5*vary,  a0+row*10*3/diff, -0.1, 1+3.5*vary,   LARGE_BLUE,10);
+				}
+				SE_Play(se_shot,60);
+			}
+			yield;
+		}
+
+		//Night blindness loosens
+		ObjFog_SetTargAtFrameA2(fog,GetPlayerObjectID,500,64,360); //240
+	
+		wait(180);
+	}
+	
+	
+	
+}
+
+

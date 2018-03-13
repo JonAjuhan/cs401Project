@@ -1,0 +1,144 @@
+let pathEffect_Aura = GetCurrentScriptDirectory ~ "../img/Aura.png";
+let pathEffect_Rainbow = GetCurrentScriptDirectory ~ "../img/rainbow_small.png";
+
+task Aura (objs,Rv,Gv,Bv,A) {
+	let ex = 0;
+	let ey = 0;
+	let ang = 0;
+	task AuraWave {
+		let obj = CreateSprite2(pathEffect_Aura, 24, [0, 0, 48, 48], [24, 32]);
+		ObjRender_SetBlendType(obj, BLEND_ADD_ARGB);
+		ObjRender_SetColor(obj, Rv, Gv, Bv);
+		ObjRender_SetAngleZ(obj, rand(-5, 5));
+		descent(i in 0..20) {
+			ObjRender_SetPosition(obj, ex, ey, NULL);
+			ObjRender_SetAlpha(obj, A*i/20);
+			ObjRender_SetScaleXYZ(obj, 1+1/3*cos(i*90/20), 3*cos(i*90/20), NULL);
+			yield;
+		}
+		Obj_Delete(obj);
+	}
+	task AuraOrb {
+		let obj = CreateSprite2(pathEffect_Aura, 24, [48, 0, 96, 48], [24, 40]);
+		ObjRender_SetBlendType(obj, BLEND_ADD_ARGB);
+		ObjRender_SetColor(obj, Rv, Gv, Bv);
+		ObjRender_SetAngleZ(obj, ang);
+		descent(i in 0..30) {
+			ObjRender_SetPosition(obj, ex, ey, NULL);
+			ObjRender_SetAlpha(obj, A*cos(i*90/30));
+			ObjRender_SetScaleXYZ(obj, 3/2*i/30, 3/2*i/30, NULL);
+			yield;
+		}
+		Obj_Delete(obj);
+	}
+	loop {
+		loop(6) {
+			if(GetEnemyBossSceneObjectID != ID_INVALID && length(GetEnemyBossObjectID()) > 0) {
+				//let boss = GetEnemyBossObjectID()[0];
+				ex = ObjMove_GetX(objs);
+				ey = ObjMove_GetY(objs);
+			}
+			yield;
+		}
+		if(GetEnemyBossSceneObjectID != ID_INVALID && length(GetEnemyBossObjectID()) > 0) {
+			AuraWave;
+			loop(4) { AuraOrb; ang+=360/4; }
+			ang+=37; ang%=360;
+		}
+	}
+}
+
+
+task AuraRainbow (objs,Rv,Gv,Bv) {
+//	let ex = 0;
+//	let ey = 0;
+	let ang = 0; let hiding = false;
+	task AuraWave {
+		let obj = CreateSprite2(pathEffect_Rainbow, 24, [0, 0, 512, 512], [256, 256]);
+		ObjRender_SetBlendType(obj, BLEND_ADD_ARGB);
+		ObjRender_SetColor(obj, Rv, Gv, Bv);
+		ObjRender_SetAngleZ(obj, rand(-5, 5));
+		descent(i in 0..60) {
+			ObjRender_SetPosition(obj, ex, ey, NULL);
+			ObjRender_SetAlpha(obj, 128-128*cos(i*6) );
+			ObjRender_SetScaleXYZ(obj, 1/3*cos(i*90/60), 1/2*cos(i*90/60), NULL);
+			yield;
+		}
+		Obj_Delete(obj);
+	}
+	task AuraHang {
+		let obj = CreateSprite2(pathEffect_Rainbow, 24, [0, 0, 512, 512], [256, 256]);
+		ObjRender_SetBlendType(obj, BLEND_ADD_ARGB);
+		ObjRender_SetColor(obj, Rv, Gv, Bv);
+		let i=0;
+		while(!Obj_IsDeleted(objs)) {
+			ObjRender_SetPosition(obj, ex, ey, NULL);
+			ObjRender_SetScaleXYZ(obj, 1/3+1/6*(1+sin(i*90/60)), 1/2+1/3*(1+sin(i*90/60)), NULL);
+			
+			if(getdatd("HideMagicCircle",false) || hiding){
+				if(!hiding){Hide(obj,128-64*cos(i*6));}
+			}else{			
+				ObjRender_SetAlpha(obj, 128-64*cos(i*6) );
+			}
+			yield; i++;
+		}
+		Obj_Delete(obj);
+	}
+
+	AuraHang;
+
+	
+	
+	
+	
+	task Hide(obj,a0){
+		hiding = true;
+		let fadetime = getdatd("HideMagicCircleTime",20);
+		descent(i in 0..fadetime){
+			ObjRender_SetAlpha(obj,a0*i/fadetime);
+			yield;
+		}
+		while(getdatd("HideMagicCircle",false)){
+			ObjRender_SetAlpha(obj,0);
+			yield;
+		}
+		fadetime = getdatd("HideMagicCircleTime",fadetime);
+		ascent(i in 0..fadetime){
+			ObjRender_SetAlpha(obj,a0*i/fadetime);
+			yield;
+		}
+		hiding = false;
+	}
+	
+	
+}
+
+
+
+
+// function CreateSprite2 ( let texture, let priorityInt, let rects, let center ) {
+	// // rects = 1-dimensional, size 4
+	// let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	// ObjPrim_SetTexture(obj, texture);
+	// Obj_SetRenderPriorityI(obj, priorityInt);
+	// ObjSprite2D_SetSourceRect(obj, rects[0], rects[1], rects[2], rects[3]);
+	// ObjSprite2D_SetDestRect(obj, -center[0], -center[1], rects[2]-rects[0]-center[0], rects[3]-rects[1]-center[1]);
+	// return obj;
+// }
+
+function ObjRender_SetPosition2D ( let obj, let posX, let posY ) {
+	ObjRender_SetX(obj, posX);
+	ObjRender_SetY(obj, posY);
+}
+
+function ObjRender_SetScaleXY ( let obj, let scaleX, let scaleY ) {
+	ObjRender_SetScaleX(obj, scaleX);
+	ObjRender_SetScaleY(obj, scaleY);
+}
+
+function GetBossAuraHue (  ) {
+return GetCommonData("Boss Aura Hue", 0);
+}
+function SetBossAuraHue ( let degree ) {
+SetCommonData("Boss Aura Hue", degree);
+}

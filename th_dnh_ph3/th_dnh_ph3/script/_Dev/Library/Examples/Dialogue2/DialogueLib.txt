@@ -1,0 +1,909 @@
+
+
+let IsDialogueEventActive = false;
+
+let ForceDialogueOff = false;
+let ForceDialogueIntro = false;
+
+let IsEventActive = false;
+
+let IsCurrentDialogueActive = false;
+let CurrentTextAppearCount = 0;
+
+let D_DEBUG = true;
+
+let TextBox = GetCurrentScriptDirectory~"box.png";
+
+let RedText = "(TA255|64|64)(BA192|32|32)";
+
+let PlayerName = "Reimu";
+let PlayerText = "(SX-8)(SF40)(OS4)(TA172|172|255)(BA64|64|112)"~PlayerName~"(SX-10)(SF50)(OS5)(RR)";
+PlayerText = "(TA172|172|255)(BA144|144|224)";
+
+let EnemyName = "Reimu";
+let EnemyText =  "(SX-8)(SF40)(OS4)(TA255|172|172)(BA112|64|64)(SX-10)(SF50)(OS5)(RR)";
+EnemyText = "(TA255|172|172)(BA112|64|64)";
+
+let NameTab = "   ";
+
+
+
+
+function CreateEventTW1(imgs, chsrc, imgch, type, str){
+	// IsEventActive = true;
+	
+	//text 50
+	//border 5
+	
+	
+	
+	let Player = CreateCutin(imgs[0]);
+	let pcord = [32, GetScreenHeight/12*11];
+	let pxm = cos(-30);
+	let pym = sin(-30);
+	ObjRender_SetPosition(Player, pcord[0], pcord[1], 0);
+	
+	let Enemy = CreateCutin(imgs[1]);
+	let ecord = [GetScreenWidth-32, GetScreenHeight/12*11];
+	let exm = cos(180+30);
+	let eym = sin(180+30);
+	ObjRender_SetPosition(Enemy, ecord[0], ecord[1], 0);
+	
+	let Box = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjRender_SetBlendType(Box, BLEND_ALPHA);
+	Obj_SetRenderPriority(Box, 0.91);
+	ObjPrim_SetTexture(Box, TextBox);
+	ObjSprite2D_SetSourceRect(Box, 0, 0, 2, 2);
+	ObjSprite2D_SetDestRect(Box, -256, -40, 256, 40);
+	ObjRender_SetColor(Box, 0, 0, 0);
+	ObjRender_SetAlpha(Box, 128);
+	ObjRender_SetPosition(Box, GetScreenWidth/2, GetScreenHeight/9*8, 0);
+	
+	let slen = length(str);
+	
+	let calphs = 0;
+	
+	
+	let PlayerFace = CreateCutin(chsrc[0]~imgch[0][0]~".png");
+	ObjRender_SetPosition(PlayerFace, pcord[0], pcord[1], 0);
+	
+	let EnemyFace = CreateCutin(chsrc[1]~imgch[0][1]~".png");
+	ObjRender_SetPosition(EnemyFace, ecord[0], ecord[1], 0);
+	
+	ascent(i in 0..20){
+		let mod = cos(90/19*i);
+	
+		let cal = 255-255*mod;
+		let spd = 7*mod;
+		
+		ObjRender_SetAlpha(Player, cal);
+		ObjRender_SetAlpha(Enemy, cal);
+		
+		ObjRender_SetAlpha(PlayerFace, cal);
+		ObjRender_SetAlpha(EnemyFace, cal);
+		
+		ObjRender_SetScaleX(Box, 1-mod);
+		
+		
+		pcord[0] = pcord[0]+pxm*spd;
+		pcord[1] = pcord[1]+pym*spd;
+		
+		ecord[0] = ecord[0]+exm*spd;
+		ecord[1] = ecord[1]+eym*spd;
+		
+		ObjRender_SetPosition(Player, pcord[0], pcord[1], 0);
+		ObjRender_SetPosition(Enemy, ecord[0], ecord[1], 0);
+		
+		ObjRender_SetPosition(PlayerFace, pcord[0], pcord[1], 0);
+		ObjRender_SetPosition(EnemyFace, ecord[0], ecord[1], 0);
+
+		yield;
+	}
+	
+	CreateDialogueFromString(80, GetScreenHeight/9*7, str);
+	
+	let LastType = -1;
+	ascent(i in 0..slen){
+		
+		ObjPrim_SetTexture(PlayerFace, chsrc[0]~imgch[i][0]~".png");
+		ObjPrim_SetTexture(EnemyFace, chsrc[1]~imgch[i][1]~".png");
+		let curType = type[i];
+		
+		let m1 = 1;
+		let m2 = 1;
+		
+		if(curType == 0){
+			m2 = -1;
+		}else if(curType == 1){
+			m1 = -1;
+		}
+		
+		if(LastType == -1){
+			m2 = 0;
+		}
+		
+		
+		let col = max(127, 127+128*m1);
+		ObjRender_SetColor(Player, col, col, col);
+		ObjRender_SetColor(PlayerFace, col, col, col);
+		col = max(127, 127+128*m2);
+		ObjRender_SetColor(Enemy, col, col, col);
+		ObjRender_SetColor(EnemyFace, col, col, col);
+		
+		if(curType == LastType){
+			m1 = 0;
+			m2 = 0;
+		}
+		
+		LastType = curType;
+		
+		ascent(i in 0..20){
+		
+			let spd = 4*cos(90/19*i);
+		
+			pcord[0] = pcord[0]+pxm*spd*m1;
+			pcord[1] = pcord[1]+pym*spd*m1;
+			
+			ecord[0] = ecord[0]+exm*spd*m2;
+			ecord[1] = ecord[1]+eym*spd*m2;
+			
+			ObjRender_SetPosition(Player, pcord[0], pcord[1], 0);
+			ObjRender_SetPosition(Enemy, ecord[0], ecord[1], 0);
+			
+			ObjRender_SetPosition(PlayerFace, pcord[0], pcord[1], 0);
+			ObjRender_SetPosition(EnemyFace, ecord[0], ecord[1], 0);
+			
+			
+			yield;
+		}
+		while(IsCurrentDialogueActive){
+			yield;
+		}
+		yield;
+	}
+	
+	ascent(i in 0..15){
+		let mod = sin(90/14*i);
+	
+		let cal = 255-255*mod;
+		let spd = 8*mod;
+		
+		ObjRender_SetAlpha(Player, cal);
+		ObjRender_SetAlpha(Enemy, cal);
+		
+		ObjRender_SetAlpha(PlayerFace, cal);
+		ObjRender_SetAlpha(EnemyFace, cal);
+		
+		ObjRender_SetScaleXYZ(Box, 1+1*mod, 1-1*mod, 1);
+		
+		
+		pcord[0] = pcord[0]-pxm*spd;
+		pcord[1] = pcord[1]-pym*spd;
+		
+		ecord[0] = ecord[0]-exm*spd;
+		ecord[1] = ecord[1]-eym*spd;
+		
+		ObjRender_SetPosition(Player, pcord[0], pcord[1], 0);
+		ObjRender_SetPosition(Enemy, ecord[0], ecord[1], 0);
+		ObjRender_SetPosition(PlayerFace, pcord[0], pcord[1], 0);
+		ObjRender_SetPosition(EnemyFace, ecord[0], ecord[1], 0);
+
+		yield;
+	}
+	
+	Obj_Delete(Player);
+	Obj_Delete(Enemy);
+	Obj_Delete(PlayerFace);
+	Obj_Delete(EnemyFace);
+	Obj_Delete(Box);
+	
+	
+	// end
+	
+	function CreateCutin(img){
+		// if(D_DEBUG){LoadTexture(img);}}
+	
+		let Player = ObjPrim_Create(OBJ_SPRITE_2D);
+		ObjRender_SetBlendType(Player, BLEND_ALPHA);
+		Obj_SetRenderPriority(Player, 0.9);
+		ObjPrim_SetTexture(Player, img);
+		let test = [GetTextureWidth(img), GetTextureHeight(img)];
+		WriteLog(test);
+		ObjSprite2D_SetSourceRect(Player, 0, 0, test[0]-1, test[1]-1);
+		ObjSprite2D_SetDestRect(Player, -(test[0]/2), -(test[1]/2), (test[0]/2), (test[1]/2));
+		ObjRender_SetColor(Player, 128, 128, 128);
+		ObjRender_SetAlpha(Player, 0);
+		return Player;
+	}
+}
+
+
+
+function PlaySoundDS1(name){
+	//NotifyEventAll(EV_PLAY_SOUND, [name, "100", "1"]);
+}
+
+function GetFirstValueAsNumber(arr){
+	return atoi(arr[0..1][0]);
+}
+
+function GetFirstValueFromString(str, num){
+	return ator(GetNumbersFromString(str, num)[0..1][0]);
+}
+
+function GetNumbersFromString(str, num){
+	return SplitString(str[num..length(str)], "|");
+}
+
+
+task ObjectEntrance(obj, type, len){
+	//FadeInObject first because that is a task; the other anim should be a func to yield before lowering count
+	
+	let sound = Obj_GetValueD(obj, "SoundEffectName", "");
+	if(sound!=""){
+		PlaySoundDS1(sound);
+	}
+	alternative(type)
+	case(0){ObjRender_SetAlpha(obj, 255);}
+	case(1){FadeInObject(obj, len, 255);}
+	case(2){ObjRender_SetAlpha(obj, 255);GrowObject(obj, 0, 1, len);}
+	case(3){FadeInObject(obj, len, 255);GrowObject(obj, 2, 1, len);}
+	case(4){FadeInObject(obj, len*0.75, 255);GrowObjectWhip(obj, 2, 1, len);}
+	CurrentTextAppearCount--;
+}
+
+
+task ObjectAnimation(obj, type, arb){
+	
+	alternative(type)
+	case(0){DoNothing;}
+	case(1){DoShaking;}
+	case(2){DoWavy;}
+	case(3){DoUnsettle;}
+	others{Debug_WriteLog("Failed to receive proper type in \"ObjectAnimation\". It was: "~IntToString(type));}
+	Obj_Delete(obj);
+	
+	function DoNothing{
+		while(ContinueOperation){yield;}
+	}
+	function DoShaking{
+		let bx = ObjRender_GetX(obj);
+		let by = ObjRender_GetY(obj);
+		let inten = arb[0];
+		while(ContinueOperation){
+			ObjRender_SetX(obj, bx+rand(-inten, inten));
+			ObjRender_SetY(obj, by+rand(-inten, inten));
+			yield;
+		}
+	}
+	function DoWavy{
+		let bx = ObjRender_GetX(obj);
+		let by = ObjRender_GetY(obj);
+		let inten = arb[0];
+		let rate = arb[1];
+		let dir = arb[2];
+		let rad = 0;
+		let xm = cos(dir);
+		let ym = sin(dir);
+		let radinc = (bx+by)%360; 
+		while(ContinueOperation){
+			ObjRender_SetX(obj, bx+rad*xm);
+			ObjRender_SetY(obj, by+rad*ym);
+			rad = inten*sin(radinc);
+			radinc+=rate;
+			yield;
+		}
+	}
+	function DoUnsettle{
+		let bx = ObjRender_GetX(obj);
+		let by = ObjRender_GetY(obj);
+		let inten = arb[0];
+		let rnd = truncate(rand(0, 1200));
+		while(ContinueOperation){
+			rnd--;
+			if(rnd == 0){
+				ObjRender_SetX(obj, bx+rand(-inten, inten));
+				ObjRender_SetY(obj, by+rand(-inten, inten));
+			}else if(rnd == -3){
+				ObjRender_SetX(obj, bx);
+				ObjRender_SetY(obj, by);
+				rnd = truncate(rand(1200, 2000));
+			}
+			yield;
+		}
+	}
+
+	function ContinueOperation{
+		return !ForceDialogueOff&&IsCurrentDialogueActive;
+	}
+}
+
+
+
+task FadeInObject(obj, len, ealph){
+	ascent(i in 0..len){
+		ObjRender_SetAlpha(obj, ealph/len*i);
+		yield;
+	}
+	ObjRender_SetAlpha(obj, ealph);
+}
+
+function GrowObject(obj, sscl, escl, len){
+	let diff = escl-sscl;
+	ascent(i in 0..len+1){
+		let scl = sscl+diff/len*(i);
+		ObjRender_SetScaleXYZ(obj, scl, scl, 1);
+		yield;
+	}
+	ObjRender_SetScaleXYZ(obj, escl, escl, 1);
+}
+
+function GrowObjectWhip(obj, sscl, escl, len){
+	let diff = escl-sscl;
+	ascent(i in 0..len+1){
+		let scl = sscl+diff*sin(10+80*i/len);
+		ObjRender_SetScaleXYZ(obj, scl, scl, 1);
+		yield;
+	}
+	ObjRender_SetScaleXYZ(obj, escl, escl, 1);
+}
+
+
+function WordWrapStringA1(str){
+	
+}
+
+
+task CreateDialogueFromString(x, y, str){
+	IsDialogueEventActive = true;
+	
+	
+	
+	///the text and border size is large because it is scaled down by tfs, to make it slightly more crisp
+	
+	let TextSize = 50; //text size
+	let TextSpace = 0; //does nothing? atm
+	let tfs = 0.4; //scale multiplier, only manually done atm cuz testing
+	let TextColorTop = [255, 255, 255];
+	let TextColorBot = [192, 192, 192];
+	let TextDelay = 0; //delay between characters
+	let TextSoundName = ""; //calls PlaySoundDS1 with this as the parameter; may need to change said func
+	
+	
+	let BorderType = BORDER_FULL;
+	let BorderReal = BorderType; //ignore this one
+	let BorderColor = [0, 0, 0];
+	let BorderSize = 5;
+	
+	let xspacing = -10; 
+	let yspacing = -3;
+	
+	let Font = "Source Code ProDNHEDIT"; // put in the font type (strings)
+	let FontBold = 0; //0 - false, 1 - true
+	
+	let WaitType = [3, 22]; //how does the text advance
+	
+	let IntroType = 1; //how do the characters enter the scene
+	let IntroTime = 10; //how fast do they enter
+	
+	let IdleType = 0; //what do the characters do once they are done with intro
+	let IdleArbitrary = [0]; //an array of arbitrary values that is determined on the type
+	
+	let CutinAnim = 0; //unused atm
+	
+	let obj = ID_INVALID; //testing stuff, remove later or replace x,y in parameters with this
+	let BaseCoord = [ObjRender_GetX(obj), ObjRender_GetY(obj)];
+
+	BaseCoord = [x, y];
+	
+	//Text file coordinates
+	let tx = 0;
+	let ty = 0;
+	
+	let delayInt = 0;
+	let delayReal = 0;
+	
+	let FileYSize = length(str);
+	
+	IsCurrentDialogueActive = true;
+	
+	ascent(i in 0..FileYSize){
+		if(ForceDialogueOff){break;}
+		ty = i;
+		let line = str[ty] ~ "()";
+		let linelen = length(line)-2;
+	
+		Debug_WriteLog("Convo Block Detected, line "~IntToString(ty)~"/"~IntToString(FileYSize));
+		
+		let codestr = "";
+		let dx = 0;
+		
+		let ly = 0;
+		let bdelay = 0;
+		
+		let TotalXSpace = 0;
+		let TotalYSpace = 0;
+		
+		let LargestTextSize = 0;
+		tx = 0;
+		while(tx < linelen){
+			let RealTextSize = TextSize*tfs;
+			
+			if(RealTextSize > LargestTextSize){LargestTextSize = RealTextSize;}
+			let lchar = line[tx..tx+1];
+			//Debug_WriteLog(lchar);
+			if(lchar != "("){
+				if(lchar != " "){
+					bdelay+=TextDelay;
+					CreateLetter(lchar, TotalXSpace, TotalYSpace, bdelay);
+				}
+				TotalXSpace += RealTextSize + xspacing;
+				dx++;
+			}else{
+				codestr = "";
+				tx++; // ignore the initial (
+				while(line[tx..tx+1]!=")"){ // No need to write the ) in the code
+					codestr = codestr~line[tx..tx+1];
+					tx++;
+				}
+				//if(line[tx+1..tx+2]== " "){tx++;} //Allow a space grace
+				
+				//Debug_WriteLog(codestr);
+				let FirstChar = codestr[0..1];
+				let SecondChar = codestr[1..2];
+				
+				if(FirstChar == "D"){
+					//Default keys
+				}else if(FirstChar == "R"){
+					if(TotalXSpace > 0){
+						ly++;
+						TotalYSpace += LargestTextSize + yspacing;
+						LargestTextSize = 0;
+						TotalXSpace = 0;
+					}
+				}else if(FirstChar == "Z"){
+					let locidl = GetNumbersFromString(codestr, 5);
+					let nloc = codestr[1..5];
+					
+					let tloc = [];
+					ascent(i in 1..length(locidl)){
+						tloc = tloc~[ator(locidl[i..i+1][0])];
+					}
+					
+					if(nloc == "IDLE"){
+						IdleType = round(GetFirstValueAsNumber(locidl));
+						if(length(locidl)>1){
+							IdleArbitrary = tloc;
+						}
+					}else if(nloc == "ENTR"){
+						IntroType = round(GetFirstValueAsNumber(locidl));
+					}else if(nloc == "CANM"){
+						CutinAnim = round(GetFirstValueAsNumber(locidl));
+					}else if(nloc == "FONT"){
+						Font = locidl[0..1][0];
+					}else if(nloc == "TIME"){
+						WaitType = locidl;
+					}
+				}else if(FirstChar == "I"){
+					//set the specified objects side
+				}else if(FirstChar == "P"){
+					//set the specified objects side
+				}else if(FirstChar == "S"){
+					if(SecondChar == "F"){
+						TextSize = GetFirstValueFromString(codestr, 2);
+					}else if(SecondChar == "X"){
+						xspacing = GetFirstValueFromString(codestr, 2);
+					}else if(SecondChar == "Y"){
+						yspacing = GetFirstValueFromString(codestr, 2);
+					}else if(SecondChar == "D"){
+						TextDelay = GetFirstValueFromString(codestr, 2);
+					}else if(SecondChar == "T"){
+						IntroTime = GetFirstValueFromString(codestr, 2);
+					}else if(SecondChar == "E"){
+						TextSoundName = codestr[2..length(codestr)-1];
+					}else if(SecondChar == "S"){
+						tfs = GetFirstValueFromString(codestr, 2);
+					}else if(SecondChar == "Q"){
+						bdelay = GetFirstValueFromString(codestr, 2);
+					}
+				}else if(FirstChar == "T"){
+					if(SecondChar == "A"){
+						TextColorTop = GetNumbersFromString(codestr, 2);
+					}else if(SecondChar == "R"){
+						TextColorTop[0] = GetFirstValueFromString(codestr, 2);
+					}else if(SecondChar == "G"){
+						TextColorTop[1] = GetFirstValueFromString(codestr, 2);
+					}else if(SecondChar == "B"){
+						TextColorTop[2] = GetFirstValueFromString(codestr, 2);
+					}
+				}else if(FirstChar == "B"){
+					if(SecondChar == "A"){
+						TextColorBot = GetNumbersFromString(codestr, 2);
+					}else if(SecondChar == "R"){
+						TextColorBot[0] = GetFirstValueFromString(codestr, 2);
+					}else if(SecondChar == "G"){
+						TextColorBot[1] = GetFirstValueFromString(codestr, 2);
+					}else if(SecondChar == "B"){
+						TextColorBot[2] = GetFirstValueFromString(codestr, 2);
+					}
+				}else if(FirstChar == "O"){
+					if(SecondChar == "S"){
+						BorderSize = GetFirstValueFromString(codestr, 2);
+						if(BorderSize <= 0){
+							BorderReal = BORDER_NONE;
+						}else{BorderReal = BorderType;}
+					}else if(SecondChar == "T"){
+						let newtype = GetFirstValueFromString(codestr, 2);
+						alternative(newtype)
+						case(0){BorderType = BORDER_NONE;}
+						case(1){BorderType = BORDER_FULL;}
+						case(2){BorderType = BORDER_SHADOW;}
+					}else if(SecondChar == "A"){
+						BorderColor = GetNumbersFromString(codestr, 2);
+					}else if(SecondChar == "R"){
+						BorderColor[0] = GetFirstValueFromString(codestr, 2);
+					}else if(SecondChar == "G"){
+						BorderColor[1] = GetFirstValueFromString(codestr, 2);
+					}else if(SecondChar == "B"){
+						BorderColor[2] = GetFirstValueFromString(codestr, 2);
+					}
+				}else{
+					Debug_WriteLog("Conversation Comment: "~codestr);
+				}
+			}
+			tx++;
+		}
+		while(CurrentTextAppearCount > 0){dsyield;}
+		loop(3){dsyield;}
+		DoKeySettings;
+		IsCurrentDialogueActive = false;
+		dsyield;
+		IsCurrentDialogueActive = true;
+		ty++;
+	}
+	IsCurrentDialogueActive = false;
+	IsDialogueEventActive = false;
+	
+	function CreateLetter(str, x, y, delay){
+	
+		x = round(x-TextSize/2);
+		y = round(y);
+		//MakeLetter((1+BorderSize/TextSize), BorderColor);
+		//MakeLetter(0, []);
+		MakeLetter(0, BorderColor);
+		
+		function MakeLetter(siz, bcol){
+			CurrentTextAppearCount++;
+			let obj = ObjText_Create;
+			Obj_SetRenderPriority(obj, 0.92);
+			ObjText_SetText(obj, str);
+			ObjText_SetFontSize(obj, TextSize);
+			ObjText_SetFontType(obj, Font);
+			ObjText_SetFontBold(obj, FontBold);
+			ObjText_SetFontColorTop(obj, TextColorTop[0], TextColorTop[1], TextColorTop[2]);
+			ObjText_SetFontColorBottom(obj, TextColorBot[0], TextColorBot[1], TextColorBot[2]);
+			Obj_SetValue(obj, "SoundEffectName", TextSoundName);
+			
+			ObjText_SetMaxWidth(obj, TextSize);
+			ObjText_SetMaxHeight(obj, TextSize*2);
+			ObjText_SetHorizontalAlignment(obj, ALIGNMENT_CENTER);
+			
+			
+			ObjRender_SetX(obj, BaseCoord[0]+x);
+			ObjRender_SetY(obj, BaseCoord[1]+y);
+			ObjRender_SetScaleXYZ(obj, tfs, tfs, 1);
+			ObjRender_SetAlpha(obj, 0);
+			
+			//ObjText_SetFontBorderType(obj, BORDER_NONE);
+			ObjText_SetFontBorderType(obj, BorderReal);
+			if(BorderSize > 0){
+			//if(siz > 0){
+				ObjText_SetFontBorderWidth(obj, BorderSize);
+				ObjText_SetFontBorderColor(obj, bcol[0], bcol[1], bcol[2]);
+				//ObjText_SetMaxWidth(obj, TextSize*siz);
+				//ObjText_SetMaxHeight(obj, TextSize*siz*2);
+				//ObjText_SetFontSize(obj, TextSize*siz);
+				//ObjRender_SetX(obj, BaseCoord[0]+x+TextSize/2-TextSize*siz/2);
+				//ObjRender_SetY(obj, BaseCoord[1]+y-TextSize*siz/2);
+				//ObjText_SetFontColorTop(obj, bcol[0], bcol[1], bcol[2]);
+				//ObjText_SetFontColorBottom(obj, bcol[0], bcol[1], bcol[2]);
+			}
+			
+			
+			LetterFunction(IntroType, IntroTime, IdleType, IdleArbitrary);
+			
+			
+			task LetterFunction(locint, locintt, locanim, locarb){
+				loop(delay){if(ForceDialogueOff){break;}yield;}
+				if(ForceDialogueOff){Obj_Delete(obj); CurrentTextAppearCount--; return;}
+				ObjectEntrance(obj, locint, locintt); 
+				ObjectAnimation(obj, locanim, locarb);
+			}
+		}
+	}
+
+	
+	function DoKeySettings{
+		let locData = [];
+		
+		ascent(i in 0..length(WaitType)){
+			locData = locData ~ [atoi(WaitType[i])];
+		}
+		
+		Debug_WriteLog(locData);
+		let type = locData[0];
+		Debug_WriteLog(type);
+		if(type == 0){
+			GetPlayerInput;
+		}else if(type == 1){
+			loop(locData[1]){dsyield;}
+		}else if(type == 2){
+			let ctr = 0;
+			while(GetVirtualKeyState(VK_SHOT)!=KEY_PUSH && ctr < locData[1]){
+				ctr++;
+				dsyield;
+			}
+		}else if(type == 3){
+			loop(locData[1]){dsyield;}
+			GetPlayerInput;
+		}else if(type == 4){
+			loop{dsyield;}
+		}
+		
+		
+		function GetPlayerInput{
+			while(GetVirtualKeyState(VK_SHOT)!=KEY_PUSH){
+				dsyield;
+			}
+		}
+	}
+}
+
+
+
+
+task CreateDialogueEventA1(file){
+	IsDialogueEventActive = true;
+	
+	let TextSize = 13;
+	let TextSpace = 0;
+	let TextColorTop = [244, 244, 244];
+	let TextColorBot = [164, 164, 164];
+	let TextDelay = 0.8;
+	
+	let BorderType = BORDER_FULL;
+	let BorderReal = BorderType;
+	let BorderColor = [16, 16, 16];
+	let BorderSize = 1;
+	
+	let xspacing = -3;
+	let yspacing = 0;
+	
+	let Font = "Source Code ProDNHEDIT";
+	let FontBold = 0;
+	
+	let WaitType = 0;
+	
+	let IntroType = 0;
+	let IntroTime = 16;
+	
+	let IdleType = 0;
+	let IdleArbitrary = [1, 1, 1];
+	
+	let CutinAnim = 0;
+	
+	let BaseCoord = [48, 384];
+	
+	//Text file coordinates
+	let tx = 0;
+	let ty = 0;
+	
+	let delayInt = 0;
+	let delayReal = 0;
+	
+	let ConvoFile = ObjFile_Create(OBJ_FILE_TEXT);
+	ObjFile_Open(ConvoFile, file);
+	
+	let FileYSize = ObjFileT_GetLineCount(ConvoFile);
+	
+	IsCurrentDialogueActive = true;
+	
+	
+	while(ty < FileYSize){
+		let line = ObjFileT_GetLineText(ConvoFile, ty) ~ "()";
+		Debug_WriteLog(line);
+		if(line[0..1] == "#"){ // New Conversation block detected
+			Debug_WriteLog("Convo Block Detected, line "~IntToString(ty)~"/"~IntToString(FileYSize));
+			
+			let codestr = "";
+			let dx = 0;
+			
+			let ly = 0;
+			let bdelay = 0;
+			
+			let TotalYSpace = 0;
+			
+			loop{
+				ty+=1;
+				line = ObjFileT_GetLineText(ConvoFile, ty)~"()";
+				Debug_WriteLog("Checking line: " ~ IntToString(ty));
+				if(line[0..1] == "#" || ty > FileYSize){Debug_WriteLog("Block End.");break;}
+				
+				let linelen = length(line)-2;
+				let TotalXSpace = 0;
+				let LargestTextSize = TextSize;
+				
+				while(tx < linelen){
+					if(TextSize > LargestTextSize){LargestTextSize = TextSize;}
+					let lchar = line[tx..tx+1];
+					Debug_WriteLog(lchar);
+					if(lchar != "("){
+						bdelay+=TextDelay;
+						CreateLetter(lchar, TotalXSpace, TotalYSpace, bdelay);
+						TotalXSpace += TextSize + xspacing;
+						dx++;
+					}else{
+						codestr = "";
+						tx++; // ignore the initial ( 
+						while(line[tx..tx+1]!=")"){ // No need to write the ) in the code
+							codestr = codestr~line[tx..tx+1];
+							tx++;
+						}
+						if(line[tx+1..tx+2]== " "){tx++;} //Allow a space grace
+						
+						Debug_WriteLog(codestr);
+						let FirstChar = codestr[0..1];
+						let SecondChar = codestr[1..2];
+						
+						if(FirstChar == "D"){
+							//Default keys
+						}else if(FirstChar == "Z"){
+							let locidl = GetNumbersFromString(codestr, 5);
+							let nloc = codestr[1..5];
+							
+							let tloc = [];
+							ascent(i in 1..length(locidl)){
+								tloc = tloc~[ator(locidl[i..i+1][0])];
+							}
+							
+							if(nloc == "IDLE"){
+								IdleType = round(GetFirstValueAsNumber(locidl));
+								if(length(locidl)>1){
+									IdleArbitrary = tloc;
+								}
+							}else if(nloc == "ENTR"){
+								IntroType = round(GetFirstValueAsNumber(locidl));
+							}else if(nloc == "CANM"){
+								CutinAnim = round(GetFirstValueAsNumber(locidl));
+							}else if(nloc == "FONT"){
+								Font = locidl[0..1][0];
+							}else if(nloc == "TIME"){
+								WaitType = round(GetFirstValueAsNumber(locidl));
+							}
+						}else if(FirstChar == "I"){
+							//set the specified objects side
+						}else if(FirstChar == "P"){
+							//set the specified objects path
+						}else if(FirstChar == "S"){
+							if(SecondChar == "X"){
+								xspacing = GetFirstValueFromString(codestr, 2);
+							}else if(SecondChar == "Y"){
+								yspacing = GetFirstValueFromString(codestr, 2);
+							}else if(SecondChar == "D"){
+								TextDelay = GetFirstValueFromString(codestr, 2);
+							}else if(SecondChar == "T"){
+								IntroTime = GetFirstValueFromString(codestr, 2);
+							}
+						}else if(FirstChar == "T"){
+							if(SecondChar == "A"){
+								TextColorTop = GetNumbersFromString(codestr, 2);
+							}else if(SecondChar == "R"){
+								TextColorTop[0] = GetFirstValueFromString(codestr, 2);
+							}else if(SecondChar == "G"){
+								TextColorTop[1] = GetFirstValueFromString(codestr, 2);
+							}else if(SecondChar == "B"){
+								TextColorTop[2] = GetFirstValueFromString(codestr, 2);
+							}
+						}else if(FirstChar == "B"){
+							if(SecondChar == "A"){
+								TextColorBot = GetNumbersFromString(codestr, 2);
+							}else if(SecondChar == "R"){
+								TextColorBot[0] = GetFirstValueFromString(codestr, 2);
+							}else if(SecondChar == "G"){
+								TextColorBot[1] = GetFirstValueFromString(codestr, 2);
+							}else if(SecondChar == "B"){
+								TextColorBot[2] = GetFirstValueFromString(codestr, 2);
+							}
+						}else if(FirstChar == "O"){
+							if(SecondChar == "S"){
+								BorderSize = GetFirstValueFromString(codestr, 2);
+								if(BorderSize <= 0){
+									BorderReal = BORDER_NONE;
+								}else{BorderReal = BorderType;}
+							}else if(SecondChar == "T"){
+								let newtype = GetFirstValueFromString(codestr, 2);
+								alternative(newtype)
+								case(0){BorderType = BORDER_NONE;}
+								case(1){BorderType = BORDER_FULL;}
+								case(2){BorderType = BORDER_SHADOW;}
+							}else if(SecondChar == "A"){
+								BorderColor = GetNumbersFromString(codestr, 2);
+							}else if(SecondChar == "R"){
+								BorderColor[0] = GetFirstValueFromString(codestr, 2);
+							}else if(SecondChar == "G"){
+								BorderColor[1] = GetFirstValueFromString(codestr, 2);
+							}else if(SecondChar == "B"){
+								BorderColor[2] = GetFirstValueFromString(codestr, 2);
+							}
+						}else{
+							Debug_WriteLog("Conversation Comment: "~codestr);
+						}
+					}
+					tx++;
+				}
+				if(TotalXSpace > 0){
+					ly++;
+					TotalYSpace += LargestTextSize + yspacing;
+				}
+				tx = 0;
+				dx = 0;
+			}
+			while(CurrentTextAppearCount > 0){yield;}
+			loop(3){yield;}
+			while(GetVirtualKeyState(VK_SHOT)!=KEY_PUSH){
+				yield;
+			}
+			IsCurrentDialogueActive = false;
+			yield;
+			IsCurrentDialogueActive = true;
+		}
+		ty++;
+	}
+	Obj_Delete(ConvoFile);
+	
+	function CreateLetter(str, x, y, delay){
+		CurrentTextAppearCount++;
+		let obj = ObjText_Create;
+		Obj_SetRenderPriority(obj, 0.9);
+		ObjText_SetText(obj, str);
+		ObjText_SetFontType(obj,Font);
+		ObjText_SetFontBold(obj, FontBold);
+		ObjText_SetFontColorTop(obj, TextColorTop[0], TextColorTop[1], TextColorTop[2]);
+		ObjText_SetFontColorBottom(obj, TextColorBot[0], TextColorBot[1], TextColorBot[2]);
+		
+		ObjText_SetFontBorderType(obj, BorderReal);
+		ObjText_SetFontBorderWidth(obj, BorderSize);
+		ObjText_SetFontBorderColor(obj, BorderColor[0], BorderColor[1], BorderColor[2]);
+		
+		ObjRender_SetX(obj, BaseCoord[0]+x);
+		ObjRender_SetY(obj, BaseCoord[1]+y);
+		ObjRender_SetAlpha(obj, 0);
+		
+		LetterFunction(IntroType, IntroTime, IdleType, IdleArbitrary);
+		
+		
+		task LetterFunction(locint, locintt, locanim, locarb){
+			loop(delay){yield;}
+			ObjectEntrance(obj, locint, locintt); 
+			ObjectAnimation(obj, locanim, locarb);
+		}
+		
+	}
+}
+
+
+
+
+function dsyield{
+	if(ForceDialogueOff){break;}else{yield;}
+}
+
+
+function Debug_WriteLog(str){
+	if(D_DEBUG){WriteLog(str);}
+}
+
+
+
+
+

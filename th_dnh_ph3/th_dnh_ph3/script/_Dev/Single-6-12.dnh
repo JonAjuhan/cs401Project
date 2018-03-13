@@ -1,0 +1,142 @@
+#TouhouDanmakufu[Single]
+#ScriptVersion[3]
+#Title["Star Road \"Great Filter\""]
+#Text["..."] 
+#BGM["./bgm/bgm - SSS Boss6.ogg"]
+#System["./system/Default_System.txt"]
+#Background["./system/Background_Sky.txt"]
+
+#include "./Index.txt"
+
+let timer = 37; //37
+
+
+let shoot=true;
+
+@Event
+{
+	alternative(GetEventType())
+	case(EV_REQUEST_LIFE)
+	{
+		SetScriptResult(2000);
+	}
+	case(EV_REQUEST_SPELL_SCORE){
+        SetScriptResult(5000000);
+    }
+	case(EV_REQUEST_IS_DURABLE_SPELL) {
+		SetScriptResult(true);
+	}
+//	case(EV_REQUEST_IS_LAST_SPELL){
+//		SetScriptResult(true);
+//	}
+	
+	case(EV_REQUEST_TIMER) { SetScriptResult(timer*60); }
+}
+@Initialize
+{
+	SetCommonData("CurrentSC","Star Road \"Great Filter\"");
+	SetCommonData("Difficulty","Lunatic");
+	
+	boss = spawnBoss();
+	
+	ObjEnemy_SetDamageRate(boss,0,0);
+	//SetShotAutoDeleteClip(64,96,64,64);
+	SetShotAutoDeleteClip(16,16,16,16);
+	//SetShotAutoDeleteClip(32,32,32,32);
+	
+	MainTask;
+	
+
+}
+@MainLoop
+{
+
+	if(ObjEnemy_GetInfo(boss, INFO_LIFE) <= 0 && !finishing)
+	{
+		finishing = true;
+		TBreakSpell([]);
+	}
+	else {
+		SetBossHitbox(boss,ex,ey);
+	}
+	frame++;
+	yield;
+}
+
+
+task MainTask {
+	
+	ObjEnemy_SetDamageRate(boss,0,0);
+	ObjMove_SetDestAtFrame(boss, cx, cy-120, 60);
+	
+	SetSpellCard;
+	MCircNextAlpha = 80;
+	Obj_SetValue(objSpellCircle,"MaxAlpha",64);
+	
+	ObjEnemyBossScene_StartSpell(objScene);
+	ObjEnemyBossScene_SetSpellTimer(objScene,timer*60); //5760
+	
+	//SetCaution;
+	//SetBossBlur(true);
+	AuraRainbow(boss,255,255,255);
+	TSpellImmune;
+
+	//ConcentrationA2(boss,"HEXAGON",90,3,10,[255,0,255]);
+		
+//	wait(90);
+//	Tmovement(cx-120,cx+120, cy-90,cy-60, 60,240, [MOVE_PLAYERBIAS,2,0,MOVE_MAXSPEED,1.5] );
+	ObjEnemy_SetDamageRate(boss,24,8);
+	frame = 0;
+
+	wait(90);
+
+	//TTime;
+	//TStarShoot;
+	TShoot;
+	//TCenterShots;
+}
+
+
+
+
+task TShoot{
+	while(!Obj_IsDeleted(boss)){	
+		StarRoad(0 ,0,cx,cy*0.7,sx,cy, 110,70, 0.5, 35,8, 120);
+		wait(400);
+		StarRoad(sx,0,cx,cy*0.7,0 ,cy, 70,110, 0.5, 35,8, 120);
+		wait(400);
+		StarRoad(0 ,0,cx,cy*0.7,sx,cy, 130,50, 0.15, 30,6,  120);
+		StarRoad(sx,0,cx,cy*0.7,0 ,cy, 50,130, 0.15, 30,6,  120);
+		wait(400);
+		// StarRoad(cx,cy,0,cy/2,cx,0, 90,269, 0.15, 35,3,  120);
+		// StarRoad(cx,cy,sx,cy/2,cx,0, 90,271, 0.15, 35,3,  120);
+		// wait(400);
+	}
+}
+
+task StarRoad(x0,y0,x1,y1,x2,y2, a0,a1, mangv, num,mun, time){
+	let x; let y; let a; let shot; let shots; let pos;
+	let dt = 1/num;
+	let bangv = mangv/mun;
+	ascent(i in 0..num) {
+		pos = bqurp(x0,y0,x1,y1,x2,y2, i*dt);
+		x=pos[0]; y=pos[1]; a = lerpa(a0,a1,i*dt);
+		ascent(j in 0..mun){
+			//Road shots
+			shot = CreateShotA2(x+10*j*cos(a),y+10*j*sin(a),0,a, 0.005,2, STAR_MAGENTA-randBin*2 ,25);	//STAR_RED+500+randint(0,6)
+			ObjMove_SetAngularVelocity(shot,rand(-bangv,bangv)*(j+1)); //+-.05
+			//Safespot shots
+			shot = CreateShotA2(x+10*j*cos(a),y+10*j*sin(a),1,a+180, 0.5,10, STAR_MAGENTA+500-randBin*2 ,0);
+			ObjMove_SetAngularVelocity(shot,rand(-bangv,bangv)*(j+1)*5);
+		}
+		yield;yield;yield;//wait(time/num);
+		SE_Play(se_kira02,100);
+	}
+
+}
+
+
+
+
+
+

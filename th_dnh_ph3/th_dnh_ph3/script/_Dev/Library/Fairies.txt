@@ -1,0 +1,267 @@
+#include "./FairyFunctions.txt"
+#include "./EneAnim.dnh"
+//Modified from Kirbio+Lunarethic's Lethal Passageway
+
+
+
+
+
+//Possible values for type:
+//	"INSet1","INSet2","PoFV","MoF","DDC"
+
+
+//Possible values for color:
+//	"red","green","blue","yellow","purple",  "big"(PoFV only)
+//Not all types necessarily support all colors
+
+
+
+
+//let fa1 = SpawnFairy(x,-20,"big","PoFV",10,800);
+function SpawnFairy(x,y,color,type,collision,life){
+	let fairy = CreateFairyObject(life);
+	ObjMove_SetPosition(fairy,x,y);
+	ObjEnemy_SetDamageRate(fairy,100,100);
+	ManageFairy;
+	return fairy;
+	
+	task ManageFairy{
+		AnimateFairy(fairy,color,type);
+		//AnimateFairyA1(fairy, color);
+		yield; //wait a frame in case something needs to be done with it
+		let clip = Obj_GetValueD(fairy,"AutoDeleteClip",64);
+		while(!Obj_IsDeleted(fairy) && ObjEnemy_GetInfo(fairy,INFO_LIFE)>0){
+			if(Obj_GetValueD(fairy,"IsIntersectionEnable",true)){
+				ObjEnemy_SetIntersectionCircleToShot(fairy,ObjMove_GetX(fairy),ObjMove_GetY(fairy),collision);
+				ObjEnemy_SetIntersectionCircleToPlayer(fairy,ObjMove_GetX(fairy),ObjMove_GetY(fairy),collision);
+			}
+			yield;
+			if(CheckOutsideScreen(fairy,clip)){
+				Obj_Delete(fairy);
+			}
+		}
+		if(!Obj_IsDeleted(fairy)){
+			FinalizeFairy(fairy,ObjMove_GetX(fairy), ObjMove_GetY(fairy), color, collision/20);
+		}
+	}
+}
+	
+function SpawnYinYang(x,y,color,life,del){
+	let id = ObjEnemy_Create(OBJ_ENEMY);
+	let life_rate =100;
+	let bomb_late = 100;
+	let frame = 0;
+	ObjMove_SetPosition(id,x,y);
+	ObjEnemy_SetLife(id,life);
+	ObjEnemy_SetDamageRate(id,100,100);
+	ObjEnemy_Regist(id);
+	
+	CreateEnemy_Onmyou_Texture(id,life,color,del);
+	return id;
+}
+
+
+function SpawnSpirit(x,y,cstring,life){
+	let hd = CreateFairyObject(life);
+	ObjMove_SetPosition(hd,x,y);
+	ObjEnemy_SetDamageRate(hd,100,100);
+	ManageSpirit;
+	return hd;
+	
+	task ManageSpirit{
+		let color;
+		alternative(cstring)
+		case("red"){	color=0;}
+		case("orange"){	color=1;}
+		case("yellow"){	color=2;}
+		case("green"){	color=3;}
+		case("aqua"){	color=4;}
+		case("blue"){	color=5;}
+		case("purple","magenta"){color=6;}
+		others{color=7;}
+		
+		AnimateSpirit(hd,color);
+		while(!Obj_IsDeleted(hd) && ObjEnemy_GetInfo(hd,INFO_LIFE)>0){
+			ObjEnemy_SetIntersectionCircleToShot(hd,ObjMove_GetX(hd),ObjMove_GetY(hd),10);
+			ObjEnemy_SetIntersectionCircleToPlayer(hd,ObjMove_GetX(hd),ObjMove_GetY(hd),10);
+			yield;
+			if(CheckOutsideScreen(hd,64)){
+				Obj_Delete(hd);
+			}
+		}
+		if(!Obj_IsDeleted(hd)){
+			FinalizeFairy(hd,ObjMove_GetX(hd), ObjMove_GetY(hd), cstring, 0.75);
+		}
+	}
+}
+
+
+function SpawnKedama(x,y,cstring,life){
+	let kd = CreateFairyObject(life);
+	ObjMove_SetPosition(kd,x,y);
+	ObjEnemy_SetDamageRate(kd,100,100);
+	AnimateKedama(kd,cstring);
+	ManageKedama;
+	return kd;
+	
+	task ManageKedama{
+		while(!Obj_IsDeleted(kd) && ObjEnemy_GetInfo(kd,INFO_LIFE)>0){
+			ObjEnemy_SetIntersectionCircleToShot(kd,ObjMove_GetX(kd),ObjMove_GetY(kd),10);
+			ObjEnemy_SetIntersectionCircleToPlayer(kd,ObjMove_GetX(kd),ObjMove_GetY(kd),10);
+			yield;
+			if(CheckOutsideScreen(kd,64)){
+				Obj_Delete(kd);
+			}
+		}
+		if(!Obj_IsDeleted(kd)){
+			FinalizeFairy(kd,ObjMove_GetX(kd), ObjMove_GetY(kd), cstring, 0.75);
+		}
+	}
+}
+
+
+
+
+
+
+function CreateFamA1(x,y,color,life){return SpawnFamiliarA1(x,y,color,life);}
+function CreateFamB1(x,y,color,life){return SpawnFamiliarB1(x,y,color,life);}
+function CreateFamA2(x,y,color,life,collision){return SpawnFamiliarA2(x,y,color,life,collision);}
+function CreateFamB2(x,y,color,life,collision){return SpawnFamiliarB2(x,y,color,life,collision);}
+function CreateFamC1(x,y,color,life){return SpawnFamiliarC1(x,y,color,life);}
+function CreateFamC2(x,y,color,life,collision){return SpawnFamiliarC2(x,y,color,life,collision);}
+function FamFlash(x,y){
+	return EffectGlowA1(x,y,15,  1,0, dirimg~"./Effect/Light.png",[0,0,63,63],[255,255,255]);
+}
+
+function SpawnFamiliar(x,y,color,life){
+	return SpawnFairy(x,y,color,"INFam",13,life);
+}
+
+function SpawnFamiliarA1(x,y,color,life){
+	// loop(2){FFlashIn(x,y,1.5,rand(0,360),color);}	
+	// EffectGlowA1(x,y,15,  1,0, dirimg~"./Effect/Light.png",[0,0,63,63],[255,255,255]);
+	FFlash(x,y);
+	let fam = SpawnFairy(x,y,color,"INFam",13,life);
+	Obj_SetRenderPriorityI(fam,39);
+	return fam;
+}
+function SpawnFamiliarB1(x,y,color,life){
+	// loop(2){FFlashIn(x,y,1.5,rand(0,360),color);}
+	// EffectGlowA1(x,y,15,  1,0, dirimg~"./Effect/Light.png",[0,0,63,63],[255,255,255]);
+	FFlash(x,y);
+	let fam = SpawnFairy(x,y,color,"INFam",13,life);
+	Obj_SetValue(fam,"IsIntersectionEnable",false);
+	ObjRender_SetScaleXYZ(fam,0.75,0.75,1);
+	Obj_SetRenderPriorityI(fam,39);
+	return fam;
+}
+
+function SpawnFamiliarA2(x,y,color,life,collision){
+	// loop(2){FFlashIn(x,y,1.5,rand(0,360),color);}
+	// EffectGlowA1(x,y,15,  1,0, dirimg~"./Effect/Light.png",[0,0,63,63],[255,255,255]);
+	FFlash(x,y);
+	let fam = SpawnFairy(x,y,color,"INFam",collision,life);
+	Obj_SetValue(fam,"FamColor",color);
+	Obj_SetRenderPriorityI(fam,39);
+	return fam;
+}
+function SpawnFamiliarB2(x,y,color,life,collision){
+	// loop(2){FFlashIn(x,y,1.5,rand(0,360),color);}
+	// EffectGlowA1(x,y,15,  1,0, dirimg~"./Effect/Light.png",[0,0,63,63],[255,255,255]);
+	FFlash(x,y);
+	let fam = SpawnFairy(x,y,color,"INFam",collision,life);
+	Obj_SetValue(fam,"IsIntersectionEnable",false);
+	Obj_SetValue(fam,"FamColor",color);
+	ObjRender_SetScaleXYZ(fam,0.75,0.75,1);
+	Obj_SetRenderPriorityI(fam,39);
+	return fam;
+}
+//IN-style, collision only when unfocused
+//TODO: Move this logic into a separate task that controls intersection for all IN-style fams
+function SpawnFamiliarC1(x,y,color,life){return SpawnFamiliarC2(x,y,color,life,13);}
+function SpawnFamiliarC2(x,y,color,life,collision){
+	FFlash(x,y);
+	let fam = SpawnFairy(x,y,color,"INFam",collision,life);
+	Obj_SetValue(fam,"IsIntersectionEnable",!(GetVirtualKeyState(VK_SLOWMOVE)==KEY_HOLD || GetVirtualKeyState(VK_SLOWMOVE)==KEY_PUSH));
+	Obj_SetValue(fam,"FamColor",color);
+	ObjRender_SetScaleXYZ(fam,0.75,0.75,1);
+	Obj_SetRenderPriorityI(fam,39);
+	Manage;
+	return fam;
+	task Manage{
+		yield;
+		let IsOff = !(GetVirtualKeyState(VK_SLOWMOVE)==KEY_HOLD || GetVirtualKeyState(VK_SLOWMOVE)==KEY_PUSH);
+		while(!Obj_IsDeleted(fam)){
+			alternative(GetVirtualKeyState(VK_SLOWMOVE))
+			case(KEY_HOLD,KEY_PUSH){
+				if(!IsOff){
+					ObjFam_SetIntersectionEnable(fam,false);
+					IsOff = true;
+					loop(15){yield;}
+				}
+			}
+			others{
+				if(IsOff){
+					ObjFam_SetIntersectionEnable(fam,true);
+					IsOff = false;
+					loop(15){yield;}
+				}
+			}
+			yield;
+		}
+	}
+}
+
+function ObjFam_SetIntersectionEnable(fam,intersect){
+	if(Obj_GetValueD(fam,"IsIntersectionEnable",true)==intersect){return false;}
+	alternative(intersect)
+	case(true){ //to bird
+		ObjRender_SetScaleXYZ(fam,1,1,1);
+		ObjRender_SetColor(fam,255,255,255);
+		// FFlashIn(ObjRender_GetX(fam),ObjRender_GetY(fam),1.5,rand(0,360),Obj_GetValueD(fam,"FamColor","red"));
+		// EffectGlowA1(ObjRender_GetX(fam),ObjRender_GetY(fam),15,  1,0, dirimg~"./Effect/Light.png",[0,0,63,63],[255,255,255]);
+		FFlash(ObjRender_GetX(fam),ObjRender_GetY(fam));
+		MagicCircleFade(true);
+	}
+	case(false){ //to circle
+		ObjRender_SetScaleXYZ(fam,0.75,0.75,1);
+		ObjSprite2D_SetSourceRect(fam,0,127,64,191);
+		ObjSprite2D_SetDestCenter(fam);
+		// FFlashIn(ObjRender_GetX(fam),ObjRender_GetY(fam),1.5,rand(0,360),Obj_GetValueD(fam,"FamColor","red")); ///////
+		// EffectGlowA1(ObjRender_GetX(fam),ObjRender_GetY(fam),15,  1,0, dirimg~"./Effect/Light.png",[0,0,63,63],[255,255,255]);
+		FFlash(ObjRender_GetX(fam),ObjRender_GetY(fam));
+		MagicCircleFade(false);
+	}
+	Obj_SetValue(fam,"IsIntersectionEnable",intersect);
+	return true;
+	
+	task MagicCircleFade(isUnf){	
+		let r; let g; let b;
+		alternative(Obj_GetValueD(fam,"FamColor","red"))
+		case("red"){r=255;g=128;b=128;}
+		case("green"){r=150;g=255;b=150;}
+		case("blue"){r=150;g=150;b=255;}
+		case("yellow"){r=255;g=255;b=128;}
+		
+		let N=5; //30
+		if(isUnf){ //to bird
+			ascent(i in 0..N){
+				ObjRender_SetTrueAlpha(fam,255*i/N);
+				ObjRender_SetScaleXYZ(fam,0.75+0.25*i/N,0.75+0.25*i/N,1);
+				ObjRender_SetColor(fam,r+i*(255-r)/N, g+i*(255-g)/N, b+i*(255-b)/N);
+				yield;
+			}
+			ObjRender_SetTrueAlpha(fam,255);
+		}else{ //to circle
+			ascent(i in 0..N){
+				ObjRender_SetTrueAlpha(fam,255*i/N);				
+				ObjSprite2D_SetSourceRect(fam,0,127,64,191);
+				ObjSprite2D_SetDestCenter(fam);
+				ObjRender_SetColor(fam,r+i*(r-255)/N, g+i*(g-255)/N, b+i*(b-255)/N);
+				yield;
+			}
+			ObjRender_SetTrueAlpha(fam,255);
+		}
+	}
+}

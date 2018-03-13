@@ -1,0 +1,78 @@
+//StellarFX written by Dark Kitsune / Ran
+
+let EV_SFX_RANGE_START = EV_USER + 28530;
+let EV_AURA_P = EV_SFX_RANGE_START + 0;
+let EV_MAGIC_CIRCLE_P = EV_SFX_RANGE_START + 1;
+let EV_SHOCKWAVE_P = EV_SFX_RANGE_START + 2;
+let EV_SPR_PARTICLE = EV_SFX_RANGE_START + 3;
+let EV_SPR_AURA = EV_SFX_RANGE_START + 4;
+let EV_SPR_MAGIC_CIRCLE = EV_SFX_RANGE_START + 5;
+let EV_SPR_SHOCKWAVE = EV_SFX_RANGE_START + 6;
+let EV_EXPLOSION = EV_SFX_RANGE_START + 7;
+let EV_CHARGE = EV_SFX_RANGE_START + 8;
+let EV_AURA = EV_SFX_RANGE_START + 9;
+let EV_EMITTER = EV_SFX_RANGE_START + 10;
+let EV_MAGIC_CIRCLE = EV_SFX_RANGE_START + 11;
+let EV_SHOCKWAVE = EV_SFX_RANGE_START + 12;
+
+let libName = "Stellar";
+
+function Stellar_Init()
+{
+	StartScript(LoadScript(GetCurrentScriptDirectory() ~ libName ~ "_Tasks.dnh"));
+}
+
+function Stellar_ParticleTexture(path)
+{
+	NotifyEvent(GetAreaCommonData(libName,libName ~ "_Script",-1), EV_SPR_PARTICLE, path);
+}
+
+function Stellar_AuraTexture(path)
+{
+	NotifyEvent(GetAreaCommonData(libName,libName ~ "_Script",-1), EV_SPR_AURA, path);
+}
+
+function Stellar_MagicCircleTexture(path)
+{
+	NotifyEvent(GetAreaCommonData(libName,libName ~ "_Script",-1), EV_SPR_MAGIC_CIRCLE, path);
+}
+
+function Stellar_AuraPriority(priority)
+{
+	NotifyEvent(GetAreaCommonData(libName,libName ~ "_Script",-1), EV_AURA_P, priority);
+}
+
+function Stellar_MagicCirclePriority(priority)
+{
+	NotifyEvent(GetAreaCommonData(libName,libName ~ "_Script",-1), EV_MAGIC_CIRCLE_P, priority);
+}
+
+
+
+
+//Effects
+
+function Stellar_Explosion(object,time,particlescale,blending,hue)
+{
+	NotifyEvent(GetAreaCommonData(libName,libName ~ "_Script",-1), EV_EXPLOSION, [object,time,particlescale,blending,hue]);
+}
+
+function Stellar_Charge(object,time,particlescale,blending,hue)
+{
+	NotifyEvent(GetAreaCommonData(libName,libName ~ "_Script",-1), EV_CHARGE, [object,time,particlescale,blending,hue]);
+}
+
+function Stellar_Aura(object,radius,wavelength,rotspeed,fadetime,blending,hue,saturation)
+{
+	NotifyEvent(GetAreaCommonData(libName,libName ~ "_Script",-1), EV_AURA, [object,radius,wavelength,rotspeed,fadetime,blending,hue,saturation]);
+}
+
+function Stellar_Emitter(object,time,scale,speed,firepitch,fireyaw,spread,life,numperframe,blending,hue,saturation,alpha)
+{
+	NotifyEvent(GetAreaCommonData(libName,libName ~ "_Script",-1), EV_EMITTER, [object,time,scale,speed,firepitch,fireyaw,spread,life,numperframe,blending,hue,saturation,alpha]);
+}
+
+function Stellar_MagicCircle(object,scale,fadetime,pulseamount,pulsespeed,angvel,blending,hue,saturation,alpha)
+{
+	NotifyEvent(GetAreaCommonData(libName,libName ~ "_Script",-1), EV_MAGIC_CIRCLE, [object,scale,fadetime,pulseamount,pulsespeed,angvel,blending,hue,saturation,alpha]);
+}

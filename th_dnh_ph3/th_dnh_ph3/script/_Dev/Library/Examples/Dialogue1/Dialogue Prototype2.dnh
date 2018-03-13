@@ -1,0 +1,696 @@
+let INFO_YELLOW = 1.0;
+let INFO_WHITE = 1.1;
+let INFO_RED = 1.2;
+let SAY_YELLOW = 2.0;
+let SAY_WHITE = 2.1;
+let SAY_RED = 2.2;
+let THINK_YELLOW = 3.0;
+let THINK_WHITE = 3.1;
+let THINK_RED = 3.2;
+let CALL_YELLOW = 4.0;
+let CALL_WHITE = 4.1;
+let CALL_RED = 4.2;
+let PLAYER1_SPEAKS = 1;
+let PLAYER2_SPEAKS = 2;
+let UNKNOWN1_SPEAKS = 0.5;
+let UNKNOWN2_SPEAKS = -0.5;
+let ENEMY1_SPEAKS = -1;
+let ENEMY2_SPEAKS = -2;
+let MULTIPLY_TALK_Y = 0;
+let MULTIPLY_TALK_X = 0;
+let SPEECH_SIZE = 0;
+let TEXT_ALPHA = -100;
+let playerPortPath1 = "";
+let enemyPortPath1 = "";
+let playerPortPath2 = "";
+let enemyPortPath2 = "";
+let IsTalking = false;
+
+let stop = false;
+
+let playerPort1 = ID_INVALID;
+let enemyPort1 = ID_INVALID;
+let playerPort2 = ID_INVALID;
+let enemyPort2 = ID_INVALID;
+let whotalk = 2;
+let text = "";
+let mode = INFO_WHITE;
+let x_player1 = GetStgFrameWidth/2-100-450;
+let y_player1 = GetStgFrameHeight/2+50;
+let x_enemy1 = GetStgFrameWidth/2+100+450;
+let y_enemy1 = GetStgFrameHeight/2+50;
+let x_player2 = GetStgFrameWidth/2-100-450;
+let y_player2 = GetStgFrameHeight/2+50;
+let x_enemy2 = GetStgFrameWidth/2+100+450;
+let y_enemy2 = GetStgFrameHeight/2+50;
+let alpha_player1 = 255;
+let alpha_player2 = 255;
+let alpha_enemy1 = 255;
+let alpha_enemy2 = 255;
+let alpha_bubble = 255;
+
+let numberPlayer = 1;
+let numberEnemy = 1;
+
+function SetPlayerNumber(num) {
+	numberPlayer = num;
+}
+function SetEnemyNumber(num) {
+	numberEnemy = num;
+}
+function SetEventTextA(type,dialogue) {
+let count = 0;
+	SPEECH_SIZE = 0;
+	TEXT_ALPHA = -100;
+	text = dialogue;
+	mode = type;
+	loop(5) { yield; }
+	while(GetVirtualKeyState(VK_OK) != KEY_PUSH && GetVirtualKeyState(VK_USER1) != KEY_HOLD) {
+		if(count == 300) { break; }
+		count++;
+		yield;
+	}
+}
+function SetEventTextB(type,dialogue,frame) {
+let count = 0;
+	SPEECH_SIZE = 0;
+	TEXT_ALPHA = -100;
+	text = dialogue;
+	mode = type;
+	loop(frame) {
+		yield;
+	}
+}
+function SetEventTextC(type,dialogue,frame) {
+let count = 0;
+	SPEECH_SIZE = 0;
+	TEXT_ALPHA = -100;
+	text = dialogue;
+	mode = type;
+	loop(5) { yield; }
+	loop(frame) { yield; }
+	while(GetVirtualKeyState(VK_OK) != KEY_PUSH && GetVirtualKeyState(VK_USER1) != KEY_HOLD) {
+		if(count == 300) { break; }
+		count++;
+		yield;
+	}
+}
+task SetEventSpeaker(char) {
+	whotalk = char;
+	stop = true;
+	yield;
+	stop = false;
+	if(numberPlayer == 1 && numberEnemy == 1) {
+		if(char == PLAYER1_SPEAKS) {
+			SetMovePortraitPosition01(playerPort1,GetStgFrameWidth/2-100,GetStgFrameHeight/2+50,10,8,"PLAYER1");
+			SetMovePortraitPosition01(enemyPort1,GetStgFrameWidth/2+100+30,GetStgFrameHeight/2+50+15,10,8,"ENEMY1");
+		}
+		if(char == ENEMY1_SPEAKS) {
+			SetMovePortraitPosition01(playerPort1,GetStgFrameWidth/2-100-30,GetStgFrameHeight/2+50+15,8,8,"PLAYER1");
+			SetMovePortraitPosition01(enemyPort1,GetStgFrameWidth/2+100,GetStgFrameHeight/2+50,10,8,"ENEMY1");
+		}
+	}
+	if(numberPlayer == 2 && numberEnemy == 1) {
+		if(char == PLAYER1_SPEAKS) {
+			SetMovePortraitPosition01(playerPort1,GetStgFrameWidth/2-100,GetStgFrameHeight/2+50,10,8,"PLAYER1");
+			SetMovePortraitPosition01(playerPort2,GetStgFrameWidth/2-100-30,GetStgFrameHeight/2+50+15,10,8,"PLAYER2");
+			SetMovePortraitPosition01(enemyPort1,GetStgFrameWidth/2+100+30,GetStgFrameHeight/2+50+15,10,8,"ENEMY1");
+		}
+		if(char == PLAYER2_SPEAKS) {
+			SetMovePortraitPosition01(playerPort2,GetStgFrameWidth/2-100,GetStgFrameHeight/2+50,10,8,"PLAYER2");
+			SetMovePortraitPosition01(playerPort1,GetStgFrameWidth/2-100-30,GetStgFrameHeight/2+50+15,10,8,"PLAYER1");
+			SetMovePortraitPosition01(enemyPort1,GetStgFrameWidth/2+100+30,GetStgFrameHeight/2+50+15,10,8,"ENEMY1");
+		}
+		if(char == ENEMY1_SPEAKS) {
+			SetMovePortraitPosition01(enemyPort1,GetStgFrameWidth/2+100,GetStgFrameHeight/2+50,10,8,"ENEMY1");
+		}
+	}
+	if(numberPlayer == 1 && numberEnemy == 2) {
+		if(char == PLAYER1_SPEAKS) {
+			SetMovePortraitPosition01(playerPort1,GetStgFrameWidth/2-100,GetStgFrameHeight/2+50,10,8,"PLAYER1");
+		}
+		if(char == ENEMY1_SPEAKS) {
+			SetMovePortraitPosition01(playerPort1,GetStgFrameWidth/2-100-30,GetStgFrameHeight/2+50+15,8,8,"PLAYER1");
+			SetMovePortraitPosition01(enemyPort1,GetStgFrameWidth/2+100,GetStgFrameHeight/2+50,10,8,"ENEMY1");
+			SetMovePortraitPosition01(enemyPort2,GetStgFrameWidth/2+100+30,GetStgFrameHeight/2+50+15,10,8,"ENEMY2");
+		}
+		if(char == ENEMY2_SPEAKS) {
+			SetMovePortraitPosition01(playerPort1,GetStgFrameWidth/2-100-30,GetStgFrameHeight/2+50+15,8,8,"PLAYER1");
+			SetMovePortraitPosition01(enemyPort2,GetStgFrameWidth/2+100,GetStgFrameHeight/2+50,10,8,"ENEMY2");
+			SetMovePortraitPosition01(enemyPort1,GetStgFrameWidth/2+100+30,GetStgFrameHeight/2+50+15,10,8,"ENEMY1");
+		}
+	}
+	if(numberPlayer == 2 && numberEnemy == 2) {
+		if(char == PLAYER1_SPEAKS) {
+			SetMovePortraitPosition01(playerPort1,GetStgFrameWidth/2-100,GetStgFrameHeight/2+50,10,8,"PLAYER1");
+			SetMovePortraitPosition01(playerPort2,GetStgFrameWidth/2-100-30,GetStgFrameHeight/2+50+15,10,8,"PLAYER2");
+		}
+		if(char == PLAYER2_SPEAKS) {
+			SetMovePortraitPosition01(playerPort2,GetStgFrameWidth/2-100,GetStgFrameHeight/2+50,10,8,"PLAYER2");
+			SetMovePortraitPosition01(playerPort1,GetStgFrameWidth/2-100-30,GetStgFrameHeight/2+50+15,10,8,"PLAYER1");
+		}
+		if(char == ENEMY1_SPEAKS) {
+			SetMovePortraitPosition01(enemyPort1,GetStgFrameWidth/2+100,GetStgFrameHeight/2+50,10,8,"ENEMY1");
+			SetMovePortraitPosition01(enemyPort2,GetStgFrameWidth/2+100+30,GetStgFrameHeight/2+50+15,10,8,"ENEMY2");
+		}
+		if(char == ENEMY2_SPEAKS) {
+			SetMovePortraitPosition01(enemyPort2,GetStgFrameWidth/2+100,GetStgFrameHeight/2+50,10,8,"ENEMY2");
+			SetMovePortraitPosition01(enemyPort1,GetStgFrameWidth/2+100+30,GetStgFrameHeight/2+50+15,10,8,"ENEMY1");
+		}
+	}
+	if(char == UNKNOWN1_SPEAKS || char == UNKNOWN2_SPEAKS) {
+		SetMovePortraitPosition01(playerPort1,GetStgFrameWidth/2-100-30,GetStgFrameHeight/2+50+15,8,8,"PLAYER1");
+		SetMovePortraitPosition01(enemyPort1,GetStgFrameWidth/2+100+30,GetStgFrameHeight/2+50+15,10,8,"ENEMY1");
+		SetMovePortraitPosition01(playerPort2,GetStgFrameWidth/2-100-30,GetStgFrameHeight/2+50+15,8,8,"PLAYER1");
+		SetMovePortraitPosition01(enemyPort2,GetStgFrameWidth/2+100+30,GetStgFrameHeight/2+50+15,10,8,"ENEMY1");
+	}
+}
+function SetPlayerPort1(path) {
+	playerPortPath1 = path;
+}
+function SetEnemyPort1(path) {
+	enemyPortPath1 = path;
+}
+function SetPlayerPort2(path) {
+	playerPortPath2 = path;
+}
+function SetEnemyPort2(path) {
+	enemyPortPath2 = path;
+}
+task RemovePlayerPort1 {
+	stop = true;
+	yield;
+	stop = false;
+	SetMovePortraitPosition(playerPort1,GetStgFrameWidth/2-100-450,GetStgFrameHeight/2+50+15,10,12,"PLAYER1");
+	playerPortPath1 = GetMainStgScriptDirectory ~ "blank.png";
+}
+task RemoveEnemyPort1 {
+	stop = true;
+	yield;
+	stop = false;
+	SetMovePortraitPosition(enemyPort1,GetStgFrameWidth/2+100+450,GetStgFrameHeight/2+50+15,10,12,"ENEMY1");
+	enemyPortPath1 = GetMainStgScriptDirectory ~ "blank.png";
+}
+task RemovePlayerPort2 {
+	stop = true;
+	yield;
+	stop = false;
+	SetMovePortraitPosition(playerPort2,GetStgFrameWidth/2-100-450,GetStgFrameHeight/2+50+15,10,12,"PLAYER2");
+	playerPortPath2 = GetMainStgScriptDirectory ~ "blank.png";
+}
+task RemoveEnemyPort2 {
+	stop = true;
+	yield;
+	stop = false;
+	SetMovePortraitPosition(enemyPort2,GetStgFrameWidth/2+100+450,GetStgFrameHeight/2+50+15,10,12,"ENEMY2");
+	enemyPortPath2 = GetMainStgScriptDirectory ~ "blank.png";
+}
+task SetNewPlayerPort1(path) {
+	playerPortPath1 = path;
+	stop = true;
+	yield;
+	stop = false;
+	ObjRender_SetPosition(playerPort1,GetStgFrameWidth/2-100-450,GetStgFrameHeight/2+50,0);
+	if(whotalk == PLAYER1_SPEAKS) {
+		SetMovePortraitPosition(playerPort1,GetStgFrameWidth/2-100,GetStgFrameHeight/2+50,10,12,"PLAYER1");
+	}
+	else {
+		SetMovePortraitPosition(playerPort1,GetStgFrameWidth/2-100-30,GetStgFrameHeight/2+50+15,10,12,"PLAYER1");
+	}
+}
+task SetNewPlayerPort2(path) {
+	playerPortPath2 = path;
+	stop = true;
+	yield;
+	stop = false;
+	ObjRender_SetPosition(playerPort2,GetStgFrameWidth/2-100-450,GetStgFrameHeight/2+50,0);
+	if(whotalk == PLAYER2_SPEAKS) {
+		SetMovePortraitPosition(playerPort2,GetStgFrameWidth/2-100,GetStgFrameHeight/2+50,10,12,"PLAYER2");
+	}
+	else {
+		SetMovePortraitPosition(playerPort2,GetStgFrameWidth/2-100-30,GetStgFrameHeight/2+50+15,10,12,"PLAYER2");
+	}
+}
+task SetNewEnemyPort1(path) {
+	enemyPortPath1 = path;
+	stop = true;
+	yield;
+	stop = false;
+	ObjRender_SetPosition(enemyPort1,GetStgFrameWidth/2+100+450,GetStgFrameHeight/2+50,0);
+	if(whotalk == ENEMY1_SPEAKS) {
+		SetMovePortraitPosition(enemyPort1,GetStgFrameWidth/2+100,GetStgFrameHeight/2+50,10,12,"ENEMY1");
+	}
+	else {
+		SetMovePortraitPosition(enemyPort1,GetStgFrameWidth/2+100+30,GetStgFrameHeight/2+50+15,10,12,"ENEMY1");
+	}
+}
+task SetNewEnemyPort2(path) {
+	enemyPortPath2 = path;
+	stop = true;
+	yield;
+	stop = false;
+	ObjRender_SetPosition(enemyPort2,GetStgFrameWidth/2+100+450,GetStgFrameHeight/2+50,0);
+	if(whotalk == ENEMY2_SPEAKS) {
+		SetMovePortraitPosition(enemyPort2,GetStgFrameWidth/2+100,GetStgFrameHeight/2+50,10,12,"ENEMY2");
+	}
+	else {
+		SetMovePortraitPosition(enemyPort2,GetStgFrameWidth/2+100+30,GetStgFrameHeight/2+50+15,10,12,"ENEMY2");
+	}
+}
+function EndEvent {
+	stop = true;
+	yield;
+	stop = false;
+	SetMovePortraitPosition01(playerPort1,GetStgFrameWidth/2-100-450,GetStgFrameHeight/2+20+15,10,12,"PLAYER1");
+	SetMovePortraitPosition01(enemyPort1,GetStgFrameWidth/2+100+450,GetStgFrameHeight/2+20+15,10,12,"ENEMY1");
+	SetMovePortraitPosition01(playerPort2,GetStgFrameWidth/2-100-450,GetStgFrameHeight/2+20+15,10,12,"PLAYER2");
+	SetMovePortraitPosition01(enemyPort2,GetStgFrameWidth/2+100+450,GetStgFrameHeight/2+20+15,10,12,"ENEMY2");
+	while(alpha_bubble > 0) { alpha_bubble-=255/20; TEXT_ALPHA-=50/3.5; yield; }
+	IsTalking = false;
+	loop(20){ TEXT_ALPHA-=50/3.5; yield; }
+	
+	playerPortPath1 = GetMainStgScriptDirectory ~ "blank.png";
+	enemyPortPath1 = GetMainStgScriptDirectory ~ "blank.png";
+	playerPortPath2 = GetMainStgScriptDirectory ~ "blank.png";
+	enemyPortPath2 = GetMainStgScriptDirectory ~ "blank.png";
+	IsTalking = false;
+	stop = false;
+	playerPort1 = ID_INVALID;
+	enemyPort1 = ID_INVALID;
+	playerPort2 = ID_INVALID;
+	enemyPort2 = ID_INVALID;
+	whotalk = 2;
+	text = "";
+	mode = INFO_WHITE;
+	x_player1 = GetStgFrameWidth/2-100-450;
+	y_player1 = GetStgFrameHeight/2+50;
+	x_enemy1 = GetStgFrameWidth/2+100+450;
+	y_enemy1 = GetStgFrameHeight/2+50;
+	x_player2 = GetStgFrameWidth/2-100-450;
+	y_player2 = GetStgFrameHeight/2+50;
+	x_enemy2 = GetStgFrameWidth/2+100+450;
+	y_enemy2 = GetStgFrameHeight/2+50;
+	alpha_player1 = 255;
+	alpha_player2 = 255;
+	alpha_enemy1 = 255;
+	alpha_enemy2 = 255;
+	alpha_bubble = 255;
+	numberPlayer = 1;
+	numberEnemy = 1;
+	
+}
+task StartEvent {
+	SetForbidPlayerShot(true);
+	SetCommonData("forbidshot",true);
+	SetForbidPlayerSpell(true);
+	IsTalking = true;
+	
+	yield;
+	
+	InstallFont(GetCurrentScriptDirectory ~ "/font/monofonto.ttf");
+
+	let WANTED_Y = (mode%1*10)*32;
+	let WANTED_X = floor(mode-1)*32;
+	
+	let speechImage = GetCurrentScriptDirectory ~ "IMG/speech.png";
+
+	let SPEECH_TOP = ObjPrim_Create(OBJ_PRIMITIVE_2D);
+	let SPEECH_MID = ObjPrim_Create(OBJ_PRIMITIVE_2D);
+	let SPEECH_BOT = ObjPrim_Create(OBJ_PRIMITIVE_2D);
+	ObjPrim_SetPrimitiveType(SPEECH_TOP, PRIMITIVE_TRIANGLESTRIP);
+	ObjPrim_SetPrimitiveType(SPEECH_MID, PRIMITIVE_TRIANGLESTRIP);
+	ObjPrim_SetPrimitiveType(SPEECH_BOT, PRIMITIVE_TRIANGLESTRIP);
+	ObjPrim_SetVertexCount(SPEECH_TOP, 8);
+	ObjPrim_SetVertexCount(SPEECH_MID, 8);
+	ObjPrim_SetVertexCount(SPEECH_BOT, 8);
+	ObjPrim_SetTexture(SPEECH_TOP, speechImage);
+	ObjPrim_SetTexture(SPEECH_MID, speechImage);
+	ObjPrim_SetTexture(SPEECH_BOT, speechImage);
+	Obj_SetRenderPriorityI(SPEECH_TOP, 70);
+	Obj_SetRenderPriorityI(SPEECH_MID, 70);
+	Obj_SetRenderPriorityI(SPEECH_BOT, 70);
+
+	let speechText = ObjText_Create;
+	
+	ObjText_SetMaxWidth(speechText, 265);
+	ObjText_SetFontSize(speechText, 18);
+	ObjText_SetLinePitch(speechText,2);
+	ObjText_SetFontType(speechText, "MonoFonto-Regular");
+	ObjText_SetFontBold(speechText, false);
+	ObjText_SetFontColorTop(speechText, 0, 0, 0);
+	ObjText_SetFontColorBottom(speechText, 0, 0, 0);
+	Obj_SetRenderPriorityI(speechText, 75);
+
+	let speechArrow = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjPrim_SetTexture(speechArrow, speechImage);
+	Obj_SetRenderPriorityI(speechArrow, 75);
+
+	playerPort1 = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjPrim_SetTexture(playerPort1, playerPortPath1);
+	Obj_SetRenderPriorityI(playerPort1, 65);
+	ObjRender_SetPosition(playerPort1, x_player1, y_player1, 0);
+	
+	playerPort2 = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjPrim_SetTexture(playerPort2, playerPortPath2);
+	Obj_SetRenderPriorityI(playerPort2, 65);
+	ObjRender_SetPosition(playerPort2, x_player2, y_player2, 0);
+
+	enemyPort1 = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjPrim_SetTexture(enemyPort1, enemyPortPath1);
+	Obj_SetRenderPriorityI(enemyPort1, 65);
+	ObjRender_SetPosition(enemyPort1, x_enemy1, y_enemy1, 0);
+	
+	enemyPort2 = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjPrim_SetTexture(enemyPort2, enemyPortPath2);
+	Obj_SetRenderPriorityI(enemyPort2, 65);
+	ObjRender_SetPosition(enemyPort2, x_enemy2, y_enemy2, 0);
+
+	while(IsTalking) {
+		ObjText_SetText(speechText, text);
+		
+		ObjPrim_SetTexture(playerPort1, playerPortPath1);
+		ObjSprite2D_SetSourceRect(playerPort1,1,1,GetTextureWidth(playerPortPath1),GetTextureHeight(playerPortPath1));
+		ObjSprite2D_SetDestCenter(playerPort1);
+		ObjRender_SetScaleXYZ(playerPort1,0.4,0.4,0.4);
+		ObjRender_SetColor(playerPort1,alpha_player1,alpha_player1,alpha_player1);
+		
+		ObjPrim_SetTexture(enemyPort1, enemyPortPath1);
+		ObjSprite2D_SetSourceRect(enemyPort1,1,1,GetTextureWidth(enemyPortPath1),GetTextureHeight(enemyPortPath1));
+		ObjSprite2D_SetDestCenter(enemyPort1);
+		ObjRender_SetScaleXYZ(enemyPort1,0.4,0.4,0.4);
+		ObjRender_SetColor(enemyPort1,alpha_enemy1,alpha_enemy1,alpha_enemy1);
+		
+		ObjPrim_SetTexture(playerPort2, playerPortPath2);
+		ObjSprite2D_SetSourceRect(playerPort2,1,1,GetTextureWidth(playerPortPath2),GetTextureHeight(playerPortPath2));
+		ObjSprite2D_SetDestCenter(playerPort2);
+		ObjRender_SetScaleXYZ(playerPort2,0.4,0.4,0.4);
+		ObjRender_SetColor(playerPort2,alpha_player2,alpha_player2,alpha_player2);
+		
+		ObjPrim_SetTexture(enemyPort2, enemyPortPath2);
+		ObjSprite2D_SetSourceRect(enemyPort2,1,1,GetTextureWidth(enemyPortPath2),GetTextureHeight(enemyPortPath2));
+		ObjSprite2D_SetDestCenter(enemyPort2);
+		ObjRender_SetScaleXYZ(enemyPort2,0.4,0.4,0.4);
+		ObjRender_SetColor(enemyPort2,alpha_enemy2,alpha_enemy2,alpha_enemy2);
+		
+		ObjRender_SetAlpha(SPEECH_TOP,alpha_bubble);
+		ObjRender_SetAlpha(SPEECH_MID,alpha_bubble);
+		ObjRender_SetAlpha(SPEECH_BOT,alpha_bubble);
+		ObjRender_SetAlpha(speechText,alpha_bubble);
+		
+		WANTED_Y = (mode%1*10)*32;
+		WANTED_X = floor(mode-1)*32;
+		
+		ObjSprite2D_SetSourceRect(speechArrow, 0 + WANTED_X, 0 + WANTED_Y, 32 + WANTED_X, 32 + WANTED_Y);
+		
+		if(floor(mode)==1){	ObjRender_SetAlpha(speechArrow, 0); }
+		else { ObjRender_SetAlpha(speechArrow, alpha_bubble); }
+	
+		MULTIPLY_TALK_Y = 0;
+
+		MULTIPLY_TALK_X = ObjText_GetTextLength(speechText)*8;
+
+		if(SPEECH_SIZE < 1) {
+			SPEECH_SIZE+=1/12;
+		}
+
+		if(MULTIPLY_TALK_X > 30*10+0) {
+			MULTIPLY_TALK_Y += 22;
+		}
+		if(MULTIPLY_TALK_X > 30*20+0) {
+			MULTIPLY_TALK_Y += 22;
+		}
+		if(MULTIPLY_TALK_X > 30*30+0) {
+			MULTIPLY_TALK_Y += 22;
+		}
+		if(MULTIPLY_TALK_X > 30*40+0) {
+			MULTIPLY_TALK_Y += 22;
+		}
+
+		MULTIPLY_TALK_X = min(MULTIPLY_TALK_X,256);
+		
+		if(TEXT_ALPHA < 50)
+		{
+			TEXT_ALPHA+=50/7;
+		}
+		
+		ObjPrim_SetVertexUVT(SPEECH_TOP, 0, 00, 00+WANTED_Y);
+		ObjPrim_SetVertexUVT(SPEECH_TOP, 1, 00, 16+WANTED_Y);
+		ObjPrim_SetVertexUVT(SPEECH_TOP, 2, 16, 00+WANTED_Y);
+		ObjPrim_SetVertexUVT(SPEECH_TOP, 3, 16, 16+WANTED_Y);
+		ObjPrim_SetVertexUVT(SPEECH_TOP, 4, 16, 00+WANTED_Y);
+		ObjPrim_SetVertexUVT(SPEECH_TOP, 5, 16, 16+WANTED_Y);
+		ObjPrim_SetVertexUVT(SPEECH_TOP, 6, 32, 00+WANTED_Y);
+		ObjPrim_SetVertexUVT(SPEECH_TOP, 7, 32, 16+WANTED_Y);
+
+		ObjPrim_SetVertexUVT(SPEECH_MID, 0, 00, 16+WANTED_Y);
+		ObjPrim_SetVertexUVT(SPEECH_MID, 1, 00, 16+WANTED_Y);
+		ObjPrim_SetVertexUVT(SPEECH_MID, 2, 16, 16+WANTED_Y);
+		ObjPrim_SetVertexUVT(SPEECH_MID, 3, 16, 16+WANTED_Y);
+		ObjPrim_SetVertexUVT(SPEECH_MID, 4, 16, 16+WANTED_Y);
+		ObjPrim_SetVertexUVT(SPEECH_MID, 5, 16, 16+WANTED_Y);
+		ObjPrim_SetVertexUVT(SPEECH_MID, 6, 32, 16+WANTED_Y);
+		ObjPrim_SetVertexUVT(SPEECH_MID, 7, 32, 16+WANTED_Y);
+
+		ObjPrim_SetVertexUVT(SPEECH_BOT, 0, 00, 16+WANTED_Y);
+		ObjPrim_SetVertexUVT(SPEECH_BOT, 1, 00, 32+WANTED_Y);
+		ObjPrim_SetVertexUVT(SPEECH_BOT, 2, 16, 16+WANTED_Y);
+		ObjPrim_SetVertexUVT(SPEECH_BOT, 3, 16, 32+WANTED_Y);
+		ObjPrim_SetVertexUVT(SPEECH_BOT, 4, 16, 16+WANTED_Y);
+		ObjPrim_SetVertexUVT(SPEECH_BOT, 5, 16, 32+WANTED_Y);
+		ObjPrim_SetVertexUVT(SPEECH_BOT, 6, 32, 16+WANTED_Y);
+		ObjPrim_SetVertexUVT(SPEECH_BOT, 7, 32, 32+WANTED_Y);
+
+		ObjPrim_SetVertexPosition(SPEECH_TOP, 0, 00, 00, 0);
+		ObjPrim_SetVertexPosition(SPEECH_TOP, 1, 00, 16, 0);
+		ObjPrim_SetVertexPosition(SPEECH_TOP, 2, 16, 00, 0);
+		ObjPrim_SetVertexPosition(SPEECH_TOP, 3, 16, 16, 0);
+		ObjPrim_SetVertexPosition(SPEECH_TOP, 4, 16+(SPEECH_SIZE*MULTIPLY_TALK_X), 00, 0);
+		ObjPrim_SetVertexPosition(SPEECH_TOP, 5, 16+(SPEECH_SIZE*MULTIPLY_TALK_X), 16, 0);
+		ObjPrim_SetVertexPosition(SPEECH_TOP, 6, 32+(SPEECH_SIZE*MULTIPLY_TALK_X), 00, 0);
+		ObjPrim_SetVertexPosition(SPEECH_TOP, 7, 32+(SPEECH_SIZE*MULTIPLY_TALK_X), 16, 0);
+
+		ObjPrim_SetVertexPosition(SPEECH_MID, 0, 00, 00, 0);
+		ObjPrim_SetVertexPosition(SPEECH_MID, 1, 00, 00+SPEECH_SIZE*MULTIPLY_TALK_Y, 0);
+		ObjPrim_SetVertexPosition(SPEECH_MID, 2, 16, 00, 0);
+		ObjPrim_SetVertexPosition(SPEECH_MID, 3, 16, 00+SPEECH_SIZE*MULTIPLY_TALK_Y, 0);
+		ObjPrim_SetVertexPosition(SPEECH_MID, 4, 16+(SPEECH_SIZE*MULTIPLY_TALK_X), 00, 0);
+		ObjPrim_SetVertexPosition(SPEECH_MID, 5, 16+(SPEECH_SIZE*MULTIPLY_TALK_X), 00+SPEECH_SIZE*MULTIPLY_TALK_Y, 0);
+		ObjPrim_SetVertexPosition(SPEECH_MID, 6, 32+(SPEECH_SIZE*MULTIPLY_TALK_X), 00, 0);
+		ObjPrim_SetVertexPosition(SPEECH_MID, 7, 32+(SPEECH_SIZE*MULTIPLY_TALK_X), 00+SPEECH_SIZE*MULTIPLY_TALK_Y, 0);
+
+		ObjPrim_SetVertexPosition(SPEECH_BOT, 0, 00, 00+SPEECH_SIZE*MULTIPLY_TALK_Y, 0);
+		ObjPrim_SetVertexPosition(SPEECH_BOT, 1, 00, 16+SPEECH_SIZE*MULTIPLY_TALK_Y, 0);
+		ObjPrim_SetVertexPosition(SPEECH_BOT, 2, 16, 00+SPEECH_SIZE*MULTIPLY_TALK_Y, 0);
+		ObjPrim_SetVertexPosition(SPEECH_BOT, 3, 16, 16+SPEECH_SIZE*MULTIPLY_TALK_Y, 0);
+		ObjPrim_SetVertexPosition(SPEECH_BOT, 4, 16+(SPEECH_SIZE*MULTIPLY_TALK_X), 00+SPEECH_SIZE*MULTIPLY_TALK_Y, 0);
+		ObjPrim_SetVertexPosition(SPEECH_BOT, 5, 16+(SPEECH_SIZE*MULTIPLY_TALK_X), 16+SPEECH_SIZE*MULTIPLY_TALK_Y, 0);
+		ObjPrim_SetVertexPosition(SPEECH_BOT, 6, 32+(SPEECH_SIZE*MULTIPLY_TALK_X), 00+SPEECH_SIZE*MULTIPLY_TALK_Y, 0);
+		ObjPrim_SetVertexPosition(SPEECH_BOT, 7, 32+(SPEECH_SIZE*MULTIPLY_TALK_X), 16+SPEECH_SIZE*MULTIPLY_TALK_Y, 0);
+		
+		alternative(whotalk)
+		case(PLAYER1_SPEAKS) {
+			ObjSprite2D_SetDestRect(speechArrow, GetStgFrameWidth/2-110, GetStgFrameHeight-(128+32), GetStgFrameWidth/2-110+32, GetStgFrameHeight-(96+32));
+			ObjRender_SetPosition(SPEECH_TOP, GetStgFrameWidth/2-110, GetStgFrameHeight-130, 0);
+			ObjRender_SetPosition(SPEECH_MID, GetStgFrameWidth/2-110, GetStgFrameHeight-130+16, 0);
+			ObjRender_SetPosition(SPEECH_BOT, GetStgFrameWidth/2-110, GetStgFrameHeight-130+16, 0);
+			ObjRender_SetScaleXYZ(SPEECH_TOP, 1, 1, 1);
+			ObjRender_SetScaleXYZ(SPEECH_MID, 1, 1, 1);
+			ObjRender_SetScaleXYZ(SPEECH_BOT, 1, 1, 1);
+			
+			
+			ObjRender_SetPosition(speechText, GetStgFrameWidth/2-113+16, (GetStgFrameHeight)-120, 0);
+			ObjRender_SetAlpha(speechText, TEXT_ALPHA/50*255);
+			ObjText_SetHorizontalAlignment(speechText,ALIGNMENT_LEFT);
+			
+			Obj_SetRenderPriorityI(playerPort1, 66);
+			Obj_SetRenderPriorityI(playerPort2, 65);
+			
+			
+			if(alpha_player1<255) { alpha_player1+=25; }
+			
+			if(alpha_enemy1>155) { alpha_enemy1-=25; }
+			if(alpha_enemy1<155) { alpha_enemy1+=25; }
+			
+			if(alpha_enemy2>155) { alpha_enemy2-=25; }
+			if(alpha_enemy2<155) { alpha_enemy2+=25; }
+			
+			if(alpha_player2>155) { alpha_player2-=25; }
+			if(alpha_player2<155) { alpha_player2+=25; }
+			
+		}
+		case(PLAYER2_SPEAKS) {
+			ObjSprite2D_SetDestRect(speechArrow, GetStgFrameWidth/2-110, GetStgFrameHeight-(128+32), GetStgFrameWidth/2-110+32, GetStgFrameHeight-(96+32));
+			ObjRender_SetPosition(SPEECH_TOP, GetStgFrameWidth/2-110, GetStgFrameHeight-130, 0);
+			ObjRender_SetPosition(SPEECH_MID, GetStgFrameWidth/2-110, GetStgFrameHeight-130+16, 0);
+			ObjRender_SetPosition(SPEECH_BOT, GetStgFrameWidth/2-110, GetStgFrameHeight-130+16, 0);
+			ObjRender_SetScaleXYZ(SPEECH_TOP, 1, 1, 1);
+			ObjRender_SetScaleXYZ(SPEECH_MID, 1, 1, 1);
+			ObjRender_SetScaleXYZ(SPEECH_BOT, 1, 1, 1);
+			
+			
+			ObjRender_SetPosition(speechText, GetStgFrameWidth/2-113+16, (GetStgFrameHeight)-120, 0);
+			ObjRender_SetAlpha(speechText, TEXT_ALPHA/50*255);
+			ObjText_SetHorizontalAlignment(speechText,ALIGNMENT_LEFT);
+			
+			Obj_SetRenderPriorityI(playerPort1, 65);
+			Obj_SetRenderPriorityI(playerPort2, 66);
+			
+			
+			if(alpha_player2<255) { alpha_player2+=25; }
+			
+			if(alpha_enemy1>155) { alpha_enemy1-=25; }
+			if(alpha_enemy1<155) { alpha_enemy1+=25; }
+			
+			if(alpha_enemy2>155) { alpha_enemy2-=25; }
+			if(alpha_enemy2<155) { alpha_enemy2+=25; }
+			
+			if(alpha_player1>155) { alpha_player1-=25; }
+			if(alpha_player1<155) { alpha_player1+=25; }
+			
+		}
+		case(ENEMY1_SPEAKS) {
+			ObjSprite2D_SetDestRect(speechArrow, GetStgFrameWidth/2+110, GetStgFrameHeight-(128+32), GetStgFrameWidth/2+110-32, GetStgFrameHeight-(96+32));
+			ObjRender_SetPosition(SPEECH_TOP, GetStgFrameWidth/2+110, GetStgFrameHeight-130, 0);
+			ObjRender_SetPosition(SPEECH_MID, GetStgFrameWidth/2+110, GetStgFrameHeight-130+16, 0);
+			ObjRender_SetPosition(SPEECH_BOT, GetStgFrameWidth/2+110, GetStgFrameHeight-130+16, 0);
+			ObjRender_SetScaleXYZ(SPEECH_TOP, -1, 1, 1);
+			ObjRender_SetScaleXYZ(SPEECH_MID, -1, 1, 1);
+			ObjRender_SetScaleXYZ(SPEECH_BOT, -1, 1, 1);
+			ObjRender_SetPosition(speechText, GetStgFrameWidth/2-183+16, (GetStgFrameHeight)-120, 0);
+			ObjRender_SetAlpha(speechText, TEXT_ALPHA/50*255);
+			ObjText_SetHorizontalAlignment(speechText,ALIGNMENT_RIGHT);
+			
+			Obj_SetRenderPriorityI(enemyPort1, 66);
+			Obj_SetRenderPriorityI(enemyPort2, 65);
+			
+			
+			if(alpha_enemy1<255) { alpha_enemy1+=25; }
+			
+			if(alpha_player1>155) { alpha_player1-=25; }
+			if(alpha_player1<155) { alpha_player1+=25; }
+			
+			if(alpha_player2>155) { alpha_player2-=25; }
+			if(alpha_player2<155) { alpha_player2+=25; }
+			
+			if(alpha_enemy2>155) { alpha_enemy2-=25; }
+			if(alpha_enemy2<155) { alpha_enemy2+=25; }
+			
+		}
+		case(ENEMY2_SPEAKS) {
+			ObjSprite2D_SetDestRect(speechArrow, GetStgFrameWidth/2+110, GetStgFrameHeight-(128+32), GetStgFrameWidth/2+110-32, GetStgFrameHeight-(96+32));
+			ObjRender_SetPosition(SPEECH_TOP, GetStgFrameWidth/2+110, GetStgFrameHeight-130, 0);
+			ObjRender_SetPosition(SPEECH_MID, GetStgFrameWidth/2+110, GetStgFrameHeight-130+16, 0);
+			ObjRender_SetPosition(SPEECH_BOT, GetStgFrameWidth/2+110, GetStgFrameHeight-130+16, 0);
+			ObjRender_SetScaleXYZ(SPEECH_TOP, -1, 1, 1);
+			ObjRender_SetScaleXYZ(SPEECH_MID, -1, 1, 1);
+			ObjRender_SetScaleXYZ(SPEECH_BOT, -1, 1, 1);
+			ObjRender_SetPosition(speechText, GetStgFrameWidth/2-183+16, (GetStgFrameHeight)-120, 0);
+			ObjRender_SetAlpha(speechText, TEXT_ALPHA/50*255);
+			ObjText_SetHorizontalAlignment(speechText,ALIGNMENT_RIGHT);
+			
+			Obj_SetRenderPriorityI(enemyPort1, 65);
+			Obj_SetRenderPriorityI(enemyPort2, 66);
+			
+			
+			if(alpha_enemy2<255) { alpha_enemy2+=25; }
+			
+			if(alpha_player1>155) { alpha_player1-=25; }
+			if(alpha_player1<155) { alpha_player1+=25; }
+			
+			if(alpha_player2>155) { alpha_player2-=25; }
+			if(alpha_player2<155) { alpha_player2+=25; }
+			
+			if(alpha_enemy1>155) { alpha_enemy1-=25; }
+			if(alpha_enemy1<155) { alpha_enemy1+=25; }
+			
+		}
+		case(UNKNOWN1_SPEAKS) {
+			ObjSprite2D_SetDestRect(speechArrow, -1000, -1000, -1000, -1000);
+			ObjRender_SetPosition(SPEECH_TOP, GetStgFrameWidth/2-110, GetStgFrameHeight-130, 0);
+			ObjRender_SetPosition(SPEECH_MID, GetStgFrameWidth/2-110, GetStgFrameHeight-130+16, 0);
+			ObjRender_SetPosition(SPEECH_BOT, GetStgFrameWidth/2-110, GetStgFrameHeight-130+16, 0);
+			ObjRender_SetScaleXYZ(SPEECH_TOP, 1, 1, 1);
+			ObjRender_SetScaleXYZ(SPEECH_MID, 1, 1, 1);
+			ObjRender_SetScaleXYZ(SPEECH_BOT, 1, 1, 1);
+			ObjRender_SetPosition(speechText, GetStgFrameWidth/2-113+16, (GetStgFrameHeight)-120, 0);
+			ObjRender_SetAlpha(speechText, TEXT_ALPHA/50*255);
+			ObjText_SetHorizontalAlignment(speechText,ALIGNMENT_LEFT);
+			
+			if(alpha_enemy2>255) { alpha_enemy2-=25; }
+			
+			if(alpha_player1>155) { alpha_player1-=25; }
+			
+			if(alpha_player2>155) { alpha_player2-=25; }
+			
+			if(alpha_enemy1>155) { alpha_enemy1-=25; }
+		}
+		case(UNKNOWN2_SPEAKS) {
+			ObjSprite2D_SetDestRect(speechArrow, -1000, -1000, -1000, -1000);
+			ObjRender_SetPosition(SPEECH_TOP, GetStgFrameWidth/2+110, GetStgFrameHeight-130, 0);
+			ObjRender_SetPosition(SPEECH_MID, GetStgFrameWidth/2+110, GetStgFrameHeight-130+16, 0);
+			ObjRender_SetPosition(SPEECH_BOT, GetStgFrameWidth/2+110, GetStgFrameHeight-130+16, 0);
+			ObjRender_SetScaleXYZ(SPEECH_TOP, -1, 1, 1);
+			ObjRender_SetScaleXYZ(SPEECH_MID, -1, 1, 1);
+			ObjRender_SetScaleXYZ(SPEECH_BOT, -1, 1, 1);
+			ObjRender_SetPosition(speechText, GetStgFrameWidth/2-183+16, (GetStgFrameHeight)-120, 0);
+			ObjRender_SetAlpha(speechText, TEXT_ALPHA/50*255);
+			ObjText_SetHorizontalAlignment(speechText,ALIGNMENT_RIGHT);
+			
+			if(alpha_enemy2>255) { alpha_enemy2-=25; }
+			
+			if(alpha_player1>155) { alpha_player1-=25; }
+			
+			if(alpha_player2>155) { alpha_player2-=25; }
+			
+			if(alpha_enemy1>155) { alpha_enemy1-=25; }
+		}
+		yield;
+	}
+	
+	Obj_Delete(SPEECH_TOP);
+	Obj_Delete(SPEECH_MID);
+	Obj_Delete(SPEECH_BOT);
+	Obj_Delete(speechText);
+	Obj_Delete(speechArrow);
+	Obj_Delete(playerPort1);
+	Obj_Delete(enemyPort1);
+	Obj_Delete(playerPort2);
+	Obj_Delete(enemyPort2);
+
+	SetForbidPlayerShot(false);
+	SetCommonData("forbidshot",false);
+	SetForbidPlayerSpell(false);
+	
+	loop(10) { yield; }
+}
+function SetMovePortraitPosition(obj,x,y,weight,max_speed,type) {
+	let distance = RetrieveDistance(ObjRender_GetX(obj),ObjRender_GetY(obj),x,y);
+	let angle = atan2(y-ObjRender_GetY(obj), x-ObjRender_GetX(obj));
+	while(distance > 0.4){
+		if(stop == true) { break; }
+		let speed = distance/weight;
+		if(speed > max_speed) { speed = max_speed; }
+		ObjRender_SetX(obj, ObjRender_GetX(obj) + cos(angle)*speed);
+		ObjRender_SetY(obj, ObjRender_GetY(obj) + sin(angle)*speed);
+		distance = RetrieveDistance(ObjRender_GetX(obj),ObjRender_GetY(obj),x,y);
+		yield;
+	}
+	ObjRender_SetPosition(obj,x,y,0);
+}
+task SetMovePortraitPosition01(obj,x,y,weight,max_speed,type) {
+	let distance = RetrieveDistance(ObjRender_GetX(obj),ObjRender_GetY(obj),x,y);
+	let angle = atan2(y-ObjRender_GetY(obj), x-ObjRender_GetX(obj));
+	while(distance > 0.4){
+		if(stop == true) { break; }
+		let speed = distance/weight;
+		if(speed > max_speed) { speed = max_speed; }
+		ObjRender_SetX(obj, ObjRender_GetX(obj) + cos(angle)*speed);
+		ObjRender_SetY(obj, ObjRender_GetY(obj) + sin(angle)*speed);
+		distance = RetrieveDistance(ObjRender_GetX(obj),ObjRender_GetY(obj),x,y);
+		yield;
+	}
+	ObjRender_SetPosition(obj,x,y,0);
+}
+function RetrieveDistance(x1,y1,x2,y2) {
+	return ((x1-x2)^2+(y1-y2)^2)^(1/2);
+}

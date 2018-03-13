@@ -1,0 +1,346 @@
+#TouhouDanmakufu[Single]
+#ScriptVersion[3]
+#Title["Ribbon \"All Souls Jointly Under Heaven\""]
+#Text["..."] 
+#BGM["./bgm/bgm - SSS Boss6.ogg"]
+#System["./system/Default_System.txt"]
+#Background["./system/Background_Sky.txt"]
+
+#include "./Index.txt"
+
+let timer = 27; //37
+
+let interrupt=false;
+
+@Event
+{
+	alternative(GetEventType())
+	case(EV_REQUEST_LIFE)
+	{
+		SetScriptResult(2000);
+	}
+	case(EV_REQUEST_SPELL_SCORE){
+        SetScriptResult(5000000);
+    }
+	case(EV_REQUEST_IS_DURABLE_SPELL) {
+		SetScriptResult(true);
+	}
+//	case(EV_REQUEST_IS_LAST_SPELL){
+//		SetScriptResult(true);
+//	}
+	
+	case(EV_REQUEST_TIMER) { SetScriptResult(timer*60); }
+}
+@Initialize
+{
+	SetCommonData("CurrentSC","Ribbon \"All Souls Jointly Under Heaven\"");
+	SetCommonData("Difficulty","Lunatic");
+	
+	boss = spawnBoss();
+	
+	ObjEnemy_SetDamageRate(boss,0,0);
+	//SetShotAutoDeleteClip(64,96,64,64);
+	SetShotAutoDeleteClip(16,16,16,16);
+	//SetShotAutoDeleteClip(32,32,32,32);
+	
+	MainTask;
+	
+
+}
+@MainLoop
+{
+
+	if(ObjEnemy_GetInfo(boss, INFO_LIFE) <= 0 && !finishing)
+	{
+		finishing = true;
+		TBreakSpell([]);
+	}
+	else {
+		SetBossHitbox(boss,ex,ey);
+	}
+	frame++;
+	yield;
+}
+
+
+task MainTask {
+	ObjEnemy_SetDamageRate(boss,0,0);
+	ObjMove_SetDestAtFrame(boss, cx, cy-120, 60);
+	
+	SetSpellCard;
+	MCircNextAlpha = 80;
+	Obj_SetValue(objSpellCircle,"MaxAlpha",64);
+	
+	ObjEnemyBossScene_StartSpell(objScene);
+	ObjEnemyBossScene_SetSpellTimer(objScene,timer*60); //5760
+	
+	SetCaution;
+	//SetBossBlur(true);
+	AuraRainbow(boss,255,255,255);
+	TSpellImmune;
+
+	//ConcentrationA2(boss,"HEXAGON",90,3,10,[255,0,255]);
+		
+//	wait(90);
+//	Tmovement(cx-120,cx+120, cy-90,cy-60, 60,240, [MOVE_PLAYERBIAS,2,0,MOVE_MAXSPEED,1.5] );
+	ObjEnemy_SetDamageRate(boss,24,8);
+	frame = 0;
+	
+	ScreenShake(30,6,6);
+	wait(30);
+	ScreenShake(30,8,8);
+	wait(30);
+	ScreenShake(30,10,10);
+	wait(30);
+	ScreenShake(125,12,12);
+	
+	TShoot;
+	FuckDaPolice;
+}
+
+
+
+
+task TShoot{
+	let a = rand(0,360); let shot;
+	ObjMove_SetDestAtFrame(boss,0,0,125);
+	wait(90);
+	wait(35);
+	while(!Obj_IsDeleted(boss)){	
+		
+		loop(50){ shot = CreateShotA2(0,0,0,a,0.15,5, GLOW_RED+500+randint(0,6),15); ObjMove_SetAngularVelocity(shot,rand(-0.5,0.5));  a+=rand(5,15);} SE_Play(se_anchor,100);
+		BossShots(205);
+		StarRoad(0 ,0,cx,cy*0.7,sx,cy ,110,70, 0.5, 35,3,true);
+		wait(35);br;
+		StarRoad(sx,cy,cx,cy*0.7,0 ,cy, 70,110, 0.5, 35,3,true);
+		wait(35);br;
+		StarRoad(0 ,cy,cx,cy*0.7,sx,0 ,110,70, 0.5, 35,3,true);
+		wait(35);
+		wait(100);br;
+		
+		loop(50){ shot = CreateShotA2(sx,0,0,a,0.15,5, GLOW_RED+500+randint(0,6),15);  ObjMove_SetAngularVelocity(shot,rand(-0.5,0.5));  a+=rand(5,15);} SE_Play(se_anchor,100);
+		BossShots(205);
+		StarRoad(sx ,0,cx,cy*0.7,0 ,cy,110,70, 0.5, 35,3,true);
+		wait(35);br;
+		StarRoad(0 ,cy,cx,cy*0.7,sx,cy, 70,110, 0.5, 35,3,true);
+		wait(35);br;
+		StarRoad(sx,cy,cx,cy*0.7,0 ,0 , 110,70, 0.5, 35,3,true);
+		wait(35);
+		wait(100);br;
+	}
+}
+
+task StarRoad(x0,y0,x1,y1,x2,y2, a0,a1, mangv, num,mun, follow){
+	let x; let y; let a; let shot; let shots; let pos;
+	let dt = 1/num;
+	let bangv = mangv/mun;
+	ascent(i in 0..num) {
+		pos = bqurp(x0,y0,x1,y1,x2,y2, i*dt);
+		x=pos[0]; y=pos[1]; a = lerpa(a0,a1,i*dt);
+		ascent(j in 0..mun){
+			shot = CreateShotA2(x+10*j*cos(a),y+10*j*sin(a),0,a, 0.005,2, STAR_MAGENTA-randBin*2 ,25);	//STAR_RED+500+randint(0,6)
+			ObjMove_SetAngularVelocity(shot,rand(-bangv,bangv)*(j+1));
+		}
+		if(follow){ObjMove_SetDestAtFrame(boss,qurp(x0,x1,x2,(i+15)*dt),qurp(y0,y1,y2,(i+15)*dt),15);}
+		SE_Play(se_kira02,100);
+		yield; //wait(time/num);
+		br;
+	}
+
+}
+
+task BossShots(dur){
+	let shot;
+	ascent(i in 0..dur/2){
+		shot = CreateShotA2(ex,ey,0,GetAngleToPlayer(boss), 0.15,5, HEART_RED+500+randint(0,6) ,25);	//STAR_RED+500+randint(0,6)
+		ObjRender_SetScaleXYZ(shot,0.5,0.5,1);
+		//WrapA1(shot,1,[BTM]);
+		yield;yield; br;
+	}
+}
+
+
+
+task TShoot2{
+	let shot; let pos; let x; let y; let a = rand(0,360);
+	let x0; let y0; let x1; let y1; let x2; let y2;
+	ObjMove_SetDestAtFrame(boss,tern(ex<cx,-100,sx+100),ey,35);
+	wait(35);
+	let dir = -1;
+	while(!Obj_IsDeleted(boss)){	
+		
+		//loop(50){ shot = CreateShotA2(0,0,0,a,0.15,5, GLOW_RED+500+randint(0,6),15); ObjMove_SetAngularVelocity(shot,rand(-0.5,0.5));  a+=rand(5,15);} SE_Play(se_anchor,100);
+		Swooce(dir,90);
+		wait(120);br;
+		
+		x0 = cx-cx*2*dir; y0 = cy-120;
+		x1 = cx;          y1 = sy*3/4;
+		x2 = cx+cx*2*dir; y2 = 120;
+		StarRoad(x0,y0,x1,y1,x2,y2 ,90+80*dir,90-80*dir, 0.15, 25,4,false);
+		StarRoad(x0,y0,x1,y1,x2,y2 ,270+80*dir,270-80*dir, 0.15, 25,4,false);
+		wait(45);br;
+		StarRoad(x2,y2,x1,y1,x0,y0 ,90+80*dir,90-80*dir, 0.15, 30,4,false);
+		StarRoad(x2,y2,x1,y1,x0,y0 ,270+80*dir,270-80*dir, 0.15, 30,4,false);
+		wait(45);br;
+		StarRoad(x0,y0,x1,y1,x2,y2 ,90+80*dir,90-80*dir, 0.15, 35,4,false);
+		StarRoad(x0,y0,x1,y1,x2,y2 ,270+80*dir,270-80*dir, 0.15, 35,4,false);
+		
+		wait(120);br;
+		dir*=-1;
+		
+	}
+}
+
+task Swooce(dir,time){
+	let shot; let pos; let x; let y; let a;
+	let x0 = cx-cx*2*dir; let y0 = cy-120;
+	let x1 = cx;             let y1 = sy*3/4;
+	let x2 = cx+cx*2*dir; let y2 = 120;
+	//ObjMove_SetPosition(boss,x0,y0);
+	let del = 5;
+	let dt = del/time;
+	ascent(i in 0..time/del){
+		pos = bqurp(x0,y0,x1,y1,x2,y2, i*dt);
+		x=pos[0]; y=pos[1];
+		ObjMove_SetDestAtFrame(boss,qurp(x0,x1,x2,i*dt),qurp(y0,y1,y2,i*dt),15);
+		ex=ObjMove_GetX(boss); ey=ObjMove_GetY(boss);
+		
+		ascent(j in -1..2){
+			ascent(k in 0..4){
+				a = 45+90*k; //+15*j
+				shot = CreateShotA2(ex+30*j*cos(a+90),ey+30*j*sin(a+90),0,a+15*j, 0.15,5, HEART_RED+500+randint(0,6) ,25);	//STAR_RED+500+randint(0,6)
+				ObjRender_SetScaleXYZ(shot,0.75,0.75,1);	
+			}
+		}
+		SE_Play(se_shot2,60);
+		wait(del); br;
+		//wait(10);br;
+	}
+}
+
+
+
+task TShoot3{
+	let shot; let pos; let x; let y; let a = rand(0,360);
+	let x0; let y0; let x1; let y1; let x2; let y2;
+	ObjMove_SetDestAtFrame(boss,tern(ex<cx,-100,sx+100),ey,35);
+	wait(35);
+	let dir = -1;
+	let del0 = 120; let del = del0; let count = 0;
+	
+	x0 = cx-cx*2*dir; y0 = cy-120; 
+	x1 = cx+cx*2*dir; y1 = 120;
+	while(!Obj_IsDeleted(boss)){	
+
+		StarDominance(x0,y0,x1,y1 ,90 +80*dir,90 -80*dir, 0.35, 25,4,true);
+		StarDominance(x0,y0,x1,y1 ,270+80*dir,270-80*dir, 0.35, 25,4,false);
+		StarDominance(x0,y0,x1,y1 ,90 +80*dir,90 -80*dir, 0.15, 35,4,false);
+		StarDominance(x0,y0,x1,y1 ,270+80*dir,270-80*dir, 0.15, 35,4,false);
+				
+		wait(del);br;
+		dir*=-1; count++;
+		x0=x1; y0=y1; x1 = cx+cx*2*dir*rand(0.8,1.2); 
+		y1 = (cy/2+(y0+rand(-60,60))/2)/2;
+		
+		del = max( del0 - 3*sqrt(60*count),  15);
+		
+	}
+}
+
+task StarDominance(x0,y0,x1,y1, a0,a1, mangv, num,mun, follow){
+	let x; let y; let a; let shot; let shots; let pos;
+	let dt = 1/num;
+	let bangv = mangv/mun;
+	SE_Play(se_shot,100);
+	SE_Play(se_slash,60);
+	if(follow){ObjMove_SetDestAtFrame(boss,x1,y1,num);}
+	ascent(i in 0..num) {
+		pos = blerp(x0,y0,x1,y1, i*dt);
+		x=pos[0]; y=pos[1]; a = lerpa(a0,a1,i*dt);
+		ascent(j in 0..mun){
+			shot = CreateShotA2(x+10*j*cos(a),y+10*j*sin(a),0,a, 0.15,3, STAR_MAGENTA-randBin*2 ,25);	//STAR_RED+500+randint(0,6)
+			ObjMove_SetAngularVelocity(shot,rand(-bangv,bangv)*(j+1));
+		}
+		// if(follow){ObjMove_SetDestAtFrame(boss,lerp(x0,x1,(i+15)*dt),lerp(y0,y1,(i+15)*dt),5);}
+		SE_Play(se_kira02,100);
+		yield; //wait(time/num);
+		br;
+	}
+
+}
+
+
+
+
+
+
+
+
+
+
+task FuckDaPolice{
+	while(GetTimer>0.1){yield;}
+	FakeBreakSpell(25);
+	wait(150);	//
+	interrupt=false;
+	TShoot2;	//
+	
+	while(GetTimer>0.1){yield;}	//
+	FakeBreakSpell(30);
+	wait(150);
+	Obj_FadeDelete(objSpellCircle);
+	interrupt=false;
+	TShoot3;
+	
+	while(GetTimer>0.1){yield;}
+	ExplosionB4(boss,"HEXAGON",[255,255,255],[255,255,255]);
+	SE_Play(defeated,100);
+	StartSlow(TARGET_ALL,30);
+	loop(90){
+		DeleteShotAll(TYPE_ALL,TYPE_ITEM);
+		ObjEnemyBossScene_SetSpellTimer(objScene,0.1);
+		yield;
+	}
+	interrupt=true;
+	StopSlow(TARGET_ALL);
+	Obj_SetVisible(boss,false);
+	setdat("HideMagicCircleTime",5);
+	setdat("HideMagicCircle",true);
+	loop(45){
+		DeleteShotAll(TYPE_ALL,TYPE_ITEM);
+		ObjEnemyBossScene_SetSpellTimer(objScene,0.1);
+		yield;
+	}
+	ObjEnemyBossScene_SetSpellTimer(objScene,0);
+	setlife(0);
+	Obj_Delete(boss);
+	
+}
+function FakeBreakSpell(newtimer){
+	ObjEnemyBossScene_SetSpellTimer(objScene,newtimer*60);
+	SE_Play(spellbreak,100);
+	DeleteShotAll(TYPE_ALL,TYPE_ITEM);
+	//AfterImageCircle(ex,ey,[255,255,255,255],1,20,30,BLEND_ADD_ARGB,79);
+	let eff = GlowCircle(ex,ey,[255,255,255,255],1,20,30);
+	Obj_SetRenderPriorityI(eff,79);
+	interrupt=true;
+	ObjMove_SetSpeed(boss,0);
+	LifebarDip;
+}
+
+task LifebarDip{
+	let dt = 1/90;
+	ascent(i in 0..60){
+		setlife(2000 - 1950*abs(sin(i*180*dt)) );
+		yield;
+	}
+	SE_Play(se_charge3b,100);
+	dt = 1/240;
+	let l=getlife;
+	ascent(i in 0..150){
+		setlife(l + 2000*abs(sin(i*180*dt)) );
+		yield;
+	}
+}
+
+function br{if(interrupt){break;}}

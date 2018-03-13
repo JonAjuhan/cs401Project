@@ -1,0 +1,278 @@
+#TouhouDanmakufu[Single]
+#ScriptVersion[3]
+#Title["Wonder \"Cloud Sea of Another World\""]
+#Text["..."] 
+#BGM["./bgm/bgm - Bhava-Agra As Seen Through a Child's Mind.mp3"]
+#System["./system/Default_System.txt"]
+#Background["./system/Background_Stars.txt"]
+
+#include "./Index.txt"
+
+
+
+
+let fog;
+
+let timer = 30;
+
+@Event
+{
+	alternative(GetEventType())
+	case(EV_REQUEST_LIFE)
+	{
+		SetScriptResult(2000);
+	}
+	case(EV_REQUEST_SPELL_SCORE){
+        SetScriptResult(5000000);
+    }
+	 //case(EV_REQUEST_IS_DURABLE_SPELL) {
+		// SetScriptResult(true);
+	 //}
+	case(EV_REQUEST_TIMER) { SetScriptResult(timer*60); } //4500
+}
+@Initialize
+{
+	SetCommonData("CurrentSC","Wonder \"Cloud Sea of Another World\"");
+	SetCommonData("Difficulty","Extra");
+	
+	boss = spawnBoss();
+	
+	ObjEnemy_SetDamageRate(boss,0,0);
+	SetShotAutoDeleteClip(32,32,32,32);
+	
+	EnemyName(boss, "Andi", 255, 180, 255);
+	
+	MainTask;
+	
+
+}
+@MainLoop
+{
+
+	if(ObjEnemy_GetInfo(boss, INFO_LIFE) <= 0 && !finishing)
+	{
+		finishing = true;
+		TBreakSpell([]);
+	}
+	else {
+		SetBossHitbox(boss,ex,ey);
+	}
+	frame++;
+	yield;
+}
+
+
+task MainTask {
+	
+	ObjEnemy_SetDamageRate(boss,0,0);
+	//ObjMove_SetDestAtFrame(boss, rand(cx+60, cx-60), rand(cy-120, cy-90), 60);
+	ObjMove_SetDestAtFrame(boss, cx, cy-120, 60);
+	
+	SetSurvivalCard;
+	MCircNextAlpha = 80;
+	Obj_SetValue(objSpellCircle,"MaxAlpha",64);
+	
+	ObjEnemyBossScene_StartSpell(objScene);
+	ObjEnemyBossScene_SetSpellTimer(objScene,timer*60); //5760
+	//TAfterImageBoss(boss,[255,255,255],1,1,15,3,BLEND_ADD_ARGB,0);
+	//SE_Play(nyaa,60);
+	//SetCaution;
+	
+	SetBossBlur(true);
+
+	wait(90);
+	
+	ObjEnemy_SetDamageRate(boss,24,8);
+
+
+	
+	frame = 0;
+	
+//	TShoot;
+	TBigShots;
+	//Tmovement(cx-60,cx+60, cy,cy-60, 60,240, []); //[MOVE_PLAYERBIAS,2,0]
+	Tmovement(30,sx-30, 30,cy+90, 60,240, [MOVE_NEAR,150,MOVE_FAR,50,MOVE_PNLSPACE,50,MOVE_MAXSPEED,1.5,MOVE_SMOOTH,10]); //[MOVE_PLAYERBIAS,2,0]
+
+	//CallFan("Bright",1);
+	//Aura (boss,255,0,200);
+	Aura (boss,180,180,255);
+	TFog;
+	
+	wait(180); 
+	TShoot;
+	
+}
+
+
+
+
+
+//Grid of shots
+task TShoot {
+	let seobj = ObjSound_Create;
+	let shot;
+	
+
+	//let types = [758]; let nt = length(types);
+	
+	let gap = 30; //30
+	let xgap = gap; let ygap = gap;
+	let xN = ceil(sx/xgap)+1; let yN = ceil(sy/ygap)+1;
+	
+	let xoff = absolute(xgap*xN-sx)/2; let yoff = absolute(ygap*yN-sy)/2;
+	
+//	let spd = 0.75;
+//	let ang = 45;
+//	let mainspd = spd*cos(ang);
+//	let driftspd= spd*sin(ang);
+	
+	let mainspd =  0.75; 
+	let driftspd = 0;
+	
+	let type = 758; //212
+	
+	
+	let del = gap/mainspd;
+	
+	while(!Obj_IsDeleted(boss)) {
+		//Vertical shots, created across X
+		ascent(i in 0..xN-1){
+			//down and right
+			shot = CreateShotB1(xgap*i-xoff,  -yoff, driftspd, mainspd, type,0);
+			//WrapA1(shot,-1,[LFT,RGT]);
+			//up and left
+			shot = CreateShotB1(xgap*i-xoff,sy+xoff,-driftspd,-mainspd, type,0);
+			//WrapA1(shot,-1,[RGT,LFT]);
+		}
+		//Horizontal shots, created across Y
+		ascent(i in 0..yN-1){
+			//right and up
+			shot = CreateShotB1( -xoff, ygap*i-yoff, mainspd,-driftspd, type,0);
+			//WrapA1(shot,-1,[TOP,BTM]);
+			//left and down
+			shot = CreateShotB1(sx+xoff,ygap*i-yoff,-mainspd, driftspd, type,0);
+			//WrapA1(shot,-1,[BTM,TOP]);
+		}
+		//SE_PlayA2(se_chime,40,seobj,30);
+		wait(del);
+		
+		
+	}
+}
+
+
+
+task TBigShots {
+	let shot; //let ang;
+	
+	let x; let y; let dx; let dy;
+	let dir=1;
+	
+	let types = [292,296,298]; let nt = length(types);
+	
+	while(!Obj_IsDeleted(boss)) {
+		wait(30);
+		SetAttackPose(45);
+		wait(30);
+		
+	
+		
+		//random bezier curves
+		//let arrx = [tern(randbool,0,sx)]; loop(5){arrx = arrx~[rand(0,sy)];} arrx = arrx~[tern(randbool,0,sx)];
+		//let arry = [tern(randbool,0,sy)]; loop(5){arry = arry~[rand(0,sy)];} arry = arry~[tern(randbool,0,sy)];
+		
+		let startx    = GetSwordTipX; 
+		let controlx  = GetQuadraticBezierPoint(0,ex,sx,rand(0,1));
+		let control2x = px;
+		let endx      = cx-(ex-cx);
+		
+		let starty    = GetSwordTipY;
+		let controly  = swdy*2/3;
+		let control2y = swdy*1/3;
+		let endy      = 0; 			//let endy = tern(randbool,0,sy);
+		
+		let N = 60; //50
+		ascent(i in 0..N) {
+			
+			x = GetCubicBezierPoint(startx,controlx,control2x,endx,i/N);
+			y = GetCubicBezierPoint(starty,controly,control2y,endy,i/N);
+			dx = rand(-1,1);
+			dy = rand(0,1);
+			
+			if(Distance(x,y,px,py)>30){
+				shot = CreateShotB2(x,y,0,0,  dx*0.1,dy*0.1,  dx,dy,  734,25); //15	//712
+			}else{
+				//WarnShotB2(x,y,712,0,15);
+				WarnShotA2(x,y,712,0,[255,255,255],15,15);
+			}
+		}
+		
+		SE_Play(se_anchor,100);
+		SE_Play(se_thunder,100);
+		
+		GlowCircle(startx,starty,[255,255,0,255],0,4,30);
+		GlowCircle(endx,endy,    [255,255,0,255],4,-3.5,30);
+		
+		ConcentrationA4Invert(boss,"HEXAGON",3,50,[255,0,200]);	
+		dir*=-1;
+		
+		wait(120);
+	}
+	
+	
+}
+
+
+
+// task ReAim(shot, del, mspd, scl) {
+	// let dA;
+	// while(!Obj_IsDeleted(shot)){
+		// dA = (GetAngleToPlayer(shot)-ObjMove_GetAngle(shot))%180;
+		// if( dA < 91 && dA > 89 ) {
+			// //ObjMove_SetAngle(shot,GetAngleToPlayer(shot));
+			// ObjMove_AddPatternA2(shot,0, 0,GetAngleToPlayer(shot), 0.075*scl,0, mspd*scl);
+			// return;
+		// }
+		// yield;
+	// }
+// }
+
+
+
+
+
+
+task TFog {
+	
+	let targ = CreateShotA1(ex,ey,0,0,0,0); 
+	ObjShot_SetSpellResist(targ,true);
+	ObjShot_SetAutoDelete(targ,false);
+	
+	fog = NightBlindA1(600,100,240,  0,255,30);
+	ObjRender_SetColor(fog,255,128,255);
+	ObjRender_SetBlendType(fog,BLEND_ALPHA);
+	Obj_SetValue(fog,"Target",targ);
+	
+	fog = NightBlindA1(700,200,240,  0,255,30);
+	ObjRender_SetColor(fog,255,128,128);
+	ObjRender_SetBlendType(fog,BLEND_ALPHA);
+	Obj_SetValue(fog,"Target",targ);
+	Obj_SetValue(fog,"RotSpeed",2);
+	Obj_SetValue(fog,"Check",false);
+	
+	//"Clouds"
+	fog = NightBlindA1(800,300,240,  0,255,30);
+	ObjRender_SetColor(fog,128,128,255);
+	ObjRender_SetBlendType(fog,BLEND_ADD_ARGB);
+	Obj_SetValue(fog,"Target",targ);
+	Obj_SetValue(fog,"RotSpeed",3);
+	Obj_SetValue(fog,"Check",false);
+	
+	while(!Obj_IsDeleted(boss)){
+		ObjMove_SetDestAtFrame(targ,ex,ey,240);
+		yield;
+	}
+	
+	
+	
+}

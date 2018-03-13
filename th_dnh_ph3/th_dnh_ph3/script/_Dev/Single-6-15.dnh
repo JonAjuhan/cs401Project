@@ -1,0 +1,119 @@
+#TouhouDanmakufu[Single]
+#ScriptVersion[3]
+#Title["Isshokenmei \"Mind Suffocation\""]
+#Text["..."] 
+#BGM["./bgm/bgm - SSS Boss6.ogg"]
+#System["./system/Default_System.txt"]
+#Background["./system/Background_Sky.txt"]
+
+#include "./Index.txt"
+
+let timer = 37; //37
+
+@Event
+{
+	alternative(GetEventType())
+	case(EV_REQUEST_LIFE)
+	{
+		SetScriptResult(2000);
+	}
+	case(EV_REQUEST_SPELL_SCORE){
+        SetScriptResult(5000000);
+    }
+	case(EV_REQUEST_IS_DURABLE_SPELL) {
+		SetScriptResult(true);
+	}
+//	case(EV_REQUEST_IS_LAST_SPELL){
+//		SetScriptResult(true);
+//	}
+	
+	case(EV_REQUEST_TIMER) { SetScriptResult(timer*60); }
+}
+@Initialize
+{
+	SetCommonData("CurrentSC","Isshokenmei \"Mind Suffocation\"");
+	SetCommonData("Difficulty","Last Word");
+	
+	boss = spawnBoss();
+	
+	ObjEnemy_SetDamageRate(boss,0,0);
+	//SetShotAutoDeleteClip(64,96,64,64);
+	SetShotAutoDeleteClip(16,16,16,16);
+	//SetShotAutoDeleteClip(32,32,32,32);
+	
+	MainTask;
+	
+
+}
+@MainLoop
+{
+
+	if(ObjEnemy_GetInfo(boss, INFO_LIFE) <= 0 && !finishing)
+	{
+		finishing = true;
+		TBreakSpell([]);
+	}
+	else {
+		SetBossHitbox(boss,ex,ey);
+	}
+	frame++;
+	yield;
+}
+
+
+task MainTask {
+	ObjEnemy_SetDamageRate(boss,0,0);
+	ObjMove_SetDestAtFrame(boss, cx, cy-120, 60);
+	
+	SetSpellCard;
+	MCircNextAlpha = 80;
+	Obj_SetValue(objSpellCircle,"MaxAlpha",64);
+	
+	ObjEnemyBossScene_StartSpell(objScene);
+	ObjEnemyBossScene_SetSpellTimer(objScene,timer*60); //5760
+	
+	//SetCaution;
+	//SetBossBlur(true);
+	AuraRainbow(boss,255,255,255);
+	TSpellImmune;
+
+	//ConcentrationA2(boss,"HEXAGON",90,3,10,[255,0,255]);
+		
+	wait(90);
+	Tmovement(cx-120,cx+120, cy-90,cy-60, 60,240, [MOVE_PLAYERBIAS,2,0,MOVE_MAXSPEED,1.5] );
+	ObjEnemy_SetDamageRate(boss,24,8);
+	frame = 0;
+	
+	
+	//TShoot3;
+	TRose;
+}
+
+
+
+
+
+task TRose{
+	let shot; let x; let y;
+	let a = 0; let t; let r;
+	let N=100;
+	let count = 0;
+	while(!Obj_IsDeleted(boss)){	
+		SetAttackPose(40);
+		wait(20);
+		
+		ascent(i in 0..2*N){
+			t = 360*floor(i/2)/N;
+			r = 50*cos(8*t+a);
+			x = swdx+r*cos(t); y = swdy+r*sin(t);
+			shot = CreateShotA2(x,y,0,t+a,0.025,1.5, BALL_O_MAGENTA+500-randBin*2,15); 
+			ObjMove_SetAngularVelocity(shot,0.1*altSign(i));
+			BounceA1(shot,3,[LFT,RGT,TOP]);
+		}
+		SE_Play(se_chime2,100);
+		//a += 15;
+		count++;
+		a = 0+45*sin(15*count);
+		wait(180); //200
+	}
+}

@@ -1,0 +1,158 @@
+#TouhouDanmakufu[Single]
+#ScriptVersion[3]
+#Title["Fantasy \"Yearning for Another Life\""]
+#Text["..."] 
+#BGM["./bgm/bgm - Bhava-Agra As Seen Through a Child's Mind.mp3"]
+#System["./system/Default_System.txt"]
+#Background["./system/Background_Sky.txt"]
+
+#include "./Index.txt"
+
+let flw;
+
+let timer = 37; //30
+
+@Event
+{
+	alternative(GetEventType())
+	case(EV_REQUEST_LIFE)
+	{
+		SetScriptResult(2000);
+	}
+	case(EV_REQUEST_SPELL_SCORE){
+        SetScriptResult(5000000);
+    }
+	case(EV_REQUEST_IS_DURABLE_SPELL) {
+		SetScriptResult(true);
+	}
+//	case(EV_REQUEST_IS_LAST_SPELL){
+//		SetScriptResult(true);
+//	}
+	
+	case(EV_REQUEST_TIMER) { SetScriptResult(timer*60); } //4500
+}
+@Initialize
+{
+	SetCommonData("CurrentSC","Fantasy \"Yearning for Another Life\"");
+	SetCommonData("Difficulty","Extra");
+	
+	boss = spawnBoss();
+	
+	ObjEnemy_SetDamageRate(boss,0,0);
+	SetShotAutoDeleteClip(64,96,64,64);
+	
+	MainTask;
+	
+
+}
+@MainLoop
+{
+
+	if(ObjEnemy_GetInfo(boss, INFO_LIFE) <= 0 && !finishing)
+	{
+		finishing = true;
+		TBreakSpell([]);
+	}
+	else {
+		SetBossHitbox(boss,ex,ey);
+	}
+	frame++;
+	yield;
+}
+
+
+task MainTask {
+	
+	ObjEnemy_SetDamageRate(boss,0,0);
+	ObjMove_SetDestAtFrame(boss, cx, cy-120, 60);
+	
+	SetSpellCard;
+//	MCircNextAlpha = 80;
+//	Obj_SetValue(objSpellCircle,"MaxAlpha",64);
+	
+	ObjEnemyBossScene_StartSpell(objScene);
+	ObjEnemyBossScene_SetSpellTimer(objScene,timer*60); //5760
+	
+	SetCaution;
+	SetBossBlur(true);
+	AuraRainbow(boss,255,255,255);
+
+	//ConcentrationA2(boss,"HEXAGON",90,3,10,[255,0,255]);
+	
+	flw = CreateShotA2(cx,cy,0,0,0,0, FLOWER_STILL_WHITE ,30);
+	ObjShot_SetSpellResist(flw,true);
+	ObjRender_SetColor(flw,255,0,255);
+	ObjRender_SetAngularVelocity(flw,2);
+	
+	wait(90);
+	Tmovement(cx-120,cx+120, cy-90,cy-60, 60,240, [MOVE_PLAYERBIAS,2,0,MOVE_MAXSPEED,1.5] );
+	ObjEnemy_SetDamageRate(boss,24,8);
+	frame = 0;
+
+	TShoot;
+	TBigShots;
+}
+
+
+
+
+task TShoot {
+	
+	let shot;
+
+	let a=45;
+	
+	
+	
+	let count = 0;
+	
+	while(!Obj_IsDeleted(boss)) {
+		SE_Play(se_chime,40);
+		
+		loop(2){
+
+			shot = CreateShotA2(cx,cy,2,a,1,3, BALL_O_MAGENTA-2*(count%2)+500 ,0);
+			ObjMove_SetAngularVelocity(shot,1*altSign(count));
+			WrapA1(shot,4,[LFT,RGT,TOP,BTM]);
+			Trail(shot);
+			count++;
+		}
+		
+		wait(5); a+=45;
+	}
+}
+
+task Trail(shot){
+	wait(rand(0,10));
+	while(!Obj_IsDeleted(shot)){
+		AfterImageShot(shot,GetDelayColor(shot),0,1,40,BLEND_ADD_ARGB,21);
+		wait(10);
+	}
+}
+
+
+task TBigShots{
+	let las; let dir=1;
+	while(!Obj_IsDeleted(boss)){
+		wait(120);
+		las = CreateStraightLaserA1(cx,cy,getangle(cx,cy,px,py)-120*dir,400,20,240,LAS_C_WHITE,90);
+		ObjStLaser_SetAngularAcceleration(las,0.05*dir);
+		ObjStLaser_SetMaxAngularVelocity(las,1*dir);
+		
+		SE_Play(se_charge3b,100);
+		SetAttackPose(90);
+		GlowCircle(ex,ey,[255,0,255],0.1,3,90);
+		wait(90);
+		SE_Play(se_laser2,100);
+		ObjRender_SetAngularVelocity(flw,0);
+		descent(i in 0..240){
+			//ObjRender_SetAngularVelocity(flw,2*dir+3*0.015*i*sin(i*240/360)*dir);
+			ObjRender_SetAngleZ(flw,ObjRender_GetAngleZ(flw)+2*dir+3*0.015*i*sin(i*240/360)*dir);
+			yield;
+		}
+		ObjRender_SetAngularVelocity(flw,2*dir);
+		
+		//wait(240); 
+		dir*=-1;
+	}
+}

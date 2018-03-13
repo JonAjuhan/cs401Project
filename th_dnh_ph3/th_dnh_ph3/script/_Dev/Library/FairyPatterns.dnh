@@ -1,0 +1,279 @@
+task TBigFairy1(x,y,s,a){
+	let fa = SpawnFairy(x,y,"big","PoFV",10,300);
+	//ObjMove_SetDestAtFrame(fa,cx,cy,300);
+	ObjMove_SetSpeed(fa,s);
+	ObjMove_SetAngle(fa,a);
+	wait(60);
+	let shot; let fx; let fy; let count=0;
+	while(!(ObjEnemy_GetLife(fa)==0)){
+		fx=ObjMove_GetX(fa); fy=ObjMove_GetY(fa);
+		
+		SE_Play(se_shot3,50);
+		loop(3){
+			shot = CreateShotA1(fx,fy,1.5,90+count+rand(-10,10),DOT_YELLOW,10);
+			shot = CreateShotA1(fx,fy,1.5,90-count+rand(-10,10),DOT_YELLOW,10);
+		}
+		wait(3); count+=13;
+	}
+}
+
+task TBunnyFairy1(x,y,s,a){
+	let fa = SpawnFairy(x,y,"blue","INSet2",10,300);
+	ObjMove_SetSpeed(fa,s);
+	ObjMove_SetAngle(fa,a);
+	ObjMove_SetAcceleration(fa,-0.05);
+	wait(60);
+	let shot; let fx; let fy; let count=0;
+	task TShoot{
+		while(!(ObjEnemy_GetLife(fa)==0)){
+			fx=ObjMove_GetX(fa); fy=ObjMove_GetY(fa);
+			
+			SE_Play(se_shot,60);
+			ascent(i in 0..10){
+				shot = CreateShotA1(fx,fy,3,360/10*i+count,PEL_BLUE,10);
+			}
+			wait(20); count++;
+		}
+	}TShoot;
+	wait(180);
+	ObjMove_SetAcceleration(fa,0.05);
+	ObjMove_SetMaxSpeed(fa,2);
+	ObjMove_SetAngle(fa,avg(180,ObjMove_GetAngle(fa))); //go sort of left-ish, I guess
+	// ObjMove_SetAngle(fa,270+GetAngularDistance(270,ObjMove_GetAngle(fa))/2);
+}
+
+
+task TYinYang1(x,y,s,a){
+	let yy = SpawnYinYang(x,y,"blue",150,30);
+	ObjMove_SetSpeed(yy,s);
+	ObjMove_SetAngle(yy,a);
+	
+	let shot; let bx; let by; let count=0;
+	while(!(ObjEnemy_GetLife(yy)==0)){
+		bx=ObjMove_GetX(yy); by=ObjMove_GetY(yy);
+		
+		SE_Play(se_shot2,60);
+		ascent(i in 0..2){
+			ascent(j in 0..2){
+				shot = CreateShotA1(bx,by,3.5*(1-j/10),GetAngleToPlayer(yy)+i*180,BALL_O_RED,10);
+			}
+		}
+		loop(15){
+			bx=ObjMove_GetX(yy); by=ObjMove_GetY(yy);
+			yield;
+			if(ObjEnemy_GetLife(yy)==0){break;}
+		}
+	}
+	ascent(i in 0..30){
+		shot = CreateShotA1(bx,by,3.5*rand(0.15,1),atan2(GetPlayerY-by,GetPlayerX-bx)+rand(-15,15),BALL_O_BLUE+500,10);
+	}
+}
+
+
+task TSpirit1(x,y,s,a){
+	let hd = SpawnSpirit(x,y,"purple",150); //hitodama
+	ObjMove_SetSpeed(hd,s);
+	ObjMove_SetAngle(hd,a);
+	
+	let shot; let hx; let hy; let count=0;
+	while(!(ObjEnemy_GetLife(hd)==0)){
+		hx=ObjMove_GetX(hd); hy=ObjMove_GetY(hd);
+		
+		ascent(i in 0..2){
+			shot = CreateShotA1(hx,hy,3.5,GetAngleToPlayer(hd)+rand(-5,5)+25*altSign(i),ICE_BLUE+500,20);
+		}
+		SE_Play(se_chime,60);
+	
+		wait(3);
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+task TYinYang2(x,y,s,a,del){
+	let yy = SpawnYinYang(x,y,"red",150,del);
+	ObjMove_SetSpeed(yy,s);
+	ObjMove_SetAngle(yy,a);
+	
+	wait(del);
+	let shot; let bx; let by; let count=0;
+	while(!(ObjEnemy_GetLife(yy)==0) && count<10){
+		bx=ObjMove_GetX(yy); by=ObjMove_GetY(yy);
+		
+		SE_Play(se_shot2,60);
+		
+		a = rand(0,360);
+		let N = 18; //36
+		ascent(i in 0..N){
+			ascent(j in 0..3){
+				shot = CreateShotA1(bx,by,3.5*(1-j/5),a+i*360/N,PEL_BLUE+sign(j-1),5);
+			}
+		}
+		loop(30){
+			yield;
+		}
+		count++;
+	}
+
+}
+
+
+
+//pretty versatile
+function TYinYang3(x,y,s,a,del,  N,ss,sd,da,type){
+	let yy = SpawnYinYang(x,y,"red",150,del);
+	ObjMove_SetSpeed(yy,s);
+	ObjMove_SetAngle(yy,a);
+	DoTask;
+	return yy;
+	
+	task DoTask{
+		wait(del);
+		let shot; let bx; let by; let count=0;
+		while(!(ObjEnemy_GetLife(yy)==0)){
+			bx=ObjMove_GetX(yy); by=ObjMove_GetY(yy);
+			SE_Play(se_shot2,60);
+			
+			if(da==0){
+				a = rand(0,360);
+			}else{
+				a += da;
+			}
+			// let N = 18; //36
+			ascent(i in 0..N){
+				ascent(j in 0..3){
+					shot = CreateShotA1(bx,by,ss*(1-j/5),a+i*360/N,type,5);
+				}
+			}
+			loop(sd){yield;}
+			count++;
+		}
+	}
+
+}
+
+
+
+
+function TBasicFairy1(x,y,s,a){
+	let fairy = SpawnFairy(x,y,"red","PoFV",10,150); //x,y,color,type,hitbox,life
+	ObjMove_SetSpeed(fairy,s);
+	ObjMove_SetAngle(fairy,a);
+	TDoFairy;
+	return fairy;
+	
+	task TDoFairy{
+		wait(60);
+		let shot; let fx; let fy; let count=0;
+		while(!(ObjEnemy_GetLife(fairy)==0)){
+			fx=ObjMove_GetX(fairy); fy=ObjMove_GetY(fairy);
+			SE_Play(se_shot,30);
+			a = GetAngleToPlayer(fairy);
+			ascent(i in 0..3){
+				shot = CreateShotA2(fx,fy,5.5,a,-0.15*(1+i/4),3.5*(1-i/4),DOT_BLUE+sign(i-1),5);
+			}
+			wait(30); count++;
+		}
+	}
+}
+
+
+
+
+
+
+
+
+
+function TSpirit2(x,y,s,a,color,dur){
+	let hd = SpawnSpirit(x,y,color,110); //hitodama
+	ObjMove_SetSpeed(hd,s);
+	ObjMove_SetAngle(hd,a);
+	DoSpirit;
+	return hd;
+	
+	task DoSpirit{
+		let shot; let hx; let hy; let count=0;
+		hx=ObjMove_GetX(hd); hy=ObjMove_GetY(hd);
+		while(!(ObjEnemy_GetLife(hd)==0) && count < dur){
+			hx=ObjMove_GetX(hd); hy=ObjMove_GetY(hd);
+			
+			ascent(i in 0..2){
+				shot = CreateShotA1(hx,hy,3.5,GetAngleToPlayer(hd)+rand(-5,5)+25*altSign(i),ICE_BLUE+500,0);
+			}
+			SE_Play(se_chime,60);
+		
+			
+			loop(9){
+				hx=ObjMove_GetX(hd); hy=ObjMove_GetY(hd);
+				count++;
+				yield;
+				if(ObjEnemy_GetLife(hd)==0){break;}
+			}
+		}
+		ascent(i in 0..10){
+			shot = CreateShotA1(hx,hy,4.5*rand(0.5,1),GetAngleToPlayer(hd)+rand(-5,5)+45*sin(i),ICE_BLUE+500,10);
+		}
+		SE_Play(se_shot,60);
+		SE_Play(se_shot3,90);
+		ObjEnemy_SetLife(hd,0);
+	}
+	
+}
+
+
+
+
+function TSpirit3(x,y,s,a,color,dur, N,M,ss,sd,da,type){
+	let hd = SpawnSpirit(x,y,color,110); //hitodama
+	ObjMove_SetSpeed(hd,s);
+	ObjMove_SetAngle(hd,a);
+	DoSpirit;
+	return hd;
+	
+	task DoSpirit{
+		let shot; let hx; let hy; let count=0;
+		hx=ObjMove_GetX(hd); hy=ObjMove_GetY(hd);
+		while(!(ObjEnemy_GetLife(hd)==0) && count < dur){
+			hx=ObjMove_GetX(hd); hy=ObjMove_GetY(hd);
+			
+			if(da==0){
+				a = GetAngleToPlayer(hd); //rand(0,360);
+			}else{
+				a += da;
+			}
+			ascent(i in 0..N){
+				ascent(j in 0..M){
+					shot = CreateShotA1(hx,hy,ss*(1-j/(2*M)),a+i*360/N,type,5);
+				}
+			}
+			SE_Play(se_chime,60);
+			
+			loop(sd){
+				hx=ObjMove_GetX(hd); hy=ObjMove_GetY(hd);
+				count++;
+				yield;
+				if(ObjEnemy_GetLife(hd)==0){break;}
+			}
+		}
+		// a = rand(0,360);
+		ascent(i in 0..20){
+			shot = CreateShotA1(hx,hy,3.5*(0.5+0.5*altBin(i)),a+36*i,ICE_BLUE+500,10);
+		}
+		SE_Play(se_shot,60);
+		SE_Play(se_shot3,90);
+		ObjEnemy_SetLife(hd,0);
+	}
+	
+}

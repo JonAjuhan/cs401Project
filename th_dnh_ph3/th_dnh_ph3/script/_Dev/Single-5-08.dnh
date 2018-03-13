@@ -1,0 +1,160 @@
+#TouhouDanmakufu[Single]
+#ScriptVersion[3]
+#Title["Yukari Nonspell 1"]
+#Text["..."] 
+#BGM["./bgm/bgm - A Maiden's Illusionary Funeral ~ Necro-Fantasy.ogg"]						//"./bgm/bgm - Bhava-Agra As Seen Through a Child's Mind.mp3"]
+#System["./system/Default_System.txt"]
+#Background["./system/Background_Sky.txt"]
+
+#include "./Index.txt"
+
+
+let fog; let ingap; let outgap;
+
+let timer = 37; //30
+
+@Event
+{
+	alternative(GetEventType())
+	case(EV_REQUEST_LIFE)
+	{
+		SetScriptResult(3500);
+	}
+//	case(EV_REQUEST_SPELL_SCORE){
+//        SetScriptResult(5000000);
+//  }
+//	case(EV_REQUEST_IS_DURABLE_SPELL) {
+//		SetScriptResult(true);
+//	}
+//	case(EV_REQUEST_IS_LAST_SPELL){
+//		SetScriptResult(true);
+//	}
+	
+	case(EV_REQUEST_TIMER) { SetScriptResult(timer*60); } //4500
+}
+@Initialize
+{
+	SetCommonData("CurrentSC","");
+	SetCommonData("Difficulty","Phantasm");
+	
+	boss = spawnBossYukari();
+	
+	ObjEnemy_SetDamageRate(boss,0,0);
+	SetShotAutoDeleteClip(64,96,64,64);
+	
+	//EnemyName(boss, "Andi's OC", 255, 180, 255);
+	
+	MainTask;
+	
+
+}
+@MainLoop
+{
+
+	if(ObjEnemy_GetInfo(boss, INFO_LIFE) <= 0 && !finishing)
+	{
+		finishing = true;
+		TBreakNonspell([]);
+	}
+	else {
+		SetBossHitbox(boss,ex,ey);
+	}
+	frame++;
+	yield;
+}
+
+
+task MainTask {
+	
+	ObjEnemy_SetDamageRate(boss,0,0);
+	ObjMove_SetDestAtFrame(boss, cx, cy-120, 60);
+	
+//	SetSpellCard;
+//	MCircNextAlpha = 80;
+//	Obj_SetValue(objSpellCircle,"MaxAlpha",64);
+	
+//	ObjEnemyBossScene_StartSpell(objScene);
+	ObjEnemyBossScene_SetSpellTimer(objScene,timer*60); //5760
+	
+//	AuraRainbow(boss,255,255,255);
+//	TSpellImmune;
+	
+	wait(90);
+	Tmovement(cx-120,cx+120, cy-90,cy-60, 60,240, [MOVE_PLAYERBIAS,2,0,MOVE_MAXSPEED,1.5] );
+	ObjEnemy_SetDamageRate(boss,64,32);
+	frame = 0;
+
+	TShoot;
+	TGaps;
+//	TFog;
+//	TSafespotTrain;
+}
+
+
+
+
+task TShoot {
+	
+	let shot;
+	
+	let a = 90;
+	let count = 0;
+	let N=5; let nD=360/N;
+	while(!Obj_IsDeleted(boss)) {
+	
+		ascent(i in 0..N){
+			shot = CreateShotA1(ex+20*cos(a+nD*i),ey-30+20*sin(a+nD*i),1+count%2/2, a+nD*i, ICE_MAGENTA ,10); 
+			Obj_SetValue(shot,"GapConvert",false);
+			Obj_SetValue(shot,"ConvertGraphic",ICE_GREEN+500);
+			Obj_SetValue(shot,"ConvertAcceleration",-0.15);					
+		}
+		count++;
+		a+=15*(|sin(10*count)|)*(|cos(3*count)|);
+		SE_Play(se_shot2,60);
+		
+		wait(3); //10
+	}
+}
+
+task TGaps {
+	let shot; 
+	let dir=1; let a=rand(0,360);
+	let seobj = ObjSound_Create;
+	
+	wait(60);
+	outgap = CreateGapA1(px+100*cos(a),py+100*sin(a) ,100,35 ,a+180 ,9990,75, GAP_OUT,TARGET_ENEMY,0     ,[]);
+	ingap  = CreateGapA1(cx          , 5           ,sx ,45 ,90   ,9990,0 , GAP_IN ,TARGET_ENEMY,outgap,[]);
+	Obj_SetValue(ingap,"WarpSE",se_chime); Obj_SetValue(ingap,"WarpSEVol",60);
+	
+	while(!Obj_IsDeleted(boss)){
+
+		wait(20);
+		SetAttackPose(60);		
+		wait(15);
+		
+		a=rand(0,360);
+		while(  isCoordOffScreen(px+100*cos(a),py+100*sin(a)) ){a=rand(0,360);}
+
+		if(Obj_GetValueD(outgap,"Blinking",false)){
+			ObjGap_SetPositionXYA(outgap,px+100*cos(a),py+100*sin(a),a+180);
+			SE_Play(se_gap,100);
+			Obj_SetValue(outgap,"Blinking",false);
+		}
+		if(Obj_GetValueD(ingap,"Blinking",false)){
+			SE_Play(se_gap,100);
+			Obj_SetValue(ingap,"Blinking",false);
+		}
+
+		wait(145);
+		ObjGap_Blink(outgap,0.00,30,30,-1); //120
+		ObjGap_Blink(ingap ,0.00,30,30,-1); //120
+		wait(60);
+		
+	}
+	
+}
+
+
+
+
+

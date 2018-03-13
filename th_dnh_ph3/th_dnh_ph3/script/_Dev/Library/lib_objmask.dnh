@@ -1,0 +1,93 @@
+/*----------------
+Mask object, for applying alpha masks to specific drawing layers.
+Use `ObjMask_AddSource` to designate render objects to draw for the specified mask.
+Applies mask on layers from `layer_min` to `layer_max`.
+by Drake
+-----------------*/
+
+function ObjMask_Create(texture_name, layer_min, layer_max){
+	// Set up render target
+	CreateRenderTarget(texture_name);
+
+	// Set up shader
+	let obj = ObjShader_Create();
+	ObjShader_SetShaderF(obj, GetCurrentScriptDirectory() ~ "SamplePS02_HLSL.txt");
+	ObjShader_SetTechnique(obj, "TecMask");
+	ObjShader_SetTexture(obj, "textureMask_", texture_name);
+	SetShaderI(obj, layer_min, layer_max);
+
+	Obj_SetValue(obj, "MASK_CONTENTS", []);
+
+	task run(){
+		while(!Obj_IsDeleted(obj)){
+			let contents = Obj_GetValueD(obj, "MASK_CONTENTS", []);
+			// Remove any deleted objects from list
+			contents = remove_deleted_objs(contents);
+
+			ascent(i in 0..length(contents)){
+				// Make visible when drawing to render target
+				Obj_SetVisible(contents[i], true); 
+				RenderToTextureB1(texture_name, contents[i], (i==0));
+				// Otherwise invisible
+				Obj_SetVisible(contents[i], false);
+			}
+
+			Obj_SetValue(obj, "MASK_CONTENTS", contents);
+			yield;
+		}
+
+		let contents = Obj_GetValueD(obj, "MASK_CONTENTS", []);
+		ascent(i in 0..length(contents)){ Obj_Delete(contents[i]); } 
+		RemoveTexture(texture_name);
+	}
+	run();
+
+	return obj;
+
+	function remove_deleted_objs(a){
+		let res = [0][0..0]; // typed array
+		let slices = [];
+		let prev = 0;
+		ascent(i in 0..length(a)){
+			if(Obj_IsDeleted(a[i])){
+				slices = slices ~ [[prev, i]];
+				prev = i+1;
+			}
+		}
+		// if unchanged, return
+		if(length(slices) == 0 && prev == 0){ return a; }
+		// last slice
+		slices = slices ~ [[prev, length(a)]];
+		// join slices
+		ascent(j in 0..length(slices)){
+			res = res ~ a[slices[j][0]..slices[j][1]];
+		}
+		return res;
+	}
+}
+
+function ObjMask_AddSource(obj, src){
+	Obj_SetValue(obj, "MASK_CONTENTS", Obj_GetValueD(obj, "MASK_CONTENTS", []) ~ [src]);
+}
+
+
+// Example with an alpha mask erasing random circles.
+// Texture setup is a white canvas with black circles on it.
+/*
+let mask = ObjMask_Create("example_mask", 26, 28); // applies to layers 26~28
+let canvas = ObjPrim_Create(OBJ_SPRITE_2D);
+ObjPrim_SetTexture(canvas, GetCurrentScriptDirectory() ~ "white.png"); // white pixel
+ObjSprite2D_SetSourceRect(canvas, 0, 0, 1024, 512); // 1024x512 is render target size
+ObjSprite2D_SetDestRect(canvas, 0, 0, 1024, 512);
+ObjMask_AddSource(mask, canvas);
+
+ascent(i in 0..8){
+	let circle = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjPrim_SetTexture(circle, GetCurrentScriptDirectory() ~ "mask_subtract.png"); // white circle on black
+	ObjSprite2D_SetSourceRect(circle, 0, 0, 256, 256);
+	ObjSprite2D_SetDestCenter(circle);
+	ObjRender_SetPosition(circle, rand(0,384)+32, rand(0,448)+16, 0);
+	ObjRender_SetBlendType(circle, BLEND_SUBTRACT); // white subtract white = black
+	ObjMask_AddSource(mask, circle);
+}
+*/

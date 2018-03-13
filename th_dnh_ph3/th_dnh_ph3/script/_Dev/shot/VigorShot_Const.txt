@@ -1,0 +1,6 @@
+local 
+{
+	let dir = GetCurrentScriptDirectory;
+	let path = dir ~ "VigorShot.txt";
+	LoadEnemyShotData(path);
+}

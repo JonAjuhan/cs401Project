@@ -1,0 +1,18 @@
+#UserShotData
+
+
+
+
+
+shot_image = "./img/AllStarShot.png"
+
+
+
+
+
+//delay_rect = (1,606,32,638)
+delay_rect = (2,606,33,637) //hollow star
+
+
+
+ShotData{ id=900 rect=(2,606,33,637) render=ADD_RGB fixed_angle=true angular_velocity = 2 delay_color=(255,255,255) }

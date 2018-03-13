@@ -1,0 +1,861 @@
+local{
+	let CSD = GetCurrentScriptDirectory;
+	let path = CSD ~ "FMWShot.dnh";
+	LoadEnemyShotData(path);
+}
+
+//Foreign Mythological World shotsheet
+//Graphics by Hamza/SnakeBlock, sheet assembled by Python
+
+// èStraight Lasers ----------------------------
+let ST_LASER_RED		= 0;
+let ST_LASER_ORANGE		= 1;
+let ST_LASER_YELLOW		= 2;
+let ST_LASER_LIME		= 3;
+let ST_LASER_GREEN		= 4;
+let ST_LASER_MINT		= 5;
+let ST_LASER_AQUA		= 6;
+let ST_LASER_SKY		= 7;
+let ST_LASER_BLUE		= 8;
+let ST_LASER_PURPLE		= 9;
+let ST_LASER_MAGENTA	= 10;
+let ST_LASER_PINK		= 11;
+let ST_LASER_WHITE		= 12;
+
+let ST_LASER_DRED		= 13;
+let ST_LASER_DORANGE	= 14;
+let ST_LASER_DYELLOW	= 15;
+let ST_LASER_DLIME		= 16;
+let ST_LASER_DGREEN		= 17;
+let ST_LASER_DMINT		= 18;
+let ST_LASER_DAQUA		= 19;
+let ST_LASER_DSKY		= 20;
+let ST_LASER_DBLUE		= 21;
+let ST_LASER_DPURPLE	= 22;
+let ST_LASER_DMAGENTA	= 23;
+let ST_LASER_DPINK		= 24;
+let ST_LASER_BLACK		= 25;
+
+
+
+// Small Round ---------------------------------
+let SMALL_RED			= 26;
+let SMALL_ORANGE		= 27;
+let SMALL_YELLOW		= 28;
+let SMALL_LIME			= 29;
+let SMALL_GREEN			= 30;
+let SMALL_MINT			= 31;
+let SMALL_AQUA			= 32;
+let SMALL_SKY			= 33;
+let SMALL_BLUE			= 34;
+let SMALL_PURPLE		= 35;
+let SMALL_MAGENTA		= 36;
+let SMALL_PINK			= 37;
+let SMALL_WHITE			= 38;
+
+let SMALL_DRED			= 39;
+let SMALL_DORANGE		= 40;
+let SMALL_DYELLOW		= 41;
+let SMALL_DLIME			= 42;
+let SMALL_DGREEN		= 43;
+let SMALL_DMINT			= 44;
+let SMALL_DAQUA			= 45;
+let SMALL_DSKY			= 46;
+let SMALL_DBLUE			= 47;
+let SMALL_DPURPLE		= 48;
+let SMALL_DMAGENTA		= 49;
+let SMALL_DPINK			= 50;
+let SMALL_BLACK			= 51;
+
+
+
+// Small Round with Halo -----------------------
+let BL_SMALL_RED		= 52;
+let BL_SMALL_ORANGE		= 53;
+let BL_SMALL_YELLOW		= 54;
+let BL_SMALL_LIME		= 55;
+let BL_SMALL_GREEN		= 56;
+let BL_SMALL_MINT		= 57;
+let BL_SMALL_AQUA		= 58;
+let BL_SMALL_SKY		= 59;
+let BL_SMALL_BLUE		= 60;
+let BL_SMALL_PURPLE		= 61;
+let BL_SMALL_MAGENTA	= 62;
+let BL_SMALL_PINK		= 63;
+let BL_SMALL_WHITE		= 64;
+
+let BL_SMALL_DRED		= 65;
+let BL_SMALL_DORANGE	= 66;
+let BL_SMALL_DYELLOW	= 67;
+let BL_SMALL_DLIME		= 68;
+let BL_SMALL_DGREEN		= 69;
+let BL_SMALL_DMINT		= 70;
+let BL_SMALL_DAQUA		= 71;
+let BL_SMALL_DSKY		= 72;
+let BL_SMALL_DBLUE		= 73;
+let BL_SMALL_DPURPLE	= 74;
+let BL_SMALL_DMAGENTA	= 75;
+let BL_SMALL_DPINK		= 76;
+let BL_SMALL_BLACK		= 77;
+
+
+
+// Pellets -------------------------------------
+let PELLET_RED			= 78;
+let PELLET_ORANGE		= 79;
+let PELLET_YELLOW		= 80;
+let PELLET_LIME			= 81;
+let PELLET_GREEN		= 82;
+let PELLET_MINT			= 83;
+let PELLET_AQUA			= 84;
+let PELLET_SKY			= 85;
+let PELLET_BLUE			= 86;
+let PELLET_PURPLE		= 87;
+let PELLET_MAGENTA		= 88;
+let PELLET_PINK			= 89;
+let PELLET_WHITE		= 90;
+
+let PELLET_DRED			= 91;
+let PELLET_DORANGE		= 92;
+let PELLET_DYELLOW		= 93;
+let PELLET_DLIME		= 94;
+let PELLET_DGREEN		= 95;
+let PELLET_DMINT		= 96;
+let PELLET_DAQUA		= 97;
+let PELLET_DSKY			= 98;
+let PELLET_DBLUE		= 99;
+let PELLET_DPURPLE		= 100;
+let PELLET_DMAGENTA		= 101;
+let PELLET_DPINK		= 102;
+let PELLET_BLACK		= 103;
+
+
+
+// Inverted/Dark Pellets -----------------------
+let D_PELLET_RED		= 104;
+let D_PELLET_ORANGE		= 105;
+let D_PELLET_YELLOW		= 106;
+let D_PELLET_LIME		= 107;
+let D_PELLET_GREEN		= 108;
+let D_PELLET_MINT		= 109;
+let D_PELLET_AQUA		= 110;
+let D_PELLET_SKY		= 111;
+let D_PELLET_BLUE		= 112;
+let D_PELLET_PURPLE		= 113;
+let D_PELLET_MAGENTA	= 114;
+let D_PELLET_PINK		= 115;
+let D_PELLET_WHITE		= 116;
+
+let D_PELLET_DRED		= 117;
+let D_PELLET_DORANGE	= 118;
+let D_PELLET_DYELLOW	= 119;
+let D_PELLET_DLIME		= 120;
+let D_PELLET_DGREEN		= 121;
+let D_PELLET_DMINT		= 122;
+let D_PELLET_DAQUA		= 123;
+let D_PELLET_DSKY		= 124;
+let D_PELLET_DBLUE		= 125;
+let D_PELLET_DPURPLE	= 126;
+let D_PELLET_DMAGENTA	= 127;
+let D_PELLET_DPINK		= 128;
+let D_PELLET_BLACK		= 129;
+
+
+
+// Double Pellets ------------------------------
+let DB_PELLET_RED		= 130;
+let DB_PELLET_ORANGE	= 131;
+let DB_PELLET_YELLOW	= 132;
+let DB_PELLET_LIME		= 133;
+let DB_PELLET_GREEN		= 134;
+let DB_PELLET_MINT		= 135;
+let DB_PELLET_AQUA		= 136;
+let DB_PELLET_SKY		= 137;
+let DB_PELLET_BLUE		= 138;
+let DB_PELLET_PURPLE	= 139;
+let DB_PELLET_MAGENTA	= 140;
+let DB_PELLET_PINK		= 141;
+let DB_PELLET_WHITE		= 142;
+
+let DB_PELLET_DRED		= 143;
+let DB_PELLET_DORANGE	= 144;
+let DB_PELLET_DYELLOW	= 145;
+let DB_PELLET_DLIME		= 146;
+let DB_PELLET_DGREEN	= 147;
+let DB_PELLET_DMINT		= 148;
+let DB_PELLET_DAQUA		= 149;
+let DB_PELLET_DSKY		= 150;
+let DB_PELLET_DBLUE		= 151;
+let DB_PELLET_DPURPLE	= 152;
+let DB_PELLET_DMAGENTA	= 153;
+let DB_PELLET_DPINK		= 154;
+let DB_PELLET_BLACK		= 155;
+
+
+
+// Kunai ---------------------------------------
+let KUNAI_RED			= 156;
+let KUNAI_ORANGE		= 157;
+let KUNAI_YELLOW		= 158;
+let KUNAI_LIME			= 159;
+let KUNAI_GREEN			= 160;
+let KUNAI_MINT			= 161;
+let KUNAI_AQUA			= 162;
+let KUNAI_SKY			= 163;
+let KUNAI_BLUE			= 164;
+let KUNAI_PURPLE		= 165;
+let KUNAI_MAGENTA		= 166;
+let KUNAI_PINK			= 167;
+let KUNAI_WHITE			= 168;
+
+let KUNAI_DRED			= 169;
+let KUNAI_DORANGE		= 170;
+let KUNAI_DYELLOW		= 171;
+let KUNAI_DLIME			= 172;
+let KUNAI_DGREEN		= 173;
+let KUNAI_DMINT			= 174;
+let KUNAI_DAQUA			= 175;
+let KUNAI_DSKY			= 176;
+let KUNAI_DBLUE			= 177;
+let KUNAI_DPURPLE		= 178;
+let KUNAI_DMAGENTA		= 179;
+let KUNAI_DPINK			= 180;
+let KUNAI_BLACK			= 181;
+
+
+
+// Arrowheads ----------------------------------
+let ARROWHEAD_RED		= 182;
+let ARROWHEAD_ORANGE	= 183;
+let ARROWHEAD_YELLOW	= 184;
+let ARROWHEAD_LIME		= 185;
+let ARROWHEAD_GREEN		= 186;
+let ARROWHEAD_MINT		= 187;
+let ARROWHEAD_AQUA		= 188;
+let ARROWHEAD_SKY		= 189;
+let ARROWHEAD_BLUE		= 190;
+let ARROWHEAD_PURPLE	= 191;
+let ARROWHEAD_MAGENTA	= 192;
+let ARROWHEAD_PINK		= 193;
+let ARROWHEAD_WHITE		= 194;
+
+let ARROWHEAD_DRED		= 195;
+let ARROWHEAD_DORANGE	= 196;
+let ARROWHEAD_DYELLOW	= 197;
+let ARROWHEAD_DLIME		= 198;
+let ARROWHEAD_DGREEN	= 199;
+let ARROWHEAD_DMINT		= 200;
+let ARROWHEAD_DAQUA		= 201;
+let ARROWHEAD_DSKY		= 202;
+let ARROWHEAD_DBLUE		= 203;
+let ARROWHEAD_DPURPLE	= 204;
+let ARROWHEAD_DMAGENTA	= 205;
+let ARROWHEAD_DPINK		= 206;
+let ARROWHEAD_BLACK		= 207;
+
+
+
+// Amulets -------------------------------------
+let AMULET_RED			= 208;
+let AMULET_ORANGE		= 209;
+let AMULET_YELLOW		= 210;
+let AMULET_LIME			= 211;
+let AMULET_GREEN		= 212;
+let AMULET_MINT			= 213;
+let AMULET_AQUA			= 214;
+let AMULET_SKY			= 215;
+let AMULET_BLUE			= 216;
+let AMULET_PURPLE		= 217;
+let AMULET_MAGENTA		= 218;
+let AMULET_PINK			= 219;
+let AMULET_WHITE		= 220;
+
+let AMULET_DRED			= 221;
+let AMULET_DORANGE		= 222;
+let AMULET_DYELLOW		= 223;
+let AMULET_DLIME		= 224;
+let AMULET_DGREEN		= 225;
+let AMULET_DMINT		= 226;
+let AMULET_DAQUA		= 227;
+let AMULET_DSKY			= 228;
+let AMULET_DBLUE		= 229;
+let AMULET_DPURPLE		= 230;
+let AMULET_DMAGENTA		= 231;
+let AMULET_DPINK		= 232;
+let AMULET_BLACK		= 233;
+
+
+
+// Ice Crystals --------------------------------
+let ICE_RED				= 234;
+let ICE_ORANGE			= 235;
+let ICE_YELLOW			= 236;
+let ICE_LIME			= 237;
+let ICE_GREEN			= 238;
+let ICE_MINT			= 239;
+let ICE_AQUA			= 240;
+let ICE_SKY				= 241;
+let ICE_BLUE			= 242;
+let ICE_PURPLE			= 243;
+let ICE_MAGENTA			= 244;
+let ICE_PINK			= 245;
+let ICE_WHITE			= 246;
+
+let ICE_DRED			= 247;
+let ICE_DORANGE			= 248;
+let ICE_DYELLOW			= 249;
+let ICE_DLIME			= 250;
+let ICE_DGREEN			= 251;
+let ICE_DMINT			= 252;
+let ICE_DAQUA			= 253;
+let ICE_DSKY			= 254;
+let ICE_DBLUE			= 255;
+let ICE_DPURPLE			= 256;
+let ICE_DMAGENTA		= 257;
+let ICE_DPINK			= 258;
+let ICE_BLACK			= 259;
+
+
+
+// Gun Bullets --------------------------------
+let BULLET_RED			= 260;
+let BULLET_ORANGE		= 261;
+let BULLET_YELLOW		= 262;
+let BULLET_LIME			= 263;
+let BULLET_GREEN		= 264;
+let BULLET_MINT			= 265;
+let BULLET_AQUA			= 266;
+let BULLET_SKY			= 267;
+let BULLET_BLUE			= 268;
+let BULLET_PURPLE		= 269;
+let BULLET_MAGENTA		= 270;
+let BULLET_PINK			= 271;
+let BULLET_WHITE		= 272;
+
+let BULLET_DRED			= 273;
+let BULLET_DORANGE		= 274;
+let BULLET_DYELLOW		= 275;
+let BULLET_DLIME		= 276;
+let BULLET_DGREEN		= 277;
+let BULLET_DMINT		= 278;
+let BULLET_DAQUA		= 279;
+let BULLET_DSKY			= 280;
+let BULLET_DBLUE		= 281;
+let BULLET_DPURPLE		= 282;
+let BULLET_DMAGENTA		= 283;
+let BULLET_DPINK		= 284;
+let BULLET_BLACK		= 285;
+
+
+
+// Droplets ------------------------------------
+let DROP_RED			= 286;
+let DROP_ORANGE			= 287;
+let DROP_YELLOW			= 288;
+let DROP_LIME			= 289;
+let DROP_GREEN			= 290;
+let DROP_MINT			= 291;
+let DROP_AQUA			= 292;
+let DROP_SKY			= 293;
+let DROP_BLUE			= 294;
+let DROP_PURPLE			= 295;
+let DROP_MAGENTA		= 296;
+let DROP_PINK			= 297;
+let DROP_WHITE			= 298;
+
+let DROP_DRED			= 299;
+let DROP_DORANGE		= 300;
+let DROP_DYELLOW		= 301;
+let DROP_DLIME			= 302;
+let DROP_DGREEN			= 303;
+let DROP_DMINT			= 304;
+let DROP_DAQUA			= 305;
+let DROP_DSKY			= 306;
+let DROP_DBLUE			= 307;
+let DROP_DPURPLE		= 308;
+let DROP_DMAGENTA		= 309;
+let DROP_DPINK			= 310;
+let DROP_BLACK			= 311;
+
+
+
+// Small Stars ---------------------------------
+let S_STAR_RED			= 312;
+let S_STAR_ORANGE		= 313;
+let S_STAR_YELLOW		= 314;
+let S_STAR_LIME			= 315;
+let S_STAR_GREEN		= 316;
+let S_STAR_MINT			= 317;
+let S_STAR_AQUA			= 318;
+let S_STAR_SKY			= 319;
+let S_STAR_BLUE			= 320;
+let S_STAR_PURPLE		= 321;
+let S_STAR_MAGENTA		= 322;
+let S_STAR_PINK			= 323;
+let S_STAR_WHITE		= 324;
+
+let S_STAR_DRED			= 325;
+let S_STAR_DORANGE		= 326;
+let S_STAR_DYELLOW		= 327;
+let S_STAR_DLIME		= 328;
+let S_STAR_DGREEN		= 329;
+let S_STAR_DMINT		= 330;
+let S_STAR_DAQUA		= 331;
+let S_STAR_DSKY			= 332;
+let S_STAR_DBLUE		= 333;
+let S_STAR_DPURPLE		= 334;
+let S_STAR_DMAGENTA		= 335;
+let S_STAR_DPINK		= 336;
+let S_STAR_BLACK		= 337;
+
+
+
+// Dots ----------------------------------------
+let DOT_RED				= 338;
+let DOT_ORANGE			= 339;
+let DOT_YELLOW			= 340;
+let DOT_LIME			= 341;
+let DOT_GREEN			= 342;
+let DOT_MINT			= 343;
+let DOT_AQUA			= 344;
+let DOT_SKY				= 345;
+let DOT_BLUE			= 346;
+let DOT_PURPLE			= 347;
+let DOT_MAGENTA			= 348;
+let DOT_PINK			= 349;
+let DOT_WHITE			= 350;
+
+let DOT_DRED			= 351;
+let DOT_DORANGE			= 352;
+let DOT_DYELLOW			= 353;
+let DOT_DLIME			= 354;
+let DOT_DGREEN			= 355;
+let DOT_DMINT			= 356;
+let DOT_DAQUA			= 357;
+let DOT_DSKY			= 358;
+let DOT_DBLUE			= 359;
+let DOT_DPURPLE			= 360;
+let DOT_DMAGENTA		= 361;
+let DOT_DPINK			= 362;
+let DOT_BLACK			= 363;
+
+
+
+// Inverted/Dark Dots --------------------------
+let D_DOT_RED			= 364;
+let D_DOT_ORANGE		= 365;
+let D_DOT_YELLOW		= 366;
+let D_DOT_LIME			= 367;
+let D_DOT_GREEN			= 368;
+let D_DOT_MINT			= 369;
+let D_DOT_AQUA			= 370;
+let D_DOT_SKY			= 371;
+let D_DOT_BLUE			= 372;
+let D_DOT_PURPLE		= 373;
+let D_DOT_MAGENTA		= 374;
+let D_DOT_PINK			= 375;
+let D_DOT_WHITE			= 376;
+
+let D_DOT_DRED			= 377;
+let D_DOT_DORANGE		= 378;
+let D_DOT_DYELLOW		= 379;
+let D_DOT_DLIME			= 380;
+let D_DOT_DGREEN		= 381;
+let D_DOT_DMINT			= 382;
+let D_DOT_DAQUA			= 383;
+let D_DOT_DSKY			= 384;
+let D_DOT_DBLUE			= 385;
+let D_DOT_DPURPLE		= 386;
+let D_DOT_DMAGENTA		= 387;
+let D_DOT_DPINK			= 388;
+let D_DOT_BLACK			= 389;
+
+
+
+// Curvy Lasers --------------------------------
+let C_LASER_RED			= 390;
+let C_LASER_ORANGE		= 391;
+let C_LASER_YELLOW		= 392;
+let C_LASER_LIME		= 393;
+let C_LASER_GREEN		= 394;
+let C_LASER_MINT		= 395;
+let C_LASER_AQUA		= 396;
+let C_LASER_SKY			= 397;
+let C_LASER_BLUE		= 398;
+let C_LASER_PURPLE		= 399;
+let C_LASER_MAGENTA		= 400;
+let C_LASER_PINK		= 401;
+let C_LASER_WHITE		= 402;
+
+let C_LASER_DRED		= 403;
+let C_LASER_DORANGE		= 404;
+let C_LASER_DYELLOW		= 405;
+let C_LASER_DLIME		= 406;
+let C_LASER_DGREEN		= 407;
+let C_LASER_DMINT		= 408;
+let C_LASER_DAQUA		= 409;
+let C_LASER_DSKY		= 410;
+let C_LASER_DBLUE		= 411;
+let C_LASER_DPURPLE		= 412;
+let C_LASER_DMAGENTA	= 413;
+let C_LASER_DPINK		= 414;
+let C_LASER_BLACK		= 415;
+
+
+
+// Large Round ---------------------------------
+let LARGE_RED			= 416;
+let LARGE_ORANGE		= 417;
+let LARGE_YELLOW		= 418;
+let LARGE_LIME			= 419;
+let LARGE_GREEN			= 420;
+let LARGE_MINT			= 421;
+let LARGE_AQUA			= 422;
+let LARGE_SKY			= 423;
+let LARGE_BLUE			= 424;
+let LARGE_PURPLE		= 425;
+let LARGE_MAGENTA		= 426;
+let LARGE_PINK			= 427;
+let LARGE_WHITE			= 428;
+let LARGE_BLACK			= 429;
+
+
+
+// Large Ovals ---------------------------------
+let OVAL_RED			= 430;
+let OVAL_ORANGE			= 431;
+let OVAL_YELLOW			= 432;
+let OVAL_LIME			= 433;
+let OVAL_GREEN			= 434;
+let OVAL_MINT			= 435;
+let OVAL_AQUA			= 436;
+let OVAL_SKY			= 437;
+let OVAL_BLUE			= 438;
+let OVAL_PURPLE			= 439;
+let OVAL_MAGENTA		= 440;
+let OVAL_PINK			= 441;
+let OVAL_WHITE			= 442;
+let OVAL_BLACK			= 443;
+
+
+
+// Large Inverted/Dark Ovals -------------------
+let D_OVAL_RED			= 444;
+let D_OVAL_ORANGE		= 445;
+let D_OVAL_YELLOW		= 446;
+let D_OVAL_LIME			= 447;
+let D_OVAL_GREEN		= 448;
+let D_OVAL_MINT			= 449;
+let D_OVAL_AQUA			= 450;
+let D_OVAL_SKY			= 451;
+let D_OVAL_BLUE			= 452;
+let D_OVAL_PURPLE		= 453;
+let D_OVAL_MAGENTA		= 454;
+let D_OVAL_PINK			= 455;
+let D_OVAL_WHITE		= 456;
+let D_OVAL_BLACK		= 457;
+
+
+
+// Knife ---------------------------------------
+let KNIFE_RED			= 458;
+let KNIFE_ORANGE		= 459;
+let KNIFE_YELLOW		= 460;
+let KNIFE_LIME			= 461;
+let KNIFE_GREEN			= 462;
+let KNIFE_MINT			= 463;
+let KNIFE_AQUA			= 464;
+let KNIFE_SKY			= 465;
+let KNIFE_BLUE			= 466;
+let KNIFE_PURPLE		= 467;
+let KNIFE_MAGENTA		= 468;
+let KNIFE_PINK			= 469;
+let KNIFE_WHITE			= 470;
+let KNIFE_BLACK			= 471;
+
+
+
+// Arrows --------------------------------------
+let ARROW_RED			= 472;
+let ARROW_ORANGE		= 473;
+let ARROW_YELLOW		= 474;
+let ARROW_LIME			= 475;
+let ARROW_GREEN			= 476;
+let ARROW_MINT			= 477;
+let ARROW_AQUA			= 478;
+let ARROW_SKY			= 479;
+let ARROW_BLUE			= 480;
+let ARROW_PURPLE		= 481;
+let ARROW_MAGENTA		= 482;
+let ARROW_PINK			= 483;
+let ARROW_WHITE			= 484;
+let ARROW_BLACK			= 485;
+
+
+
+// Butterflies ---------------------------------
+let BUTTERFLY_RED		= 486;
+let BUTTERFLY_ORANGE	= 487;
+let BUTTERFLY_YELLOW	= 488;
+let BUTTERFLY_LIME		= 489;
+let BUTTERFLY_GREEN		= 490;
+let BUTTERFLY_MINT		= 491;
+let BUTTERFLY_AQUA		= 492;
+let BUTTERFLY_SKY		= 493;
+let BUTTERFLY_BLUE		= 494;
+let BUTTERFLY_PURPLE	= 495;
+let BUTTERFLY_MAGENTA	= 496;
+let BUTTERFLY_PINK		= 497;
+let BUTTERFLY_WHITE		= 498;
+let BUTTERFLY_BLACK		= 499;
+
+
+
+// Large Stars ---------------------------------
+let STAR_RED			= 500;
+let STAR_ORANGE			= 501;
+let STAR_YELLOW			= 502;
+let STAR_LIME			= 503;
+let STAR_GREEN			= 504;
+let STAR_MINT			= 505;
+let STAR_AQUA			= 506;
+let STAR_SKY			= 507;
+let STAR_BLUE			= 508;
+let STAR_PURPLE			= 509;
+let STAR_MAGENTA		= 510;
+let STAR_PINK			= 511;
+let STAR_WHITE			= 512;
+let STAR_BLACK			= 513;
+
+
+
+// Hearts --------------------------------------
+let HEART_RED			= 514;
+let HEART_ORANGE		= 515;
+let HEART_YELLOW		= 516;
+let HEART_LIME			= 517;
+let HEART_GREEN			= 518;
+let HEART_MINT			= 519;
+let HEART_AQUA			= 520;
+let HEART_SKY			= 521;
+let HEART_BLUE			= 522;
+let HEART_PURPLE		= 523;
+let HEART_MAGENTA		= 524;
+let HEART_PINK			= 525;
+let HEART_WHITE			= 526;
+let HEART_BLACK			= 527;
+
+
+
+// Feathers ------------------------------------
+let FEATHER_RED			= 528;
+let FEATHER_ORANGE		= 529;
+let FEATHER_YELLOW		= 530;
+let FEATHER_LIME		= 531;
+let FEATHER_GREEN		= 532;
+let FEATHER_MINT		= 533;
+let FEATHER_AQUA		= 534;
+let FEATHER_SKY			= 535;
+let FEATHER_BLUE		= 536;
+let FEATHER_PURPLE		= 537;
+let FEATHER_MAGENTA		= 538;
+let FEATHER_PINK		= 539;
+let FEATHER_WHITE		= 540;
+let FEATHER_BLACK		= 541;
+
+
+
+// Spikes --------------------------------------
+let SPIKE_RED			= 542;
+let SPIKE_ORANGE		= 543;
+let SPIKE_YELLOW		= 544;
+let SPIKE_LIME			= 545;
+let SPIKE_GREEN			= 546;
+let SPIKE_MINT			= 547;
+let SPIKE_AQUA			= 548;
+let SPIKE_SKY			= 549;
+let SPIKE_BLUE			= 550;
+let SPIKE_PURPLE		= 551;
+let SPIKE_MAGENTA		= 552;
+let SPIKE_PINK			= 553;
+let SPIKE_WHITE			= 554;
+let SPIKE_BLACK			= 555;
+
+
+
+// Rests ---------------------------------------
+let REST_RED			= 556;
+let REST_ORANGE			= 557;
+let REST_YELLOW			= 558;
+let REST_LIME			= 559;
+let REST_GREEN			= 560;
+let REST_MINT			= 561;
+let REST_AQUA			= 562;
+let REST_SKY			= 563;
+let REST_BLUE			= 564;
+let REST_PURPLE			= 565;
+let REST_MAGENTA		= 566;
+let REST_PINK			= 567;
+let REST_WHITE			= 568;
+let REST_BLACK			= 569;
+
+
+
+// Notes ---------------------------------------
+let NOTE_RED			= 570;
+let NOTE_ORANGE			= 571;
+let NOTE_YELLOW			= 572;
+let NOTE_LIME			= 573;
+let NOTE_GREEN			= 574;
+let NOTE_MINT			= 575;
+let NOTE_AQUA			= 576;
+let NOTE_SKY			= 577;
+let NOTE_BLUE			= 578;
+let NOTE_PURPLE			= 579;
+let NOTE_MAGENTA		= 580;
+let NOTE_PINK			= 581;
+let NOTE_WHITE			= 582;
+let NOTE_BLACK			= 583;
+
+
+
+// Fireballs -----------------------------------
+let FIRE_RED			= 584;
+let FIRE_ORANGE			= 585;
+let FIRE_YELLOW			= 586;
+let FIRE_LIME			= 587;
+let FIRE_GREEN			= 588;
+let FIRE_MINT			= 589;
+let FIRE_AQUA			= 590;
+let FIRE_SKY			= 591;
+let FIRE_BLUE			= 592;
+let FIRE_PURPLE			= 593;
+let FIRE_MAGENTA		= 594;
+let FIRE_PINK			= 595;
+let FIRE_WHITE			= 596;
+let FIRE_BLACK			= 597;
+
+
+
+// Bubbles -------------------------------------
+let BUBBLE_RED			= 598;
+let BUBBLE_ORANGE		= 599;
+let BUBBLE_YELLOW		= 600;
+let BUBBLE_LIME			= 601;
+let BUBBLE_GREEN		= 602;
+let BUBBLE_MINT			= 603;
+let BUBBLE_AQUA			= 604;
+let BUBBLE_SKY			= 605;
+let BUBBLE_BLUE			= 606;
+let BUBBLE_PURPLE		= 607;
+let BUBBLE_MAGENTA		= 608;
+let BUBBLE_PINK			= 609;
+let BUBBLE_WHITE		= 610;
+
+
+
+// Len'en Bubbles ------------------------------
+let LE_BUBBLE_RED			= 611;
+let LE_BUBBLE_ORANGE		= 612;
+let LE_BUBBLE_YELLOW		= 613;
+let LE_BUBBLE_LIME			= 614;
+let LE_BUBBLE_GREEN			= 615;
+let LE_BUBBLE_MINT			= 616;
+let LE_BUBBLE_AQUA			= 617;
+let LE_BUBBLE_SKY			= 618;
+let LE_BUBBLE_BLUE			= 619;
+let LE_BUBBLE_PURPLE		= 620;
+let LE_BUBBLE_MAGENTA		= 621;
+let LE_BUBBLE_PINK			= 622;
+let LE_BUBBLE_WHITE			= 623;
+let LE_BUBBLE_BLACK			= 624;
+
+
+
+// Glowy Orbs ----------------------------------
+let ORB_RED				= 625;
+let ORB_ORANGE			= 626;
+let ORB_YELLOW			= 627;
+let ORB_LIME			= 628;
+let ORB_GREEN			= 629;
+let ORB_MINT			= 630;
+let ORB_AQUA			= 631;
+let ORB_SKY				= 632;
+let ORB_BLUE			= 633;
+let ORB_PURPLE			= 634;
+let ORB_MAGENTA			= 635;
+let ORB_PINK			= 636;
+let ORB_WHITE			= 637;
+let ORB_BLACK			= 638;
+
+
+
+// Cards (Hearts) ------------------------------
+let CARD_HEART_RED		= 639;
+let CARD_HEART_ORANGE	= 640;
+let CARD_HEART_YELLOW	= 641;
+let CARD_HEART_LIME		= 642;
+let CARD_HEART_GREEN	= 643;
+let CARD_HEART_MINT		= 644;
+let CARD_HEART_AQUA		= 645;
+let CARD_HEART_SKY		= 646;
+let CARD_HEART_BLUE		= 647;
+let CARD_HEART_PURPLE	= 648;
+let CARD_HEART_MAGENTA	= 649;
+let CARD_HEART_PINK		= 650;
+let CARD_HEART_WHITE	= 651;
+let CARD_HEART_BLACK	= 652;
+
+
+
+// Cards (Diamonds) ----------------------------
+let CARD_DIAMOND_RED	= 653;
+let CARD_DIAMOND_ORANGE	= 654;
+let CARD_DIAMOND_YELLOW	= 655;
+let CARD_DIAMOND_LIME	= 656;
+let CARD_DIAMOND_GREEN	= 657;
+let CARD_DIAMOND_MINT	= 658;
+let CARD_DIAMOND_AQUA	= 659;
+let CARD_DIAMOND_SKY	= 660;
+let CARD_DIAMOND_BLUE	= 661;
+let CARD_DIAMOND_PURPLE	= 662;
+let CARD_DIAMOND_MAGENTA= 663;
+let CARD_DIAMOND_PINK	= 664;
+let CARD_DIAMOND_WHITE	= 665;
+let CARD_DIAMOND_BLACK	= 666;
+
+
+
+// Cards (Spades) ------------------------------
+let CARD_SPADES_RED		= 667;
+let CARD_SPADES_ORANGE	= 668;
+let CARD_SPADES_YELLOW	= 669;
+let CARD_SPADES_LIME	= 670;
+let CARD_SPADES_GREEN	= 671;
+let CARD_SPADES_MINT	= 672;
+let CARD_SPADES_AQUA	= 673;
+let CARD_SPADES_SKY		= 674;
+let CARD_SPADES_BLUE	= 675;
+let CARD_SPADES_PURPLE	= 676;
+let CARD_SPADES_MAGENTA	= 677;
+let CARD_SPADES_PINK	= 678;
+let CARD_SPADES_WHITE	= 679;
+let CARD_SPADES_BLACK	= 680;
+
+
+
+// Cards (Clubs) -------------------------------
+let CARD_CLUBS_RED		= 681;
+let CARD_CLUBS_ORANGE	= 682;
+let CARD_CLUBS_YELLOW	= 683;
+let CARD_CLUBS_LIME		= 684;
+let CARD_CLUBS_GREEN	= 685;
+let CARD_CLUBS_MINT		= 686;
+let CARD_CLUBS_AQUA		= 687;
+let CARD_CLUBS_SKY		= 688;
+let CARD_CLUBS_BLUE		= 689;
+let CARD_CLUBS_PURPLE	= 690;
+let CARD_CLUBS_MAGENTA	= 691;
+let CARD_CLUBS_PINK		= 692;
+let CARD_CLUBS_WHITE	= 693;
+let CARD_CLUBS_BLACK	= 694;

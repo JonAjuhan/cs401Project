@@ -1,0 +1,391 @@
+let EV_SFX_RANGE_START = EV_USER + 28530;
+let EV_AURA_P = EV_SFX_RANGE_START + 0;
+let EV_MAGIC_CIRCLE_P = EV_SFX_RANGE_START + 1;
+let EV_SHOCKWAVE_P = EV_SFX_RANGE_START + 2;
+let EV_SPR_PARTICLE = EV_SFX_RANGE_START + 3;
+let EV_SPR_AURA = EV_SFX_RANGE_START + 4;
+let EV_SPR_MAGIC_CIRCLE = EV_SFX_RANGE_START + 5;
+let EV_SPR_SHOCKWAVE = EV_SFX_RANGE_START + 6;
+let EV_EXPLOSION = EV_SFX_RANGE_START + 7;
+let EV_CHARGE = EV_SFX_RANGE_START + 8;
+let EV_AURA = EV_SFX_RANGE_START + 9;
+let EV_EMITTER = EV_SFX_RANGE_START + 10;
+let EV_MAGIC_CIRCLE = EV_SFX_RANGE_START + 11;
+let EV_SHOCKWAVE = EV_SFX_RANGE_START + 12;
+
+let libName = "Stellar";
+
+let auraP = 27;
+let magicCircleP = 28;
+let shockwaveP = 29;
+
+let sprParticle = GetCurrentScriptDirectory() ~ "Default_Particle.png";
+let sprAura = GetCurrentScriptDirectory() ~ "Default_Aura.png";
+let sprMagicCircle = GetCurrentScriptDirectory() ~ "Default_MagicCircle.png";
+
+let cameraZ = 448;
+
+@Initialize
+{
+	cameraZ = max(GetStgFrameWidth(),GetStgFrameHeight());
+	if (!IsCommonDataAreaExists(libName))
+	{
+		CreateCommonDataArea(libName);
+	}
+	if (GetAreaCommonData(libName,libName ~ "_Script",-1) != -1)
+	{
+		CloseScript(GetAreaCommonData(libName,libName ~ "_Script",-1));
+	}
+	SetAreaCommonData(libName,libName ~ "_Script", GetOwnScriptID());
+}
+
+@Event {
+	alternative(GetEventType)
+	case(EV_AURA_P)
+	{
+		auraP = GetEventArgument(0);
+	}
+	case(EV_MAGIC_CIRCLE_P)
+	{
+		magicCircleP = GetEventArgument(0);
+	}
+	case(EV_SHOCKWAVE_P)
+	{
+		shockwaveP = GetEventArgument(0);
+	}
+	case(EV_SPR_PARTICLE)
+	{
+		sprParticle = GetEventArgument(0);
+		LoadTexture(sprParticle);
+	}
+	case(EV_SPR_AURA)
+	{
+		sprAura = GetEventArgument(0);
+		LoadTexture(sprAura);
+	}
+	case(EV_SPR_MAGIC_CIRCLE)
+	{
+		sprMagicCircle = GetEventArgument(0);
+		LoadTexture(sprMagicCircle);
+	}
+	case(EV_EXPLOSION)
+	{
+		let args = GetEventArgument(0);
+		Explosion(args[0],args[1],args[2],args[3],args[4]);
+	}
+	case(EV_CHARGE)
+	{
+		let args = GetEventArgument(0);
+		Charge(args[0],args[1],args[2],args[3],args[4]);
+	}
+	case(EV_AURA)
+	{
+		let args = GetEventArgument(0);
+		Aura(args[0],args[1],args[2],args[3],args[4],args[5],args[6],args[7]);
+	}
+	case(EV_EMITTER)
+	{
+		let args = GetEventArgument(0);
+		Emitter(args[0],args[1],args[2],args[3],args[4],args[5],args[6],args[7],args[8],args[9],args[10],args[11],args[12]);
+	}
+	case(EV_MAGIC_CIRCLE)
+	{
+		let args = GetEventArgument(0);
+		MagicCircle(args[0],args[1],args[2],args[3],args[4],args[5],args[6],args[7],args[8],args[9]);
+	}
+}
+
+@MainLoop
+{
+	yield;
+}
+
+
+task Explosion(object,time,particlescale,blending,hue)
+{
+	let timepassed = 0;
+	while (timepassed < time && !Obj_IsDeleted(object))
+	{
+		let x = ObjMove_GetX(object);
+		let y = ObjMove_GetY(object);
+		loop (8)
+		{
+			Particle3D(x,y,0,rand(0,360),rand(0,360),rand(0,360),rand(-90,90),rand(0,360),rand(0,9),0.01,particlescale * rand(0.6,1.4),255,6,rand(60,90),0,rand(-8,8),rand(-8,8),rand(-8,8),sprParticle,blending,hue + rand(-15,15),rand(120,140) * 1.4,999);
+		}
+		yield;
+		timepassed++;
+	}
+}
+
+task Charge(object,time,particlescale,blending,hue)
+{
+	let rad = cameraZ;
+	let pitch;
+	let yaw;
+	let life;
+	let radmult;
+	let timepassed = 0;
+	while (timepassed < time && !Obj_IsDeleted(object))
+	{
+		let x = ObjMove_GetX(object);
+		let y = ObjMove_GetY(object);
+		loop (8)
+		{
+			radmult = rand(0.7,1);
+			pitch = rand(-90,90);
+			yaw = rand(0,360);
+			life = rand(60,70);
+			Particle3D(x + cos(yaw) * cos(pitch) * rad * radmult,y + sin(yaw) * cos(pitch) * rad * radmult,sin(pitch) * rad * radmult,rand(0,360),rand(0,360),rand(0,360),-pitch,yaw + 180,(rad * radmult) / life,0,particlescale * rand(0.6,1.4),1,-(255 / (life / 4)),0,rand(0.003,0.01),rand(-8,8),rand(-8,8),rand(-8,8),sprParticle,blending,hue + rand(-15,15),rand(120,140) * 1.4,life);
+		}
+		yield;
+		timepassed++;
+	}
+}
+
+task Aura(object,radius,wavelength,rotspeed,fadeTime,blending,hue,saturation)
+{
+	let obj = ObjPrim_Create(OBJ_PRIMITIVE_2D);
+	let x = 0;
+	let y = 0;
+	let count = floor(360 / wavelength);
+	let angAdd = 360 / count;
+
+	ObjPrim_SetPrimitiveType(obj, PRIMITIVE_TRIANGLEFAN);
+	ObjPrim_SetVertexCount(obj, count + 2);
+	ObjPrim_SetTexture(obj, sprAura);
+	ObjRender_SetBlendType(obj, blending);
+	ObjRender_SetAlpha(obj, 0);
+	Obj_SetRenderPriorityI(obj, auraP);
+	ObjRender_SetColorHSV(obj, hue, saturation, 255);
+	
+	ObjPrim_SetVertexPosition(obj, 0, x, y, 0);
+	ObjPrim_SetVertexUV(obj, 0, 0.5,  0.5);
+
+	let ang = 0;
+	let firstD = 0;
+	let firstA = 0;
+	let alpha = 0;
+	ascent (i in 1 .. count + 1)
+	{
+		let dist = rand(1,3) * radius;
+		let adjAng = ang + rand(-angAdd / 2.5, angAdd / 2.5);
+		if (i == 1)
+		{
+			firstD = dist;
+			firstA = adjAng;
+		}
+		ObjPrim_SetVertexPosition(obj, i, x + cos(adjAng) * dist, y + sin(adjAng) * dist, 0);
+		ang += angAdd;
+	}
+	ObjPrim_SetVertexPosition(obj, count + 1, x + cos(firstA) * firstD, y + sin(firstA) * firstD, 0);
+
+	let texAng = 0;
+	while (!Obj_IsDeleted(object))
+	{
+		ObjRender_SetPosition(obj, ObjMove_GetX(object), ObjMove_GetY(object), 0);
+		let ang = 0;
+		ascent (i in 1 .. count + 1)
+		{
+			ObjPrim_SetVertexUV(obj, i, 0.5 + cos(texAng + ang) * 0.5,  0.5 + sin(texAng + ang) * 0.5);
+			ang += angAdd;
+		}
+		ObjPrim_SetVertexUV(obj, count + 1, 0.5 + cos(texAng + ang) * 0.5,  0.5 + sin(texAng + ang) * 0.5);
+		texAng += rotspeed;
+		ObjRender_SetAngleZ(obj, texAng / 2);
+		alpha = min(255, alpha + 255 / fadeTime);
+		ObjRender_SetAlpha(obj, alpha);
+		yield;
+	}
+
+	loop (fadeTime)
+	{
+		let ang = 0;
+		ascent (i in 1 .. count + 1)
+		{
+			ObjPrim_SetVertexUV(obj, i, 0.5 + cos(texAng + ang) * 0.5,  0.5 + sin(texAng + ang) * 0.5);
+			ang += angAdd;
+		}
+		ObjPrim_SetVertexUV(obj, count + 1, 0.5 + cos(texAng + ang) * 0.5,  0.5 + sin(texAng + ang) * 0.5);
+		texAng += rotspeed;
+		ObjRender_SetAngleZ(obj, texAng / 2);
+		ObjRender_SetAlpha(obj, alpha);
+		alpha -= 255 / fadeTime;
+		yield;
+	}
+
+	Obj_Delete(obj);
+}
+
+task Emitter(object,time,scale,speed,firepitch,fireyaw,spread,life,numperframe,blending,hue,saturation,alpha)
+{
+	let pitch;
+	let yaw;
+	let ulife;
+	let timepassed = 0;
+	let growthspeed = 0;
+	let rotatespeed = 8;
+	let friction = 0;
+	let ualpha;
+	while (timepassed < time && !Obj_IsDeleted(object))
+	{
+		let x = ObjMove_GetX(object);
+		let y = ObjMove_GetY(object);
+		loop (numperframe)
+		{
+			pitch = firepitch + rand(-spread,spread);
+			yaw = fireyaw + rand(-spread,spread);
+			ulife = life * rand(0.5,1);
+			ualpha = alpha * rand(0.7,1);
+			Particle3D(x,y,0,0,0,rand(0,360),pitch,yaw,speed * rand(0.2,1),friction,scale * rand(0.5, 1),ualpha,ualpha / (ulife / 2),ulife / 2,growthspeed,0,0,rand(-rotatespeed,rotatespeed),sprParticle,blending,hue + rand(-10,10),saturation * rand(0.8,1.2),ulife);
+		}
+		yield;
+		timepassed++;
+	}
+}
+
+task MagicCircle(object,scale,fadetime,pulseamount,pulsespeed,angvel,blending,hue,saturation,alpha)
+{
+	let parentobject = object;
+	let spritepath = sprMagicCircle;
+	let sprite = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjPrim_SetTexture(sprite,spritepath);
+	let width = GetTextureWidth(spritepath);
+	let height = GetTextureHeight(spritepath);
+	ObjSprite2D_SetSourceRect(sprite,0,0,width,height);
+	ObjSprite2D_SetDestCenter(sprite);
+	Obj_SetRenderPriorityI(sprite,magicCircleP);
+	ObjRender_SetBlendType(sprite,blending);
+	ObjRender_SetColorHSV(sprite, hue, saturation, 255);
+	let ang = rand(0,360);
+	let alp = 0;
+	let scl = 0;
+	let i = 0;
+	let pulse = 0;
+	while (!Obj_IsDeleted(parentobject) && i < fadetime)
+	{
+		ObjRender_SetX(sprite,ObjMove_GetX(parentobject));
+		ObjRender_SetY(sprite,ObjMove_GetY(parentobject));
+		ObjRender_SetAngleZ(sprite,ang);
+		ObjRender_SetScaleXYZ(sprite,scl * scale,scl * scale,1);
+		ObjRender_SetAlpha(sprite,alp);
+		alp += alpha / fadetime;
+		ang += angvel;
+		scl += 1 / fadetime;
+		i += 1;
+		yield;
+	}
+	alp = alpha;
+	ObjRender_SetAlpha(sprite,alp);
+	scl = 1;
+	while (!Obj_IsDeleted(parentobject))
+	{
+		ObjRender_SetX(sprite,ObjMove_GetX(parentobject));
+		ObjRender_SetY(sprite,ObjMove_GetY(parentobject));
+		ObjRender_SetAngleZ(sprite,ang);
+		ObjRender_SetScaleXYZ(sprite,scl * scale,scl * scale,1);
+		ang += angvel;
+		pulse += pulsespeed;
+		scl = 1 + sin(pulse) * (pulseamount / 2);
+		yield;
+	}
+	loop (fadetime)
+	{
+		ObjRender_SetAngleZ(sprite,ang);
+		ObjRender_SetAlpha(sprite,alp);
+		alp -= alpha / fadetime;
+		ang += angvel;
+		yield;
+	}
+	Obj_Delete(sprite);
+}
+
+
+task Particle3D(x,y,z,angle_x,angle_y,angle_z,move_x,move_z,speed,friction,scale,alpha,fadespeed,fadedelay,scalespeed,rotate_x,rotate_y,rotate_z,spritepath,blending,hue,saturation,life)
+{
+	let sprite = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjPrim_SetTexture(sprite,spritepath);
+	let width = GetTextureWidth(spritepath);
+	let height = GetTextureHeight(spritepath);
+	ObjSprite2D_SetSourceRect(sprite,0,0,width,height);
+	ObjSprite2D_SetDestCenter(sprite);
+	ObjRender_SetBlendType(sprite,blending);
+	ObjRender_SetColorHSV(sprite,hue,saturation,255);
+	let px = x;
+	let py = y;
+	let pz = z;
+	let spdmult = 1;
+	let alp = alpha;
+	let scl = scale;
+	let mx = cos(move_z) * cos(move_x) * speed;
+	let my = sin(move_z) * cos(move_x) * speed;
+	let mz = sin(move_x) * speed;
+	let ang_x = 0;
+	let ang_y = 0;
+	let ang_z = 0;
+	let fd = fadedelay;
+	let lf = life;
+	while (alp > 0 && pz < cameraZ - 1 && lf > 0)
+	{
+		ObjRender_Transform3D(sprite,px,py,pz,ang_x,ang_y,ang_z,cameraZ,scl);
+		ObjRender_SetAlpha(sprite,alp);
+		px += mx * spdmult;
+		py += my * spdmult;
+		pz += mz * spdmult;
+		fd = max(0,fd - 1);
+		if (fd == 0)
+		{
+			alp -= fadespeed;
+		}
+		scl += scalespeed;
+		spdmult = max(0,spdmult - spdmult * friction);
+		ang_x += rotate_x;
+		ang_y += rotate_y;
+		ang_z += rotate_z;
+		lf -= 1;
+		yield;
+	}
+	Obj_Delete(sprite);
+}
+
+function ObjRender_Transform3D(object,x,y,z,angle_x,angle_y,angle_z,camera_z,scale)
+{
+	let fw = GetStgFrameWidth();
+	let fh = GetStgFrameHeight();
+	let sclmult = 1 / (1 - z / cameraZ);
+	ObjRender_SetX(object,fw / 2 + (x - fw / 2) * sclmult);
+	ObjRender_SetY(object,fh / 2 + (y - fh / 2) * sclmult);
+	ObjRender_SetZ(object,z);
+	ObjRender_SetScaleXYZ(object, scale * sclmult, scale * sclmult, 1);
+	ObjRender_SetAngleXYZ(object,angle_x,angle_y,angle_z);
+}
+
+
+
+
+
+function linear(a,b,x) {
+	return a + x * (b-a);
+}
+
+function smoothstep(a,b,x) {
+	return a + x * x * (3 - 2 * x) * (b - a);
+}
+
+function smootherstep(a,b,x) {
+	return a + x * x * x * (x * (x * 6 - 15) + 10) * (b - a);
+}
+
+function acceleration(a,b,x) {
+	let v = x * x;
+	return (b * v) + (a * (1 - v));
+}
+
+function deceleration(a,b,x) {
+	let v = 1 - (1 - x) * (1 - x);
+	return (b * v) + (a * (1 - v));
+}
+
+function overshoot(a,b,x,magnitude) {
+	x = deceleration(0,1,x);
+	return a + x * (b-a) * (1 + sin(x * 180) * magnitude);
+}

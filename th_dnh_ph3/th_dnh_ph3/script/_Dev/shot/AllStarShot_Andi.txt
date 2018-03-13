@@ -1,0 +1,1451 @@
+#UserShotData
+
+//Note: This is a modified version of AllStarShot.
+//Many shot IDs have been reordered to facilitate
+//easily iterating through them to make rainbows.
+
+shot_image = "./img/AllStarShot.png"
+
+
+//	delay_rect = (2,574,32,606)		//starry orb
+//	delay_rect = (32,574,63,606)	//star
+//	delay_rect = (2,606,33,637)		//hollow star
+	delay_rect = (32,606,63,637)	//orb
+
+
+//ALPHA
+
+// Arrowheads
+ShotData{ id=1 rect=(240,17,255,32) render=ALPHA delay_color= (255,255,255) } //White
+ShotData{ id=2 rect=(32,17,47,32) render=ALPHA delay_color= (255,64,64) } //Red
+ShotData{ id=3 rect=(224,17,239,32) render=ALPHA delay_color= (255,128,64) } //Orange
+ShotData{ id=4 rect=(208,17,223,32) render=ALPHA delay_color= (255,255,64) } //Yellow
+ShotData{ id=5 rect=(160,17,175,32) render=ALPHA delay_color= (64,255,64) } //Green
+ShotData{ id=6 rect=(128,17,143,32) render=ALPHA delay_color= (64,255,255) } //Aqua
+ShotData{ id=7 rect=(96,17,111,32) render=ALPHA delay_color= (64,64,255) } //Blue
+ShotData{ id=8 rect=(64,17,79,32) render=ALPHA delay_color= (255,64,255) } //Magenta
+ShotData{ id=9 rect=(16,17,31,32) render=ALPHA delay_color= (255,64,64) } //Dark Red
+ShotData{ id=10 rect=(192,17,207,32) render=ALPHA delay_color= (255,255,64) } //Gold
+ShotData{ id=11 rect=(176,17,191,32) render=ALPHA delay_color= (192,255,64) } //Yellow-Green
+ShotData{ id=12 rect=(144,17,159,32) render=ALPHA delay_color= (64,255,64) } //Dark Green
+ShotData{ id=13 rect=(112,17,127,32) render=ALPHA delay_color= (64,255,255) } //Dark Aqua
+ShotData{ id=14 rect=(80,17,95,32) render=ALPHA delay_color= (64,64,255) } //Dark Blue
+ShotData{ id=15 rect=(48,17,63,32) render=ALPHA delay_color= (255,64,255) } //Purple
+ShotData{ id=16 rect=(0,17,15,32) render=ALPHA delay_color= (128,128,128) } //Gray
+
+// Small Round Bullets w/ Outer Layer
+ShotData{ id=17 rect=(270,533,288,551) render=ALPHA fixed_angle=true delay_color= (255,255,255) } //White
+ShotData{ id=18 rect=(36,533,54,551) render=ALPHA fixed_angle=true delay_color= (255,64,64) } //Red
+ShotData{ id=19 rect=(252,533,270,551) render=ALPHA fixed_angle=true delay_color= (255,128,64) } //Orange
+ShotData{ id=20 rect=(234,533,252,551) render=ALPHA fixed_angle=true delay_color= (255,255,64) } //Yellow
+ShotData{ id=21 rect=(180,533,198,551) render=ALPHA fixed_angle=true delay_color= (64,255,64) } //Green
+ShotData{ id=22 rect=(126,533,144,551) render=ALPHA fixed_angle=true delay_color= (64,255,255) } //Aqua
+ShotData{ id=23 rect=(108,533,126,551) render=ALPHA fixed_angle=true delay_color= (64,64,255) } //Blue
+ShotData{ id=24 rect=(72,533,90,551) render=ALPHA fixed_angle=true delay_color= (255,64,255) } //Magenta
+ShotData{ id=25 rect=(18,533,36,551) render=ALPHA fixed_angle=true delay_color= (255,64,64) } //Dark Red
+ShotData{ id=26 rect=(198,533,216,551) render=ALPHA fixed_angle=true delay_color= (192,255,64) } //Yellow-Green
+ShotData{ id=27 rect=(144,533,162,551) render=ALPHA fixed_angle=true delay_color= (64,255,64) } //Dark Green
+ShotData{ id=28 rect=(216,533,234,551) render=ALPHA fixed_angle=true delay_color= (255,255,64) } //Swamp Green
+ShotData{ id=29 rect=(162,533,180,551) render=ALPHA fixed_angle=true delay_color= (100,255,200) } //Mint
+ShotData{ id=30 rect=(90,533,108,551) render=ALPHA fixed_angle=true delay_color= (64,64,255) } //Dark Blue
+ShotData{ id=31 rect=(54,533,72,551) render=ALPHA fixed_angle=true delay_color= (255,64,255) } //Purple
+ShotData{ id=32 rect=(0,533,18,551) render=ALPHA fixed_angle=true delay_color= (128,128,128) } //Gray
+
+// Small Round Bullets
+ShotData{ id=33 rect=(270,551,288,569) render=ALPHA fixed_angle=true delay_color= (255,255,255) } //White
+ShotData{ id=34 rect=(36,551,54,569) render=ALPHA fixed_angle=true delay_color= (255,64,64) } //Red
+ShotData{ id=35 rect=(252,551,270,569) render=ALPHA fixed_angle=true delay_color= (255,128,64) } //Orange
+ShotData{ id=36 rect=(234,551,252,569) render=ALPHA fixed_angle=true delay_color= (255,255,64) } //Yellow
+ShotData{ id=37 rect=(180,551,198,569) render=ALPHA fixed_angle=true delay_color= (64,255,64) } //Green
+ShotData{ id=38 rect=(126,551,144,569) render=ALPHA fixed_angle=true delay_color= (64,255,255) } //Aqua
+ShotData{ id=39 rect=(108,551,126,569) render=ALPHA fixed_angle=true delay_color= (64,64,255) } //Blue
+ShotData{ id=40 rect=(72,551,90,569) render=ALPHA fixed_angle=true delay_color= (255,64,255) } //Magenta
+ShotData{ id=41 rect=(18,551,36,569) render=ALPHA fixed_angle=true delay_color= (255,64,64) } //Dark Red
+ShotData{ id=42 rect=(198,551,216,569) render=ALPHA fixed_angle=true delay_color= (192,255,64) } //Yellow-Green
+ShotData{ id=43 rect=(144,551,162,569) render=ALPHA fixed_angle=true delay_color= (64,255,64) } //Dark Green
+ShotData{ id=44 rect=(216,551,234,569) render=ALPHA fixed_angle=true delay_color= (255,255,64) } //Swamp Green
+ShotData{ id=45 rect=(162,551,180,569) render=ALPHA fixed_angle=true delay_color= (100,255,200) } //Mint
+ShotData{ id=46 rect=(90,551,108,569) render=ALPHA fixed_angle=true delay_color= (64,64,255) } //Dark Blue
+ShotData{ id=47 rect=(54,551,72,569) render=ALPHA fixed_angle=true delay_color= (255,64,255) } //Purple
+ShotData{ id=48 rect=(0,551,18,569) render=ALPHA fixed_angle=true delay_color= (128,128,128) } //Gray
+
+// Pellets 
+ShotData{ id=49 rect=(240,34,255,49) render=ALPHA delay_color= (255,255,255) } //White
+ShotData{ id=50 rect=(32,34,47,49) render=ALPHA delay_color= (255,64,64) } //Red
+ShotData{ id=51 rect=(224,34,239,49) render=ALPHA delay_color= (255,128,64) } //Orange
+ShotData{ id=52 rect=(208,34,223,49) render=ALPHA delay_color= (255,255,64) } //Yellow
+ShotData{ id=53 rect=(160,34,175,49) render=ALPHA delay_color= (64,255,64) } //Green
+ShotData{ id=54 rect=(128,34,143,49) render=ALPHA delay_color= (64,255,255) } //Aqua
+ShotData{ id=55 rect=(96,34,111,49) render=ALPHA delay_color= (64,64,255) } //Blue
+ShotData{ id=56 rect=(64,34,79,49) render=ALPHA delay_color= (255,64,255) } //Magenta
+ShotData{ id=57 rect=(16,34,31,49) render=ALPHA delay_color= (255,64,64) } //Dark Red
+ShotData{ id=58 rect=(176,34,191,49) render=ALPHA delay_color= (192,255,64) } //Yellow-Green
+ShotData{ id=59 rect=(144,34,159,49) render=ALPHA delay_color= (64,255,64) } //Dark Green
+ShotData{ id=60 rect=(112,34,127,49) render=ALPHA delay_color= (64,255,255) } //Dark Aqua
+ShotData{ id=61 rect=(80,34,95,49) render=ALPHA delay_color= (64,64,255) } //Dark Blue
+ShotData{ id=62 rect=(48,34,63,49) render=ALPHA delay_color= (255,64,255) } //Purple
+ShotData{ id=63 rect=(192,34,207,49) render=ALPHA delay_color= (255,255,64) } //Gold
+ShotData{ id=64 rect=(0,34,15,49) render=ALPHA delay_color= (128,128,128) } //Gray
+
+// Kunais
+ShotData{ id=65 rect=(240,51,255,66) render=ALPHA delay_color= (255,255,255) } //White
+ShotData{ id=66 rect=(32,51,47,66) render=ALPHA delay_color= (255,64,64) } //Red
+ShotData{ id=67 rect=(224,51,239,66) render=ALPHA delay_color= (255,128,64) } //Orange
+ShotData{ id=68 rect=(208,51,223,66) render=ALPHA delay_color= (255,255,64) } //Yellow
+ShotData{ id=69 rect=(160,51,175,66) render=ALPHA delay_color= (64,255,128) } //Green
+ShotData{ id=70 rect=(128,51,143,66) render=ALPHA delay_color= (64,255,255) } //Aqua
+ShotData{ id=71 rect=(96,51,111,66) render=ALPHA delay_color= (64,64,255) } //Blue
+ShotData{ id=72 rect=(64,51,79,66) render=ALPHA delay_color= (255,64,255) } //Magenta
+ShotData{ id=73 rect=(16,51,31,66) render=ALPHA delay_color= (255,64,64) } //Dark Red
+ShotData{ id=74 rect=(192,51,207,66) render=ALPHA delay_color= (255,255,64) } //Gold
+ShotData{ id=75 rect=(176,51,191,66) render=ALPHA delay_color= (192,255,64) } //Yellow-Green
+ShotData{ id=76 rect=(144,51,159,66) render=ALPHA delay_color= (64,255,64) } //Dark Green
+ShotData{ id=77 rect=(80,51,95,66) render=ALPHA delay_color= (64,64,255) } // Dark Blue
+ShotData{ id=78 rect=(112,51,127,66) render=ALPHA delay_color= (64,255,255) } //Dark Aqua
+ShotData{ id=79 rect=(48,51,63,66) render=ALPHA delay_color= (255,64,255) } //Purple
+ShotData{ id=80 rect=(0,51,15,66) render=ALPHA delay_color= (128,128,128) } //Gray
+
+// Ice Pellets
+ShotData{ id=81 rect=(240,68,255,83) render=ALPHA delay_color= (255,255,255) } //White
+ShotData{ id=82 rect=(32,68,47,83) render=ALPHA delay_color= (255,64,64) } //Red
+ShotData{ id=83 rect=(224,68,239,83) render=ALPHA delay_color= (255,128,64) } //Orange
+ShotData{ id=84 rect=(208,68,223,83) render=ALPHA delay_color= (255,255,64) } //Yellow
+ShotData{ id=85 rect=(160,68,175,83) render=ALPHA delay_color= (64,255,128) } //Green
+ShotData{ id=86 rect=(128,68,143,83) render=ALPHA delay_color= (64,255,255) } //Aqua
+ShotData{ id=87 rect=(96,68,111,83) render=ALPHA delay_color= (64,64,255) } //Blue
+ShotData{ id=88 rect=(64,68,79,83) render=ALPHA delay_color= (255,64,255) } //Magenta
+ShotData{ id=89 rect=(16,68,31,83) render=ALPHA delay_color= (255,64,64) } //Dark Red
+ShotData{ id=90 rect=(192,68,207,83) render=ALPHA delay_color= (255,255,64) } //Gold
+ShotData{ id=91 rect=(176,68,191,83) render=ALPHA delay_color= (192,255,64) } //Yellow-Green
+ShotData{ id=92 rect=(144,68,159,83) render=ALPHA delay_color= (64,255,64) } //Dark Green
+ShotData{ id=93 rect=(80,68,95,83) render=ALPHA delay_color= (64,64,255) } //Light Blue
+ShotData{ id=94 rect=(112,68,127,83) render=ALPHA delay_color= (64,255,255) } //Dark Aqua
+ShotData{ id=95 rect=(48,68,63,83) render=ALPHA delay_color= (255,64,255) } //Purple
+ShotData{ id=96 rect=(0,68,15,83) render=ALPHA delay_color= (128,128,128) } //Gray
+
+// Amulets
+ShotData{ id=97 rect=(240,85,255,100) render=ALPHA delay_color= (255,255,255) } //Gray
+ShotData{ id=98 rect=(32,85,47,100) render=ALPHA delay_color= (255,64,64) } //Red
+ShotData{ id=99 rect=(224,85,239,100) render=ALPHA delay_color= (255,128,64) } //Orange
+ShotData{ id=100 rect=(208,85,223,100) render=ALPHA delay_color= (255,255,64) } //Yellow
+ShotData{ id=101 rect=(160,85,175,100) render=ALPHA delay_color= (64,255,64) } //Green
+ShotData{ id=102 rect=(128,85,143,100) render=ALPHA delay_color= (64,255,255) } //Aqua
+ShotData{ id=103 rect=(96,85,111,100) render=ALPHA delay_color= (64,64,255) } //Blue
+ShotData{ id=104 rect=(48,85,63,100) render=ALPHA delay_color= (255,64,255) } //Magenta
+ShotData{ id=105 rect=(16,85,31,100) render=ALPHA delay_color= (255,64,64) } //Dark Red
+ShotData{ id=106 rect=(176,85,191,100) render=ALPHA delay_color= (192,255,64) } //Yellow-Green
+ShotData{ id=107 rect=(192,85,207,100) render=ALPHA delay_color= (128,255,144) } //Swamp Green
+ShotData{ id=108 rect=(144,85,159,100) render=ALPHA delay_color= (64,255,64) } //Dark Green
+ShotData{ id=109 rect=(112,85,127,100) render=ALPHA delay_color= (64,255,255) } //Dark Aqua
+ShotData{ id=110 rect=(80,85,95,100) render=ALPHA delay_color= (64,64,255) } //Dark Blue
+ShotData{ id=111 rect=(64,85,79,100) render=ALPHA delay_color= (255,64,255) } //Purple
+ShotData{ id=112 rect=(0,85,15,100) render=ALPHA delay_color= (128,128,128) } //Black
+
+// Suppository
+ShotData{ id=113 rect=(240,102,255,117) render=ALPHA delay_color= (255,255,255) } //White
+ShotData{ id=114 rect=(32,102,47,117) render=ALPHA delay_color= (255,64,64) } //Red
+ShotData{ id=115 rect=(224,102,239,117) render=ALPHA delay_color= (255,128,64) } //Orange
+ShotData{ id=116 rect=(192,102,207,117) render=ALPHA delay_color= (255,255,64) } //Yellow
+ShotData{ id=117 rect=(160,102,175,117) render=ALPHA delay_color= (64,255,128) } //Green
+ShotData{ id=118 rect=(128,102,143,117) render=ALPHA delay_color= (64,255,255) } //Aqua
+ShotData{ id=119 rect=(96,102,111,117) render=ALPHA delay_color= (64,64,255) } //Blue
+ShotData{ id=120 rect=(64,102,79,117) render=ALPHA delay_color= (255,64,255) } //Magenta
+ShotData{ id=121 rect=(16,102,31,117) render=ALPHA delay_color= (255,64,64) } //Dark Red
+ShotData{ id=122 rect=(208,102,223,117) render=ALPHA delay_color= (255,255,64) } //Gold
+ShotData{ id=123 rect=(176,102,191,117) render=ALPHA delay_color= (192,255,64) } //Yellow-Green
+ShotData{ id=124 rect=(144,102,159,117) render=ALPHA delay_color= (32,255,32) } //Dark Green
+ShotData{ id=125 rect=(112,102,127,117) render=ALPHA delay_color= (64,255,255) } //Dark Aqua
+ShotData{ id=127 rect=(80,102,95,117) render=ALPHA delay_color= (64,64,255) } //Dark Blue
+ShotData{ id=127 rect=(48,102,63,117) render=ALPHA delay_color= (255,64,255) } //Purple
+ShotData{ id=128 rect=(0,102,15,117) render=ALPHA delay_color= (128,128,128) } //Gray
+
+// Dark Pellets (ZUN Style)
+ShotData{ id=129 rect=(240,118,255,134) render=ALPHA delay_color= (128,128,128) } //Gray
+ShotData{ id=130 rect=(16,118,31,134) render=ALPHA delay_color= (255,64,64) } //Red
+ShotData{ id=131 rect=(224,118,239,134) render=ALPHA delay_color= (255,128,64) } //Orange
+ShotData{ id=132 rect=(208,118,223,134) render=ALPHA delay_color= (255,255,64) } //Yellow
+ShotData{ id=133 rect=(144,118,159,134) render=ALPHA delay_color= (64,255,64) } //Green
+ShotData{ id=134 rect=(112,118,127,134) render=ALPHA delay_color= (64,255,255) } //Aqua
+ShotData{ id=135 rect=(96,118,111,134) render=ALPHA delay_color= (64,64,255) } //Blue
+ShotData{ id=136 rect=(64,118,79,134) render=ALPHA delay_color= (255,64,255) } //Magenta
+ShotData{ id=137 rect=(32,118,47,134) render=ALPHA delay_color= (255,64,64) } //Light Red
+ShotData{ id=138 rect=(176,118,191,134) render=ALPHA delay_color= (64,255,64) } //Yellow-Green
+ShotData{ id=139 rect=(160,118,175,134) render=ALPHA delay_color= (64,255,64) } //Light Green
+ShotData{ id=140 rect=(192,118,207,134) render=ALPHA delay_color= (128,255,144) } //Swamp Green
+ShotData{ id=141 rect=(128,118,143,134) render=ALPHA delay_color= (64,255,255) } //Light Aqua
+ShotData{ id=142 rect=(80,118,95,134) render=ALPHA delay_color= (64,64,255) } //Dark Blue
+ShotData{ id=143 rect=(48,118,63,134) render=ALPHA delay_color= (255,64,255) } //Purple
+ShotData{ id=144 rect=(0,118,15,134) render=ALPHA delay_color= (128,128,128) } //Black
+
+// Dark Pellets (Inverted)
+ShotData{ id=145 rect=(240,136,255,151) render=ALPHA delay_color= (255,255,255) } //Gray
+ShotData{ id=146 rect=(16,136,31,151) render=ALPHA delay_color= (255,64,64) } //Red
+ShotData{ id=147 rect=(224,136,239,151) render=ALPHA delay_color= (255,128,64) } //Orange
+ShotData{ id=148 rect=(208,136,223,151) render=ALPHA delay_color= (255,255,64) } //Yellow
+ShotData{ id=149 rect=(160,136,175,151) render=ALPHA delay_color= (64,255,64) } //Green
+ShotData{ id=150 rect=(80,136,95,151) render=ALPHA delay_color= (64,64,255) } //Blue
+ShotData{ id=151 rect=(64,136,79,151) render=ALPHA delay_color= (255,64,255) } //Magenta
+ShotData{ id=152 rect=(32,136,47,151) render=ALPHA delay_color= (255,64,64) } //Dark Red
+ShotData{ id=153 rect=(192,136,207,151) render=ALPHA delay_color= (255,255,64) } //Dull Yellow
+ShotData{ id=154 rect=(176,136,191,151) render=ALPHA delay_color= (192,255,64) } //Yellow-Green
+ShotData{ id=155 rect=(144,136,159,151) render=ALPHA delay_color= (64,255,64) } //Dull Green
+ShotData{ id=156 rect=(96,136,111,151) render=ALPHA delay_color= (64,64,255) } //Light Blue
+ShotData{ id=157 rect=(112,136,127,151) render=ALPHA delay_color= (64,255,255) } //Aqua
+ShotData{ id=158 rect=(128,136,143,151) render=ALPHA delay_color= (64,255,255) } //Light Aqua
+ShotData{ id=159 rect=(48,136,63,151) render=ALPHA delay_color= (255,64,255) } //Purple
+ShotData{ id=160 rect=(0,136,15,151) render=ALPHA delay_color= (128,128,128) } //Black
+
+// Marisa's Small Stars
+ShotData{ id=161 rect=(240,153,255,168) render=ALPHA fixed_angle=true angular_velocity = 2 delay_color= (255,255,255) } //Gray
+ShotData{ id=162 rect=(32,153,47,168) render=ALPHA fixed_angle=true angular_velocity = 2 delay_color= (255,64,64) } //Red
+ShotData{ id=163 rect=(224,153,239,168) render=ALPHA fixed_angle=true angular_velocity = 2 delay_color= (255,128,64) } //Orange
+ShotData{ id=164 rect=(208,153,223,168) render=ALPHA fixed_angle=true angular_velocity = -2 delay_color= (255,255,64) } //Yellow
+ShotData{ id=165 rect=(160,153,175,168) render=ALPHA fixed_angle=true angular_velocity = 2 delay_color= (64,255,128) } //Green
+ShotData{ id=166 rect=(128,153,143,168) render=ALPHA fixed_angle=true angular_velocity = 2 delay_color= (64,255,255) } //Aqua
+ShotData{ id=167 rect=(96,153,111,168) render=ALPHA fixed_angle=true angular_velocity = 2 delay_color= (64,64,255) } //Blue
+ShotData{ id=168 rect=(64,153,79,168) render=ALPHA fixed_angle=true angular_velocity = 2 delay_color= (255,64,255) } //Magenta
+ShotData{ id=169 rect=(16,153,31,168) render=ALPHA fixed_angle=true angular_velocity = -2 delay_color= (255,64,64) } //Dark Red
+ShotData{ id=170 rect=(176,153,191,168) render=ALPHA fixed_angle=true angular_velocity = -2 delay_color= (64,255,144) } //Yellow-Green
+ShotData{ id=171 rect=(192,153,207,168) render=ALPHA fixed_angle=true angular_velocity = 2 delay_color= (128,255,144) } //Swamp Green
+ShotData{ id=172 rect=(144,153,159,168) render=ALPHA fixed_angle=true angular_velocity = -2 delay_color= (64,255,64) } //Dark Green
+ShotData{ id=173 rect=(112,153,127,168) render=ALPHA fixed_angle=true angular_velocity = -2 delay_color= (64,255,255) } //Dark Aqua
+ShotData{ id=174 rect=(80,153,95,168) render=ALPHA fixed_angle=true angular_velocity = -2 delay_color= (64,64,255) } //Dark Blue
+ShotData{ id=175 rect=(48,153,63,168) render=ALPHA fixed_angle=true angular_velocity = -2 delay_color= (255,64,255) } //Purple
+ShotData{ id=176 rect=(0,153,15,168) render=ALPHA fixed_angle=true angular_velocity = 2 delay_color= (128,128,128) } //Black
+
+// Rainbow Dots (MoF Style) (stardots)
+ShotData{ id=177 rect=(56,200,63,207) render=ALPHA fixed_angle=true angular_velocity = 10 delay_color= (255,255,255) } //White
+ShotData{ id=178 rect=(16,192,23,199) render=ALPHA fixed_angle=true angular_velocity = 10 delay_color= (255,64,64) } //Red
+ShotData{ id=179 rect=(48,200,55,207) render=ALPHA fixed_angle=true angular_velocity = 10 delay_color= (255,128,64) } //Orange
+ShotData{ id=180 rect=(40,200,47,207) render=ALPHA fixed_angle=true angular_velocity = 10 delay_color= (255,255,64) } //Yellow
+ShotData{ id=181 rect=(16,200,23,207) render=ALPHA fixed_angle=true angular_velocity = 10 delay_color= (64,255,64) } //Green
+ShotData{ id=182 rect=(0,200,7,207) render=ALPHA fixed_angle=true angular_velocity = 10 delay_color= (64,255,255) } //Aqua
+ShotData{ id=183 rect=(48,192,55,199) render=ALPHA fixed_angle=true angular_velocity = 10 delay_color= (64,64,255) } //Blue
+ShotData{ id=184 rect=(32,192,39,199) render=ALPHA fixed_angle=true angular_velocity = 10 delay_color= (255,64,255) } //Magenta
+ShotData{ id=185 rect=(8,192,15,199) render=ALPHA fixed_angle=true angular_velocity = 10 delay_color= (255,64,64) } //Dark Red
+ShotData{ id=186 rect=(24,200,31,207) render=ALPHA fixed_angle=true angular_velocity = 10 delay_color= (64,255,144) } //Yellow-Green
+ShotData{ id=187 rect=(32,200,39,207) render=ALPHA fixed_angle=true angular_velocity = 10 delay_color= (128,255,144) } //Swamp Green
+ShotData{ id=188 rect=(8,200,15,207) render=ALPHA fixed_angle=true angular_velocity = 10 delay_color= (64,255,64) } //Dark Green
+ShotData{ id=189 rect=(56,192,63,199) render=ALPHA fixed_angle=true angular_velocity = 10 delay_color= (64,255,255) } //Dark Aqua
+ShotData{ id=190 rect=(40,192,47,199) render=ALPHA fixed_angle=true angular_velocity = 10 delay_color= (64,64,255) } //Dark Blue
+ShotData{ id=191 rect=(24,192,31,199) render=ALPHA fixed_angle=true angular_velocity = 10 delay_color= (255,64,255) } //Purple
+ShotData{ id=192 rect=(0,192,7,199) render=ALPHA fixed_angle=true angular_velocity = 10 delay_color= (128,128,128) } //Gray
+
+// Komachi's coins
+ShotData{ id=193 rect=(128,192,143,207) render=ALPHA fixed_angle=true angular_velocity = 4 delay_color= (255,255,255) } //Gray
+ShotData{ id=194 rect=(144,192,159,207) render=ALPHA fixed_angle=true angular_velocity = -4 delay_color= (255,64,64) } //Red
+ShotData{ id=195 rect=(240,192,255,207) render=ALPHA fixed_angle=true angular_velocity = -4 delay_color= (255,128,64) } //Orange
+ShotData{ id=196 rect=(224,192,239,207) render=ALPHA fixed_angle=true angular_velocity = 4 delay_color= (255,255,64) } //Yellow
+ShotData{ id=197 rect=(208,192,223,207) render=ALPHA fixed_angle=true angular_velocity = -4 delay_color= (64,255,128) } //Green
+ShotData{ id=198 rect=(192,192,207,207) render=ALPHA fixed_angle=true angular_velocity = 4 delay_color= (64,255,255) } //Aqua
+ShotData{ id=199 rect=(176,192,191,207) render=ALPHA fixed_angle=true angular_velocity = -4 delay_color= (64,64,255) } //Blue
+ShotData{ id=200 rect=(160,192,175,207) render=ALPHA fixed_angle=true angular_velocity = 4 delay_color= (255,64,255) } //Purple
+
+//Glow bullets (ZUN delay clouds)
+ShotData{ id=201 rect=(0,208,31,239) render=ALPHA fixed_angle=true angular_velocity = -2 delay_color= (128,128,128) } // Gray
+ShotData{ id=202 rect=(32,208,63,239) render=ALPHA fixed_angle=true angular_velocity = 2 delay_color= (255,64,64) } // Red
+ShotData{ id=203 rect=(224,208,255,239) render=ALPHA fixed_angle=true angular_velocity = 2 delay_color= (255,128,64) } // Orange
+ShotData{ id=204 rect=(192,208,223,239) render=ALPHA fixed_angle=true angular_velocity = -2 delay_color= (255,255,64) } // Yellow
+ShotData{ id=205 rect=(160,208,191,239) render=ALPHA fixed_angle=true angular_velocity = 2 delay_color= (64,255,64) } // Green
+ShotData{ id=206 rect=(128,208,159,239) render=ALPHA fixed_angle=true angular_velocity = -2 delay_color= (64,255,255) } // Aqua
+ShotData{ id=207 rect=(64,208,95,239) render=ALPHA fixed_angle=true angular_velocity = -2 delay_color= (64,64,255) } // Blue
+ShotData{ id=208 rect=(96,208,127,239) render=ALPHA fixed_angle=true angular_velocity = 2 delay_color= (255,64,255) } // Purple
+
+// Dots (EoSD Style)
+ShotData{ id=209 rect=(56,182,64,190) render=ALPHA fixed_angle=true delay_color= (255,255,255) } //White
+ShotData{ id=210 rect=(8,174,16,182) render=ALPHA fixed_angle=true delay_color= (255,64,64) } //Red
+ShotData{ id=211 rect=(48,182,56,190) render=ALPHA fixed_angle=true delay_color= (255,128,64) } //Orange
+ShotData{ id=212 rect=(32,182,40,190) render=ALPHA fixed_angle=true delay_color= (255,255,64) } //Yellow
+ShotData{ id=213 rect=(8,182,16,190) render=ALPHA fixed_angle=true delay_color= (64,255,64) } //Green
+ShotData{ id=214 rect=(56,174,64,182) render=ALPHA fixed_angle=true delay_color= (64,255,255) } //Aqua
+ShotData{ id=215 rect=(40,174,48,182) render=ALPHA fixed_angle=true delay_color= (64,64,255) } //Blue
+ShotData{ id=216 rect=(24,174,32,182) render=ALPHA fixed_angle=true delay_color= (255,64,255) } //Purple
+ShotData{ id=217 rect=(16,174,24,182) render=ALPHA fixed_angle=true delay_color= (255,64,64) } //Light Red
+ShotData{ id=218 rect=(40,182,48,190) render=ALPHA fixed_angle=true delay_color= (255,255,64) } //Light Yellow
+ShotData{ id=219 rect=(24,182,32,190) render=ALPHA fixed_angle=true delay_color= (128,255,64) } //Lime
+ShotData{ id=220 rect=(16,182,24,190) render=ALPHA fixed_angle=true delay_color= (64,255,64) } //Light Green
+ShotData{ id=221 rect=(0,182,8,190) render=ALPHA fixed_angle=true delay_color= (64,255,255) } //Light Aqua
+ShotData{ id=222 rect=(48,174,56,182) render=ALPHA fixed_angle=true delay_color= (64,64,255) } //Light Blue
+ShotData{ id=223 rect=(32,174,40,182) render=ALPHA fixed_angle=true delay_color= (255,64,255) } //Light Purple
+ShotData{ id=224 rect=(0,174,8,182) render=ALPHA fixed_angle=true delay_color= (255,255,255) } //Gray
+
+// Slightly Larger Dots
+ShotData{ id=225 rect=(0,241,16,255) render=ALPHA fixed_angle=true delay_color= (128,128,128) } //Black
+ShotData{ id=226 rect=(16,241,32,255) render=ALPHA fixed_angle=true delay_color= (255,64,64) } //Red
+ShotData{ id=227 rect=(64,241,80,255) render=ALPHA fixed_angle=true delay_color= (255,255,64) } //Yellow
+ShotData{ id=228 rect=(48,241,64,255) render=ALPHA fixed_angle=true delay_color= (64,255,64) } //Green
+ShotData{ id=229 rect=(32,241,48,255) render=ALPHA fixed_angle=true delay_color= (64,64,255) } //Blue
+
+//Slightly Larger Dots (hollow)
+ShotData{ id=230 rect=(80,241,96,255) render=ALPHA fixed_angle=true delay_color= (128,128,128) } //Black
+ShotData{ id=231 rect=(96,241,112,255) render=ALPHA fixed_angle=true delay_color= (255,64,64) } //Red
+ShotData{ id=232 rect=(144,241,160,255) render=ALPHA fixed_angle=true delay_color= (255,255,64) } //Yellow
+ShotData{ id=233 rect=(128,241,144,255) render=ALPHA fixed_angle=true delay_color= (64,255,64) } //Green
+ShotData{ id=234 rect=(112,241,128,255) render=ALPHA fixed_angle=true delay_color= (64,64,255) } //Blue
+
+// Koishi Hearts 
+ShotData{ id=235 rect=(0,257,31,287) render=ALPHA delay_color= (255,255,255) } // Gray
+ShotData{ id=236 rect=(32,257,63,287) render=ALPHA delay_color= (255,64,64) } // Red
+ShotData{ id=237 rect=(224,257,255,287) render=ALPHA delay_color= (255,128,64) } // Orange
+ShotData{ id=238 rect=(192,257,223,287) render=ALPHA delay_color= (255,255,64) } // Yellow
+ShotData{ id=239 rect=(160,257,191,287) render=ALPHA delay_color= (64,255,64) } // Green
+ShotData{ id=240 rect=(128,257,159,287) render=ALPHA delay_color= (64,255,255) } // Aqua
+ShotData{ id=241 rect=(96,257,127,287) render=ALPHA delay_color= (64,64,255) } // Blue
+ShotData{ id=242 rect=(64,257,95,287) render=ALPHA delay_color= (255,64,255) } // Purple
+
+//Laser tip (DDC and TD)
+ShotData{ id=243 rect=(0,320,31,351) render=ALPHA fixed_angle=true angular_velocity = -2 delay_color= (128,128,128) } // Gray
+ShotData{ id=244 rect=(32,320,63,351) render=ALPHA fixed_angle=true angular_velocity = 2 delay_color= (255,64,64) } // Red
+ShotData{ id=245 rect=(224,320,255,351) render=ALPHA fixed_angle=true angular_velocity = 2 delay_color= (255,128,64) } // Orange
+ShotData{ id=246 rect=(192,320,223,351) render=ALPHA fixed_angle=true angular_velocity = -2 delay_color= (255,255,64) } // Yellow
+ShotData{ id=247 rect=(160,320,191,351) render=ALPHA fixed_angle=true angular_velocity = 2 delay_color= (64,255,64) } // Green
+ShotData{ id=248 rect=(128,320,159,351) render=ALPHA fixed_angle=true angular_velocity = -2 delay_color= (64,255,255) } // Aqua
+ShotData{ id=249 rect=(64,320,95,351) render=ALPHA fixed_angle=true angular_velocity = -2 delay_color= (64,64,255) } // Blue
+ShotData{ id=250 rect=(96,320,127,351) render=ALPHA fixed_angle=true angular_velocity = 2 delay_color= (255,64,255) } // Purple
+
+// Murasa Droplets
+ShotData{ id=251 rect=(240,351,255,366) render=ALPHA delay_color= (255,255,255) } //White
+ShotData{ id=252 rect=(32,351,47,366) render=ALPHA delay_color= (255,64,64) } //Red
+ShotData{ id=253 rect=(224,351,239,366) render=ALPHA delay_color= (255,128,64) } //Orange
+ShotData{ id=254 rect=(208,351,223,366) render=ALPHA delay_color= (255,255,64) } //Yellow
+ShotData{ id=255 rect=(160,351,175,366) render=ALPHA delay_color= (64,255,64) } //Green
+ShotData{ id=256 rect=(128,351,143,366) render=ALPHA delay_color= (64,255,255) } //Aqua
+ShotData{ id=257 rect=(96,351,111,366) render=ALPHA delay_color= (64,64,255) } //Blue
+ShotData{ id=258 rect=(64,351,79,366) render=ALPHA delay_color= (255,64,255) } //Magenta
+ShotData{ id=259 rect=(16,351,31,366) render=ALPHA delay_color= (255,64,64) } //Dark Red
+ShotData{ id=260 rect=(192,351,207,366) render=ALPHA delay_color= (255,255,64) } //Gold
+ShotData{ id=261 rect=(176,351,191,366) render=ALPHA delay_color= (64,255,144) } //Yellow-Green
+ShotData{ id=262 rect=(144,351,159,366) render=ALPHA delay_color= (64,255,64) } //Dark Green
+ShotData{ id=263 rect=(112,351,127,366) render=ALPHA delay_color= (64,255,255) } //Dark Aqua
+ShotData{ id=264 rect=(80,351,95,366) render=ALPHA delay_color= (64,64,255) } //Dark Blue
+ShotData{ id=265 rect=(48,351,63,366) render=ALPHA delay_color= (255,64,255) } //Purple
+ShotData{ id=266 rect=(0,351,15,366) render=ALPHA delay_color= (128,128,128) } //Gray
+
+// Marisa's Large Stars
+ShotData{ id=267 rect=(257,0,287,30) render=ALPHA fixed_angle=true angular_velocity = -2 delay_color= (128,128,128) } // Gray
+ShotData{ id=268 rect=(289,0,319,30) render=ALPHA fixed_angle=true angular_velocity = 2 delay_color= (255,64,64) } // Red
+ShotData{ id=269 rect=(481,0,511,30) render=ALPHA fixed_angle=true angular_velocity = 2 delay_color= (255,128,64) } // Orange
+ShotData{ id=270 rect=(449,0,479,30) render=ALPHA fixed_angle=true angular_velocity = -2 delay_color= (255,255,64) } // Yellow
+ShotData{ id=271 rect=(417,0,447,30) render=ALPHA fixed_angle=true angular_velocity = 2 delay_color= (64,255,64) } // Green
+ShotData{ id=272 rect=(385,0,415,30) render=ALPHA fixed_angle=true angular_velocity = -2 delay_color= (64,255,255) } // Aqua
+ShotData{ id=273 rect=(321,0,351,30) render=ALPHA fixed_angle=true angular_velocity = -2 delay_color= (64,64,255) } // Blue
+ShotData{ id=274 rect=(353,0,383,30) render=ALPHA fixed_angle=true angular_velocity = 2 delay_color= (255,64,255) } // Purple
+
+// Large Round Bullets (Modern Style, right side)
+ShotData{ id=275 rect=(256,32,288,64) render=ALPHA fixed_angle=true delay_color= (255,255,255) } // Gray
+ShotData{ id=276 rect=(288,32,320,64) render=ALPHA fixed_angle=true delay_color= (255,64,64) } // Red
+ShotData{ id=277 rect=(480,32,512,64) render=ALPHA fixed_angle=true delay_color= (255,128,64) } // Orange
+ShotData{ id=278 rect=(448,32,480,64) render=ALPHA fixed_angle=true delay_color= (255,255,64) } // Yellow
+ShotData{ id=279 rect=(416,32,448,64) render=ALPHA fixed_angle=true delay_color= (64,255,64) } // Green
+ShotData{ id=280 rect=(385,32,416,64) render=ALPHA fixed_angle=true delay_color= (64,255,255) } // Aqua
+ShotData{ id=281 rect=(352,32,384,64) render=ALPHA fixed_angle=true delay_color= (64,64,255) } // Blue
+ShotData{ id=282 rect=(320,32,352,64) render=ALPHA fixed_angle=true delay_color= (255,64,255) } // Purple
+
+// Large Round Bullets (PCB Style, left side)
+ShotData{ id=283 rect=(0,288,32,320) render=ALPHA fixed_angle=true delay_color= (255,255,255) } // Gray
+ShotData{ id=284 rect=(32,288,64,320) render=ALPHA fixed_angle=true delay_color= (255,64,64) } // Red
+ShotData{ id=285 rect=(224,288,256,320) render=ALPHA fixed_angle=true delay_color= (255,128,64) } // Orange
+ShotData{ id=286 rect=(192,288,224,320) render=ALPHA fixed_angle=true delay_color= (255,255,64) } // Yellow
+ShotData{ id=287 rect=(160,288,192,320) render=ALPHA fixed_angle=true delay_color= (64,255,64) } // Green
+ShotData{ id=288 rect=(128,288,160,320) render=ALPHA fixed_angle=true delay_color= (64,255,255) } // Aqua
+ShotData{ id=289 rect=(96,288,128,320) render=ALPHA fixed_angle=true delay_color= (64,64,255) } // Blue
+ShotData{ id=290 rect=(64,288,96,320) render=ALPHA fixed_angle=true delay_color= (255,64,255) } // Purple
+
+// Yuyuko Butterflies
+ShotData{ id=291 rect=(256,64,288,96) render=ALPHA delay_color= (255,255,255) } // White
+ShotData{ id=292 rect=(288,64,320,96) render=ALPHA delay_color= (255,64,64) } // Red
+ShotData{ id=293 rect=(480,64,512,96) render=ALPHA delay_color= (255,128,64) } // Orange
+ShotData{ id=294 rect=(448,64,480,96) render=ALPHA delay_color= (255,255,64) } // Yellow
+ShotData{ id=295 rect=(416,64,448,96) render=ALPHA delay_color= (64,255,64) } // Green
+ShotData{ id=296 rect=(384,64,416,96) render=ALPHA delay_color= (64,128,255) } // Aqua
+ShotData{ id=297 rect=(352,64,384,96) render=ALPHA delay_color= (64,64,255) } // Blue
+ShotData{ id=298 rect=(320,64,352,96) render=ALPHA delay_color= (255,64,255) } // Purple
+
+// Sakuya Knives
+ShotData{ id=299 rect=(256,96,287,127) render=ALPHA collision=5 delay_color= (255,255,255) } // Gray
+ShotData{ id=300 rect=(288,96,319,127) render=ALPHA collision=5 delay_color= (255,64,64) } // Red
+ShotData{ id=301 rect=(480,96,511,127) render=ALPHA collision=5 delay_color= (255,128,64) } // Orange
+ShotData{ id=302 rect=(448,96,479,127) render=ALPHA collision=5 delay_color= (255,255,64) } // Yellow
+ShotData{ id=303 rect=(416,96,447,127) render=ALPHA collision=5 delay_color= (64,255,64) } // Green
+ShotData{ id=304 rect=(384,96,415,127) render=ALPHA collision=5 delay_color= (64,255,255) } // Aqua
+ShotData{ id=305 rect=(352,96,383,127) render=ALPHA collision=5 delay_color= (64,64,255) } // Blue
+ShotData{ id=306 rect=(320,96,351,127) render=ALPHA collision=5 delay_color= (255,64,255) } // Purple
+
+// Oval Bullets
+ShotData{ id=307 rect=(256,128,287,159) render=ALPHA collision=6 delay_color= (255,255,255) } // Gray
+ShotData{ id=308 rect=(288,128,319,159) render=ALPHA collision=6 delay_color= (255,64,64) } // Red
+ShotData{ id=309 rect=(480,128,511,159) render=ALPHA collision=6 delay_color= (255,128,64) } // Orange
+ShotData{ id=310 rect=(448,128,479,159) render=ALPHA collision=6 delay_color= (255,255,64) } // Yellow
+ShotData{ id=311 rect=(416,128,447,159) render=ALPHA collision=6 delay_color= (64,255,64) } // Green
+ShotData{ id=312 rect=(384,128,415,159) render=ALPHA collision=6 delay_color= (64,255,255) } // Aqua
+ShotData{ id=313 rect=(352,128,383,159) render=ALPHA collision=6 delay_color= (64,64,255) } // Blue
+ShotData{ id=314 rect=(320,128,351,159) render=ALPHA collision=6 delay_color= (255,64,255) } // Purple
+
+// Prismriver Music Notes
+ShotData{ id=315 rect=(255,159,287,191) render=ALPHA fixed_angle=true angular_velocity = -2 delay_color= (255,255,255) } // Gray
+ShotData{ id=316 rect=(287,160,319,191) render=ALPHA fixed_angle=true angular_velocity = 2 delay_color= (255,64,64) } // Red
+ShotData{ id=317 rect=(479,160,511,191) render=ALPHA fixed_angle=true angular_velocity = 2 delay_color= (255,128,64) } // Orange
+ShotData{ id=318 rect=(447,160,479,191) render=ALPHA fixed_angle=true angular_velocity = -2 delay_color= (255,255,64) } // Yellow
+ShotData{ id=319 rect=(415,160,447,191) render=ALPHA fixed_angle=true angular_velocity = 2 delay_color= (64,255,64) } // Green
+ShotData{ id=320 rect=(383,160,415,191) render=ALPHA fixed_angle=true angular_velocity = -2 delay_color= (64,255,255) } // Aqua
+ShotData{ id=321 rect=(351,160,383,191) render=ALPHA fixed_angle=true angular_velocity = 2 delay_color= (64,64,255) } // Blue
+ShotData{ id=322 rect=(319,160,351,191) render=ALPHA fixed_angle=true angular_velocity = -2 delay_color= (255,64,255) } // Purple
+
+// Bubbles
+ShotData{ id=323 rect=(960,64,1023,127) render=ALPHA fixed_angle=true angular_velocity = 15 delay_color= (255,255,255) } // Gray
+ShotData{ id=324 rect=(768,0,831,63) render=ALPHA fixed_angle=true angular_velocity = 15 delay_color= (255,64,64) } // Red
+ShotData{ id=325 rect=(896,64,959,127) render=ALPHA fixed_angle=true angular_velocity = 15 delay_color= (255,128,64) } // Orange
+ShotData{ id=326 rect=(960,0,1023,63) render=ALPHA fixed_angle=true angular_velocity = 15 delay_color= (255,255,64) } // Yellow
+ShotData{ id=327 rect=(896,0,959,63) render=ALPHA fixed_angle=true angular_velocity = 15 delay_color= (64,255,64) } // Green
+ShotData{ id=328 rect=(768,64,831,127) render=ALPHA fixed_angle=true angular_velocity = 15 delay_color= (64,255,255) } // Aqua
+ShotData{ id=329 rect=(832,0,895,63) render=ALPHA fixed_angle=true angular_velocity = 15 delay_color= (64,64,255) } // Blue
+ShotData{ id=330 rect=(832,64,895,127) render=ALPHA fixed_angle=true angular_velocity = 15 delay_color= (255,64,255) } // Purple
+
+
+// Fireballs
+//Gray
+ShotData{ id=331 render=ALPHA  delay_color= (255,255,255)
+	AnimationData{ 
+		animation_data=(4,0,365,32,406)
+		animation_data=(4,32,365,64,406)
+		animation_data=(4,64,365,96,406)
+		animation_data=(4,96,365,128,406)
+	}
+	collision = 5;
+}
+//Red
+ShotData{ id=332 render=ALPHA  delay_color= (255,64,64)
+	AnimationData{ 
+		animation_data=(4,129,366,159,405)
+		animation_data=(4,161,366,191,405)
+		animation_data=(4,193,366,223,405)
+		animation_data=(4,225,366,255,405)
+	}
+	collision = 5;
+}
+//Orange
+ShotData{ id=333 render=ALPHA  delay_color= (255,128,64) 
+	AnimationData{
+		animation_data=(4,128,489,160,529)
+		animation_data=(4,160,489,192,529)
+		animation_data=(4,192,489,224,529)
+		animation_data=(4,224,489,256,529)
+	}
+	collision = 5;
+}
+//Yellow
+ShotData{ id=334 render=ALPHA  delay_color= (255,255,64)
+	AnimationData{ 
+		animation_data=(4,0,489,32,529)
+		animation_data=(4,32,489,64,529)
+		animation_data=(4,64,489,96,529)
+		animation_data=(4,96,489,128,529)
+	}
+	collision = 5;
+}
+//Green
+ShotData{ id=335 render=ALPHA  delay_color= (64,255,64)
+	AnimationData{ 
+		animation_data=(4,128,448,160,488)
+		animation_data=(4,160,448,192,488)
+		animation_data=(4,192,448,224,488)
+		animation_data=(4,224,448,256,488)
+	}
+	collision = 5;
+}
+//Aqua
+ShotData{ id=336 render=ALPHA  delay_color= (64,255,255) 
+	AnimationData{ 
+		animation_data=(4,0,448,32,488)
+		animation_data=(4,32,448,64,488)
+		animation_data=(4,64,448,96,488)
+		animation_data=(4,96,448,128,488)
+	}
+	collision = 5;
+}
+//Blue
+ShotData{ id=337 render=ALPHA  delay_color= (64,64,255)
+	AnimationData{
+		animation_data=(4,128,407,160,447)
+		animation_data=(4,160,407,192,447)
+		animation_data=(4,192,407,224,447)
+		animation_data=(4,224,407,256,447)
+	}
+	collision = 5;
+}
+//Purple
+ShotData{ id=338 render=ALPHA  delay_color= (255,64,255)
+	AnimationData{ 
+		animation_data=(4,0,407,32,447)
+		animation_data=(4,32,407,64,447)
+		animation_data=(4,64,407,96,447)
+		animation_data=(4,96,407,128,447)
+	}
+	collision = 5;
+}
+
+
+// Tsukumo Music Notes
+//Gray
+ShotData{ id=339 render=ALPHA fixed_angle=true delay_color= (255,255,255)
+	AnimationData{ 
+		animation_data=(8,256,256,288,302)
+		animation_data=(8,288,256,320,302)
+		animation_data=(8,320,256,352,302)
+		animation_data=(8,288,256,320,302)
+	}
+	collision = 5;
+}
+//Red
+ShotData{ id=340 render=ALPHA fixed_angle=true delay_color= (255,64,64)
+	AnimationData{ 
+		animation_data=(8,352,256,384,302)
+		animation_data=(8,384,256,416,302)
+		animation_data=(8,416,256,448,302)
+		animation_data=(8,384,256,416,302)
+	}
+	collision = 5;
+}
+//Orange
+ShotData{ id=341 render=ALPHA fixed_angle=true delay_color= (255,128,64)
+	AnimationData{ 
+		animation_data=(8,352,395,384,441)
+		animation_data=(8,384,395,416,441)
+		animation_data=(8,416,395,448,441)
+		animation_data=(8,384,395,416,441)
+	}
+	collision = 5;
+}
+//Yellow
+ShotData{ id=342 render=ALPHA fixed_angle=true delay_color= (255,255,64)
+	AnimationData{ 
+		animation_data=(8,256,395,288,441)
+		animation_data=(8,288,395,320,441)
+		animation_data=(8,320,395,352,441)
+		animation_data=(8,288,395,320,441)
+	}
+	collision = 5;
+}
+//Green
+ShotData{ id=343 render=ALPHA fixed_angle=true delay_color= (64,255,64)
+	AnimationData{ 
+		animation_data=(8,352,348,384,394)
+		animation_data=(8,384,348,416,394)
+		animation_data=(8,416,348,448,394)
+		animation_data=(8,384,348,416,394)
+	}
+	collision = 5;
+}
+//Aqua
+ShotData{ id=344 render=ALPHA fixed_angle=true delay_color= (64,255,255)
+	AnimationData{ 
+		animation_data=(8,256,348,288,394)
+		animation_data=(8,288,348,320,394)
+		animation_data=(8,320,348,352,394)
+		animation_data=(8,288,348,320,394)
+	}
+	collision = 5;
+}
+//Blue
+ShotData{ id=345 render=ALPHA fixed_angle=true delay_color= (64,64,255)
+	AnimationData{ 
+		animation_data=(8,352,302,384,348)
+		animation_data=(8,384,302,416,348)
+		animation_data=(8,416,302,448,348)
+		animation_data=(8,384,302,416,348)
+	}
+	collision = 5;
+}
+//Purple
+ShotData{ id=346 render=ALPHA fixed_angle=true delay_color= (255,64,255)
+	AnimationData{ 
+		animation_data=(8,256,302,288,348)
+		animation_data=(8,288,302,320,348)
+		animation_data=(8,320,302,352,348)
+		animation_data=(8,288,302,320,348)
+	}
+	collision = 5;
+}
+
+
+//Tsukumo Music Rests
+ShotData{ id=347 rect=(448,256,479,287) render=ALPHA collision=4 delay_color= (255,255,255) } // Gray
+ShotData{ id=348 rect=(480,256,511,287) render=ALPHA collision=4 delay_color= (255,64,64) } // Red
+ShotData{ id=349 rect=(480,352,511,383) render=ALPHA collision=4 delay_color= (255,128,64) } // Orange
+ShotData{ id=350 rect=(448,352,479,383) render=ALPHA collision=4 delay_color= (255,255,64) } // Yellow
+ShotData{ id=351 rect=(480,320,511,351) render=ALPHA collision=4 delay_color= (64,255,64) } // Green
+ShotData{ id=352 rect=(448,320,479,351) render=ALPHA collision=4 delay_color= (64,255,255) } // Aqua
+ShotData{ id=353 rect=(480,288,511,319) render=ALPHA collision=4 delay_color= (64,64,255) } // Blue
+ShotData{ id=354 rect=(448,288,479,319) render=ALPHA collision=4 delay_color= (255,64,255) } // Purple
+
+// Miko Glowing Orbs
+ShotData{ id=355 rect=(768,127,831,190) render=ALPHA fixed_angle=true collision = 13 delay_color= (255,255,255) } // Gray
+ShotData{ id=356 rect=(832,127,895,190) render=ALPHA fixed_angle=true collision = 13 delay_color= (255,64,64) } // Red
+ShotData{ id=357 rect=(960,191,1023,254) render=ALPHA fixed_angle=true collision = 13 delay_color= (255,128,64) } // Orange
+ShotData{ id=358 rect=(896,191,959,254) render=ALPHA fixed_angle=true collision = 13 delay_color= (255,255,64) } // Yellow
+ShotData{ id=359 rect=(832,191,895,254) render=ALPHA fixed_angle=true collision = 13 delay_color= (64,255,64) } // Green
+ShotData{ id=360 rect=(768,191,831,254) render=ALPHA fixed_angle=true collision = 13 delay_color= (64,255,255) } // Aqua
+ShotData{ id=361 rect=(960,127,1023,190) render=ALPHA fixed_angle=true collision = 13 delay_color= (64,64,255) } // Blue
+ShotData{ id=362 rect=(896,127,959,190) render=ALPHA fixed_angle=true collision = 13 delay_color= (192,64,192) } // Purple
+
+//Futo Arrows
+ShotData{ id=363 rect=(480,216,511,255) render=ALPHA delay_color= (255,255,255) } // White
+ShotData{ id=364 rect=(288,216,319,255) render=ALPHA delay_color= (255,64,64) } // Red
+ShotData{ id=365 rect=(448,216,479,255) render=ALPHA delay_color= (255,255,64) } // Yellow
+ShotData{ id=366 rect=(416,216,447,255) render=ALPHA delay_color= (64,255,64) } // Green
+ShotData{ id=367 rect=(384,216,415,255) render=ALPHA delay_color= (64,255,255) } // Aqua
+ShotData{ id=368 rect=(352,216,383,255) render=ALPHA delay_color= (64,64,255) } // Blue
+ShotData{ id=369 rect=(320,216,351,255) render=ALPHA delay_color= (255,64,255) } // Purple
+ShotData{ id=370 rect=(256,216,287,255) render=ALPHA delay_color= (255,255,255) } // Gray
+
+/////////////////////////////////////
+//Reserved IDs for additional shots//
+/////////////////////////////////////
+
+// Marisa's Small Stars, but not spinning
+ShotData{ id=371 rect=(240,153,255,168) render=ALPHA delay_color= (255,255,255) } //Gray
+ShotData{ id=372 rect=(32,153,47,168) render=ALPHA delay_color= (255,64,64) } //Red
+ShotData{ id=373 rect=(224,153,239,168) render=ALPHA delay_color= (255,128,64) } //Orange
+ShotData{ id=374 rect=(208,153,223,168) render=ALPHA delay_color= (255,255,64) } //Yellow
+ShotData{ id=375 rect=(160,153,175,168) render=ALPHA delay_color= (64,255,128) } //Green
+ShotData{ id=376 rect=(128,153,143,168) render=ALPHA delay_color= (64,255,255) } //Aqua
+ShotData{ id=377 rect=(96,153,111,168) render=ALPHA delay_color= (64,64,255) } //Blue
+ShotData{ id=378 rect=(64,153,79,168) render=ALPHA  delay_color= (255,64,255) } //Magenta
+ShotData{ id=379 rect=(16,153,31,168) render=ALPHA  delay_color= (255,64,64) } //Dark Red
+ShotData{ id=380 rect=(176,153,191,168) render=ALPHA delay_color= (64,255,144) } //Yellow-Green
+ShotData{ id=381 rect=(192,153,207,168) render=ALPHA delay_color= (128,255,144) } //Swamp Green
+ShotData{ id=382 rect=(144,153,159,168) render=ALPHA delay_color= (64,255,64) } //Dark Green
+ShotData{ id=383 rect=(112,153,127,168) render=ALPHA delay_color= (64,255,255) } //Dark Aqua
+ShotData{ id=384 rect=(80,153,95,168) render=ALPHA   delay_color= (64,64,255) } //Dark Blue
+ShotData{ id=385 rect=(48,153,63,168) render=ALPHA  delay_color= (255,64,255) } //Purple
+ShotData{ id=386 rect=(0,153,15,168) render=ALPHA delay_color= (128,128,128) } //Black
+
+//Eirin pellets
+ShotData{ id=400 rect=(1008,1006,1023,1022) render=ALPHA delay_color= (255,255,255) } //White
+ShotData{ id=401 rect=(800,1006,816,1022) render=ALPHA delay_color= (255,64,64) } //Red
+ShotData{ id=402 rect=(992,1006,1008,1022) render=ALPHA delay_color= (255,128,64) } //Orange
+ShotData{ id=403 rect=(976,1006,992,1022) render=ALPHA delay_color= (255,255,64) } //Yellow
+ShotData{ id=404 rect=(928,1006,944,1022) render=ALPHA delay_color= (64,255,64) } //Green
+ShotData{ id=405 rect=(896,1006,912,1022) render=ALPHA delay_color= (64,255,255) } //Aqua
+ShotData{ id=406 rect=(864,1006,880,1022) render=ALPHA delay_color= (64,64,255) } //Blue
+ShotData{ id=407 rect=(832,1006,848,1022) render=ALPHA delay_color= (255,64,255) } //Magenta
+ShotData{ id=408 rect=(768,1006,800,1022) render=ALPHA delay_color= (255,64,64) } //Dark Red
+ShotData{ id=409 rect=(944,1006,960,1022) render=ALPHA delay_color= (192,255,64) } //Yellow-Green
+ShotData{ id=410 rect=(912,1006,928,1022) render=ALPHA delay_color= (64,255,64) } //Dark Green
+ShotData{ id=411 rect=(880,1006,896,1022) render=ALPHA delay_color= (64,255,255) } //Dark Aqua
+ShotData{ id=412 rect=(848,1006,864,1022) render=ALPHA delay_color= (64,64,255) } //Dark Blue
+ShotData{ id=413 rect=(48,1006,63,1022) render=ALPHA delay_color= (255,64,255) } //Purple
+ShotData{ id=414 rect=(960,1006,976,1022) render=ALPHA delay_color= (255,255,64) } //Gold
+ShotData{ id=415 rect=(768,1006,784,1022) render=ALPHA delay_color= (128,128,128) } //Gray
+
+
+
+
+
+
+
+/////////////////////////////////////
+//End of Reserved IDs for additional shots//
+/////////////////////////////////////
+
+
+//ADD_ARGB
+
+// Arrowheads
+ShotData{ id=501 rect=(240,17,255,32) render=ADD_ARGB delay_color= (255,255,255) } //White
+ShotData{ id=502 rect=(32,17,47,32) render=ADD_ARGB delay_color= (255,64,64) } //Red
+ShotData{ id=503 rect=(224,17,239,32) render=ADD_ARGB delay_color= (255,128,64) } //Orange
+ShotData{ id=504 rect=(208,17,223,32) render=ADD_ARGB delay_color= (255,255,64) } //Yellow
+ShotData{ id=505 rect=(160,17,175,32) render=ADD_ARGB delay_color= (64,255,64) } //Green
+ShotData{ id=506 rect=(128,17,143,32) render=ADD_ARGB delay_color= (64,255,255) } //Aqua
+ShotData{ id=507 rect=(96,17,111,32) render=ADD_ARGB delay_color= (64,64,255) } //Blue
+ShotData{ id=508 rect=(64,17,79,32) render=ADD_ARGB delay_color= (255,64,255) } //Magenta
+ShotData{ id=509 rect=(48,17,63,32) render=ADD_ARGB delay_color= (255,64,255) } //Purple
+ShotData{ id=510 rect=(16,17,31,32) render=ADD_ARGB delay_color= (255,64,64) } //Dark Red
+ShotData{ id=511 rect=(176,17,191,32) render=ADD_ARGB delay_color= (192,255,64) } //Yellow-Green
+ShotData{ id=512 rect=(144,17,159,32) render=ADD_ARGB delay_color= (64,255,64) } //Dark Green
+ShotData{ id=513 rect=(112,17,127,32) render=ADD_ARGB delay_color= (64,255,255) } //Dark Aqua
+ShotData{ id=514 rect=(80,17,95,32) render=ADD_ARGB delay_color= (64,64,255) } //Dark Blue
+ShotData{ id=515 rect=(192,17,207,32) render=ADD_ARGB delay_color= (255,255,64) } //Gold
+ShotData{ id=516 rect=(0,17,15,32) render=ADD_ARGB delay_color= (128,128,128) } //Gray
+
+// Small Round Bullets w/ Outer Layer
+ShotData{ id=517 rect=(270,533,288,551) render=ADD_ARGB fixed_angle=true delay_color= (255,255,255) } //White
+ShotData{ id=518 rect=(36,533,54,551) render=ADD_ARGB fixed_angle=true delay_color= (255,64,64) } //Red
+ShotData{ id=519 rect=(252,533,270,551) render=ADD_ARGB fixed_angle=true delay_color= (255,128,64) } //Orange
+ShotData{ id=520 rect=(234,533,252,551) render=ADD_ARGB fixed_angle=true delay_color= (255,255,64) } //Yellow
+ShotData{ id=521 rect=(180,533,198,551) render=ADD_ARGB fixed_angle=true delay_color= (64,255,64) } //Green
+ShotData{ id=522 rect=(126,533,144,551) render=ADD_ARGB fixed_angle=true delay_color= (64,255,255) } //Aqua
+ShotData{ id=523 rect=(108,533,126,551) render=ADD_ARGB fixed_angle=true delay_color= (64,64,255) } //Blue
+ShotData{ id=524 rect=(72,533,90,551) render=ADD_ARGB fixed_angle=true delay_color= (255,64,255) } //Magenta
+ShotData{ id=525 rect=(18,533,36,551) render=ADD_ARGB fixed_angle=true delay_color= (255,64,64) } //Dark Red
+ShotData{ id=526 rect=(198,533,216,551) render=ADD_ARGB fixed_angle=true delay_color= (192,255,64) } //Yellow-Green
+ShotData{ id=527 rect=(162,533,180,551) render=ADD_ARGB fixed_angle=true delay_color= (100,255,200) } //Mint
+ShotData{ id=528 rect=(216,533,234,551) render=ADD_ARGB fixed_angle=true delay_color= (255,255,64) } //Swamp Green
+ShotData{ id=529 rect=(144,533,162,551) render=ADD_ARGB fixed_angle=true delay_color= (64,255,64) } //Dark Green
+ShotData{ id=530 rect=(90,533,108,551) render=ADD_ARGB fixed_angle=true delay_color= (64,64,255) } //Dark Blue
+ShotData{ id=531 rect=(54,533,72,551) render=ADD_ARGB fixed_angle=true delay_color= (255,64,255) } //Purple
+ShotData{ id=532 rect=(0,533,18,551) render=ADD_ARGB fixed_angle=true delay_color= (128,128,128) } //Gray
+
+// Small Round Bullets
+ShotData{ id=533 rect=(270,551,288,569) render=ADD_ARGB fixed_angle=true delay_color= (255,255,255) } //White
+ShotData{ id=534 rect=(36,551,54,569) render=ADD_ARGB fixed_angle=true delay_color= (255,64,64) } //Red
+ShotData{ id=535 rect=(252,551,270,569) render=ADD_ARGB fixed_angle=true delay_color= (255,128,64) } //Orange
+ShotData{ id=536 rect=(234,551,252,569) render=ADD_ARGB fixed_angle=true delay_color= (255,255,64) } //Yellow
+ShotData{ id=537 rect=(180,551,198,569) render=ADD_ARGB fixed_angle=true delay_color= (64,255,64) } //Green
+ShotData{ id=538 rect=(126,551,144,569) render=ADD_ARGB fixed_angle=true delay_color= (64,255,255) } //Aqua
+ShotData{ id=539 rect=(108,551,126,569) render=ADD_ARGB fixed_angle=true delay_color= (64,64,255) } //Blue
+ShotData{ id=540 rect=(72,551,90,569) render=ADD_ARGB fixed_angle=true delay_color= (255,64,255) } //Magenta
+ShotData{ id=541 rect=(18,551,36,569) render=ADD_ARGB fixed_angle=true delay_color= (255,64,64) } //Dark Red
+ShotData{ id=542 rect=(198,551,216,569) render=ADD_ARGB fixed_angle=true delay_color= (192,255,64) } //Yellow-Green
+ShotData{ id=543 rect=(162,551,180,569) render=ADD_ARGB fixed_angle=true delay_color= (100,255,200) } //Mint
+ShotData{ id=544 rect=(216,551,234,569) render=ADD_ARGB fixed_angle=true delay_color= (255,255,64) } //Swamp Green
+ShotData{ id=545 rect=(144,551,162,569) render=ADD_ARGB fixed_angle=true delay_color= (64,255,64) } //Dark Green
+ShotData{ id=546 rect=(90,551,108,569) render=ADD_ARGB fixed_angle=true delay_color= (64,64,255) } //Dark Blue
+ShotData{ id=547 rect=(54,551,72,569) render=ADD_ARGB fixed_angle=true delay_color= (255,64,255) } //Purple
+ShotData{ id=548 rect=(0,551,18,569) render=ADD_ARGB fixed_angle=true delay_color= (128,128,128) } //Gray
+
+// Pellets 
+ShotData{ id=549 rect=(240,34,255,49) render=ADD_ARGB delay_color= (255,255,255) } //White
+ShotData{ id=550 rect=(32,34,47,49) render=ADD_ARGB delay_color= (255,64,64) } //Red
+ShotData{ id=551 rect=(224,34,239,49) render=ADD_ARGB delay_color= (255,128,64) } //Orange
+ShotData{ id=552 rect=(208,34,223,49) render=ADD_ARGB delay_color= (255,255,64) } //Yellow
+ShotData{ id=553 rect=(160,34,175,49) render=ADD_ARGB delay_color= (64,255,64) } //Green
+ShotData{ id=554 rect=(128,34,143,49) render=ADD_ARGB delay_color= (64,255,255) } //Aqua
+ShotData{ id=555 rect=(96,34,111,49) render=ADD_ARGB delay_color= (64,64,255) } //Blue
+ShotData{ id=556 rect=(64,34,79,49) render=ADD_ARGB delay_color= (255,64,255) } //Magenta
+ShotData{ id=557 rect=(16,34,31,49) render=ADD_ARGB delay_color= (255,64,64) } //Dark Red
+ShotData{ id=558 rect=(192,34,207,49) render=ADD_ARGB delay_color= (255,255,64) } //Gold
+ShotData{ id=559 rect=(176,34,191,49) render=ADD_ARGB delay_color= (192,255,64) } //Yellow-Green
+ShotData{ id=560 rect=(144,34,159,49) render=ADD_ARGB delay_color= (64,255,64) } //Dark Green
+ShotData{ id=561 rect=(112,34,127,49) render=ADD_ARGB delay_color= (64,255,255) } //Dark Aqua
+ShotData{ id=562 rect=(80,34,95,49) render=ADD_ARGB delay_color= (64,64,255) } //Dark Blue
+ShotData{ id=563 rect=(48,34,63,49) render=ADD_ARGB delay_color= (255,64,255) } //Purple
+ShotData{ id=564 rect=(0,34,15,49) render=ADD_ARGB delay_color= (128,128,128) } //Gray
+
+// Kunais
+ShotData{ id=565 rect=(0,51,15,66) render=ADD_ARGB delay_color= (128,128,128) } //Gray
+ShotData{ id=566 rect=(16,51,31,66) render=ADD_ARGB delay_color= (255,64,64) } //Dark Red
+ShotData{ id=567 rect=(32,51,47,66) render=ADD_ARGB delay_color= (255,64,64) } //Red
+ShotData{ id=568 rect=(48,51,63,66) render=ADD_ARGB delay_color= (255,64,255) } //Purple
+ShotData{ id=569 rect=(64,51,79,66) render=ADD_ARGB delay_color= (255,64,255) } //Magenta
+ShotData{ id=570 rect=(80,51,95,66) render=ADD_ARGB delay_color= (64,64,255) } // Dark Blue
+ShotData{ id=571 rect=(96,51,111,66) render=ADD_ARGB delay_color= (64,64,255) } //Blue
+ShotData{ id=572 rect=(112,51,127,66) render=ADD_ARGB delay_color= (64,255,255) } //Dark Aqua
+ShotData{ id=573 rect=(128,51,143,66) render=ADD_ARGB delay_color= (64,255,255) } //Aqua
+ShotData{ id=574 rect=(144,51,159,66) render=ADD_ARGB delay_color= (64,255,64) } //Dark Green
+ShotData{ id=575 rect=(160,51,175,66) render=ADD_ARGB delay_color= (64,255,128) } //Green
+ShotData{ id=576 rect=(176,51,191,66) render=ADD_ARGB delay_color= (192,255,64) } //Yellow-Green
+ShotData{ id=577 rect=(192,51,207,66) render=ADD_ARGB delay_color= (255,255,64) } //Gold
+ShotData{ id=578 rect=(208,51,223,66) render=ADD_ARGB delay_color= (255,255,64) } //Yellow
+ShotData{ id=579 rect=(224,51,239,66) render=ADD_ARGB delay_color= (255,128,64) } //Orange
+ShotData{ id=580 rect=(240,51,255,66) render=ADD_ARGB delay_color= (255,255,255) } //White
+
+// Ice Pellets
+ShotData{ id=581 rect=(240,68,255,83) render=ADD_ARGB delay_color= (255,255,255) } //White
+ShotData{ id=582 rect=(32,68,47,83) render=ADD_ARGB delay_color= (255,64,64) } //Red
+ShotData{ id=583 rect=(224,68,239,83) render=ADD_ARGB delay_color= (255,128,64) } //Orange
+ShotData{ id=584 rect=(208,68,223,83) render=ADD_ARGB delay_color= (255,255,64) } //Yellow
+ShotData{ id=585 rect=(160,68,175,83) render=ADD_ARGB delay_color= (64,255,128) } //Green
+ShotData{ id=586 rect=(128,68,143,83) render=ADD_ARGB delay_color= (64,255,255) } //Aqua
+ShotData{ id=587 rect=(96,68,111,83) render=ADD_ARGB delay_color= (64,64,255) } //Blue
+ShotData{ id=588 rect=(64,68,79,83) render=ADD_ARGB delay_color= (255,64,255) } //Magenta
+ShotData{ id=589 rect=(16,68,31,83) render=ADD_ARGB delay_color= (255,64,64) } //Dark Red
+ShotData{ id=590 rect=(192,68,207,83) render=ADD_ARGB delay_color= (255,255,64) } //Gold
+ShotData{ id=591 rect=(176,68,191,83) render=ADD_ARGB delay_color= (192,255,64) } //Yellow-Green
+ShotData{ id=592 rect=(144,68,159,83) render=ADD_ARGB delay_color= (64,255,64) } //Dark Green
+ShotData{ id=593 rect=(112,68,127,83) render=ADD_ARGB delay_color= (64,255,255) } //Dark Aqua
+ShotData{ id=594 rect=(80,68,95,83) render=ADD_ARGB delay_color= (64,64,255) } //Light Blue
+ShotData{ id=595 rect=(48,68,63,83) render=ADD_ARGB delay_color= (255,64,255) } //Purple
+ShotData{ id=596 rect=(0,68,15,83) render=ADD_ARGB delay_color= (128,128,128) } //Gray
+
+// Amulets
+ShotData{ id=597 rect=(0,85,15,100) render=ADD_ARGB delay_color= (128,128,128) } //Black
+ShotData{ id=598 rect=(32,85,47,100) render=ADD_ARGB delay_color= (255,64,64) } //Red
+ShotData{ id=599 rect=(224,85,239,100) render=ADD_ARGB delay_color= (255,128,64) } //Orange
+ShotData{ id=600 rect=(208,85,223,100) render=ADD_ARGB delay_color= (255,255,64) } //Yellow
+ShotData{ id=601 rect=(160,85,175,100) render=ADD_ARGB delay_color= (64,255,64) } //Green
+ShotData{ id=602 rect=(128,85,143,100) render=ADD_ARGB delay_color= (64,255,255) } //Aqua
+ShotData{ id=603 rect=(96,85,111,100) render=ADD_ARGB delay_color= (64,64,255) } //Blue
+ShotData{ id=604 rect=(48,85,63,100) render=ADD_ARGB delay_color= (255,64,255) } //Magenta
+ShotData{ id=605 rect=(16,85,31,100) render=ADD_ARGB delay_color= (255,64,64) } //Dark Red
+ShotData{ id=606 rect=(176,85,191,100) render=ADD_ARGB delay_color= (192,255,64) } //Yellow-Green
+ShotData{ id=607 rect=(192,85,207,100) render=ADD_ARGB delay_color= (128,255,144) } //Swamp Green
+ShotData{ id=608 rect=(144,85,159,100) render=ADD_ARGB delay_color= (64,255,64) } //Dark Green
+ShotData{ id=609 rect=(112,85,127,100) render=ADD_ARGB delay_color= (64,255,255) } //Dark Aqua
+ShotData{ id=610 rect=(80,85,95,100) render=ADD_ARGB delay_color= (64,64,255) } //Dark Blue
+ShotData{ id=611 rect=(64,85,79,100) render=ADD_ARGB delay_color= (255,64,255) } //Purple
+ShotData{ id=612 rect=(240,85,255,100) render=ADD_ARGB delay_color= (255,255,255) } //Gray
+
+// Suppository
+ShotData{ id=613 rect=(240,102,255,117) render=ADD_ARGB delay_color= (255,255,255) } //White
+ShotData{ id=614 rect=(32,102,47,117) render=ADD_ARGB delay_color= (255,64,64) } //Red
+ShotData{ id=615 rect=(224,102,239,117) render=ADD_ARGB delay_color= (255,128,64) } //Orange
+ShotData{ id=616 rect=(192,102,207,117) render=ADD_ARGB delay_color= (255,255,64) } //Yellow
+ShotData{ id=617 rect=(160,102,175,117) render=ADD_ARGB delay_color= (64,255,128) } //Green
+ShotData{ id=618 rect=(128,102,143,117) render=ADD_ARGB delay_color= (64,255,255) } //Aqua
+ShotData{ id=619 rect=(96,102,111,117) render=ADD_ARGB delay_color= (64,64,255) } //Blue
+ShotData{ id=620 rect=(64,102,79,117) render=ADD_ARGB delay_color= (255,64,255) } //Magenta
+ShotData{ id=621 rect=(16,102,31,117) render=ADD_ARGB delay_color= (255,64,64) } //Dark Red
+ShotData{ id=622 rect=(208,102,223,117) render=ADD_ARGB delay_color= (255,255,64) } //Gold
+ShotData{ id=623 rect=(176,102,191,117) render=ADD_ARGB delay_color= (192,255,64) } //Yellow-Green
+ShotData{ id=624 rect=(144,102,159,117) render=ADD_ARGB delay_color= (32,255,32) } //Dark Green
+ShotData{ id=625 rect=(112,102,127,117) render=ADD_ARGB delay_color= (64,255,255) } //Dark Aqua
+ShotData{ id=627 rect=(80,102,95,117) render=ADD_ARGB delay_color= (64,64,255) } //Dark Blue
+ShotData{ id=627 rect=(48,102,63,117) render=ADD_ARGB delay_color= (255,64,255) } //Purple
+ShotData{ id=628 rect=(0,102,15,117) render=ADD_ARGB delay_color= (128,128,128) } //Gray
+
+// Dark Pellets (ZUN Style)
+ShotData{ id=629 rect=(0,118,15,134) render=ADD_ARGB delay_color= (128,128,128) } //Black
+ShotData{ id=630 rect=(16,118,31,134) render=ADD_ARGB delay_color= (255,64,64) } //Red
+ShotData{ id=631 rect=(32,118,47,134) render=ADD_ARGB delay_color= (255,64,64) } //Light Red
+ShotData{ id=632 rect=(48,118,63,134) render=ADD_ARGB delay_color= (255,64,255) } //Purple
+ShotData{ id=633 rect=(64,118,79,134) render=ADD_ARGB delay_color= (255,64,255) } //Magenta
+ShotData{ id=634 rect=(80,118,95,134) render=ADD_ARGB delay_color= (64,64,255) } //Dark Blue
+ShotData{ id=635 rect=(96,118,111,134) render=ADD_ARGB delay_color= (64,64,255) } //Blue
+ShotData{ id=636 rect=(112,118,127,134) render=ADD_ARGB delay_color= (64,255,255) } //Aqua
+ShotData{ id=637 rect=(128,118,143,134) render=ADD_ARGB delay_color= (64,255,255) } //Light Aqua
+ShotData{ id=638 rect=(144,118,159,134) render=ADD_ARGB delay_color= (64,255,64) } //Green
+ShotData{ id=639 rect=(160,118,175,134) render=ADD_ARGB delay_color= (64,255,64) } //Light Green
+ShotData{ id=640 rect=(176,118,191,134) render=ADD_ARGB delay_color= (64,255,64) } //Yellow-Green
+ShotData{ id=641 rect=(192,118,207,134) render=ADD_ARGB delay_color= (128,255,144) } //Swamp Green
+ShotData{ id=642 rect=(208,118,223,134) render=ADD_ARGB delay_color= (255,255,64) } //Yellow
+ShotData{ id=643 rect=(224,118,239,134) render=ADD_ARGB delay_color= (255,128,64) } //Orange
+ShotData{ id=644 rect=(240,118,255,134) render=ADD_ARGB delay_color= (128,128,128) } //Gray
+
+// Dark Pellets (Inverted)
+ShotData{ id=645 rect=(0,136,15,151) render=ADD_ARGB delay_color= (128,128,128) } //Black
+ShotData{ id=646 rect=(16,136,31,151) render=ADD_ARGB delay_color= (255,64,64) } //Red
+ShotData{ id=647 rect=(32,136,47,151) render=ADD_ARGB delay_color= (255,64,64) } //Dark Red
+ShotData{ id=648 rect=(48,136,63,151) render=ADD_ARGB delay_color= (255,64,255) } //Purple
+ShotData{ id=649 rect=(64,136,79,151) render=ADD_ARGB delay_color= (255,64,255) } //Magenta
+ShotData{ id=650 rect=(80,136,95,151) render=ADD_ARGB delay_color= (64,64,255) } //Blue
+ShotData{ id=651 rect=(96,136,111,151) render=ADD_ARGB delay_color= (64,64,255) } //Light Blue
+ShotData{ id=652 rect=(112,136,127,151) render=ADD_ARGB delay_color= (64,255,255) } //Aqua
+ShotData{ id=653 rect=(128,136,143,151) render=ADD_ARGB delay_color= (64,255,255) } //Light Aqua
+ShotData{ id=654 rect=(144,136,159,151) render=ADD_ARGB delay_color= (64,255,64) } //Dull Green
+ShotData{ id=655 rect=(160,136,175,151) render=ADD_ARGB delay_color= (64,255,64) } //Green
+ShotData{ id=656 rect=(176,136,191,151) render=ADD_ARGB delay_color= (192,255,64) } //Yellow-Green
+ShotData{ id=657 rect=(192,136,207,151) render=ADD_ARGB delay_color= (255,255,64) } //Dull Yellow
+ShotData{ id=658 rect=(208,136,223,151) render=ADD_ARGB delay_color= (255,255,64) } //Yellow
+ShotData{ id=659 rect=(224,136,239,151) render=ADD_ARGB delay_color= (255,128,64) } //Orange
+ShotData{ id=660 rect=(240,136,255,151) render=ADD_ARGB delay_color= (255,255,255) } //Gray
+
+// Marisa's Small Stars
+ShotData{ id=661 rect=(240,153,255,168) render=ADD_ARGB fixed_angle=false angular_velocity = 2 delay_color= (255,255,255) } //Gray
+ShotData{ id=662 rect=(32,153,47,168) render=ADD_ARGB fixed_angle=false angular_velocity = 2 delay_color= (255,64,64) } //Red
+ShotData{ id=663 rect=(224,153,239,168) render=ADD_ARGB fixed_angle=false angular_velocity = 2 delay_color= (255,128,64) } //Orange
+ShotData{ id=664 rect=(208,153,223,168) render=ADD_ARGB fixed_angle=false angular_velocity = -2 delay_color= (255,255,64) } //Yellow
+ShotData{ id=665 rect=(160,153,175,168) render=ADD_ARGB fixed_angle=false angular_velocity = 2 delay_color= (64,255,128) } //Green
+ShotData{ id=666 rect=(128,153,143,168) render=ADD_ARGB fixed_angle=false angular_velocity = 2 delay_color= (64,255,255) } //Aqua
+ShotData{ id=667 rect=(96,153,111,168) render=ADD_ARGB fixed_angle=false angular_velocity = 2 delay_color= (64,64,255) } //Blue
+ShotData{ id=668 rect=(64,153,79,168) render=ADD_ARGB fixed_angle=false angular_velocity = 2 delay_color= (255,64,255) } //Magenta
+ShotData{ id=669 rect=(16,153,31,168) render=ADD_ARGB fixed_angle=false angular_velocity = -2 delay_color= (255,64,64) } //Dark Red
+ShotData{ id=670 rect=(176,153,191,168) render=ADD_ARGB fixed_angle=false angular_velocity = -2 delay_color= (64,255,144) } //Yellow-Green
+ShotData{ id=671 rect=(192,153,207,168) render=ADD_ARGB fixed_angle=false angular_velocity = 2 delay_color= (128,255,144) } //Swamp Green
+ShotData{ id=672 rect=(144,153,159,168) render=ADD_ARGB fixed_angle=false angular_velocity = -2 delay_color= (64,255,64) } //Dark Green
+ShotData{ id=673 rect=(112,153,127,168) render=ADD_ARGB fixed_angle=false angular_velocity = -2 delay_color= (64,255,255) } //Dark Aqua
+ShotData{ id=674 rect=(80,153,95,168) render=ADD_ARGB fixed_angle=false angular_velocity = -2 delay_color= (64,64,255) } //Dark Blue
+ShotData{ id=675 rect=(48,153,63,168) render=ADD_ARGB fixed_angle=false angular_velocity = -2 delay_color= (255,64,255) } //Purple
+ShotData{ id=676 rect=(0,153,15,168) render=ADD_ARGB fixed_angle=true angular_velocity = 0 delay_color= (128,128,128) } //Black
+
+// Rainbow Dots (MoF Style) (stardots)
+ShotData{ id=677 rect=(56,200,63,207) render=ALPHA fixed_angle=true angular_velocity = 10 delay_color= (255,255,255) } //White
+ShotData{ id=678 rect=(16,192,23,199) render=ALPHA fixed_angle=true angular_velocity = 10 delay_color= (255,64,64) } //Red
+ShotData{ id=679 rect=(48,200,55,207) render=ALPHA fixed_angle=true angular_velocity = 10 delay_color= (255,128,64) } //Orange
+ShotData{ id=680 rect=(40,200,47,207) render=ALPHA fixed_angle=true angular_velocity = 10 delay_color= (255,255,64) } //Yellow
+ShotData{ id=681 rect=(16,200,23,207) render=ALPHA fixed_angle=true angular_velocity = 10 delay_color= (64,255,64) } //Green
+ShotData{ id=682 rect=(0,200,7,207) render=ALPHA fixed_angle=true angular_velocity = 10 delay_color= (64,255,255) } //Aqua
+ShotData{ id=683 rect=(48,192,55,199) render=ALPHA fixed_angle=true angular_velocity = 10 delay_color= (64,64,255) } //Blue
+ShotData{ id=684 rect=(32,192,39,199) render=ALPHA fixed_angle=true angular_velocity = 10 delay_color= (255,64,255) } //Magenta
+ShotData{ id=685 rect=(8,192,15,199) render=ALPHA fixed_angle=true angular_velocity = 10 delay_color= (255,64,64) } //Dark Red
+ShotData{ id=686 rect=(24,200,31,207) render=ALPHA fixed_angle=true angular_velocity = 10 delay_color= (64,255,144) } //Yellow-Green
+ShotData{ id=687 rect=(32,200,39,207) render=ALPHA fixed_angle=true angular_velocity = 10 delay_color= (128,255,144) } //Swamp Green
+ShotData{ id=688 rect=(8,200,15,207) render=ALPHA fixed_angle=true angular_velocity = 10 delay_color= (64,255,64) } //Dark Green
+ShotData{ id=689 rect=(56,192,63,199) render=ALPHA fixed_angle=true angular_velocity = 10 delay_color= (64,255,255) } //Dark Aqua
+ShotData{ id=690 rect=(40,192,47,199) render=ALPHA fixed_angle=true angular_velocity = 10 delay_color= (64,64,255) } //Dark Blue
+ShotData{ id=691 rect=(24,192,31,199) render=ALPHA fixed_angle=true angular_velocity = 10 delay_color= (255,64,255) } //Purple
+ShotData{ id=692 rect=(0,192,7,199) render=ALPHA fixed_angle=true angular_velocity = 10 delay_color= (128,128,128) } //Gray
+
+// Komachi's coins
+ShotData{ id=693 rect=(128,192,143,207) render=ADD_ARGB fixed_angle=true angular_velocity = 4 delay_color= (255,255,255) } //Gray
+ShotData{ id=694 rect=(144,192,159,207) render=ADD_ARGB fixed_angle=true angular_velocity = -4 delay_color= (255,64,64) } //Red
+ShotData{ id=695 rect=(240,192,255,207) render=ADD_ARGB fixed_angle=true angular_velocity = -4 delay_color= (255,128,64) } //Orange
+ShotData{ id=696 rect=(224,192,239,207) render=ADD_ARGB fixed_angle=true angular_velocity = 4 delay_color= (255,255,64) } //Yellow
+ShotData{ id=697 rect=(208,192,223,207) render=ADD_ARGB fixed_angle=true angular_velocity = -4 delay_color= (64,255,128) } //Green
+ShotData{ id=698 rect=(192,192,207,207) render=ADD_ARGB fixed_angle=true angular_velocity = 4 delay_color= (64,255,255) } //Aqua
+ShotData{ id=699 rect=(176,192,191,207) render=ADD_ARGB fixed_angle=true angular_velocity = -4 delay_color= (64,64,255) } //Blue
+ShotData{ id=700 rect=(160,192,175,207) render=ADD_ARGB fixed_angle=true angular_velocity = 4 delay_color= (255,64,255) } //Purple
+
+//Glow bullets (ZUN delay clouds)
+ShotData{ id=701 rect=(0,208,31,239) render=ADD_ARGB fixed_angle=true angular_velocity = -2 delay_color= (128,128,128) } // Gray
+ShotData{ id=702 rect=(32,208,63,239) render=ADD_ARGB fixed_angle=true angular_velocity = 2 delay_color= (255,64,64) } // Red
+ShotData{ id=703 rect=(224,208,255,239) render=ADD_ARGB fixed_angle=true angular_velocity = 2 delay_color= (255,128,64) } // Orange
+ShotData{ id=704 rect=(192,208,223,239) render=ADD_ARGB fixed_angle=true angular_velocity = -2 delay_color= (255,255,64) } // Yellow
+ShotData{ id=705 rect=(160,208,191,239) render=ADD_ARGB fixed_angle=true angular_velocity = 2 delay_color= (64,255,64) } // Green
+ShotData{ id=706 rect=(128,208,159,239) render=ADD_ARGB fixed_angle=true angular_velocity = -2 delay_color= (64,255,255) } // Aqua
+ShotData{ id=707 rect=(64,208,95,239) render=ADD_ARGB fixed_angle=true angular_velocity = -2 delay_color= (64,64,255) } // Blue
+ShotData{ id=708 rect=(96,208,127,239) render=ADD_ARGB fixed_angle=true angular_velocity = 2 delay_color= (255,64,255) } // Purple
+
+// Dots (EoSD Style)
+ShotData{ id=709 rect=(56,182,64,190) render=ADD_ARGB fixed_angle=true delay_color= (255,255,255) } //White
+ShotData{ id=710 rect=(8,174,16,182) render=ADD_ARGB fixed_angle=true delay_color= (255,64,64) } //Red
+ShotData{ id=711 rect=(48,182,56,190) render=ADD_ARGB fixed_angle=true delay_color= (255,128,64) } //Orange
+ShotData{ id=712 rect=(32,182,40,190) render=ADD_ARGB fixed_angle=true delay_color= (255,255,64) } //Yellow
+ShotData{ id=713 rect=(8,182,16,190) render=ADD_ARGB fixed_angle=true delay_color= (64,255,64) } //Green
+ShotData{ id=714 rect=(56,174,64,182) render=ADD_ARGB fixed_angle=true delay_color= (64,255,255) } //Aqua
+ShotData{ id=715 rect=(40,174,48,182) render=ADD_ARGB fixed_angle=true delay_color= (64,64,255) } //Blue
+ShotData{ id=716 rect=(24,174,32,182) render=ADD_ARGB fixed_angle=true delay_color= (255,64,255) } //Purple
+ShotData{ id=717 rect=(16,174,24,182) render=ADD_ARGB fixed_angle=true delay_color= (255,64,64) } //Light Red
+ShotData{ id=718 rect=(40,182,48,190) render=ADD_ARGB fixed_angle=true delay_color= (255,255,64) } //Light Yellow
+ShotData{ id=719 rect=(16,182,24,190) render=ADD_ARGB fixed_angle=true delay_color= (64,255,64) } //Light Green
+ShotData{ id=720 rect=(24,182,32,190) render=ADD_ARGB fixed_angle=true delay_color= (128,255,64) } //Lime
+ShotData{ id=721 rect=(0,182,8,190) render=ADD_ARGB fixed_angle=true delay_color= (64,255,255) } //Light Aqua
+ShotData{ id=722 rect=(48,174,56,182) render=ADD_ARGB fixed_angle=true delay_color= (64,64,255) } //Light Blue
+ShotData{ id=723 rect=(32,174,40,182) render=ADD_ARGB fixed_angle=true delay_color= (255,64,255) } //Light Purple
+ShotData{ id=724 rect=(0,174,8,182) render=ADD_ARGB fixed_angle=true delay_color= (255,255,255) } //Gray
+
+// Slightly Larger Dots
+ShotData{ id=725 rect=(0,241,16,255) render=ADD_ARGB fixed_angle=true delay_color= (128,128,128) } //Black
+ShotData{ id=726 rect=(16,241,32,255) render=ADD_ARGB fixed_angle=true delay_color= (255,64,64) } //Red
+ShotData{ id=727 rect=(64,241,80,255) render=ADD_ARGB fixed_angle=true delay_color= (255,255,64) } //Yellow
+ShotData{ id=728 rect=(48,241,64,255) render=ADD_ARGB fixed_angle=true delay_color= (64,255,64) } //Green
+ShotData{ id=729 rect=(32,241,48,255) render=ADD_ARGB fixed_angle=true delay_color= (64,64,255) } //Blue
+
+//Slightly Larger Dots (hollow)
+ShotData{ id=730 rect=(80,241,96,255) render=ADD_ARGB fixed_angle=true delay_color= (128,128,128) } //Black
+ShotData{ id=731 rect=(96,241,112,255) render=ADD_ARGB fixed_angle=true delay_color= (255,64,64) } //Red
+ShotData{ id=732 rect=(144,241,160,255) render=ADD_ARGB fixed_angle=true delay_color= (255,255,64) } //Yellow
+ShotData{ id=733 rect=(128,241,144,255) render=ADD_ARGB fixed_angle=true delay_color= (64,255,64) } //Green
+ShotData{ id=734 rect=(112,241,128,255) render=ADD_ARGB fixed_angle=true delay_color= (64,64,255) } //Blue
+
+// Koishi Hearts 
+ShotData{ id=735 rect=(0,257,31,287) render=ADD_ARGB delay_color= (255,255,255) } // Gray
+ShotData{ id=736 rect=(32,257,63,287) render=ADD_ARGB delay_color= (255,64,64) } // Red
+ShotData{ id=737 rect=(224,257,255,287) render=ADD_ARGB delay_color= (255,128,64) } // Orange
+ShotData{ id=738 rect=(192,257,223,287) render=ADD_ARGB delay_color= (255,255,64) } // Yellow
+ShotData{ id=739 rect=(160,257,191,287) render=ADD_ARGB delay_color= (64,255,64) } // Green
+ShotData{ id=740 rect=(128,257,159,287) render=ADD_ARGB delay_color= (64,255,255) } // Aqua
+ShotData{ id=741 rect=(96,257,127,287) render=ADD_ARGB delay_color= (64,64,255) } // Blue
+ShotData{ id=742 rect=(64,257,95,287) render=ADD_ARGB delay_color= (255,64,255) } // Purple
+
+//Laser tip (DDC and TD)
+ShotData{ id=743 rect=(0,320,31,351) render=ADD_ARGB fixed_angle=true angular_velocity = -2 delay_color= (128,128,128) } // Gray
+ShotData{ id=744 rect=(32,320,63,351) render=ADD_ARGB fixed_angle=true angular_velocity = 2 delay_color= (255,64,64) } // Red
+ShotData{ id=745 rect=(64,320,95,351) render=ADD_ARGB fixed_angle=true angular_velocity = -2 delay_color= (64,64,255) } // Blue
+ShotData{ id=746 rect=(96,320,127,351) render=ADD_ARGB fixed_angle=true angular_velocity = 2 delay_color= (255,64,255) } // Purple
+ShotData{ id=747 rect=(128,320,159,351) render=ADD_ARGB fixed_angle=true angular_velocity = -2 delay_color= (64,255,255) } // Aqua
+ShotData{ id=748 rect=(160,320,191,351) render=ADD_ARGB fixed_angle=true angular_velocity = 2 delay_color= (64,255,64) } // Green
+ShotData{ id=749 rect=(192,320,223,351) render=ADD_ARGB fixed_angle=true angular_velocity = -2 delay_color= (255,255,64) } // Yellow
+ShotData{ id=750 rect=(224,320,255,351) render=ADD_ARGB fixed_angle=true angular_velocity = 2 delay_color= (255,128,64) } // Orange
+
+// Murasa Droplets
+ShotData{ id=751 rect=(240,351,255,366) render=ADD_ARGB delay_color= (255,255,255) } //White
+ShotData{ id=752 rect=(32,351,47,366) render=ADD_ARGB delay_color= (255,64,64) } //Red
+ShotData{ id=753 rect=(224,351,239,366) render=ADD_ARGB delay_color= (255,128,64) } //Orange
+ShotData{ id=754 rect=(208,351,223,366) render=ADD_ARGB delay_color= (255,255,64) } //Yellow
+ShotData{ id=755 rect=(160,351,175,366) render=ADD_ARGB delay_color= (64,255,64) } //Green
+ShotData{ id=756 rect=(128,351,143,366) render=ADD_ARGB delay_color= (64,255,255) } //Aqua
+ShotData{ id=757 rect=(96,351,111,366) render=ADD_ARGB delay_color= (64,64,255) } //Blue
+ShotData{ id=758 rect=(64,351,79,366) render=ADD_ARGB delay_color= (255,64,255) } //Magenta
+ShotData{ id=759 rect=(16,351,31,366) render=ADD_ARGB delay_color= (255,64,64) } //Dark Red
+ShotData{ id=760 rect=(192,351,207,366) render=ADD_ARGB delay_color= (255,255,64) } //Gold
+ShotData{ id=761 rect=(176,351,191,366) render=ADD_ARGB delay_color= (64,255,144) } //Yellow-Green
+ShotData{ id=762 rect=(144,351,159,366) render=ADD_ARGB delay_color= (64,255,64) } //Dark Green
+ShotData{ id=763 rect=(112,351,127,366) render=ADD_ARGB delay_color= (64,255,255) } //Dark Aqua
+ShotData{ id=764 rect=(80,351,95,366) render=ADD_ARGB delay_color= (64,64,255) } //Dark Blue
+ShotData{ id=765 rect=(48,351,63,366) render=ADD_ARGB delay_color= (255,64,255) } //Purple
+ShotData{ id=766 rect=(0,351,15,366) render=ADD_ARGB delay_color= (128,128,128) } //Gray
+
+// Marisa's Large Stars
+ShotData{ id=767 rect=(257,0,287,30) render=ADD_ARGB fixed_angle=true angular_velocity = -2 delay_color= (128,128,128) } // Gray
+ShotData{ id=768 rect=(289,0,319,30) render=ADD_ARGB fixed_angle=true angular_velocity = 2 delay_color= (255,64,64) } // Red
+ShotData{ id=769 rect=(481,0,511,30) render=ADD_ARGB fixed_angle=true angular_velocity = 2 delay_color= (255,128,64) } // Orange
+ShotData{ id=770 rect=(449,0,479,30) render=ADD_ARGB fixed_angle=true angular_velocity = -2 delay_color= (255,255,64) } // Yellow
+ShotData{ id=771 rect=(417,0,447,30) render=ADD_ARGB fixed_angle=true angular_velocity = 2 delay_color= (64,255,64) } // Green
+ShotData{ id=772 rect=(385,0,415,30) render=ADD_ARGB fixed_angle=true angular_velocity = -2 delay_color= (64,255,255) } // Aqua
+ShotData{ id=773 rect=(321,0,351,30) render=ADD_ARGB fixed_angle=true angular_velocity = -2 delay_color= (64,64,255) } // Blue
+ShotData{ id=774 rect=(353,0,383,30) render=ADD_ARGB fixed_angle=true angular_velocity = 2 delay_color= (255,64,255) } // Purple
+
+// Large Round Bullets (Modern Style, right side)
+ShotData{ id=775 rect=(256,32,288,64) render=ADD_ARGB fixed_angle=true delay_color= (255,255,255) } // Gray
+ShotData{ id=776 rect=(288,32,320,64) render=ADD_ARGB fixed_angle=true delay_color= (255,64,64) } // Red
+ShotData{ id=777 rect=(480,32,512,64) render=ADD_ARGB fixed_angle=true delay_color= (255,128,64) } // Orange
+ShotData{ id=778 rect=(448,32,480,64) render=ADD_ARGB fixed_angle=true delay_color= (255,255,64) } // Yellow
+ShotData{ id=779 rect=(416,32,448,64) render=ADD_ARGB fixed_angle=true delay_color= (64,255,64) } // Green
+ShotData{ id=780 rect=(385,32,416,64) render=ADD_ARGB fixed_angle=true delay_color= (64,255,255) } // Aqua
+ShotData{ id=781 rect=(352,32,384,64) render=ADD_ARGB fixed_angle=true delay_color= (64,64,255) } // Blue
+ShotData{ id=782 rect=(320,32,352,64) render=ADD_ARGB fixed_angle=true delay_color= (255,64,255) } // Purple
+
+// Large Round Bullets (PCB Style, left side)
+ShotData{ id=783 rect=(0,288,32,320) render=ADD_ARGB fixed_angle=true delay_color= (255,255,255) } // Gray
+ShotData{ id=784 rect=(32,288,64,320) render=ADD_ARGB fixed_angle=true delay_color= (255,64,64) } // Red
+ShotData{ id=785 rect=(224,288,256,320) render=ADD_ARGB fixed_angle=true delay_color= (255,128,64) } // Orange
+ShotData{ id=786 rect=(192,288,224,320) render=ADD_ARGB fixed_angle=true delay_color= (255,255,64) } // Yellow
+ShotData{ id=787 rect=(160,288,192,320) render=ADD_ARGB fixed_angle=true delay_color= (64,255,64) } // Green
+ShotData{ id=788 rect=(128,288,160,320) render=ADD_ARGB fixed_angle=true delay_color= (64,255,255) } // Aqua
+ShotData{ id=789 rect=(96,288,128,320) render=ADD_ARGB fixed_angle=true delay_color= (64,64,255) } // Blue
+ShotData{ id=790 rect=(64,288,96,320) render=ADD_ARGB fixed_angle=true delay_color= (255,64,255) } // Purple
+
+// Yuyuko Butterflies
+ShotData{ id=791 rect=(256,64,288,96) render=ADD_ARGB delay_color= (255,255,255) } // White
+ShotData{ id=792 rect=(288,64,320,96) render=ADD_ARGB delay_color= (255,64,64) } // Red
+ShotData{ id=793 rect=(480,64,512,96) render=ADD_ARGB delay_color= (255,128,64) } // Orange
+ShotData{ id=794 rect=(448,64,480,96) render=ADD_ARGB delay_color= (255,255,64) } // Yellow
+ShotData{ id=795 rect=(416,64,448,96) render=ADD_ARGB delay_color= (64,255,64) } // Green
+ShotData{ id=796 rect=(384,64,416,96) render=ADD_ARGB delay_color= (64,128,255) } // Aqua
+ShotData{ id=797 rect=(352,64,384,96) render=ADD_ARGB delay_color= (64,64,255) } // Blue
+ShotData{ id=798 rect=(320,64,352,96) render=ADD_ARGB delay_color= (255,64,255) } // Purple
+
+// Sakuya Knives
+ShotData{ id=799 rect=(256,96,287,127) render=ADD_ARGB collision=5 delay_color= (255,255,255) } // Gray
+ShotData{ id=800 rect=(288,96,319,127) render=ADD_ARGB collision=5 delay_color= (255,64,64) } // Red
+ShotData{ id=801 rect=(320,96,351,127) render=ADD_ARGB collision=5 delay_color= (255,64,255) } // Purple
+ShotData{ id=802 rect=(352,96,383,127) render=ADD_ARGB collision=5 delay_color= (64,64,255) } // Blue
+ShotData{ id=803 rect=(384,96,415,127) render=ADD_ARGB collision=5 delay_color= (64,255,255) } // Aqua
+ShotData{ id=804 rect=(416,96,447,127) render=ADD_ARGB collision=5 delay_color= (64,255,64) } // Green
+ShotData{ id=805 rect=(448,96,479,127) render=ADD_ARGB collision=5 delay_color= (255,255,64) } // Yellow
+ShotData{ id=806 rect=(480,96,511,127) render=ADD_ARGB collision=5 delay_color= (255,128,64) } // Orange
+
+// Oval Bullets
+ShotData{ id=807 rect=(256,128,287,159) render=ADD_ARGB collision=6 delay_color= (255,255,255) } // Gray
+ShotData{ id=808 rect=(288,128,319,159) render=ADD_ARGB collision=6 delay_color= (255,64,64) } // Red
+ShotData{ id=809 rect=(480,128,511,159) render=ADD_ARGB collision=6 delay_color= (255,128,64) } // Orange
+ShotData{ id=810 rect=(448,128,479,159) render=ADD_ARGB collision=6 delay_color= (255,255,64) } // Yellow
+ShotData{ id=811 rect=(416,128,447,159) render=ADD_ARGB collision=6 delay_color= (64,255,64) } // Green
+ShotData{ id=812 rect=(352,128,383,159) render=ADD_ARGB collision=6 delay_color= (64,64,255) } // Blue
+ShotData{ id=813 rect=(384,128,415,159) render=ADD_ARGB collision=6 delay_color= (64,255,255) } // Aqua
+ShotData{ id=814 rect=(320,128,351,159) render=ADD_ARGB collision=6 delay_color= (255,64,255) } // Purple
+
+// Prismriver Music Notes
+ShotData{ id=815 rect=(255,159,287,191) render=ADD_ARGB fixed_angle=true angular_velocity = -2 delay_color= (255,255,255) } // Gray
+ShotData{ id=816 rect=(287,160,319,191) render=ADD_ARGB fixed_angle=true angular_velocity = 2 delay_color= (255,64,64) } // Red
+ShotData{ id=817 rect=(319,160,351,191) render=ADD_ARGB fixed_angle=true angular_velocity = -2 delay_color= (255,64,255) } // Purple
+ShotData{ id=818 rect=(351,160,383,191) render=ADD_ARGB fixed_angle=true angular_velocity = 2 delay_color= (64,64,255) } // Blue
+ShotData{ id=819 rect=(383,160,415,191) render=ADD_ARGB fixed_angle=true angular_velocity = -2 delay_color= (64,255,255) } // Aqua
+ShotData{ id=820 rect=(415,160,447,191) render=ADD_ARGB fixed_angle=true angular_velocity = 2 delay_color= (64,255,64) } // Green
+ShotData{ id=821 rect=(447,160,479,191) render=ADD_ARGB fixed_angle=true angular_velocity = -2 delay_color= (255,255,64) } // Yellow
+ShotData{ id=822 rect=(479,160,511,191) render=ADD_ARGB fixed_angle=true angular_velocity = 2 delay_color= (255,128,64) } // Orange
+
+// Bubbles
+ShotData{ id=830 rect=(960,64,1023,127) render=ADD_ARGB fixed_angle=true angular_velocity = 15 delay_color= (255,255,255) } // Gray
+ShotData{ id=823 rect=(768,0,831,63) render=ADD_ARGB fixed_angle=true angular_velocity = 15 delay_color= (255,64,64) } // Red
+ShotData{ id=829 rect=(896,64,959,127) render=ADD_ARGB fixed_angle=true angular_velocity = 15 delay_color= (255,128,64) } // Orange
+ShotData{ id=826 rect=(960,0,1023,63) render=ADD_ARGB fixed_angle=true angular_velocity = 15 delay_color= (255,255,64) } // Yellow
+ShotData{ id=825 rect=(896,0,959,63) render=ADD_ARGB fixed_angle=true angular_velocity = 15 delay_color= (64,255,64) } // Green
+ShotData{ id=827 rect=(768,64,831,127) render=ADD_ARGB fixed_angle=true angular_velocity = 15 delay_color= (64,255,255) } // Aqua
+ShotData{ id=824 rect=(832,0,895,63) render=ADD_ARGB fixed_angle=true angular_velocity = 15 delay_color= (64,64,255) } // Blue
+ShotData{ id=828 rect=(832,64,895,127) render=ADD_ARGB fixed_angle=true angular_velocity = 15 delay_color= (255,64,255) } // Purple
+
+
+// Fireballs
+
+//Gray
+ShotData{ id=831 render=ADD_ARGB  delay_color= (255,255,255)
+	AnimationData{ 
+		animation_data=(4,0,365,32,406)
+		animation_data=(4,32,365,64,406)
+		animation_data=(4,64,365,96,406)
+		animation_data=(4,96,365,128,406)
+	}
+	collision = 7;
+}
+
+//Red
+ShotData{ id=832 render=ADD_ARGB  delay_color= (255,64,64)
+	AnimationData{ 
+		animation_data=(4,128,365,160,406)
+		animation_data=(4,160,365,192,406)
+		animation_data=(4,192,365,224,406)
+		animation_data=(4,224,365,256,406)
+	}
+	collision = 7;
+}
+
+//Orange
+ShotData{ id=833 render=ADD_ARGB  delay_color= (255,128,64) 
+	AnimationData{
+		animation_data=(4,128,489,160,529)
+		animation_data=(4,160,489,192,529)
+		animation_data=(4,192,489,224,529)
+		animation_data=(4,224,489,256,529)
+	}
+	collision = 7;
+}
+
+//Yellow
+ShotData{ id=834 render=ADD_ARGB  delay_color= (255,255,64)
+	AnimationData{ 
+		animation_data=(4,0,489,32,529)
+		animation_data=(4,32,489,64,529)
+		animation_data=(4,64,489,96,529)
+		animation_data=(4,96,489,128,529)
+	}
+	collision = 7;
+}
+
+//Green
+ShotData{ id=835 render=ADD_ARGB  delay_color= (64,255,64)
+	AnimationData{ 
+		animation_data=(4,128,448,160,488)
+		animation_data=(4,160,448,192,488)
+		animation_data=(4,192,448,224,488)
+		animation_data=(4,224,448,256,488)
+	}
+	collision = 7;
+}
+
+//Aqua
+ShotData{ id=836 render=ADD_ARGB  delay_color= (64,255,255) 
+	AnimationData{ 
+		animation_data=(4,0,448,32,488)
+		animation_data=(4,32,448,64,488)
+		animation_data=(4,64,448,96,488)
+		animation_data=(4,96,448,128,488)
+	}
+	collision = 7;
+}
+
+//Blue
+ShotData{ id=837 render=ADD_ARGB  delay_color= (64,64,255)
+	AnimationData{
+		animation_data=(4,128,407,160,447)
+		animation_data=(4,160,407,192,447)
+		animation_data=(4,192,407,224,447)
+		animation_data=(4,224,407,256,447)
+	}
+	collision = 7;
+}
+
+//Purple
+ShotData{ id=838 render=ADD_ARGB  delay_color= (255,64,255)
+	AnimationData{ 
+		animation_data=(4,0,407,32,447)
+		animation_data=(4,32,407,64,447)
+		animation_data=(4,64,407,96,447)
+		animation_data=(4,96,407,128,447)
+	}
+	collision = 7;
+}
+
+
+// Tsukumo Music Notes
+
+//Gray
+ShotData{ id=839 render=ADD_ARGB fixed_angle=true delay_color= (255,255,255)
+	AnimationData{ 
+		animation_data=(8,256,256,288,302)
+		animation_data=(8,288,256,320,302)
+		animation_data=(8,320,256,352,302)
+		animation_data=(8,288,256,320,302)
+	}
+	collision = 5;
+}
+
+//Red
+ShotData{ id=840 render=ADD_ARGB fixed_angle=true delay_color= (255,64,64)
+	AnimationData{ 
+		animation_data=(8,352,256,384,302)
+		animation_data=(8,384,256,416,302)
+		animation_data=(8,416,256,448,302)
+		animation_data=(8,384,256,416,302)
+	}
+	collision = 5;
+}
+
+//Purple
+ShotData{ id=841 render=ADD_ARGB fixed_angle=true delay_color= (255,64,255)
+	AnimationData{ 
+		animation_data=(8,256,302,288,348)
+		animation_data=(8,288,302,320,348)
+		animation_data=(8,320,302,352,348)
+		animation_data=(8,288,302,320,348)
+	}
+	collision = 5;
+}
+
+//Blue
+ShotData{ id=842 render=ADD_ARGB fixed_angle=true delay_color= (64,64,255)
+	AnimationData{ 
+		animation_data=(8,352,302,384,348)
+		animation_data=(8,384,302,416,348)
+		animation_data=(8,416,302,448,348)
+		animation_data=(8,384,302,416,348)
+	}
+	collision = 5;
+}
+
+//Aqua
+ShotData{ id=843 render=ADD_ARGB fixed_angle=true delay_color= (64,255,255)
+	AnimationData{ 
+		animation_data=(8,256,348,288,394)
+		animation_data=(8,288,348,320,394)
+		animation_data=(8,320,348,352,394)
+		animation_data=(8,288,348,320,394)
+	}
+	collision = 5;
+}
+
+//Green
+ShotData{ id=844 render=ADD_ARGB fixed_angle=true delay_color= (64,255,64)
+	AnimationData{ 
+		animation_data=(8,352,348,384,394)
+		animation_data=(8,384,348,416,394)
+		animation_data=(8,416,348,448,394)
+		animation_data=(8,384,348,416,394)
+	}
+	collision = 5;
+}
+
+//Yellow
+ShotData{ id=845 render=ADD_ARGB fixed_angle=true delay_color= (255,255,64)
+	AnimationData{ 
+		animation_data=(8,256,395,288,441)
+		animation_data=(8,288,395,320,441)
+		animation_data=(8,320,395,352,441)
+		animation_data=(8,288,395,320,441)
+	}
+	collision = 5;
+}
+
+//Orange
+ShotData{ id=846 render=ADD_ARGB fixed_angle=true delay_color= (255,128,64)
+	AnimationData{ 
+		animation_data=(8,352,395,384,441)
+		animation_data=(8,384,395,416,441)
+		animation_data=(8,416,395,448,441)
+		animation_data=(8,384,395,416,441)
+	}
+	collision = 5;
+}
+
+
+//Tsukumo Music Rests
+ShotData{ id=847 rect=(448,256,479,287) render=ADD_ARGB collision=4 delay_color= (255,255,255) } // Gray
+ShotData{ id=848 rect=(480,256,511,287) render=ADD_ARGB collision=4 delay_color= (255,64,64) } // Red
+ShotData{ id=849 rect=(448,288,479,319) render=ADD_ARGB collision=4 delay_color= (255,64,255) } // Purple
+ShotData{ id=850 rect=(480,288,511,319) render=ADD_ARGB collision=4 delay_color= (64,64,255) } // Blue
+ShotData{ id=851 rect=(448,320,479,351) render=ADD_ARGB collision=4 delay_color= (64,255,255) } // Aqua
+ShotData{ id=852 rect=(480,320,511,351) render=ADD_ARGB collision=4 delay_color= (64,255,64) } // Green
+ShotData{ id=853 rect=(448,352,479,383) render=ADD_ARGB collision=4 delay_color= (255,255,64) } // Yellow
+ShotData{ id=854 rect=(480,352,511,383) render=ADD_ARGB collision=4 delay_color= (255,128,64) } // Orange
+
+// Miko Glowing Orbs
+ShotData{ id=855 rect=(768,127,831,190) render=ADD_ARGB fixed_angle=true collision = 13 delay_color= (255,255,255) } // Gray
+ShotData{ id=856 rect=(832,127,895,190) render=ADD_ARGB fixed_angle=true collision = 13 delay_color= (255,64,64) } // Red
+ShotData{ id=857 rect=(896,127,959,190) render=ADD_ARGB fixed_angle=true collision = 13 delay_color= (192,64,192) } // Purple
+ShotData{ id=858 rect=(960,127,1023,190) render=ADD_ARGB fixed_angle=true collision = 13 delay_color= (64,64,255) } // Blue
+ShotData{ id=859 rect=(768,191,831,254) render=ADD_ARGB fixed_angle=true collision = 13 delay_color= (64,255,255) } // Aqua
+ShotData{ id=860 rect=(832,191,895,254) render=ADD_ARGB fixed_angle=true collision = 13 delay_color= (64,255,64) } // Green
+ShotData{ id=861 rect=(896,191,959,254) render=ADD_ARGB fixed_angle=true collision = 13 delay_color= (255,255,64) } // Yellow
+ShotData{ id=862 rect=(960,191,1023,254) render=ADD_ARGB fixed_angle=true collision = 13 delay_color= (255,128,64) } // Orange
+
+//Futo Arrows
+ShotData{ id=863 rect=(256,216,287,255) render=ADD_ARGB delay_color= (255,255,255) } // Gray
+ShotData{ id=864 rect=(288,216,319,255) render=ADD_ARGB delay_color= (255,64,64) } // Red
+ShotData{ id=865 rect=(320,216,351,255) render=ADD_ARGB delay_color= (255,64,255) } // Purple
+ShotData{ id=866 rect=(352,216,383,255) render=ADD_ARGB delay_color= (64,64,255) } // Blue
+ShotData{ id=867 rect=(384,216,415,255) render=ADD_ARGB delay_color= (64,255,255) } // Aqua
+ShotData{ id=868 rect=(416,216,447,255) render=ADD_ARGB delay_color= (64,255,64) } // Green
+ShotData{ id=869 rect=(448,216,479,255) render=ADD_ARGB delay_color= (255,255,64) } // Yellow
+ShotData{ id=870 rect=(480,216,511,255) render=ADD_ARGB delay_color= (255,255,255) } // White
+
+
+//Mamizou red human
+ShotData{ id=871 render=ADD_ARGB fixed_angle=true delay_color= (255,155,155)
+	AnimationData{ 
+		animation_data=(8,0,770,32,802)
+		animation_data=(8,32,770,64,802)
+		animation_data=(8,64,770,96,802)
+	}
+	collision = 8;
+}
+
+//Mamizou blue human
+ShotData{ id=872 render=ADD_ARGB fixed_angle=true delay_color= (155,155,255)
+	AnimationData{ 
+		animation_data=(8,0,640,32,672)
+		animation_data=(8,32,640,64,672)
+		animation_data=(8,64,640,96,672)
+	}
+	collision = 8;
+}
+
+//Mamizou dog-RIGHT
+ShotData{ id=873 render=ADD_ARGB fixed_angle=false delay_color= (155,255,155)
+	AnimationData{ 
+		animation_data=(8,0,675,32,707)
+		animation_data=(8,32,675,64,707)
+		animation_data=(8,64,675,96,707)
+	}
+	collision = 8;
+}
+
+//Mamizou dog-LEFT
+ShotData{ id=874 render=ADD_ARGB fixed_angle=false delay_color= (155,255,155)
+	AnimationData{ 
+		animation_data=(8,96,675,128,707)
+		animation_data=(8,128,675,160,707)
+		animation_data=(8,160,675,192,707)
+	}
+	collision = 8;
+}
+
+//Mamizou bird
+ShotData{ id=875 render=ADD_ARGB fixed_angle=false delay_color= (255,155,155)
+	AnimationData{ 
+		animation_data=(8,0,708,32,738)
+		animation_data=(8,32,708,64,738)
+		animation_data=(8,64,708,96,738)
+	}
+	collision = 8;
+}
+
+//Mamizou frog
+ShotData{ id=876 render=ADD_ARGB fixed_angle=true delay_color= (155,255,255)
+	AnimationData{ 
+		animation_data=(8,0,737,32,769)
+		animation_data=(8,32,737,64,769)
+		animation_data=(8,64,737,96,769)
+	}
+	collision = 8;
+}
+
+
+//Tewi bullet
+ShotData{ id=877 rect=(0,800,47,847) render=ALPHA delay_color= (255,0,0) angular_velocity = 5 collision = 20;}
+
+//Reimu yin-yang orb
+ShotData{ id=878 rect=(0,848,64,910) render=ALPHA delay_color= (255,255,255) angular_velocity = 5 collision = 28;}
+
+//Icicle
+ShotData{ id=879 rect=(0,910,13,967) render=ALPHA delay_color= (0,0,255) }
+
+//Aya bullet
+ShotData{ id=880 rect=(13,910,42,970) render=ALPHA delay_color= (255,0,0) }
+
+//Shikieiki rod
+ShotData{ id=881 rect=(0,967,14,998) render=ALPHA delay_color= (255,0,0) }
+
+//Yuuka flower
+ShotData{ id=882 rect=(43,910,103,970) render=ALPHA delay_color= (205,92,92) angular_velocity = 2 collision = 23;}
+
+//Yuuka flower but white
+ShotData{ id=883 rect=(103,910,163,970) render=ALPHA delay_color= (255,255,255) angular_velocity = 2 collision = 23;}
+//Yuuka flower but white but counterclockwise
+ShotData{ id=884 rect=(103,910,163,970) render=ALPHA delay_color= (255,255,255) angular_velocity = -2 collision = 23;}
+//Yuuka flower but white but not rotating
+ShotData{ id=885 rect=(104,910,161,967) render=ALPHA delay_color= (255,255,255) angular_velocity = 0 collision = 23;}
+
+
+
+
+
+//Eirin pellets
+ShotData{ id=900 rect=(1008,1006,1023,1022) render=ADD_ARGB delay_color= (255,255,255) } //White
+ShotData{ id=901 rect=(800,1006,816,1022) render=ADD_ARGB delay_color= (255,64,64) } //Red
+ShotData{ id=902 rect=(992,1006,1008,1022) render=ADD_ARGB delay_color= (255,128,64) } //Orange
+ShotData{ id=903 rect=(976,1006,992,1022) render=ADD_ARGB delay_color= (255,255,64) } //Yellow
+ShotData{ id=904 rect=(928,1006,944,1022) render=ADD_ARGB delay_color= (64,255,64) } //Green
+ShotData{ id=905 rect=(896,1006,912,1022) render=ADD_ARGB delay_color= (64,255,255) } //Aqua
+ShotData{ id=906 rect=(864,1006,880,1022) render=ADD_ARGB delay_color= (64,64,255) } //Blue
+ShotData{ id=907 rect=(832,1006,848,1022) render=ADD_ARGB delay_color= (255,64,255) } //Magenta
+ShotData{ id=908 rect=(768,1006,800,1022) render=ADD_ARGB delay_color= (255,64,64) } //Dark Red
+ShotData{ id=909 rect=(944,1006,960,1022) render=ADD_ARGB delay_color= (192,255,64) } //Yellow-Green
+ShotData{ id=910 rect=(912,1006,928,1022) render=ADD_ARGB delay_color= (64,255,64) } //Dark Green
+ShotData{ id=911 rect=(880,1006,896,1022) render=ADD_ARGB delay_color= (64,255,255) } //Dark Aqua
+ShotData{ id=912 rect=(848,1006,864,1022) render=ADD_ARGB delay_color= (64,64,255) } //Dark Blue
+ShotData{ id=913 rect=(48,1006,63,1022) render=ADD_ARGB delay_color= (255,64,255) } //Purple
+ShotData{ id=914 rect=(960,1006,976,1022) render=ADD_ARGB delay_color= (255,255,64) } //Gold
+ShotData{ id=915 rect=(768,1006,784,1022) render=ADD_ARGB delay_color= (128,128,128) } //Gray
+
+
+
+
+
+
+
+///////////////////////////////////////////////////////////////////////////////////
+
+//Lasers (Due to lasers being automatically ADD rendered, designated laser shot IDs are necessary. It is not recommended to use any other ID for lasers)
+
+// Straight Lasers
+
+ShotData{ id=1001 rect=(240,1,256,16) render=ADD delay_color= (255,255,255) } //White
+ShotData{ id=1002 rect=(32,1,48,16) render=ADD delay_color= (255,64,64) } //Red
+ShotData{ id=1003 rect=(224,1,240,16) render=ADD delay_color= (255,128,64) } //Orange
+ShotData{ id=1004 rect=(208,1,224,16) render=ADD delay_color= (255,255,64) } //Yellow
+ShotData{ id=1005 rect=(160,1,176,16) render=ADD delay_color= (64,255,64) } //Green
+ShotData{ id=1006 rect=(128,1,144,16) render=ADD delay_color= (64,255,255) } //Aqua
+ShotData{ id=1007 rect=(96,1,112,16) render=ADD delay_color= (64,64,255) } //Blue
+ShotData{ id=1008 rect=(64,1,80,16) render=ADD delay_color= (255,64,255) } //Magenta
+ShotData{ id=1009 rect=(16,1,32,16) render=ADD delay_color= (255,64,64) } //Dark Red
+ShotData{ id=1010 rect=(192,1,208,16) render=ADD delay_color= (255,255,64) } //Gold
+ShotData{ id=1011 rect=(176,1,192,16) render=ADD delay_color= (192,255,64) } //Yellow-Green
+ShotData{ id=1012 rect=(144,1,160,16) render=ADD delay_color= (64,255,64) } //Dark Green
+ShotData{ id=1013 rect=(112,1,128,16) render=ADD delay_color= (64,255,255) } //Dark Aqua
+ShotData{ id=1014 rect=(80,1,96,16) render=ADD delay_color= (64,64,255) } //Dark Blue
+ShotData{ id=1015 rect=(48,1,64,16) render=ADD delay_color= (255,64,255) } //Purple
+ShotData{ id=1016 rect=(0,1,16,16) render=ADD delay_color= (128,128,128) } //Gray
+
+// Curved Lasers
+ShotData{ id=1017 rect=(752,1,768,256) render=ADD delay_color= (255,255,255) } //White
+ShotData{ id=1018 rect=(544,1,560,256) render=ADD delay_color= (255,64,64) } //Red
+ShotData{ id=1019 rect=(736,1,752,256) render=ADD delay_color= (255,128,64) } //Orange
+ShotData{ id=1020 rect=(720,1,736,256) render=ADD delay_color= (255,255,64) } //Yellow
+ShotData{ id=1021 rect=(672,1,688,256) render=ADD delay_color= (64,255,64) } //Green
+ShotData{ id=1022 rect=(640,1,656,256) render=ADD delay_color= (64,255,255) } //Aqua 
+ShotData{ id=1023 rect=(592,1,608,256) render=ADD delay_color= (64,64,255) } //Blue
+ShotData{ id=1024 rect=(576,1,592,256) render=ADD delay_color= (255,64,255) } //Magenta
+ShotData{ id=1025 rect=(528,1,544,256) render=ADD delay_color= (255,64,64) } //Dark Red
+ShotData{ id=1026 rect=(704,1,720,256) render=ADD delay_color= (255,255,64) } //Gold
+ShotData{ id=1027 rect=(688,1,704,256) render=ADD delay_color= (128,255,128) } //Light Green
+ShotData{ id=1028 rect=(656,1,672,256) render=ADD delay_color= (64,255,64) } //Dark Green
+ShotData{ id=1029 rect=(624,1,640,256) render=ADD delay_color= (64,255,255) } //Dark Aqua
+ShotData{ id=1030 rect=(608,1,624,256) render=ADD delay_color= (64,64,255) } //Blue2
+ShotData{ id=1031 rect=(560,1,576,256) render=ADD delay_color= (255,64,255) } //Purple
+ShotData{ id=1032 rect=(512,1,528,256) render=ADD delay_color= (128,128,128) } //Gray
+
+// Bubble Lasers
+ShotData{ id=1033 rect=(704,576,767,639) render=ADD fixed_angle=true angular_velocity = 15 delay_color= (255,255,255) } // Gray
+ShotData{ id=1034 rect=(512,512,575,575) render=ADD fixed_angle=true angular_velocity = 15 delay_color= (255,64,64) } // Red
+ShotData{ id=1035 rect=(640,576,703,639) render=ADD fixed_angle=true angular_velocity = 15 delay_color= (255,128,64) } // Orange
+ShotData{ id=1036 rect=(704,512,767,575) render=ADD fixed_angle=true angular_velocity = 15 delay_color= (255,255,64) } // Yellow
+ShotData{ id=1037 rect=(640,512,703,575) render=ADD fixed_angle=true angular_velocity = 15 delay_color= (64,255,64) } // Green
+ShotData{ id=1038 rect=(512,576,575,639) render=ADD fixed_angle=true angular_velocity = 15 delay_color= (64,255,255) } // Aqua
+ShotData{ id=1039 rect=(576,512,639,575) render=ADD fixed_angle=true angular_velocity = 15 delay_color= (64,64,255) } // Blue
+ShotData{ id=1040 rect=(576,576,639,639) render=ADD fixed_angle=true angular_velocity = 15 delay_color= (255,64,255) } // Purple
+
+// Miko Glowing Orb Lasers
+ShotData{ id=1041 rect=(512,640,575,703) render=ADD fixed_angle=true collision = 13 delay_color= (255,255,255) } // Gray
+ShotData{ id=1042 rect=(576,640,639,703) render=ADD fixed_angle=true collision = 13 delay_color= (255,64,64) } // Red
+ShotData{ id=1043 rect=(704,704,767,767) render=ADD fixed_angle=true collision = 13 delay_color= (255,128,64) } // Orange
+ShotData{ id=1044 rect=(640,704,703,767) render=ADD fixed_angle=true collision = 13 delay_color= (255,255,64) } // Yellow
+ShotData{ id=1045 rect=(576,704,639,767) render=ADD fixed_angle=true collision = 13 delay_color= (64,255,64) } // Green
+ShotData{ id=1046 rect=(512,704,575,767) render=ADD fixed_angle=true collision = 13 delay_color= (64,255,255) } // Aqua
+ShotData{ id=1047 rect=(704,640,767,703) render=ADD fixed_angle=true collision = 13 delay_color= (64,64,255) } // Blue
+ShotData{ id=1048 rect=(640,640,703,703) render=ADD fixed_angle=true collision = 13 delay_color= (192,64,192) } // Purple
+
+// Large Round Bullet Lasers (Modern Style)
+ShotData{ id=1049 rect=(512,768,544,798) render=ADD fixed_angle=true delay_color= (255,255,255) } // Gray
+ShotData{ id=1050 rect=(544,768,576,798) render=ADD fixed_angle=true delay_color= (255,64,64) } // Red
+ShotData{ id=1051 rect=(736,768,768,798) render=ADD fixed_angle=true delay_color= (255,128,64) } // Orange
+ShotData{ id=1052 rect=(704,768,736,798) render=ADD fixed_angle=true delay_color= (255,255,64) } // Yellow
+ShotData{ id=1053 rect=(672,768,704,798) render=ADD fixed_angle=true delay_color= (64,255,64) } // Green
+ShotData{ id=1054 rect=(640,768,672,798) render=ADD fixed_angle=true delay_color= (64,255,255) } // Aqua
+ShotData{ id=1055 rect=(608,768,640,798) render=ADD fixed_angle=true delay_color= (64,64,255) } // Blue
+ShotData{ id=1056 rect=(576,768,608,798) render=ADD fixed_angle=true delay_color= (255,64,255) } // Purple
+
+//Raiko's Lightning Laser
+ShotData{ id=1057 render=ADD delay_color= (64,64,255)
+	AnimationData{ 
+		animation_data=(2,512,256,544,512)
+		animation_data=(2,544,256,576,512)
+		animation_data=(2,576,256,608,512)
+		animation_data=(2,608,256,640,512)
+		animation_data=(2,640,256,672,512)
+		animation_data=(2,672,256,704,512)
+		animation_data=(2,704,256,736,512)
+		animation_data=(2,736,256,768,512)
+	}
+}

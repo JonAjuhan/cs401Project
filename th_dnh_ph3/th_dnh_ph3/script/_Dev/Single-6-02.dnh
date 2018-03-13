@@ -1,0 +1,219 @@
+#TouhouDanmakufu[Single]
+#ScriptVersion[3]
+#Title["Identity \"Fantasy Aria\""]
+#Text["..."] 
+#BGM["./bgm/bgm - Bhava-Agra As Seen Through a Child's Mind.mp3"]
+#System["./system/Default_System.txt"]
+#Background["./system/Background_Sky.txt"]
+
+#include "./Index.txt"
+
+
+
+let timer = 37; //30
+
+@Event
+{
+	alternative(GetEventType())
+	case(EV_REQUEST_LIFE)
+	{
+		SetScriptResult(2000);
+	}
+	case(EV_REQUEST_SPELL_SCORE){
+        SetScriptResult(5000000);
+    }
+//	case(EV_REQUEST_IS_DURABLE_SPELL) {
+//		SetScriptResult(true);
+//	}
+//	case(EV_REQUEST_IS_LAST_SPELL){
+//		SetScriptResult(true);
+//	}
+	
+	case(EV_REQUEST_TIMER) { SetScriptResult(timer*60); } //4500
+}
+@Initialize
+{
+	SetCommonData("CurrentSC","Identity \"Fantasy Aria\"");
+	SetCommonData("Difficulty","Extra");
+	
+	boss = spawnBoss();
+	
+	ObjEnemy_SetDamageRate(boss,0,0);
+	SetShotAutoDeleteClip(64,96,64,64);
+	
+	MainTask;
+	
+
+}
+@MainLoop
+{
+
+	if(ObjEnemy_GetInfo(boss, INFO_LIFE) <= 0 && !finishing)
+	{
+		finishing = true;
+		TBreakSpell([]);
+	}
+	else {
+		SetBossHitbox(boss,ex,ey);
+	}
+	frame++;
+	yield;
+}
+
+
+task MainTask {
+	
+	ObjEnemy_SetDamageRate(boss,0,0);
+	ObjMove_SetDestAtFrame(boss, cx, cy-120, 60);
+	
+	SetSpellCard;
+//	MCircNextAlpha = 80;
+//	Obj_SetValue(objSpellCircle,"MaxAlpha",64);
+	
+	ObjEnemyBossScene_StartSpell(objScene);
+	ObjEnemyBossScene_SetSpellTimer(objScene,timer*60); //5760
+	
+//	SetCaution;
+//	SetBossBlur(true);
+	AuraRainbow(boss,255,255,255);
+	
+	wait(90);
+//	Tmovement(cx-120,cx+120, cy-90,cy-60, 60,240, [MOVE_PLAYERBIAS,2,0,MOVE_MAXSPEED,1.5] );
+	ObjEnemy_SetDamageRate(boss,24,8);
+	frame = 0;
+
+	TShoot;
+	TFog;
+}
+
+
+
+
+task TShoot {
+	let seobj=ObjSound_Create;
+
+	let shot;
+	
+	// let xpoints = [0];
+	// let ypoints = [0];
+	// ascent(i in 0..3){ 
+		// xpoints=xpoints ~ [ cx+150*cos(270+36*i) ]; 
+		// ypoints=ypoints ~ [ cy+150*sin(270+36*i) ];
+	// }
+	// xpoints = xpoints ~ [ sx ];
+	// ypoints = ypoints ~ [ 0 ];
+	
+	let count = 0;
+	let num = 30;
+	let del = 1;
+	
+	let time = num*del;
+	let dt = 1/(num*del);
+	
+	let x; let y;
+	let dx; let dy;
+	let a; let a0;
+	
+	let point;
+	
+	let dir=1; //let i=1;
+	while(!Obj_IsDeleted(boss)) {
+		
+		ascent(i in 0..num){
+			//point = GetBezierCoordinates(xpoints,ypoints,i*dt);
+			point = GetQuadraticBezierCoordinates( ex-250,ey-150, ex,ey+150, ex+250,ey-150,  i*dt);
+			a0=point[2];
+			point = blerp(point[0],point[1],ex,ey, cos(i*num/360) );
+			x=point[0]; y=point[1];
+			
+			ascent(j in 0..7){
+				a = lerp(a0,a0+90*dir,j/7) + 180;
+				
+				shot = CreateShotA2(x+10*j*cos(a),y+10*j*sin(a), 0,a,             0.01*i*dt,  3,  SCALE_MAGENTA-j, 15);
+				ObjMove_SetAngularAcceleration(shot, 0.001*i*dt);
+				ObjMove_SetMaxAngularVelocity(shot,0.1*i*dt);
+				BounceA1(shot,1,[TOP]);
+				ObjShot_SetSpellResist(shot,true);
+				
+				shot = CreateShotA2(x-10*j*cos(a),y+10*j*sin(a), 0,reflect(a,90), 0.01*i*dt,  3,  SCALE_MAGENTA-j, 15);
+				ObjMove_SetAngularAcceleration(shot,-0.001*i*dt);
+				ObjMove_SetMaxAngularVelocity(shot,-0.1*i*dt);
+				BounceA1(shot,1,[TOP]);
+				ObjShot_SetSpellResist(shot,true);
+			}
+			
+			SE_PlayA2(se_chime,60,seobj,15);
+			wait(del); i+=dir;
+		}
+		SE_Play(se_chime2,100);
+		wait(120);
+		
+		a = GetAngleToPlayer(boss);
+		let las = CreateStraightLaserA1(ex,ey,a,  30,10, 240,  LAS_C_PURPLE, 60);
+		
+	//	ObjStLaser_SetAngularVelocity(las,0.25);
+	//	ObjStLaser_SetMaxAngularVelocity(las,3);
+	//	ObjStLaser_SetAngularAcceleration(las,0.1);
+		
+		ObjLaser_SetExtendVelocity(las,4);
+		ObjLaser_SetExtendAcceleration(las,0.1);
+		ObjLaser_SetMaxExtendVelocity(las,10);
+		
+		ObjLaser_SetExpandVelocity(las,0);
+		ObjLaser_SetExpandAcceleration(las,1.5);
+		ObjLaser_SetMaxExpandWidth(las,600);
+		
+		
+		SE_Play(se_laser,100);
+		SE_PlayA2(se_swrbeam,100,ObjSound_Create,900);
+		wait(60);
+		SE_PlayA2(se_spark,100,ObjSound_Create,900);
+		ScreenShake(180,1,10);
+	//	Zoom(avg2([px,cx,cx]),avg2([py,cy,cy]),2.3,180);
+		
+	//	ObjShot_SetGraphic(las,LAS_C_WHITE);
+		let color;
+		ascent(i in 0..180){
+			shot = CreateShotA2(ex,ey,1,a+rand(-i/4,i/4), 1, 5, GLOW_RED+500, 5);
+			ObjMove_SetAngularVelocity(shot,rand(-i/500,i/500));
+			color = rainbow2(i,180);
+			ObjRender_SetColor(las,128+color[0],128+color[1],255);
+			//ObjRender_SetColor(las,128+color[0],255-color[2]/1.5,255);
+			yield;
+		}
+	//	Zoom(cx,cy,1,60);
+
+		
+		
+	}
+}
+
+
+
+
+
+
+task TFog {
+	
+	let targ = CreateDummyShot(cx,cy); 
+	
+	//"Clouds"
+	let fog = NightBlindA1(300,300,0,  0,255,120);
+	ObjRender_SetColor(fog,255,128,255);
+	
+	ObjRender_SetBlendType(fog,BLEND_ADD_ARGB);
+	Obj_SetValue(fog,"Target",targ);
+	Obj_SetValue(fog,"RotSpeed",3); //3 //5
+	Obj_SetValue(fog,"Check",false);
+	
+	let i=0; let color;
+	while(!Obj_IsDeleted(boss)){
+		//ObjMove_SetDestAtFrame(targ,ex,ey,240);
+		color = rainbow2(i,180);
+		ObjRender_SetColor(fog,128+color[0],255-color[2]/2,255);
+		yield; i++;
+	}
+	
+	
+	
+}

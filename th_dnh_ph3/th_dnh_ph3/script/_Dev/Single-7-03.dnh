@@ -1,0 +1,373 @@
+#TouhouDanmakufu[Single]
+#ScriptVersion[3]
+#Title["Torrent \"Sparkling Daydream\""]
+#Text["series 7: scales with difficulty"] 
+#BGM["./bgm/bgm - Kid's Festival ~ Innocent Treasures.ogg"] // CC-CGR-loop.ogg"]
+#System["./system/Default_System.txt"]
+#Background["./system/Background_Sky.txt"]
+
+#include "./Index.txt"
+
+let timer = 47; //37
+let drate = 24; //24
+let mlife = 2000; //2000
+
+@Event
+{
+	alternative(GetEventType())
+	case(EV_REQUEST_LIFE){				SetScriptResult(mlife);		}
+	case(EV_REQUEST_SPELL_SCORE){		SetScriptResult(5000000);	}
+	case(EV_REQUEST_TIMER) {			SetScriptResult(timer*60);	}
+	case(EV_REQUEST_IS_DURABLE_SPELL) {	SetScriptResult(false);		}
+}
+@Initialize
+{
+	if(noPlural){	SetDifficulty(HARD); }
+	alternative(rank)
+	case(NORMAL,EASY){	SetCommonData("CurrentSC","Torrent \"Sparkling Daydream\"");}
+	case(HARD,EXTRA) {	SetCommonData("CurrentSC","Magicannon \"Sparkling Torrent\"");}
+	others			 {	SetCommonData("CurrentSC","Identity \"Torrential Magicannon -Isshokenmei-\"");}
+
+	
+	SetShotAutoDeleteClip(8,8,8,8);
+	
+	boss = spawnBoss();
+	
+	MainTask;
+	
+
+}
+@MainLoop
+{
+
+	if(ObjEnemy_GetInfo(boss, INFO_LIFE) <= 0 && !finishing)
+	{
+		finishing = true;
+		TBreakSpell([]);
+	}
+	else {
+		SetBossHitbox(boss,ex,ey);
+	}
+	frame++;
+	yield;
+}
+
+
+task MainTask {
+	ObjEnemy_SetDamageRate(boss,0,0);
+	ObjMove_SetDestAtFrame(boss, cx, cy-100, 60); //cy-120
+	
+	SetSpellCard;
+	
+	
+	ObjEnemyBossScene_StartSpell(objScene);
+	ObjEnemyBossScene_SetSpellTimer(objScene,timer*60); //5760
+	
+	//SetCaution;
+	//SetBossBlur(true);
+	TSpellImmune;
+	AuraRainbow(boss,255,255,255);
+	SetMagicCircleAlpha(64,64);
+
+	wait(90);
+		
+//	Tmovement(cx-120,cx+120, cy-90,cy-60, 60,240, [MOVE_PLAYERBIAS,2,0,MOVE_MAXSPEED,1.5] );
+	ObjEnemy_SetDamageRate(boss,drate/3,0);
+	frame = 0;
+	
+	//ConcentrationA2(boss,"HEXAGON",90,3,10,[255,0,255]);
+	
+	//TShoot;
+	TSword;
+	Swoowoowoo;
+	
+}
+
+
+
+
+task TSword{
+	wait(60);
+
+	let las; let shot; let lasers=[]; let las0; let las1;
+	let dir=1; let count=1;
+	
+	let gap;
+	alternative(rank)
+	case(1){gap=15;}	//10
+	case(2){gap=7;}		//5
+	case(3){gap=5;}		//3
+	case(4){gap=3;}		//2
+	case(5){gap=2;}		//1
+	others{ gap=1;}		//1
+	
+	
+	SwingLaser(90,1.1,count);
+
+	////////////////////////////////////////////
+	
+	
+	
+	task SwingLaser(a0,dir,c){
+		let count=0;
+		let a=a0; let da; let r; let t; let x; let y; 
+		let x1; let y1; let a1=0; let da1;
+		let diff = rank; let scl;
+		let las;
+		
+		let ga = 360/diff;
+		
+		while(!Obj_IsDeleted(boss)){
+			
+			SE_Play(se_charge2,100);
+			let dummy = CreateDummyShot(swdx,swdy); UpdateLaser(dummy);
+			// ConcentrationA2(dummy,"FEATHER",90,3,100,[100,100,100]);
+			EffectBurstOutB2(dummy,2,90,2.5,"feather",255,255,255);
+			EffectBurstInB2 (dummy,2,90,2.5,"feather",128,128,128);
+			
+
+			TestEffect;
+			
+			wait(120);
+			Obj_Delete(dummy);
+			SetAttackPose(-1);
+			wait(20);
+			TSpark;
+			
+			wait(60);
+			// SE_Play(se_laser,100);
+			
+			ObjEnemy_SetDamageRate(boss,drate,drate/3);
+	
+			
+			las = CreateStraightLaserA1(swdx,swdy,a,0,30,8999,LAS_C_WHITE,9999);
+			UpdateLaser(las);
+			loop(300){
+				scl = sqrt(diff/4);
+				r = 150*scl+50*cos(count*dir)*scl;
+				da  = 0.5+5*(sin(count)); //3*
+				da1 = 3*(r/150); //3*
+				a+=da*dir;
+				
+				x = swdx + r*cos(a);
+				y = swdy + r*sin(a);
+				
+				ObjStLaser_SetTipPosition(las,x,y);
+				
+				if(count%gap==0){
+					WarnShotA1(x,y,0,8);
+					shot = CreateShotA2(x,y, 0,a+(5)*count, 0.015,2.5, 406, 30);
+
+					ascent(i in 0..diff){
+						SE_Play(se_shot2,60);
+						
+						x1 = x+50*r/150*cos(a1); y1 = y+50*r/150*sin(a1);
+					
+						las1 = CreateStraightLaserA1(x,y,a1,50*r/150,25,10,LAS_C_WHITE,100);
+						ObjStLaser_SetSource(las1,false);
+						ObjShot_FadeDelete(las1);
+						las1 = CreateStraightLaserA1(x1,y1,a1+180,50*r/150,25,10,LAS_C_WHITE,100);
+						ObjStLaser_SetSource(las1,false);
+						ObjShot_FadeDelete(las1);
+						
+						//EffectBurstInA1 (x1,y1,3,1,"FEATHER",128,128,128);
+						EffectBurstOutA1(x1,y1,3,1,"FEATHER",255,255,255);
+						
+						//ascent(i in 0..3){
+						// shot = CreateShotA2(x1,y1, 0,a+(5)*count, 0.015,2.5, SCALE_WHITE+501+(count/gap)%7, 5);
+						shot = CreateShotA2(x1,y1, 0,a+(5)*count, 0.015,2.5, PEL_AQUA+altBin(i)*altSign(i/3), 16); //del 8
+						//ObjRender_SetScaleXYZ(shot,1.1,1.1,1);
+	//					MyBounce(shot);
+						// shot = CreateShotA2(x1,y1, 0,a1, 0.015,2.5, SCALE_WHITE+501+(count/gap)%7, 5);
+						//}
+						a1 += ga; //180*sin(count*dir*-1)
+					}
+					a1+=da1;
+					
+				}
+				yield; count++;
+			} 
+			SetAttackPose(0);
+			ObjShot_FadeDelete(las);
+			//rest
+			// wait(300);
+			wait(180);
+		}
+	}
+	
+	task UpdateLaser(las){
+		while(!Obj_IsDeleted(las)){
+			ObjMove_SetDestAtZeno(las,swdx,swdy,0.25);
+			yield;
+		}
+	}
+	
+	
+}
+
+
+
+task MyBounce2(shot,del){
+	while(!isOffScreen(shot)){yield;}
+	if(Obj_IsDeleted(shot)){return;}
+	
+	let s = ObjMove_GetSpeed(shot)/rand(1.5,3);
+	
+	ObjMove_SetSpeed(shot,0);
+	ObjShot_SetGraphic(shot,STARDOT_RED);
+	WarnShot(shot);
+	ObjShot_SetSpellResist(shot,true);
+	// ObjMove_Still(shot,5);
+	ObjMove_SetAngle(shot,GetAngleToPlayer(shot)+rand(-5,5));
+	let d = getdist(ObjMove_GetX(shot),ObjMove_GetY(shot),px,py);
+	ObjRender_SetBlendType(shot,BLEND_ADD_ARGB);
+	
+	// wait(del);
+	ascent(i in 0..del){
+		yield;
+		ObjRender_SetAlpha(shot,128+64*cos(i*15));
+	}
+	
+	// ObjMove_SetAngle(shot,GetAngleToPlayer(shot));
+	// ObjMove_SetAngle(shot,rand(0,360));
+	
+	ObjMove_SetSpeed(shot,s);
+	ObjShot_SetGraphic(shot,STARDOT_BLUE-randBin+randBin);
+	ObjRender_SetBlendType(shot,BLEND_ALPHA);
+	
+//	ObjShot_SetFadeDeleteFrame(shot,d/s);
+	
+	WarnShot(shot);
+	SE_Play(se_chime,75); //60
+	
+	yield;
+	WrapA1(shot,1,[TOP,LFT,RGT,BTM]);
+	
+	ObjRender_SetAlpha(shot,255);
+	// yield;
+	// bounce(shot);
+}
+
+
+//lol idk
+task Swoowoowoo{
+	let a = rand(0,360); //GetAngleToPlayer(boss)+180;
+	let x; let y;
+	loop{
+		if(frame%3==0){
+			x = px+90*cos(a+rand(-15,15)); y = py+90*sin(a+rand(-15,15));
+			// EffectParticleA2( x, y,getdist(x,y,ex,ey)/36,getangle(x,y,ex,ey),"feather",36,1,1,128,0,128);
+			EffectParticleA2(px,py,getdist(px,py,x,y)/36,getangle(px,py,x,y),"feather",36,0,0.5,128,0,128);
+			DelEff(x,y,36);
+		}
+		// x = ex+90*cos(a+rand(-15,15)); y = ey+90*sin(a+rand(-15,15));
+		// EffectParticleA2(x,y,getdist(x,y,px,py)/36,getangle(x,y,px,py),"feather",36,1,0,128,0,128);
+		// EffectParticleA2(ex,ey,getdist(ex,ey,x,y)/36,getangle(ex,ey,x,y),"feather",36,0,1,128,0,128);
+		
+		
+		// a++;
+		a+=rand(1-15*sin(frame),10);
+		yield;
+	}
+	
+	task DelEff(x,y,del){
+		wait(del);
+		// EffectParticleA2( x, y,getdist(x,y,ex,ey)/36,getangle(x,y,ex,ey),"feather",36,1,0,128,0,128);
+		EffectParticleA3( x, y,getdist(x,y,ex,ey)/36,getangle(x,y,ex,ey),"feather",36,0.5,0, 160,0, 128,0,128);
+	}
+}
+
+
+
+task TestEffect{
+	let obj;
+	loop(90){
+		loop(10){
+			// obj = EffectParticleB1(swdx,swdy,rand(-5,5),rand(-3,3),"gravity",255,255,255);
+			obj = EffectParticleB2(swdx,swdy,rand(-5,5),rand(-3,3),"gravity",36,0,1, 255,255,255);
+			SetEffectSmall(obj);
+			ObjRender_SetBlendType(obj,BLEND_ADD_ARGB);
+			Obj_SetRenderPriorityI(obj,44);
+			
+			let sp = rand(3,5); let a=rand(-20,20); let a0 = getangle(swdx,swdy,px,py); let d = getdist(swdx,swdy,px,py); let dur = d/sp*(1-(|a|)/30);
+			// obj = EffectParticleA2(swdx,swdy,rand(3,5),a0+a,"light",dur,0,1, 255,128,150);
+			// SetEffectSmall(obj);
+	
+			obj = EffectParticleA2(swdx+sp*dur*cos(a0+a),swdy+sp*dur*sin(a0+a),sp,a0+a+180,"light",dur, 1,0, 128,64,75);
+			SetEffectSmall(obj);
+		}
+		yield;
+	}
+}
+
+
+task TSpark{
+	let shot;
+	SE_Play(se_spark,100);
+	ScreenShake(180,2*compSign(px,ex),2);
+	
+	let count = 0;
+	let sp; let a; let a0; let a1; let da; let d; let centr;
+	
+	
+	a0 = getangle(swdx,swdy,px,py);
+	
+	let diff = rank;
+	
+	loop(180){
+		a1 = getangle(swdx,swdy,px,py);
+		da = GetAngularDistance(a0,a1); //compSign(a0,a1)
+		if( (|da|)<=1.5 ){ a0=a1; }
+		else{
+			a0+=1.5*sign(da);
+		}
+		d = getdist(swdx,swdy,px,py);
+		
+		
+		loop(5){
+			
+			//red balls - slightly faster in middle
+			sp = rand(3,5); a=rand(-20,20); centr = (1-(|a|)/30);
+			shot = CreateShotA1(swdx,swdy,sp*(centr+0.5),a0+a, BALL_RED+500, 10);
+			if(count%(2*diff)==0){MyBounce2(shot,240);}
+			//trans balls - slightly slower in middle
+			sp = rand(3,5); a=rand(-20,20); centr = (1-(|a|)/30);
+			shot = CreateShotA1(swdx,swdy,sp/(centr+0.5),a0+a, BALL_MAGENTA-randBin+500, 10);
+			if(count%(2*diff)==diff){MyBounce2(shot,240);}
+			
+			//light particles among spark shots
+			let obj = EffectParticleA2(swdx,swdy,rand(3,5),a0+a,"light",d/centr/sp,0,1, 255,128,150);
+			SetEffectSmall(obj);
+			// obj = EffectParticleA2(swdx+d*centr*cos(a0+a),swdy+d*centr*sin(a0+a),sp,a0+a+180,"light",d/centr, 1,0, 128,64,75);
+			// SetEffectSmall(obj);
+			
+			//sakura particles
+			EffectParticleA2(swdx,swdy,rand(3,5),a0+180+randSign*rand(0,rand(45,rand(90,rand(135,180))))*rand(1,1.5), "CHERRY",36, 0,0.25,  255,64,180);
+	
+		}
+		
+		if(count%20==0){
+			task TWave{
+				wait(15);
+				// let wave = EffectParticleA2(swdx,swdy,4,a0, "spark_wave",d/centr/4, 0,0.25,  255,64,180);
+				let wave = CreateSprite(swdx,swdy,direffect~"spark_wave.png",[0,0,127,255],75);			
+				
+				ObjRender_SetAlpha(wave,128);
+				ObjRender_SetBlendType(wave,BLEND_ADD_ARGB);
+				ObjRender_SetColor(wave,255,64,180);
+				
+				Obj_AddPatternA2(wave,0,6,getangle(swdx,swdy,px,py), -0.1,3);
+				ObjRender_SetScaleXYZ(wave,0,0,1);
+				
+				ObjRender_SetScaleAtFrame(wave,1.25,1.25,192);
+				ObjRender_SetAlphaAtFrame(wave,0,96);
+				wait(96);
+				Obj_Delete(wave);
+			}
+			TWave;
+		}
+		
+		yield;
+		count++;
+	}
+}

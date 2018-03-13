@@ -1,0 +1,26 @@
+#Materials exported from Google Sketchup
+
+newmtl __Groundcover_Rock_Crushed_2inch__Groundcover_Rock_Crushed_2inch_jpg
+Ka 0.000000 0.000000 0.000000
+Kd 1.000000 1.000000 1.000000
+Tr 1.0
+Ks 0.000000 0.000000 0.000000
+Ns 3.200000
+map_Kd Groundcover_Rock_Crushed_2inch.jpg
+
+newmtl _Material2_bamboo_png
+Ka 0.000000 0.000000 0.000000
+Kd 1.000000 1.000000 1.000000
+Tr 1.0
+Ks 0.000000 0.000000 0.000000
+Ns 3.200000
+map_Kd bamboo.png
+
+newmtl _Material1_Vegetation_Grass1_jpg
+Ka 0.000000 0.000000 0.000000
+Kd 1.000000 1.000000 1.000000
+Tr 1.0
+Ks 0.000000 0.000000 0.000000
+Ns 3.200000
+map_Kd Vegetation_Grass1.jpg
+

@@ -1,0 +1,261 @@
+#TouhouDanmakufu[Single]
+#ScriptVersion[3]
+#Title["\"I Can't Believe There Was a Sink In That Gap!\""]
+#Text["..."] 
+#BGM["./bgm/bgm - A Maiden's Illusionary Funeral ~ Necro-Fantasy.ogg"]						//"./bgm/bgm - Bhava-Agra As Seen Through a Child's Mind.mp3"]
+#System["./system/Default_System.txt"]
+#Background["./system/Background_Sky.txt"]
+
+#include "./Index.txt"
+
+
+let fog; //let ingap; let outgap;
+
+let timer = 57; //30
+
+@Event
+{
+	alternative(GetEventType())
+	case(EV_REQUEST_LIFE)
+	{
+		SetScriptResult(3500);
+	}
+	case(EV_REQUEST_SPELL_SCORE){
+        SetScriptResult(5000000);
+    }
+	case(EV_REQUEST_IS_DURABLE_SPELL) {
+		SetScriptResult(true);
+	}
+	// case(EV_REQUEST_IS_LAST_SPELL){
+		// SetScriptResult(true);
+	// }
+	
+	case(EV_REQUEST_TIMER) { SetScriptResult(timer*60); } //4500
+}
+@Initialize
+{
+	SetCommonData("CurrentSC","\"I Can't Believe There Was a Sink In That Gap!\"");
+	SetCommonData("Difficulty","Phantasm");
+	
+	boss = spawnBossYukari();
+	
+	ObjEnemy_SetDamageRate(boss,0,0);
+	SetShotAutoDeleteClip(64,96,64,64);
+	
+	MainTask;
+	
+
+}
+@MainLoop
+{
+
+	if(ObjEnemy_GetInfo(boss, INFO_LIFE) <= 0 && !finishing)
+	{
+		finishing = true;
+		TBreakSpell([BREAK_DEAD]);
+	}
+	else {
+		SetBossHitbox(boss,ex,ey);
+	}
+	frame++;
+	yield;
+}
+
+
+task MainTask {
+	
+	ObjEnemy_SetDamageRate(boss,0,0);
+	ObjMove_SetDestAtFrame(boss, cx, cy-120, 60);
+	
+	SetSpellCard;
+//	MCircNextAlpha = 80;
+//	Obj_SetValue(objSpellCircle,"MaxAlpha",64);
+	
+	ObjEnemyBossScene_StartSpell(objScene);
+	ObjEnemyBossScene_SetSpellTimer(objScene,timer*60); //5760
+	
+	SetCaution;
+
+
+	AuraRainbow(boss,255,255,255);
+	TSpellImmune;
+	
+	wait(90);
+	ObjEnemy_SetDamageRate(boss,24,8);
+	frame = 0;
+
+	TFog;
+	Tmovement(cx-120,cx+120, cy-90,cy-60, 60,240, [MOVE_PLAYERBIAS,2,0,MOVE_MAXSPEED,1.5] );
+	
+	
+	TFukkinSigns;
+	//TFukkinSpinners;
+	//TFukkinFists;
+	//TFukkinTrains;
+
+}
+
+
+
+
+task TFukkinSigns{
+	
+	let outgap = CreateGapA1(cx,30   ,sx,55 ,90 ,560,0 , GAP_OUT ,TARGET_ENEMY,0     ,[]);
+	let ingap  = CreateGapA1(cx,sy+00,sx,55 ,90 ,560,0 , GAP_VOID,TARGET_ENEMY,0     ,[]);
+	ObjMove_SetDestAtWeight(boss,cx*3/2,100,45,10);
+	SetAttackPose(60);
+	wait(60);
+	wait(15);
+	
+	let x; let y; let sshot;
+	ascent(i in 0..90){
+		x=rand(30,sx-30); y=30;
+		sshot = CreateSignA2(x,y,0,90, 0.15, 3.5, i%3, 60);
+		ObjMove_SetAngularVelocity(sshot,rand(-0.5,0.5));
+		ObjMove_AddPatternA2(sshot,20,0,NO_CHANGE,NO_CHANGE, 0, 3.5);
+		SE_Play(se_gapshot,100);
+		wait(5);
+	}
+	
+	wait(60);
+	TFukkinSpinners;
+	//Tmovement(cx-120,cx+120, cy-90,cy-60, 60,240, [MOVE_PLAYERBIAS,2,0,MOVE_MAXSPEED,1.5] );
+	
+}
+
+
+
+
+
+
+task TFukkinSpinners{
+	
+	let outgap = CreateGapA1(cx,30   ,sx,55 ,90 ,560,0 , GAP_OUT ,TARGET_ENEMY,0     ,[]);
+	let ingap  = CreateGapA1(cx,sy   ,sx,55 ,90 ,560,0 , GAP_OUT ,TARGET_ENEMY,0     ,[]);
+	ObjMove_SetDestAtWeight(boss,cx*3/2,100,45,10);
+	wait(60);
+	SetAttackPose(60);
+	wait(15);
+	
+	let x; let y; let sshot; let dir;
+	ascent(i in 0..90){
+		x=rand(30,sx-30); y=30;
+		dir = randSign;
+		sshot = CreateSpinnerA2(x,y,0,90, 0.15, 3.5, i%4,rand(1,5)*dir, 0);
+		ObjMove_SetAngularVelocity(sshot,rand(-0.5,0.5));
+	//	ObjMove_AddPatternA2(sshot,20,0,NO_CHANGE,NO_CHANGE, 0, 3.5);
+		
+		GrowShot(sshot,0,2,120); GrowShot(Obj_GetValueD(sshot,"RenderObject",sshot),0,2,120);
+		SE_Play(se_gapshot,100);
+		wait(5);
+	}
+	
+	wait(60);
+	TFukkinFists;
+	//Tmovement(cx-120,cx+120, cy-90,cy-60, 60,240, [MOVE_PLAYERBIAS,2,0,MOVE_MAXSPEED,1.5] );
+	
+}
+
+
+
+//Portal to the Elemental Plane of Fists
+task TFukkinFists{
+	
+	let outgap = CreateGapA1(cx,30   ,sx,55 ,90 ,560,0 , GAP_OUT ,TARGET_ENEMY,0     ,[]);
+	let ingap  = CreateGapA1(cx,sy+00,sx,55 ,90 ,660,0 , GAP_OUT ,TARGET_ENEMY,0     ,[]);
+	ObjMove_SetDestAtWeight(boss,cx*3/2,100,45,10);
+	wait(60);
+	SetAttackPose(60);
+	wait(15);
+	
+	//ORAORAORAORAORAORAORAORAORAORAORAORA
+	let seobj=ObjSound_Create;
+	SE_PlayA2(csd~"../se/trollsounds/ORAORAORA0.mp3",100,seobj,300);
+	
+	
+	let x; let y; let fshot;
+	ascent(i in 0..27){
+		x=rand(30,sx-30); y=30;
+		fshot = CreateFistA2(x,y,0,90, 0.15, 5.5, 0, 0);
+		ObjMove_SetAngularVelocity(fshot,rand(-0.5,0.5));
+	//	ObjMove_AddPatternA2(fshot,20,0,NO_CHANGE,NO_CHANGE, 0, 5.5);
+		
+		GrowShot(fshot,0,0.5,60); 
+	//	GrowShot(Obj_GetValueD(fshot,"RenderObject",fshot),0,0.5,60);
+		//SE_Play(se_gapshot,60); 
+		SE_Play(se_anchor,40);
+		wait(5);
+	}
+	
+	wait(60);
+	TFukkinTrains;
+	
+	//Tmovement(cx-120,cx+120, cy-90,cy-60, 60,240, [MOVE_PLAYERBIAS,2,0,MOVE_MAXSPEED,1.5] );
+	
+	
+	wait(120);
+	Obj_Delete(seobj); //otherwise it gets messed up when it plays it again for some reason
+}
+
+
+
+
+task TFukkinTrains{
+	
+	let outgap = CreateGapA1(cx,30   ,sx,55 ,90 ,700,0 , GAP_OUT ,TARGET_ENEMY,0     ,[]);
+	let ingap  = CreateGapA1(cx,sy+00,sx,55 ,90 ,700,0 , GAP_VOID,TARGET_ENEMY,0     ,[]);
+	ObjMove_SetDestAtWeight(boss,cx*3/2,100,45,10);
+	SetAttackPose(60);
+	wait(60);
+	
+	wait(15);
+	
+	let x; let y; let tshot;
+	ascent(i in 0..30){
+		x=rand(30,sx-30); y=30;
+		tshot = CreateTrainA2(x,y,3,90, 0.15, 5.5, 0, 0);
+		ObjMove_SetAngularVelocity(tshot,rand(-0.5,0.5));
+		ObjMove_AddPatternA2(tshot,20,NO_CHANGE,NO_CHANGE,NO_CHANGE, 0, 8.5);
+		GrowShot(tshot,0,0.5,30);
+		SE_Play(se_gapshot,100); SE_Play(se_train,100); SE_Play(se_tracks,100);
+		wait(20);
+	}
+	
+	wait(60);
+	TFukkinSpinners;
+	
+}
+
+
+
+
+
+
+
+task TFog {
+	
+	let targ = CreateDummyShot(cx,cy); 
+	
+	//"Clouds"
+	fog = NightBlindA1(300,300,0,  0,255,120);
+	ObjRender_SetColor(fog,255,128,255);
+	ObjRender_SetBlendType(fog,BLEND_ADD_ARGB);
+	Obj_SetValue(fog,"Target",targ);
+	Obj_SetValue(fog,"RotSpeed",5); //3
+	Obj_SetValue(fog,"Check",false);
+	
+	// while(!Obj_IsDeleted(boss)){
+		// ObjMove_SetDestAtFrame(targ,ex,ey,240);
+		// yield;
+	// }
+	
+	
+	
+}
+
+
+
+
+
+
+

@@ -1,0 +1,497 @@
+//Simplified effects library borrowing some concepts from OzzieEffects
+
+
+//REFERENCE:
+
+//	EffectBurstOutA1(x,y,num,speed,type,r,g,b)
+//	EffectBurstInA1 (x,y,num,speed,type,r,g,b)
+
+//	EffectParticleA1(x,y,speed,angle,type,r,g,b)
+//	EffectParticleA2(x,y,speed,angle,type,dur,s0,s1,r,g,b)
+//	EffectParticleA3(x,y,speed,angle,type,dur,s0,s1,alpha0,alpha1,r,g,b)
+
+//	EffectParticleC3(followobj,x,y,type,dur,s0,s1,alpha0,alpha1,r,g,b)		//follows an object
+
+
+
+//////////////////////////////////////////////////
+//BURST FUNCTIONS
+//////////////////////////////////////////////////
+
+function EffectBurstOutA1(x,y,num,speed,type,r,g,b){
+	loop(num){
+		EffectParticleA1(x,y,speed,rand(0,360),type,r,g,b);
+	}
+}
+function EffectBurstInA1(x,y,num,speed,type,r,g,b){
+	let a;
+	loop(num){
+		a = rand(0,360);
+		EffectParticleA2(x+90*cos(a),y+90*sin(a),2.5,a+180,type,36,1,0,r,g,b);
+	}
+}
+
+//same as A1, but centered on an object
+function EffectBurstOutB1(obj,num,speed,type,r,g,b){
+	let x = ObjRender_GetX(obj); let y = ObjRender_GetY(obj);
+	loop(num){
+		EffectParticleA1(x,y,speed,rand(0,360),type,r,g,b);
+	}
+}
+function EffectBurstInB1(obj,num,speed,type,r,g,b){
+	let a; let x = ObjRender_GetX(obj); let y = ObjRender_GetY(obj);
+	loop(num){
+		a = rand(0,360);
+		EffectParticleA2(x+90*cos(a),y+90*sin(a),2.5,a+180,type,36,1,0,r,g,b);
+	}
+}
+
+//once per frame over a duration
+task EffectBurstOutA2(x,y,num,dur,speed,type,r,g,b){
+	loop(dur){
+		loop(num){
+			EffectParticleA1(x,y,speed,rand(0,360),type,r,g,b);
+		}
+		yield;
+	}
+}
+task EffectBurstInA2(x,y,num,dur,speed,type,r,g,b){
+	let a;
+	loop(dur){
+		loop(num){
+			a = rand(0,360);
+			EffectParticleA2(x+90*cos(a),y+90*sin(a),2.5,a+180,type,36,0.5,0,r,g,b);
+		}
+		yield;
+	}
+}
+
+//once per frame over a duration, following an object
+task EffectBurstOutB2(obj,num,dur,speed,type,r,g,b){
+	let x0; let y0;
+	loop(dur){
+		x0 = ObjRender_GetX(obj); y0 = ObjRender_GetY(obj);
+		loop(num){
+			EffectParticleA1(x0,y0,speed,rand(0,360),type,r,g,b);
+		}
+		yield;
+	}
+}
+task EffectBurstInB2(obj,num,dur,speed,type,r,g,b){
+	let a; let x0; let y0;
+	let rscale = speed/2.5;
+	loop(dur){
+		x0 = ObjRender_GetX(obj); y0 = ObjRender_GetY(obj);
+		loop(num){
+			a = rand(0,360);
+			EffectParticleA2(x0+90*rscale*cos(a),y0+90*rscale*sin(a),speed,a+180,type,36,0.5,0,r,g,b);
+		}
+		yield;
+	}
+}
+
+
+//same as B2, but offset from object
+task EffectBurstOutB3(obj,x,y,num,dur,speed,type,r,g,b){
+	let x0; let y0;
+	loop(dur){
+		x0 = ObjRender_GetX(obj); y0 = ObjRender_GetY(obj);
+		loop(num){
+			EffectParticleA1(x0+x,y0+y,speed,rand(0,360),type,r,g,b);
+		}
+		yield;
+	}
+}
+task EffectBurstInB3(obj,x,y,num,dur,speed,type,r,g,b){
+	let a; let x0; let y0;
+	let rscale = speed/2.5;
+	loop(dur){
+		x0 = ObjRender_GetX(obj); y0 = ObjRender_GetY(obj);
+		loop(num){
+			a = rand(0,360);
+			EffectParticleA2(x0+x+90*rscale*cos(a),y0+y+90*rscale*sin(a),speed,a+180,type,36,0.5,0,r,g,b);
+		}
+		yield;
+	}
+}
+
+
+
+
+
+//////////////////////////////////////////////////
+//PARTICLE FUNCTIONS
+//////////////////////////////////////////////////
+
+
+//All but speed/angle/type/color preset - lasts maybe roundabout a second
+function EffectParticleA1(x,y,speed,angle,type,r,g,b){
+	let dx = speed*cos(angle);
+	let dy = speed*sin(angle);
+	let dz = 0;
+	let alpha = 255; //180; //20
+	let s = 0; //scale0 //2
+	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	let angleX = rand(0,360);
+	let angleY = rand(0,360);
+	let angleZ = rand(0,360);
+	let Xrot = rand(-3,3);
+	let Yrot = rand(-3,3);
+	let Zrot = rand(-3,3);
+	r/=255; g/=255; b/=255; //convert to a ratio
+	
+	ObjPrim_SetTexture(obj, dirimg~"Effect/"~type~".png");
+	// ObjPrim_SetTexture(obj, GetCurrentScriptDirectory ~ "../img/Effect/" ~ type ~ ".png");
+	ObjSprite2D_SetSourceRect(obj,0, 0, 255, 255);
+	Obj_SetRenderPriorityI(obj,60);
+	ObjSprite2D_SetDestCenter(obj);
+	ObjRender_SetBlendType(obj,BLEND_ADD_RGB);
+	ObjRender_SetPosition(obj,x,y,0);
+
+	Update;
+	task Update{
+		while(!Obj_IsDeleted(obj)&&alpha>0){
+			ObjRender_SetColor(obj,alpha*r,alpha*g,alpha*b);
+			ObjRender_SetScaleXYZ(obj,s,s,s);
+			ObjRender_SetAngleXYZ(obj,angleX,angleY,angleZ);
+			
+			angleX+=Xrot;
+			angleY+=Yrot;
+			angleZ+=Zrot;
+			alpha-=rand(4.8,6);
+			s+=0.008; //-=0.04
+			ObjRender_SetPosition(obj,ObjRender_GetX(obj)+dx,ObjRender_GetY(obj)+dy,ObjRender_GetZ(obj)+dz);
+			yield;
+		}
+		Obj_Delete(obj);
+	}
+	return obj;
+}
+
+//start/end scale and duration are specified manually
+function EffectParticleA2(x,y,speed,angle,type,dur,s0,s1,r,g,b){
+	let t; let dt; let t0; let t1; let s; let ds;
+	
+	alternative(s1==s0)
+	case(false){
+		alternative(s1>s0)
+		case(true) {dt= 1; t0=0;   t1=dur; ds= (s1-s0)/dur; }
+		case(false){dt=-1; t0=dur; t1=0;   ds= (s1-s0)/dur; }
+	}
+	case(true){
+		dt= 1; t0=0; t1=dur; ds=0;
+	}
+	
+	s=s0;
+	t=t0;
+	
+	let alpha = 1 + t1/dur * 254; //20+foo*160  //20;
+	let alpha0 = alpha; let alpha1 = 255-alpha; let dalpha = (alpha1-alpha0)/dur;
+	// let s = s0;
+	// let ds = (s1-s0)/t*dt; //36
+	
+	let dx = speed*cos(angle);
+	let dy = speed*sin(angle);
+	let dz = 0;
+	let angleX = rand(0,360);
+	let angleY = rand(0,360);
+	let angleZ = rand(0,360);
+	let Xrot = rand(-3,3);
+	let Yrot = rand(-3,3);
+	let Zrot = rand(-3,3);
+	r/=255; g/=255; b/=255; //convert to a ratio
+	
+	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjPrim_SetTexture(obj, dirimg~"Effect/"~type~".png");
+	ObjSprite2D_SetSourceRect(obj,0, 0, 255, 255);
+	Obj_SetRenderPriorityI(obj,60); //44
+	ObjSprite2D_SetDestCenter(obj);
+	ObjRender_SetBlendType(obj,BLEND_ADD_RGB);
+	ObjRender_SetPosition(obj,x,y,0);
+
+	task Update{
+		while(!Obj_IsDeleted(obj) && alpha>=0 && !(ds<0 && s<s1) ){ // && (ds>0&&s<=s1)||(s>=s1) ){
+			ObjRender_SetColor(obj,alpha*r,alpha*g,alpha*b);
+			ObjRender_SetScaleXYZ(obj,s,s,s);
+			ObjRender_SetAngleXYZ(obj,angleX,angleY,angleZ);
+			
+			angleX+=Xrot;
+			angleY+=Yrot;
+			angleZ+=Zrot;
+			//alpha+=rand(4.8,6)*dt;
+			// alpha -= rand(4.8,6)*dt;
+			// alpha = 20+ 160 * ( (s-s0)/(s1-s0+0.001) ) ;
+			alpha+=dalpha;
+			s+=ds; //+=0.008 //-=0.04
+			
+			ObjRender_SetPosition(obj,ObjRender_GetX(obj)+dx,ObjRender_GetY(obj)+dy,ObjRender_GetZ(obj)+dz);
+			
+			yield; //t+=dt;
+		}
+		Obj_Delete(obj);
+	}
+	
+	Update;
+	return obj;
+}
+
+//same as A2, but start and end alpha are specified manually
+function EffectParticleA3(x,y,speed,angle,type,dur,s0,s1,alpha0,alpha1,r,g,b){
+	let t; let dt; let t0; let t1; let s; let ds;
+	
+	alternative(s1==s0)
+	case(false){
+		alternative(s1>s0)
+		case(true) {dt= 1; t0=0;   t1=dur; ds= (s1-s0)/dur; }
+		case(false){dt=-1; t0=dur; t1=0;   ds= (s1-s0)/dur; }
+	}
+	case(true){
+		dt= 1; t0=0; t1=dur; ds=0;
+	}
+	// others{RaiseError("Shit's fucked");}
+	
+	s=s0;
+	t=t0;
+	
+	let alpha = alpha0;
+	let dalpha = (alpha1-alpha0)/dur;
+
+	let dx = speed*cos(angle);
+	let dy = speed*sin(angle);
+	let dz = 0;
+	let angleX = rand(0,360);
+	let angleY = rand(0,360);
+	let angleZ = rand(0,360);
+	let Xrot = rand(-3,3);
+	let Yrot = rand(-3,3);
+	let Zrot = rand(-3,3);
+	r/=255; g/=255; b/=255; //convert to a ratio
+	
+	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjPrim_SetTexture(obj, dirimg~"Effect/"~type~".png");
+	ObjSprite2D_SetSourceRect(obj,0, 0, 255, 255);
+	Obj_SetRenderPriorityI(obj,60); //44
+	ObjSprite2D_SetDestCenter(obj);
+	ObjRender_SetBlendType(obj,BLEND_ADD_RGB);
+	ObjRender_SetPosition(obj,x,y,0);
+
+	task Update{
+		while(!Obj_IsDeleted(obj) && alpha>=0 && !(ds<0 && s<s1) ){ // && (ds>0&&s<=s1)||(s>=s1) ){
+			ObjRender_SetColor(obj,alpha*r,alpha*g,alpha*b);
+			ObjRender_SetScaleXYZ(obj,s,s,s);
+			ObjRender_SetAngleXYZ(obj,angleX,angleY,angleZ);
+			
+			angleX+=Xrot;
+			angleY+=Yrot;
+			angleZ+=Zrot;
+			//alpha+=rand(4.8,6)*dt;
+			// alpha -= rand(4.8,6)*dt;
+			// alpha = 20+ 160 * ( (s-s0)/(s1-s0+0.001) ) ;
+			alpha+=dalpha;
+			s+=ds; //+=0.008 //-=0.04
+			
+			ObjRender_SetPosition(obj,ObjRender_GetX(obj)+dx,ObjRender_GetY(obj)+dy,ObjRender_GetZ(obj)+dz);
+			
+			yield; //t+=dt;
+		}
+		Obj_Delete(obj);
+	}
+	
+	Update;
+	return obj;
+}
+
+
+
+//follows an object (e.g. a shot); start and end scale/alpha are specified manually
+function EffectParticleC3(followobj,x,y,type,dur,s0,s1,alpha0,alpha1,r,g,b){
+	let t; let dt; let t0; let t1; let s; let ds;
+	
+	alternative(s1==s0)
+	case(false){
+		alternative(s1>s0)
+		case(true) {dt= 1; t0=0;   t1=dur; ds= (s1-s0)/dur; }
+		case(false){dt=-1; t0=dur; t1=0;   ds= (s1-s0)/dur; }
+	}
+	case(true){
+		dt= 1; t0=0; t1=dur; ds=0;
+	}
+	// others{RaiseError("Shit's fucked");}
+	
+	s=s0;
+	t=t0;
+	
+	let alpha = alpha0;
+	let dalpha = (alpha1-alpha0)/dur;
+
+	let angleX = rand(0,360);
+	let angleY = rand(0,360);
+	let angleZ = rand(0,360);
+	let Xrot = rand(-3,3);
+	let Yrot = rand(-3,3);
+	let Zrot = rand(-3,3);
+	r/=255; g/=255; b/=255; //convert to a ratio
+	
+	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjPrim_SetTexture(obj, dirimg~"Effect/"~type~".png");
+	ObjSprite2D_SetSourceRect(obj,0, 0, 255, 255);
+	Obj_SetRenderPriorityI(obj,60); //44
+	ObjSprite2D_SetDestCenter(obj);
+	ObjRender_SetBlendType(obj,BLEND_ADD_RGB);
+	ObjRender_SetPosition(obj,x,y,0);
+
+	task Update{
+		while(!Obj_IsDeleted(obj) && !Obj_IsDeleted(followobj) && alpha>=0 && !(ds<0 && s<s1) ){ // && (ds>0&&s<=s1)||(s>=s1) ){
+			ObjRender_SetColor(obj,alpha*r,alpha*g,alpha*b);
+			ObjRender_SetScaleXYZ(obj,s,s,s);
+			ObjRender_SetAngleXYZ(obj,angleX,angleY,angleZ);
+			
+			angleX+=Xrot;
+			angleY+=Yrot;
+			angleZ+=Zrot;
+			alpha+=dalpha;
+			s+=ds; //+=0.008 //-=0.04
+			
+			ObjRender_SetPosition(obj,ObjRender_GetX(followobj),ObjRender_GetY(followobj),0);
+			
+			yield; //t+=dt;
+		}
+		Obj_Delete(obj);
+	}
+	
+	Update;
+	return obj;
+}
+
+
+
+
+//use dx,dy instead of s,a
+function EffectParticleB1(x,y,dx,dy,type,r,g,b){
+	let speed = (dx^2+dy^2)^0.5;
+	let angle = atan2(dy,dx);
+	return EffectParticleA1(x,y,speed,angle,type,r,g,b);
+}
+function EffectParticleB2(x,y,dx,dy,type,dur,s0,s1,r,g,b){
+	let speed = (dx^2+dy^2)^0.5;
+	let angle = atan2(dy,dx);
+	return EffectParticleA2(x,y,speed,angle,type,dur,s0,s1,r,g,b);
+}
+function EffectParticleB3(x,y,dx,dy,type,dur,s0,s1,alpha0,alpha1,r,g,b){
+	let speed = (dx^2+dy^2)^0.5;
+	let angle = atan2(dy,dx);
+	return EffectParticleA3(x,y,speed,angle,type,dur,s0,s1,alpha0,alpha1,r,g,b);
+}
+
+
+
+
+//////////////////////////////////////////////////
+//MISC FUNCTIONS
+//////////////////////////////////////////////////
+
+function SetEffectSmall(obj){
+	ObjSprite2D_SetSourceRect(obj,0, 0, 63, 63);
+	ObjSprite2D_SetDestCenter(obj);
+}
+function SetEffectSource(obj,x0,y0,x1,y1){
+	ObjSprite2D_SetSourceRect(obj,x0, y0, x1, y1);
+	ObjSprite2D_SetDestCenter(obj);
+}
+
+
+
+
+
+
+
+
+
+
+
+//Arbitrary glowy effect
+function EffectGlowA1(x,y,time,scale0,scale1, texture,rect,color){
+	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjRender_SetBlendType(obj,BLEND_ADD_ARGB);
+	Manage;
+	return obj;
+	
+	task Manage{
+		let scale = scale0;
+		let scaleinc = (scale1-scale0)/time;
+		let alpha = 255;
+		let R = color[0]; let G = color[1]; let B = color[2]; let A;
+		let x0 = rect[0]; let y0 = rect[1]; let x1 = rect[2]; let y1 = rect[3];
+		
+		ObjPrim_SetTexture(obj, texture);
+		ObjSprite2D_SetSourceRect(obj, x0, y0, x1, y1);
+		ObjSprite2D_SetDestCenter(obj);
+		Obj_SetRenderPriorityI(obj,23);
+		ObjRender_SetPosition(obj,x,y,0);
+		ObjRender_SetScaleXYZ(obj,scale,scale,0);
+		
+		task SafeColor{			
+			ObjRender_SetAlpha(obj,0);
+			ObjRender_SetRGB(obj,R,G,B);
+			ObjRender_SetColor(obj,0,0,0);
+			yield;
+			if(!Obj_IsValueExists(obj,"AlphaHandler")){
+				alternative(ObjRender_GetBlendType(obj))
+				case(BLEND_ALPHA,BLEND_ADD_ARGB){
+					ObjRender_SetRGBA(obj,R,G,B,alpha);
+				}others{
+					ObjRender_SetRGB(obj,R,G,B);
+				}
+			}
+		}SafeColor;
+		
+		loop(time){
+			scale+=scaleinc;
+			ObjRender_SetScaleXYZ(obj,scale,scale,0);
+			
+			if(!Obj_IsValueExists(obj,"AlphaHandler")){
+				alpha-=255/time;
+				ObjRender_SetTrueAlpha(obj,alpha);
+			}
+			yield;
+		}
+		Obj_Delete(obj);
+	}
+}
+
+
+//Attach a glowy effect to an object
+function EffectGlowB1(tobj,time, scale0,scale1, texture,rect,color){
+	let obj = EffectGlowA1(ObjRender_GetX(tobj),ObjRender_GetY(tobj),time,scale0,scale1, texture,rect,color);
+	Manage;
+	return obj;
+	task Manage{
+		loop(time){
+			ObjRender_SetPosition(obj,ObjRender_GetX(tobj),ObjRender_GetY(tobj),0); //didn't originally do this for some reason?
+			yield;
+		}
+		Obj_Delete(obj);
+	}
+}
+
+
+//Same as A1 but with spinning, since it's such a good trick
+function EffectGlowA2(x,y, time, scale0,scale1, alpha0,alpha1, spin, texture,rect,color){
+	let obj = EffectGlowA1(x,y,time,scale0,scale1, texture,rect,color);
+	Manage;
+	return obj;
+	task Manage{
+		Obj_SetValue(obj,"AlphaHandler","A2");
+		let dalpha = (alpha1-alpha0)/time;
+		let alpha = alpha0;
+		let R = color[0]; let G = color[1]; let B = color[2]; let A;
+		loop(time){
+			ObjRender_SetAngleZ(obj,ObjRender_GetAngleZ(obj)+spin);
+			alpha += dalpha;
+			ObjRender_SetTrueAlpha(obj,alpha);
+			yield;
+		}
+		Obj_Delete(obj);
+	}
+}
+

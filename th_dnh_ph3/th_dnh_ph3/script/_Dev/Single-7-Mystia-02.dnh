@@ -1,0 +1,177 @@
+#TouhouDanmakufu[Single]
+#ScriptVersion[3]
+#Title["(Mystia 2) Lure Song \"Escape the Night\""]
+#Text["series 7: scales with difficulty"] 
+#BGM["./bgm/bgm - Deaf to All but the Song.ogg"]
+#System["./system/Andi_System.txt"]
+#Background["./system/Background/Mystia/BG_work.txt"]
+
+#include "./Index.txt"
+
+let timer = 47; //37
+let drate = 24; //24
+let mlife = 2000; //2000
+
+@Event
+{
+	alternative(GetEventType())
+	case(EV_REQUEST_LIFE){				SetScriptResult(mlife);		}
+	case(EV_REQUEST_SPELL_SCORE){		SetScriptResult(5000000);	}
+	case(EV_REQUEST_TIMER) {			SetScriptResult(timer*60);	}
+	case(EV_REQUEST_IS_DURABLE_SPELL) {	SetScriptResult(false);		}
+}
+@Initialize
+{
+	if(noPlural){	SetDifficultyD(HARD); }
+	alternative(rank)
+	case(RANK_EASY){	SetCommonData("CurrentSC","Advertising \"Night-Vision Eels\"");}
+	case(RANK_NORM){	SetCommonData("CurrentSC","Lure Song \"Night Refuge\"");}
+	case(RANK_HARD){	SetCommonData("CurrentSC","Lure Song \"Escape the Night\"");}
+	others         {	SetCommonData("CurrentSC","Night Blindness \"Night Sparrow's Siren Song\"");}
+
+	
+	SetShotAutoDeleteClip(32,32,32,32);
+	
+	// boss = spawnBoss();
+	boss = spawnBossBlank("Mystia Lorelai");
+	renderMystiaIN(boss,1);
+	
+	MainTask;
+	
+
+}
+@MainLoop
+{
+
+	if(ObjEnemy_GetInfo(boss, INFO_LIFE) <= 0 && !finishing)
+	{
+		finishing = true;
+		DropItemsSpellEnd;
+		TBreakSpell([]);
+	}
+	else {
+		SetBossHitbox(boss,ex,ey);
+	}
+	frame++;
+	yield;
+}
+
+
+task MainTask {
+	ObjEnemy_SetDamageRate(boss,0,0);
+	ObjMove_SetDestAtFrame(boss, cx, cy-100, 60); //cy-120
+	
+	SetSpellCard;
+	
+	
+	ObjEnemyBossScene_StartSpell(objScene);
+	ObjEnemyBossScene_SetSpellTimer(objScene,timer*60); //5760
+	
+	//SetCaution;
+	// TSpellImmune;
+	Aura(boss,255,64,255,64);
+	SetMagicCircleAlpha(64,64);
+
+	wait(90);
+		
+	Tmovement(cx-120,cx+120, cy-90,cy-60, 60,240, [MOVE_PLAYERBIAS,2,0,MOVE_MAXSPEED,1.5] );
+	ObjEnemy_SetDamageRate(boss,drate,drate/3);
+	frame = 0;
+	
+	
+	TShoot;
+	
+}
+
+
+
+
+task TShoot{
+	wait(60);
+
+	let shot; 
+	
+	let gap;
+	let diff = rank();	
+	alternative(diff)
+	case(RANK_EASY){	gap=45;}
+	case(RANK_NORM){	gap=25;}
+	case(RANK_HARD){	gap=15;}
+	case(RANK_LUNA){	gap=10;}
+	others{ gap=5;}
+
+	
+	let count=0; let a0;
+	let fog = NightBlindA1(600,600,300, 0,0,300); //not active yet
+	
+	while(!Obj_IsDeleted(boss)){
+		
+		//Create familiars
+		ascent(i in 0..10){
+			let fam = SpawnFamiliarC1(ex,ey,"blue",150+50*diff);
+			ObjMove_AddPatternA2(fam,0,3.5,15+36*i, -0.05, 0.55/cos(((|i-4.5|))), 1.25);
+			ObjMove_AddPatternA2(fam,60,NO_CHANGE,NO_CHANGE, -0.15, 0.25/cos(((|i-4.5|))), 0.75);
+			SE_Play(se_fam,100);
+			TFamShoot(fam);
+			//Each familiar's shots
+			task TFamShoot(fam){
+				wait(30); let shot; let fx; let fy; let fa; let off=0;
+				while(!Obj_IsDeleted(fam) && !isOffScreen(fam)){
+					fx = ObjMove_GetX(fam); fy = ObjMove_GetY(fam); fa = ObjMove_GetAngle(fam);
+					ascent(i in 0..2){
+						shot = CreateShotA2(fx,fy,0,fa+180+120*i+off, 0.005,1.0, SCALE_BLUE,5); //1.5
+						CheckShot(shot,30);
+					}
+					ascent(i in 0..2){
+						shot = CreateShotA2(fx,fy,0,fa+180*i+off, 0.015,1.1, SCALE_RED,10); //2
+						CheckShot(shot,30);
+					}
+					wait(gap);
+					off += 5*gap;
+				}
+				Obj_Delete(fam);
+			}//end of familiars' shots
+			wait(3);
+		}
+		wait(30);
+		
+		//Tighten night blindness around Mystia
+		// ObjFog_SetTargAtFrameA2(fog,boss,150,255,360); //200,255,180
+		ObjFog_SetTargAtFrameA1(fog,boss,180); //360
+		ObjFog_SetRadiusAtFrame(fog,150+50*(3-rank),240); //150,360
+		ObjFog_SetAlphaAtFrame(fog,255-isEasy*64,240); //180
+		SetAttackPose(POSE_SET);
+		SE_Play(se_charge2,100);
+		EffectBurstOutB2 (boss,2,175,2.5,"MUSIC",200,64,200);
+		EffectBurstInB2 (boss,2,275,10.5,"MUSIC",200,64,200);
+		
+		wait(120); //120
+		SetAttackPose(POSE_END);
+		wait(60); //20
+		
+		//Aimed wing of big shots
+		let row; let vary;
+		ascent(f in 0..300){
+			if(f%5==0){
+				a0 = GetAngleToPlayer(boss);
+				row = 2*sin(f/5*45);
+				ascent(i in 0..3){
+					vary = f/300*(|sin(f*720/300)|)*i/2;
+					shot = CreateShotA2(ex,ey, 1+3.5*vary,  a0+row*(20*3/diff+10), -0.1, 1+1.5*vary,   BALL_O_BLUE,10);
+				}
+				SE_Play(se_shot,60);
+			}
+			yield;
+		}
+
+		//Night blindness loosens, returns to player
+		ObjFog_SetTargAtFrameA2(fog,GetPlayerObjectID,300,64,360); //240
+	
+		wait(180);
+	}
+	
+	
+	
+}
+
+

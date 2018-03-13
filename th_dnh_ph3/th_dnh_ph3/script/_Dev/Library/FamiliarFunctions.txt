@@ -1,0 +1,190 @@
+function createFam(x,y,life,size,type,collision){ // From TalosMistake's Yuyuko script
+	let obj = ObjEnemy_Create(OBJ_ENEMY);
+	let shot;
+	let c = 0;
+	let color = [0,0,0];
+	let colorstring = GetCharColor(type);
+	if(type<=7){color = GetFamColor(type);}
+	ObjEnemy_Regist(obj);
+	ObjMove_SetPosition(obj,x,y);
+	ObjEnemy_SetLife(obj,life);
+	ObjEnemy_SetDamageRate(obj,100,100);
+	Control;
+	DrawFam(1);
+	if(collision==false){
+		Obj_SetValue(obj,"HomingOrNot",0);
+	}
+	Obj_SetValue(obj,"FamColor",colorstring);
+	return obj;
+	
+	
+	task Control{	
+		while(!Obj_IsDeleted(obj)){
+			c++;
+			ObjRender_SetY(obj,ObjMove_GetY(obj)+0.1*sin(c*5));
+			if(ObjEnemy_GetInfo(obj,INFO_LIFE) <=0){
+				SE_Play(paf,90); //enep_02
+			//	FamExplode(ObjMove_GetX(obj),ObjMove_GetY(obj),0.7,colorstring);
+
+				Obj_Delete(obj);
+			}
+			if(collision){
+				ObjEnemy_SetIntersectionCircleToShot(obj,ObjMove_GetX(obj),ObjMove_GetY(obj),24*size);
+				ObjEnemy_SetIntersectionCircleToPlayer(obj,ObjMove_GetX(obj),ObjMove_GetY(obj),0*size);
+				/*if(!IsPlayerSpellActive){
+				ObjEnemy_SetIntersectionCircleToShot(objBoss,ObjMove_GetX(obj),ObjMove_GetY(obj),18*size);
+				ObjEnemy_SetIntersectionCircleToPlayer(objBoss,ObjMove_GetX(obj),ObjMove_GetY(obj),12*size);
+				ObjEnemy_SetDamageRate(obj,100,10); 
+				}
+				else{
+				ObjEnemy_SetDamageRate(obj,10,10); 
+				}*/
+			}
+			yield;
+		}
+		Obj_Delete(obj);
+	}
+	
+	task DrawFam(p){
+		let fam=ObjPrim_Create(OBJ_SPRITE_2D);
+		Obj_SetValue(obj,"RenderObject",fam);
+		let px = 64;
+		let py = 0;
+		let img=CSD~"../img/Fam.png";
+		ObjPrim_SetTexture(fam,img);
+		if(type<=3){ObjSprite2D_SetSourceRect(fam,px*type,0,px*(type+1),64);}
+		else if(type<=7){ObjSprite2D_SetSourceRect(fam,px*type,64,px*(type+1),128);}
+		ObjRender_SetPosition(fam,x,y,0);
+		ObjRender_SetScaleXYZ(fam,size,size,0);
+		ObjSprite2D_SetDestCenter(fam);
+		ObjRender_SetBlendType(fam,BLEND_ALPHA);
+		if(type==10){ObjRender_SetAlpha(fam,0);}
+		if(p==0){
+			ObjRender_SetBlendType(fam,BLEND_ADD_ARGB);
+			Obj_SetRenderPriority(fam,0.3);
+			ascent(i in 0..25){
+				if(Obj_IsDeleted(obj) || Obj_IsDeleted(boss)){Obj_Delete(fam);}
+				ObjRender_SetPosition(fam,ObjMove_GetX(obj),ObjMove_GetY(obj),0);
+				ObjRender_SetScaleXYZ(fam,size/2+i*0.05,size/2+i*0.05,0);
+				ObjRender_SetColor(fam,125-i*5.1,125-i*5.1,125-i*5.1);
+				yield;
+			}
+			Obj_Delete(fam);
+		}
+		if(p==1){
+			while(!Obj_IsDeleted(obj) && !Obj_IsDeleted(boss)){
+				if(Obj_GetValueD(obj,"IsDeleting",false)){yield;}
+				ObjRender_SetPosition(fam,ObjMove_GetX(obj),ObjMove_GetY(obj),0);
+				ObjRender_SetAngleXYZ(fam,0,0,c*3);
+				yield;
+			}
+			Obj_Delete(fam);
+		}
+	}
+}
+	
+function FamExpan(px,py,maxv,t,r,g,b){
+	let obj=ObjPrim_Create(OBJ_SPRITE_2D);
+	let img=CSD~"../img/charge.png";
+	let scale = 0;
+	let v = 0;
+	let malpha = 255/t;
+	ObjPrim_SetTexture(obj,img);
+	ObjSprite2D_SetSourceRect(obj,0,0,128,128);
+	ObjSprite2D_SetDestCenter(obj);
+	ObjRender_SetPosition(obj,px,py,0);
+	ObjRender_SetColor(obj,r,g,b);
+	Obj_SetRenderPriorityI(obj,25);
+	task Expan{
+		descent(i in 0..t){
+			if(Obj_IsDeleted(boss)){break;}
+			ObjRender_SetAlpha(obj,malpha*i);
+			v = (i*maxv/2)/(t*t);
+			scale += v;
+			ObjRender_SetScaleXYZ(obj,scale,scale,0);
+			yield;
+		}
+		Obj_Delete(obj);
+	}
+	Expan;
+}
+
+function FamFadeDelete(obj,t){
+	let fam = Obj_GetValueD(obj,"RenderObject",obj);
+//	let obj=ObjPrim_Create(OBJ_SPRITE_2D);
+//	let img=CSD~"../img/charge.png";
+	let scale = ObjRender_GetScaleX(fam);
+	let v = 0; let maxv = ObjRender_GetScaleX(obj)/t;
+	let malpha = 255/t;
+
+	Obj_SetValue(obj,"IsDeleting",true);
+	task Expan{
+		descent(i in 0..t){
+			if(Obj_IsDeleted(boss)){break;}
+			ObjRender_SetAlpha(fam,malpha*i);
+			v = (i*maxv/2)/(t*t);
+			scale += v;
+			//scale*=1.1;
+			//ObjRender_SetScaleXYZ(fam,scale,scale,0);
+			//ObjRender_SetAlpha(fam,255-malpha*i);
+			yield;
+		}
+		Obj_Delete(obj);Obj_Delete(fam);
+	}
+	Expan;
+}
+
+function FamExpandDelete(obj,maxv,t){
+	let fam=Obj_GetValueD(obj,"RenderObject",obj);
+	let scale = ObjRender_GetScaleX(fam);
+	let v = 0;
+	let malpha = Obj_GetValueD(obj,"Alpha",Obj_GetValueD(fam,"Alpha",255));
+	let dalpha = malpha/t;
+	Obj_SetRenderPriorityI(fam,25);
+	task Expan{
+		descent(i in 0..t){
+			if(Obj_IsDeleted(boss)){break;}
+			ObjRender_SetAlpha(fam,dalpha*i);
+			v = (i*maxv/2)/(t*t);
+			scale += v;
+			ObjRender_SetScaleXYZ(fam,scale,scale,0);
+			yield;
+		}
+		Obj_Delete(obj); Obj_Delete(fam);
+	}
+	Expan;
+}
+
+
+
+let FAM_WHITE = 0; 
+let FAM_RED = 1; 
+let FAM_GREEN = 2;
+let FAM_BLUE = 3;
+let FAM_YELLOW = 4;
+let FAM_PINK = 5;
+let FAM_ORANGE = 6;
+let FAM_BLACK = 7;
+let FAM_INVIS = 10;
+	
+function GetFamColor(type){
+	if(type==0){return [255,255,255];}
+	if(type==1){return [255,32,32];}
+	if(type==2){return [32,255,32];}
+	if(type==3){return [32,32,255];}
+	if(type==4){return [255,255,32];}
+	if(type==5){return [128,32,255];}
+	if(type==6){return [255,128,32];}
+	else{return [255,255,255];}
+}
+	
+function GetCharColor(type){
+	if(type==0){return "WHITE";}
+	if(type==1){return "RED";}
+	if(type==2){return "GREEN";}
+	if(type==3){return "BLUE";}
+	if(type==4){return "YELLOW";}
+	if(type==5){return "PINK";}
+	if(type==6){return "ORANGE";}
+	else{return "BLACK";}
+}

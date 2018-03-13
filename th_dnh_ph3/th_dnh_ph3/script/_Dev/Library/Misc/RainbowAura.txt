@@ -1,0 +1,80 @@
+let mc = 0;
+let m_time = 0;
+
+
+
+task MarisaTail(boss,r1,r2,r3,r4,ang){ // task for the aura (rainbow aura)
+
+let auracolor = [0,0,0];
+alternative(auracolors)
+case("YELLOW"){
+auracolor = [252,255,100];
+}
+case("RED"){
+auracolor = [255,0,0];
+}
+case("BLUE"){
+auracolor = [0,0,255];
+}
+case("GREEN"){
+auracolor = [0,255,0];
+}
+case("PURPLE"){
+auracolor = [255,0,255];
+}
+case("ORANGE"){
+auracolor = [242,166,145];
+}
+case("AQUA"){
+auracolor = [0,255,255];
+}
+case("WHITE"){
+auracolor = [255,255,255];
+}
+case("BLACK"){
+auracolor = [0,0,0];
+}
+case("RUMIA"){
+auracolor = [185,94,178];
+}
+
+	if(GetCommonData("Effect",3)!=0){
+	m_time++;
+	mc++;
+	if(m_time%3==0){
+	let obj=ObjPrim_Create(OBJ_SPRITE_2D);
+	let img;
+	
+	ObjPrim_SetTexture(obj,bossgraphic);
+	ObjSprite2D_SetSourceRect(obj, r1, r2, r3, r4);
+	ObjSprite2D_SetDestCenter(obj);
+	ObjRender_SetBlendType(obj,BLEND_ADD_RGB);
+	ObjRender_SetScaleXYZ(obj,1,1,1);
+	ObjRender_SetAngleXYZ(obj,0,ang,0);
+	ObjRender_SetAlpha(obj,5);
+	if(!Obj_IsDeleted(boss)){
+	ObjRender_SetPosition(obj,ObjRender_GetX(boss),ObjRender_GetY(boss),0);
+	}
+	if(ObjRender_GetX(boss)==0 && ObjRender_GetY(boss) ==0){Obj_Delete(obj);}
+	Obj_SetRenderPriority(obj,0.3);
+	ManageScale;
+	ManageAlpha;
+	task ManageScale{
+		ascent(i in -0..15){
+		ObjRender_SetScaleXYZ(obj,1+i*0.05,1+i*0.05,1);
+		wait(1);
+		}
+		Obj_Delete(obj);
+	}
+	task ManageAlpha{
+		descent(i in 0..20){
+		if(!Obj_IsDeleted(boss)){
+		ObjRender_SetColor(obj,auracolor[0]*i/20,auracolor[1]*i/20,auracolor[2]*i/20);
+		wait(1);
+		}
+		}
+		Obj_Delete(obj);
+	}
+	}
+	}
+	}

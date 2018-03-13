@@ -1,0 +1,437 @@
+
+///////////////////////////////////////////////////////////////
+//Boss functions
+///////////////////////////////////////////////////////////////
+function spawnBoss() {
+	WriteLog("Resources: Creating boss object");
+	let boss = ObjEnemy_Create(OBJ_ENEMY_BOSS);
+	ObjEnemy_Regist(boss);
+
+	let imgBoss = dirgizmo~"Andi.png";
+	let x0 = 1; let y0 = 1; let x1 = 48; let y1 = 80; let dx = x1-x0; let dy = y1-y0;
+	
+	ObjPrim_SetTexture(boss, imgBoss);  //Setting the above image file as a texture to the enemy object(boss)
+	ObjSprite2D_SetSourceRect(boss, x0,y0,x1,y1); //Setting the rectangle coordinates in the enemy image to use(Left, Top, Right, Bottom). //64, 1, 127, 64
+	ObjSprite2D_SetDestCenter(boss);  //Positioning the center of the rectangle(w/texture) at (0, 0) on the stage(top left corner).
+	
+	//Setting animation frames
+	
+	let arr; let row;
+	arr	= [0,0,0,1,1,1,3,3,3,2,2,2,1,1,1];
+	row = 0;
+	ascent(i in 0..length(arr)){
+		ObjAnim_AddFrameA1(boss, ANIM_IDLE,  x0+x1*arr[i],y0,x1+dx*arr[i],y1);
+	}
+	ObjAnim_SetLoopPointA1(boss, ANIM_IDLE, 0);
+	
+	//arr = [0,0,0,1,1,1,2,2,2,3,3,3];
+	arr = [0,1,1,2,2,3];
+	row = 1;
+	ascent(i in 0..length(arr)){
+		ObjAnim_AddFrameA1(boss, ANIM_MOVE,  x0+x1*arr[i],y0+dy,x1+dx*arr[i],y1+dy);
+	}
+	ObjAnim_SetLoopPointA1(boss, ANIM_MOVE, length(arr)-1);
+	
+	arr = [2,2,1,1,0];
+	row = 1;
+	ascent(i in 0..length(arr)){
+		ObjAnim_AddFrameA1(boss,ANIM_MOVEEND,x0+x1*arr[i],y0+dy,x1+dx*arr[i],y1+dy);
+	}
+	ObjAnim_SetLoopPointA1(boss, ANIM_MOVEEND, length(arr)-1);
+	
+	arr = [4,5,6,6,7,7];
+	row = 2;
+	ascent(i in 0..length(arr)){
+		ObjAnim_AddFrameA1(boss, ANIM_ATTACK,  x0+x1*arr[i],y0+dy*2,x1+dx*arr[i],y1+dy*2);
+	}
+	ObjAnim_SetLoopPointA1(boss, ANIM_ATTACK, length(arr)-4);
+	
+	arr = [7,6,6,5,5,4];
+	row = 2;
+	ascent(i in 0..length(arr)){
+		ObjAnim_AddFrameA1(boss, ANIM_ATTACKEND,  x0+x1*arr[i],y0+dy*2,x1+dx*arr[i],y1+dy*2);
+	}
+	ObjAnim_SetLoopPointA1(boss, ANIM_ATTACKEND, length(arr)-1);
+	
+	
+	ObjAnim_FlipMoveImage(boss,true);
+	//ObjAnim_StartAnimationA1(boss, 10, 2);
+	ObjAnim_StartAnimationA1(boss, 10, 0);
+	
+	
+	//Set enemy name to display
+	EnemyName(boss, "Andi", 255, 180, 255);
+	
+	//LifeCircle(boss,boss);
+	UpdatePositions; //start updating positions
+	WriteLog("Resources: Returning boss object");
+	return boss;
+}
+
+function spawnBossBlank(name){
+	let boss = ObjEnemy_Create(OBJ_ENEMY_BOSS);
+	ObjEnemy_Regist(boss);
+	EnemyName(boss, name, 255, 180, 255);
+	UpdatePositions;
+	Obj_SetValue(boss,"IsUseCustAnimLib",false);
+	return boss;
+}
+
+let POSE_SET = -1; let POSE_END = 0;
+function SetAttackPose(dur){
+	if(Obj_GetValueD(boss,"IsUseCustAnimLib",true)){
+		if(dur>0){ObjAnim_SetAttackA2(boss, dur);}
+		else {ObjAnim_SetAttackA1(boss, dur==POSE_SET);}
+	}else{
+		if(dur==POSE_SET){Obj_SetValue(boss,"cast",1);}
+		else if(dur==POSE_END){Obj_SetValue(boss,"cast",0);}
+		else{
+			Obj_SetValue(boss,"cast",1);
+			task Manage{
+				loop(dur){yield;}
+				Obj_SetValue(boss,"cast",0);
+			}
+			Manage;
+		}
+	}
+}
+
+//Set boss to use "blurred" version of sprite, like Suwako or Murasa
+//Also disables her hitbox while blurred
+function SetBossBlur(blur){
+	if(Obj_GetValueD(boss,"DisplayName","Andi")=="Andi"){
+		let yoff; let frames; let frame;
+		if(blur){yoff=255;}else{yoff=0;}
+		
+		let types = [ANIM_IDLE,ANIM_MOVE,ANIM_MOVEEND,ANIM_ATTACK,ANIM_ATTACKEND]; let type;
+		let rows  = [0,1,1,2,2]; let row;
+		ascent(t in 0..length(types)){
+			type = types[t]; row = rows[t];
+			frames = GetAnimationFrames(boss, type);
+			ascent(i in 0..length(frames)){
+				frame = frames[i];
+				frame[1] = 1+80*row+yoff;
+				frame[3] = 80*(row+1)+yoff;
+				frames[i] = frame;
+			}
+			Obj_SetValue(boss,"anim_"~type,frames);
+		}
+		IsBossIntersectionEnable = !blur;
+		return frames;
+	}else{
+		IsBossIntersectionEnable = !blur;
+		if(blur){
+			ObjRender_SetAlpha(boss,64);
+			let obj = CreateSprite2(dirimg~"mist.png", 24, [0, 0, 128, 128], [64, 64]);
+			Obj_SetValue(boss,"BlurObject",obj);
+			ObjRender_SetColor(obj, 255, 0, 64); ObjRender_SetAlpha(obj, 255 );
+			ObjRender_SetBlendType(obj, BLEND_ADD_ARGB);
+			task TFollow{
+				let i=0;
+				while(!IsBossIntersectionEnable && !Obj_IsDeleted(obj)) {
+					ObjRender_SetPosition(obj, ex, ey, 0);
+					ObjRender_SetAngleZ(obj, i);
+					i++; yield;
+				}
+				Obj_Delete(obj);
+			}
+			TFollow;
+			return obj;
+		}
+		else{
+			ObjRender_SetAlpha(boss,255);
+			if(Obj_IsValueExists(boss,"BlurObject")){Obj_Delete(Obj_GetValue(boss,"BlurObject"));}
+		}
+	}
+}
+
+let IsBossIntersectionEnable = true;
+function SetBossHitbox(boss,ex,ey){
+	if(IsBossIntersectionEnable){
+		ObjEnemy_SetIntersectionCircleToShot(boss, ex, ey, 32);
+		ObjEnemy_SetIntersectionCircleToPlayer(boss, ex, ey, 24);
+	}
+}
+
+task TSpellImmune{
+	let wasIntersection;
+	while(!Obj_IsDeleted(boss)){
+		while(!IsPlayerSpellActive){yield;}
+		wasIntersection = IsBossIntersectionEnable;
+		SetBossBlur(true);
+		while(IsPlayerSpellActive){yield;}
+		SetBossBlur(!wasIntersection);
+	}
+}
+
+function GetSwordTipX(){
+	let isAttackPose = Obj_GetValueD(boss, "anim_isattackplaying", false);
+	let dir = boolSign(ObjRender_GetScaleX(boss)<0);
+	if(!isAttackPose){ return ex+(17*dir); }
+	else { return ex+(14*dir); }
+}
+function GetSwordTipY(){	
+	let isAttackPose = Obj_GetValueD(boss, "anim_isattackplaying", false);
+	let dir = ObjRender_GetScaleX(boss)<0;
+	if(!isAttackPose){ return ey-26; }
+	else { return ey-38; }
+}
+//TODO: slashing sprite
+
+//Makes sure px,py,ex,ey,etc are always up-to-date
+task UpdatePositions {
+	yield;
+//	let boss = GetEnemyBossObjectID();
+	// WriteLog("Resources: Started updating positions with boss "~ToString(boss));
+	while(!Obj_IsDeleted(boss)) {
+		px = GetPlayerX;
+		py = GetPlayerY;
+		ex = ObjMove_GetX(boss);
+		ey = ObjMove_GetY(boss);
+		// swdx = GetSwordTipX();
+		// swdy = GetSwordTipY();
+	//	WriteLog("Resources: Updated positions to "~IntToString(px)~","~IntToString(py)~","~IntToString(ex)~","~IntToString(ey));
+		yield;
+	}
+	// WriteLog("Resources: Stopped updating positions");
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//Task to handle boss movement with a large amount of flexibility - Andi//
+//////////////////////////////////////////////////////////////////////////
+let MOVE_DEFAULT	= 999900;	//Extra arguments (mutually exclusive):
+let MOVE_BIAS 		= 999901;	//	[MOVE_BIAS,xBiasPos,yBiasPos,xbias,ybias]
+let MOVE_PLAYERBIAS	= 999902;	//	[MOVE_PLAYERBIAS,xbias,ybias]
+								//Extra arguments (compatible):
+let MOVE_NEAR		= 999910;	//  [MOVE_NEAR,maxrad]
+let MOVE_FAR		= 999911;	//	[MOVE_FAR, minrad]
+let MOVE_PNLSPACE	= 999912;	//	[MOVE_PNLSPACE, personalspace]
+let MOVE_SPEED		= 999913;	//	[MOVE_SPEED,   spd] 			(*incompatible with MOVE_MAXSPEED)
+let MOVE_MAXSPEED	= 999914;	//	[MOVE_MAXSPEED,spd] 			(*incompatible with MOVE_SPEED)
+let MOVE_SMOOTH		= 999915;	//	[MOVE_SMOOTH,smoothness]
+let MOVE_WEIGHT		= 999916;	//TODO
+
+//Dictionary controls - use Obj_SetValue(boss,"key",value)
+//	"MoveDelay",N
+		//Set number of frames to wait before moving again - resets to del0 after moving
+		//After setting it once, it will be checked each frame; otherwise it will be checked after moving
+		//Set to -1 to wait indefinitely, 0 to move immediately
+
+task Tmovement(x1,x2, y1,y2, time,del0, exargs) {
+	
+	let movetype = MOVE_DEFAULT; 
+	let isBias; let xBiasPos; let yBiasPos; let xbias; let ybias; let isPlayer; let isNear; let maxrad; let isFar; let minrad; let isPnlSpace; let personalspace; let isSpd; let spd; let isMaxSpd; let mspd; let isSmooth; let smoothness;
+	let x; let y;
+	let del = del0; let checkdel = false;
+	
+	let numexargs = length(exargs);
+	if(numexargs>0){
+		isBias = checkarr(exargs,MOVE_BIAS);
+		if(isBias!=-1) {
+			xBiasPos = exargs[isBias+1];
+			yBiasPos = exargs[isBias+2];
+			xbias = exargs[isBias+3];
+			ybias = exargs[isBias+4];
+			movetype = MOVE_BIAS;
+		}
+		isPlayer = checkarr(exargs,MOVE_PLAYERBIAS);
+		if(isPlayer!=-1) {
+			movetype = MOVE_PLAYERBIAS;
+			xbias = exargs[isPlayer+1];
+			ybias = exargs[isPlayer+2];
+		}
+		isNear = checkarr(exargs,MOVE_NEAR);
+		if(isNear!=-1) {
+			maxrad = exargs[isNear+1];
+		}
+		isFar = checkarr(exargs,MOVE_FAR);
+		if(isFar!=-1) {
+			minrad = exargs[isFar+1];
+		}
+		isPnlSpace = checkarr(exargs,MOVE_PNLSPACE);
+		if(isPnlSpace!=-1){
+			personalspace = exargs[isPnlSpace+1];
+		}
+		isSpd = checkarr(exargs,MOVE_SPEED);
+		if(isSpd!=-1){
+			spd = exargs[isSpd+1];
+		}
+		isMaxSpd = checkarr(exargs,MOVE_MAXSPEED);
+		if(isMaxSpd!=-1){
+			spd = exargs[isMaxSpd+1];
+		}
+		isSmooth = checkarr(exargs,MOVE_SMOOTH);
+		if(isSmooth!=-1){
+			smoothness = exargs[isSmooth+1];
+		}
+	}else{isBias=-1;isPlayer=-1;isNear=-1;isSpd=-1;isMaxSpd=-1;isSmooth=-1;}
+
+	if(del0<1) { RaiseError("Delay needs to be positive or the program will freeze, baka"); }
+
+	let ok = false; let tries = 0;
+	while(!Obj_IsDeleted(boss)) {
+		while(!ok){
+			ok=true;
+			
+			alternative(movetype)
+			//Normal
+			case(MOVE_DEFAULT) {
+				x=rand(x1,x2); y=rand(y1,y2);
+			}
+			//Bias
+			case(MOVE_BIAS) {
+				x=(xBiasPos*xbias+rand(x1,x2))/(xbias+1);
+				y=(yBiasPos*ybias+rand(y1,y2))/(ybias+1);
+			}
+			//Above player
+			case(MOVE_PLAYERBIAS) {
+				x=(px*xbias+rand(x1,x2))/(xbias+1);
+				y=(py*ybias+rand(y1,y2))/(ybias+1);
+			}
+			
+			//Don't move farther than a certain distance each time
+			if(isNear!=-1 && getdist(ex,ey,x,y)>maxrad) {
+				ok=false;
+			}
+			//Move at least a certain distance each time
+			if(isFar!=-1  && getdist(ex,ey,x,y)<minrad) {
+				ok=false;
+			}
+			//Don't move too close to the player
+			if(isPnlSpace!=-1 && getdist(ex,ey,x,y)<personalspace && tries < 100) {
+				ok=false; tries++;
+			}
+		}
+		ok=false; tries=0;
+			
+		
+		//Speed/max speed
+		if(isSpd!=-1 || (isMaxSpd!=-1 && getdist(ex,ey,x,y)/time>spd)){
+			ObjMove_SetDestAtSpeed(boss, x, y, spd);
+		}else{ //Default (frames)
+			ObjMove_SetDestAtFrame(boss, x, y, time);
+		}
+		
+		//Smooth movement at start and end
+		if(isSmooth!=-1){ 
+			smooth(boss,time,smoothness);
+		}
+		
+		if(!checkdel && !Obj_IsValueExists(boss,"MoveDelay")){
+			wait(del);
+		}else{
+			checkdel = true;
+			while(del!=0){
+				del = Obj_GetValueD(boss,"MoveDelay",del-1);
+				yield;
+			}
+			del = del0;	Obj_SetValue(boss,"MoveDelay",del0);
+		}
+	}		
+}
+
+//Sparen
+task EnemyName(obj, name, r, g, b){ //Blurred originally
+  let objText = ObjText_Create();
+  //ObjText_SetFontSize(objText,20);//pre23
+  ObjText_SetFontSize(objText,12);//new
+  InstallFont("./Russell Square Regular.ttf");
+  ObjText_SetFontType(objText,"Russell Square Regular");//Helvetica: Use 14 pt font, All caps.
+  ObjText_SetFontBold(objText, true);
+  ObjText_SetFontColorTop(objText, 255, 255, 255);
+  ObjText_SetFontColorBottom(objText, 255, 255, 255);
+  ObjText_SetFontBorderType(objText, BORDER_FULL);
+  ObjText_SetFontBorderColor(objText,255, 255, 255);
+  ObjText_SetFontBorderWidth(objText, 1);
+  Obj_SetRenderPriority(objText, 0.8);
+  ObjRender_SetX(objText, 5);
+  ObjRender_SetY(objText, 12);//Orig 15, but some spell names were too long... (edited in conjunction with cutin.h)
+  ObjText_SetFontBorderColor(objText, r, g, b);
+  ObjText_SetText(objText, name);
+  Obj_SetValue(obj,"DisplayName",name);
+
+  while(ObjEnemy_GetInfo(obj,INFO_LIFE)>0){yield;}
+  wait(12);//It can only handle 12 yields, currently, before the script is closed.
+  Obj_Delete(objText);
+}
+
+
+/*
+task LifeCircle(renderObj, enemyObj){
+	let path = root~"/system/img/Default_System.png";
+	let obj = ObjPrim_Create(OBJ_PRIMITIVE_2D); //lifebar base
+	let objb = ObjPrim_Create(OBJ_PRIMITIVE_2D); //actual life bar
+	let obj2 = ObjPrim_Create(OBJ_SPRITE_LIST_2D); //boss stars
+	let obj3 = ObjPrim_Create(OBJ_SPRITE_LIST_2D); //life bar knobs
+	ObjPrim_SetPrimitiveType(obj, PRIMITIVE_TRIANGLESTRIP);
+	ObjPrim_SetPrimitiveType(objb, PRIMITIVE_TRIANGLESTRIP);
+	ObjPrim_SetTexture(obj, root~"/system/img/lifebar.png");
+	ObjPrim_SetTexture(objb, root~"/system/img/lifebar.png");
+	ObjPrim_SetTexture(obj2, path);
+	ObjPrim_SetTexture(obj3, root~"/system/img/lifebar.png");
+	Obj_SetRenderPriority(obj, 0.31);
+	Obj_SetRenderPriority(objb, 0.32);
+	Obj_SetRenderPriority(obj2, 0.7);
+	Obj_SetRenderPriority(obj3, 0.33);
+
+	let lastRemStep = -1;
+	let lifeRateRender = 0;
+
+	let vertexcount = 64;
+	let innerrad = 60; //inner radius of the circle
+	let outerrad = 68; //outer radius of the circle
+
+	let objScene = ID_INVALID;
+	let bossEnemy = [];
+
+	ObjPrim_SetVertexCount(obj, vertexcount);
+	ObjPrim_SetVertexCount(objb, vertexcount);
+
+	let lifeM = ObjEnemy_GetInfo(enemyObj, INFO_LIFE); //starting life
+	loop{
+		ObjSpriteList2D_ClearVertexCount(obj2);
+		ObjSpriteList2D_ClearVertexCount(obj3);
+		if(!Obj_IsDeleted(enemyObj)){
+			if(length(GetEnemyBossObjectID) > 0){
+				ObjRender_SetAlpha(obj, 256);
+				ObjRender_SetAlpha(objb, 256);
+				ObjRender_SetAlpha(obj2, 256);
+				ObjRender_SetAlpha(obj3, 256);
+			}else{
+				ObjRender_SetAlpha(obj, 0);
+				ObjRender_SetAlpha(objb, 0);
+				ObjRender_SetAlpha(obj2, 0);
+				ObjRender_SetAlpha(obj3, 0);
+			}
+
+			let life = ObjEnemy_GetInfo(enemyObj, INFO_LIFE); //life remaining
+			ascent(i in 0..vertexcount/2){
+		        let indexvert = i*2;
+		        let angle = i*360/(vertexcount*0.5-1) - 90;
+		        let angle2 = -90-(life/lifeM)*i*360/(vertexcount*0.5-1);
+		        ObjPrim_SetVertexPosition(obj, indexvert+0, ObjRender_GetX(renderObj)+innerrad*cos(angle), ObjRender_GetY(renderObj)+innerrad*sin(angle), 0);
+		        ObjPrim_SetVertexPosition(obj, indexvert+1, ObjRender_GetX(renderObj)+outerrad*cos(angle), ObjRender_GetY(renderObj)+outerrad*sin(angle), 0);
+
+		        ObjPrim_SetVertexUVT(obj, indexvert+0, 10, 0);
+		        ObjPrim_SetVertexUVT(obj, indexvert+1, 20, 32);
+
+
+		        ObjPrim_SetVertexPosition(objb, indexvert+0, ObjRender_GetX(renderObj)+innerrad*cos(angle2), ObjRender_GetY(renderObj)+innerrad*sin(angle2), 0);
+		        ObjPrim_SetVertexPosition(objb, indexvert+1, ObjRender_GetX(renderObj)+outerrad*cos(angle2), ObjRender_GetY(renderObj)+outerrad*sin(angle2), 0);
+
+		        ObjPrim_SetVertexUVT(objb, indexvert+0, 0, 0);
+		        ObjPrim_SetVertexUVT(objb, indexvert+1, 10, 32);
+		    }
+		}else{
+			Obj_Delete(obj);
+			Obj_Delete(objb);
+			Obj_Delete(obj2);
+			Obj_Delete(obj3);
+			return;
+		}
+		yield;
+	}
+}
+*/
+

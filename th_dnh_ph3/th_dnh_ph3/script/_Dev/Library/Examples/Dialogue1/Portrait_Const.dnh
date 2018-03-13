@@ -1,0 +1,47 @@
+//Dialogue portrait library. Add all dialogue portraits here please
+
+//Reimu
+let Reimu1 = GetCurrentScriptDirectory() ~ "/IMG/Reimu1.png";
+let Reimu2 = GetCurrentScriptDirectory() ~ "/IMG/Reimu2.png";
+let Reimu3 = GetCurrentScriptDirectory() ~ "/IMG/Reimu3.png";
+let Reimu4 = GetCurrentScriptDirectory() ~ "/IMG/Reimu4.png";
+let Reimu5 = GetCurrentScriptDirectory() ~ "/IMG/Reimu5.png";
+let Reimu6 = GetCurrentScriptDirectory() ~ "/IMG/Reimu6.png";
+let Reimu7 = GetCurrentScriptDirectory() ~ "/IMG/Reimu7.png";
+let Reimu8 = GetCurrentScriptDirectory() ~ "/IMG/Reimu8.png";
+let Reimu9 = GetCurrentScriptDirectory() ~ "/IMG/Reimu9.png";
+let Reimu10 = GetCurrentScriptDirectory() ~ "/IMG/Reimu10.png";
+let Reimu11 = GetCurrentScriptDirectory() ~ "/IMG/Reimu11.png";
+let Reimu12 = GetCurrentScriptDirectory() ~ "/IMG/Reimu12.png";
+
+//Player Mokou
+let PMokou1 = GetCurrentScriptDirectory() ~ "/IMG/PMokou1.png";
+let PMokou2 = GetCurrentScriptDirectory() ~ "/IMG/PMokou2.png";
+let PMokou3 = GetCurrentScriptDirectory() ~ "/IMG/PMokou3.png";
+let PMokou4 = GetCurrentScriptDirectory() ~ "/IMG/PMokou4.png";
+let PMokou5 = GetCurrentScriptDirectory() ~ "/IMG/PMokou5.png";
+let PMokou6 = GetCurrentScriptDirectory() ~ "/IMG/PMokou6.png";
+let PMokou7 = GetCurrentScriptDirectory() ~ "/IMG/PMokou7.png";
+let PMokou8 = GetCurrentScriptDirectory() ~ "/IMG/PMokou8.png";
+let PMokou9 = GetCurrentScriptDirectory() ~ "/IMG/PMokou9.png";
+let PMokou10 = GetCurrentScriptDirectory() ~ "/IMG/PMokou10.png";
+let PMokou11 = GetCurrentScriptDirectory() ~ "/IMG/PMokou11.png";
+let PMokou12 = GetCurrentScriptDirectory() ~ "/IMG/PMokou12.png";
+
+//Mokou
+let Mokou1 = GetCurrentScriptDirectory() ~ "/IMG/Mokou1.png";
+let Mokou2 = GetCurrentScriptDirectory() ~ "/IMG/Mokou2.png";
+let Mokou3 = GetCurrentScriptDirectory() ~ "/IMG/Mokou3.png";
+let Mokou4 = GetCurrentScriptDirectory() ~ "/IMG/Mokou4.png";
+let Mokou5 = GetCurrentScriptDirectory() ~ "/IMG/Mokou5.png";
+let Mokou6 = GetCurrentScriptDirectory() ~ "/IMG/Mokou6.png";
+let Mokou7 = GetCurrentScriptDirectory() ~ "/IMG/Mokou7.png";
+let Mokou8 = GetCurrentScriptDirectory() ~ "/IMG/Mokou8.png";
+let Mokou9 = GetCurrentScriptDirectory() ~ "/IMG/Mokou9.png";
+let Mokou10 = GetCurrentScriptDirectory() ~ "/IMG/Mokou10.png";
+let Mokou11 = GetCurrentScriptDirectory() ~ "/IMG/Mokou11.png";
+let Mokou12 = GetCurrentScriptDirectory() ~ "/IMG/Mokou12.png";
+
+//Keine
+let Keine1 = GetCurrentScriptDirectory() ~ "/IMG/ExKeine1.png";
+let Keine2 = GetCurrentScriptDirectory() ~ "/IMG/ExKeine2.png";

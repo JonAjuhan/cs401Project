@@ -1,0 +1,117 @@
+//Extended interpolation functions
+//Also see:
+//lerp, blerp, lerpa, qerp, bqerp
+//in Resources.txt
+
+
+
+
+//AJS - Does not always equal the ending value when t = 1
+function GetLinearBezierPoint(start,end,t) 
+{	//return (1-t)*start+t*end; //precise method
+	return start + t * (end - start);
+}
+//by Ultima
+//Used to generate smooth curves
+//t is a ratio from 0 to 1
+//Others are coordinates
+function GetQuadraticBezierPoint(start,control,end,t){
+	return (1 - t)^2 * start + 2*(1-t)*t * control + t^2 * end;
+}
+
+//First derivative of bezier curve
+//If the above was used to set position each frame, this would give velocity at each frame
+function GetQuadraticBezierDerivative(start,control,end,t){
+	return 2*(1-t)*(control-start)+2*t*(end-control);
+}
+//Second derivative of bezier curve
+//If etc etc, this would give acceleration
+function GetQuadraticBezierSecondDerivative(start,control,end,t){
+	return 2*(end-2*control+start);
+}
+
+//Curve with two control points
+function GetCubicBezierPoint(start,control,control2,end,t){
+	return (1-t)*GetQuadraticBezierPoint(start,control,control2,t) + t*GetQuadraticBezierPoint(control,control2,end,t);
+}
+function GetCubicBezierDerivative(start,control,control2,end,t){return (1-t)*GetQuadraticBezierDerivative(start,control,control2,t) + t*GetQuadraticBezierDerivative(control,control2,end,t);}
+function GetCubicBezierSecondDerivative(start,control,control2,end,t){return (1-t)*GetQuadraticBezierSecondDerivative(start,control,control2,t) + t*GetQuadraticBezierSecondDerivative(control,control2,end,t);}
+
+//Generalized function for curves with an arbitrary number of control points (>2)
+//Recursively reduces to composition of N quadratic bezier curves
+//Not efficient - the more points, the heavier the processing, so be careful!
+//Either control points (size of array) or sample points (times calling the function) should be kept minimal
+//Use nonrecursive versions instead unless absolutely necessary
+function GetBezierPoint(points,t) {
+	//Base case - quadratic bezier curve
+	if(length(points)==3){
+		return (1-t)^2*points[0] + 2*(1-t)*t*points[1] + t^2*points[2];		//points[0];
+	}
+	//Keep splitting it up
+	else{
+		return (1-t)*GetBezierPoint(slice(points,0,length(points)-1),t) + t*GetBezierPoint(slice(points,1,length(points)),t); 
+	}
+	
+}
+//Derivative of generalized curve - same warnings apply
+function GetBezierDerivative(points,t) {
+	if(length(points)==3){return 2*(1-t)*(points[1]-points[0])+2*t*(points[2]-points[1]);}
+	else{return (1-t)*GetBezierDerivative(slice(points,0,length(points)-1),t) + t*GetBezierDerivative(slice(points,1,length(points)),t); }	
+}
+//Second derivative of generalized curve - same warnings apply
+function GetBezierSecondDerivative(points,t) {
+	if(length(points)==3){return 2*(points[2]-2*points[1]+points[0]);}
+	else{return (1-t)*GetBezierDerivative(slice(points,0,length(points)-1),t) + t*GetBezierDerivative(slice(points,1,length(points)),t);}
+}
+
+//Turn an array of arrays of coordinates into two arrays, one for each coordinate
+//These can then be used for bezier shit
+//If there's a third thing in there like z or angle or something it gives you that too
+function SplitCoordinateArray(points){
+	let xcoords = [];let ycoords = [];let zcoords = [];let point;
+	ascent(i in 0..length(points)){
+		point = points[i];
+		xcoords = xcoords~point[0];
+		ycoords = ycoords~point[1];
+		if(length(point)>2){zcoords=zcoords~point[2];}
+	}
+	return [xcoords,ycoords,zcoords];
+}
+
+//Use bezier shit to get a point in 2D space
+//Also gives angle 'cause I'll probably want it
+//Takes separate arrays because splitting them into x and y is O(n)
+function GetBezierCoordinates(xcoords,ycoords,t){
+	let x = GetBezierPoint(xcoords,t);
+	let y = GetBezierPoint(ycoords,t);
+	let dx= GetBezierDerivative(xcoords,t);
+	let dy= GetBezierDerivative(ycoords,t);
+	let a = atan2(dx,dy);
+	return [x,y,a,dx,dy];
+}
+function GetLinearBezierCoordinates(x0,y0,x1,y1,t){ //see: blerp
+	let x = lerp(x0,x1,t);
+	let y = lerp(x0,x1,t);
+	let dx= x1-x0;
+	let dy= y1-y0;
+	let a = atan2(dx,dy);
+	return [x,y,a,dx,dy];
+}
+function GetQuadraticBezierCoordinates(x0,y0,x1,y1,x2,y2,t){
+	let x = GetQuadraticBezierPoint(x0,x1,x2,t);
+	let y = GetQuadraticBezierPoint(y0,y1,y2,t);
+	let dx= GetQuadraticBezierDerivative(x0,x1,x2,t);
+	let dy= GetQuadraticBezierDerivative(y0,y1,y2,t);
+	let a = atan2(dx,dy);
+	return [x,y,a,dx,dy];
+}
+function GetCubicBezierCoordinates(x0,y0,x1,y1,x2,y2,x3,y3,t){
+	let x = GetCubicBezierPoint(x0,x1,x2,x3,t);
+	let y = GetCubicBezierPoint(y0,y1,y2,y3,t);
+	let dx= GetCubicBezierDerivative(x0,x1,x2,x3,t);
+	let dy= GetCubicBezierDerivative(y0,y1,y2,y3,t);
+	let a = atan2(dx,dy);
+	return [x,y,a,dx,dy];
+}
+
+

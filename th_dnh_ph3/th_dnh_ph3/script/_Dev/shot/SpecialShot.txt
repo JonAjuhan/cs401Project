@@ -1,0 +1,54 @@
+let birdimg = GetCurrentScriptDirectory ~ "img/eff_bird.png";
+
+task addbirdgraphic(ID,Size,Delay){ //Use the ID for a bullet to "change" the graphic to a Mystia bird. Use a blue bullet.
+
+	let birdobj = ObjPrim_Create(OBJ_SPRITE_2D);
+
+	let birdsize = 0;
+	let birdanim = -1;
+	let delaytime = 0;
+
+	let shotcounter = 0;
+	let bangle = 0;
+
+	ObjPrim_SetTexture(birdobj,birdimg);
+	ObjSprite2D_SetDestCenter(ID);
+	Obj_SetRenderPriorityI(birdobj,50);
+	ObjRender_SetBlendType(birdobj,BLEND_ALPHA);
+	ObjSprite2D_SetDestRect(birdobj, -21, -35/2, 21, 35/2);
+
+	while(!Obj_IsDeleted(ID)){
+		birdanim++;
+		delaytime++;
+
+		if(delaytime>Delay){ shotcounter++; }
+		if(shotcounter>=9) {
+			PlaySE(sfx2);
+
+			let ball = CreateShotA2(ObjMove_GetX(ID),ObjMove_GetY(ID), 0, ObjMove_GetAngle(ID)-90, 0.04, 6, ARROWHEAD_BLUE, 10);
+
+			bangle+=21.3;
+			shotcounter=0;
+		}
+
+		if(delaytime==Delay){ Obj_SetVisible(ID,false); }
+
+		ascent(i in 0..4){
+			if(birdanim == (i*4) ){
+				ObjSprite2D_SetSourceRect(birdobj,i*40,0,40+i*40,35); break;
+			}
+		}
+		if(birdanim>=16){ birdanim = -1; }
+
+		if(birdsize<Size){ birdsize+=0.05; }
+
+
+		ObjRender_SetScaleXYZ(birdobj,birdsize,birdsize,birdsize);
+		ObjRender_SetPosition(birdobj, ObjMove_GetX(ID),  ObjMove_GetY(ID), 0);
+		ObjRender_SetAngleZ(birdobj,ObjMove_GetAngle(ID));
+
+		yield;
+
+	}
+	Obj_Delete(birdobj);
+}

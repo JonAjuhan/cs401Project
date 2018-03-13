@@ -1,0 +1,1959 @@
+//#include"..\selibrary.txt"
+
+//THE FOLLOWING IS FOR REFERENCE ONLY
+	/*
+	function ExplosionA1(objEnemy,type,circlecolor,objectcolor) { //Standard normal enemy explosion effect
+		if(type=="STAR") { NotifyEventAll(EV_EXPLODE,[[1.1],[objEnemy],objectcolor,circlecolor]); }
+		if(type=="MAGIC") { NotifyEventAll(EV_EXPLODE,[[1.2],[objEnemy],objectcolor,circlecolor]); }
+		if(type=="MAPLE") { NotifyEventAll(EV_EXPLODE,[[1.3],[objEnemy],objectcolor,circlecolor]); }
+		if(type=="SNOW") { NotifyEventAll(EV_EXPLODE,[[1.4],[objEnemy],objectcolor,circlecolor]); }
+		if(type=="CHERRY") { NotifyEventAll(EV_EXPLODE,[[1.5],[objEnemy],objectcolor,circlecolor]); }
+		if(type=="MUSIC") { NotifyEventAll(EV_EXPLODE,[[1.6],[objEnemy],objectcolor,circlecolor]); }
+		if(type=="FLOWER") { NotifyEventAll(EV_EXPLODE,[[1.7],[objEnemy],objectcolor,circlecolor]); }
+		if(type=="HEART") { NotifyEventAll(EV_EXPLODE,[[1.8],[objEnemy],objectcolor,circlecolor]); }
+				 "FEATHER"
+				 "HEXAGON"
+	}
+	function ExplosionA2(objEnemy,type,circlecolor,objectcolor) { //A slightly larger normal enemy explosion effect
+		if(type=="STAR") { NotifyEventAll(EV_EXPLODE,[[2.1],[objEnemy],objectcolor,circlecolor]); }
+		if(type=="MAGIC") { NotifyEventAll(EV_EXPLODE,[[2.2],[objEnemy],objectcolor,circlecolor]); }
+		if(type=="MAPLE") { NotifyEventAll(EV_EXPLODE,[[2.3],[objEnemy],objectcolor,circlecolor]); }
+		if(type=="SNOW") { NotifyEventAll(EV_EXPLODE,[[2.4],[objEnemy],objectcolor,circlecolor]); }
+		if(type=="CHERRY") { NotifyEventAll(EV_EXPLODE,[[2.5],[objEnemy],objectcolor,circlecolor]); }
+		if(type=="MUSIC") { NotifyEventAll(EV_EXPLODE,[[2.6],[objEnemy],objectcolor,circlecolor]); }
+		if(type=="FLOWER") { NotifyEventAll(EV_EXPLODE,[[2.7],[objEnemy],objectcolor,circlecolor]); }
+		if(type=="HEART") { NotifyEventAll(EV_EXPLODE,[[2.8],[objEnemy],objectcolor,circlecolor]); }
+	}
+	function ExplosionB1(objEnemy,type,circlecolor,objectcolor) { //Standard boss enemy explosion effect (All Stars will probably use this or RainbowB1 exclusively)
+		if(type=="STAR") { NotifyEventAll(EV_EXPLODE,[[3.1],[objEnemy],objectcolor,circlecolor]); }
+		if(type=="MAGIC") { NotifyEventAll(EV_EXPLODE,[[3.2],[objEnemy],objectcolor,circlecolor]); }
+		if(type=="MAPLE") { NotifyEventAll(EV_EXPLODE,[[3.3],[objEnemy],objectcolor,circlecolor]); }
+		if(type=="SNOW") { NotifyEventAll(EV_EXPLODE,[[3.4],[objEnemy],objectcolor,circlecolor]); }
+		if(type=="CHERRY") { NotifyEventAll(EV_EXPLODE,[[3.5],[objEnemy],objectcolor,circlecolor]); }
+		if(type=="MUSIC") { NotifyEventAll(EV_EXPLODE,[[3.6],[objEnemy],objectcolor,circlecolor]); }
+		if(type=="FLOWER") { NotifyEventAll(EV_EXPLODE,[[3.7],[objEnemy],objectcolor,circlecolor]); }
+		if(type=="HEART") { NotifyEventAll(EV_EXPLODE,[[3.8],[objEnemy],objectcolor,circlecolor]); }
+	}
+	function ExplosionB2(objEnemy,type,circlecolor,objectcolor) { //Standard "end of stage" boss enemy explosion effect
+		if(type=="STAR") { NotifyEventAll(EV_EXPLODE,[[4.1],[objEnemy],objectcolor,circlecolor]); }
+		if(type=="MAGIC") { NotifyEventAll(EV_EXPLODE,[[4.2],[objEnemy],objectcolor,circlecolor]); }
+		if(type=="MAPLE") { NotifyEventAll(EV_EXPLODE,[[4.3],[objEnemy],objectcolor,circlecolor]); }
+		if(type=="SNOW") { NotifyEventAll(EV_EXPLODE,[[4.4],[objEnemy],objectcolor,circlecolor]); }
+		if(type=="CHERRY") { NotifyEventAll(EV_EXPLODE,[[4.5],[objEnemy],objectcolor,circlecolor]); }
+		if(type=="MUSIC") { NotifyEventAll(EV_EXPLODE,[[4.6],[objEnemy],objectcolor,circlecolor]); }
+		if(type=="FLOWER") { NotifyEventAll(EV_EXPLODE,[[4.7],[objEnemy],objectcolor,circlecolor]); }
+		if(type=="HEART") { NotifyEventAll(EV_EXPLODE,[[4.8],[objEnemy],objectcolor,circlecolor]); }
+	}
+	function ExplosionB3(objEnemy,type,circlecolor,objectcolor) { //Boss enemy explosion effect modeled from Magical Singular Day
+		if(type=="STAR") { NotifyEventAll(EV_EXPLODE,[[5.1],[objEnemy],objectcolor,circlecolor]); }
+		if(type=="MAGIC") { NotifyEventAll(EV_EXPLODE,[[5.2],[objEnemy],objectcolor,circlecolor]); }
+		if(type=="MAPLE") { NotifyEventAll(EV_EXPLODE,[[5.3],[objEnemy],objectcolor,circlecolor]); }
+		if(type=="SNOW") { NotifyEventAll(EV_EXPLODE,[[5.4],[objEnemy],objectcolor,circlecolor]); }
+		if(type=="CHERRY") { NotifyEventAll(EV_EXPLODE,[[5.5],[objEnemy],objectcolor,circlecolor]); }
+		if(type=="MUSIC") { NotifyEventAll(EV_EXPLODE,[[5.6],[objEnemy],objectcolor,circlecolor]); }
+		if(type=="FLOWER") { NotifyEventAll(EV_EXPLODE,[[5.7],[objEnemy],objectcolor,circlecolor]); }
+		if(type=="HEART") { NotifyEventAll(EV_EXPLODE,[[5.8],[objEnemy],objectcolor,circlecolor]); }
+	}
+	function ExplosionB4(objEnemy,type,circlecolor,objectcolor) { //Same as B3 minus the MSD effect
+		if(type=="STAR") { NotifyEventAll(EV_EXPLODE,[[6.1],[objEnemy],objectcolor,circlecolor]); }
+		if(type=="MAGIC") { NotifyEventAll(EV_EXPLODE,[[6.2],[objEnemy],objectcolor,circlecolor]); }
+		if(type=="MAPLE") { NotifyEventAll(EV_EXPLODE,[[6.3],[objEnemy],objectcolor,circlecolor]); }
+		if(type=="SNOW") { NotifyEventAll(EV_EXPLODE,[[6.4],[objEnemy],objectcolor,circlecolor]); }
+		if(type=="CHERRY") { NotifyEventAll(EV_EXPLODE,[[6.5],[objEnemy],objectcolor,circlecolor]); }
+		if(type=="MUSIC") { NotifyEventAll(EV_EXPLODE,[[6.6],[objEnemy],objectcolor,circlecolor]); }
+		if(type=="FLOWER") { NotifyEventAll(EV_EXPLODE,[[6.7],[objEnemy],objectcolor,circlecolor]); }
+		if(type=="HEART") { NotifyEventAll(EV_EXPLODE,[[6.8],[objEnemy],objectcolor,circlecolor]); }
+	}
+	function ExplosionRainbowB1(objEnemy,type) { //Rainbow version of B1
+		if(type=="STAR") { NotifyEventAll(EV_EXPLODE,[[7.1],[objEnemy]]); }
+		if(type=="MAGIC") { NotifyEventAll(EV_EXPLODE,[[7.2],[objEnemy]]); }
+		if(type=="MAPLE") { NotifyEventAll(EV_EXPLODE,[[7.3],[objEnemy]]); }
+		if(type=="SNOW") { NotifyEventAll(EV_EXPLODE,[[7.4],[objEnemy]]); }
+		if(type=="CHERRY") { NotifyEventAll(EV_EXPLODE,[[7.5],[objEnemy]]); }
+		if(type=="MUSIC") { NotifyEventAll(EV_EXPLODE,[[7.6],[objEnemy]]); }
+		if(type=="FLOWER") { NotifyEventAll(EV_EXPLODE,[[7.7],[objEnemy]]); }
+		if(type=="HEART") { NotifyEventAll(EV_EXPLODE,[[7.8],[objEnemy]]); }
+	}
+	function ExplosionRainbowB2(objEnemy,type) { //Rainbow version of B2
+		if(type=="STAR") { NotifyEventAll(EV_EXPLODE,[[8.1],[objEnemy]]); }
+		if(type=="MAGIC") { NotifyEventAll(EV_EXPLODE,[[8.2],[objEnemy]]); }
+		if(type=="MAPLE") { NotifyEventAll(EV_EXPLODE,[[8.3],[objEnemy]]); }
+		if(type=="SNOW") { NotifyEventAll(EV_EXPLODE,[[8.4],[objEnemy]]); }
+		if(type=="CHERRY") { NotifyEventAll(EV_EXPLODE,[[8.5],[objEnemy]]); }
+		if(type=="MUSIC") { NotifyEventAll(EV_EXPLODE,[[8.6],[objEnemy]]); }
+		if(type=="FLOWER") { NotifyEventAll(EV_EXPLODE,[[8.7],[objEnemy]]); }
+		if(type=="HEART") { NotifyEventAll(EV_EXPLODE,[[8.8],[objEnemy]]); }
+	}
+	function ExplosionRainbowB3(objEnemy,type) { //Rainbow version of B3
+		if(type=="STAR") { NotifyEventAll(EV_EXPLODE,[[9.1],[objEnemy]]); }
+		if(type=="MAGIC") { NotifyEventAll(EV_EXPLODE,[[9.2],[objEnemy]]); }
+		if(type=="MAPLE") { NotifyEventAll(EV_EXPLODE,[[9.3],[objEnemy]]); }
+		if(type=="SNOW") { NotifyEventAll(EV_EXPLODE,[[9.4],[objEnemy]]); }
+		if(type=="CHERRY") { NotifyEventAll(EV_EXPLODE,[[9.5],[objEnemy]]); }
+		if(type=="MUSIC") { NotifyEventAll(EV_EXPLODE,[[9.6],[objEnemy]]); }
+		if(type=="FLOWER") { NotifyEventAll(EV_EXPLODE,[[9.7],[objEnemy]]); }
+		if(type=="HEART") { NotifyEventAll(EV_EXPLODE,[[9.8],[objEnemy]]); }
+	}
+	function PPCExplode(objEnemy,color) { //Modeled off of the "burst" summoning effect used in Pretty Pretty Contagion, at the beginning of one of the final cutscenes.
+		NotifyEventAll(EV_EXPLODE,[[10],[objEnemy],color]);
+	}
+	function PPCExplodeRainbow(objEnemy) { //Rainbow version of the above
+		NotifyEventAll(EV_EXPLODE,[[11],[objEnemy]]);
+	}
+	function ConcentrationA1(objEnemy,type,duration,speed,radius,color) { //Standard concentration effect
+		if(type=="STAR") { NotifyEventAll(EV_CONCENTRATION,[[1.1],[objEnemy],[duration],[speed],[radius],color]); }
+		if(type=="MAGIC") { NotifyEventAll(EV_CONCENTRATION,[[1.2],[objEnemy],[duration],[speed],[radius],color]); }
+		if(type=="MAPLE") { NotifyEventAll(EV_CONCENTRATION,[[1.3],[objEnemy],[duration],[speed],[radius],color]); }
+		if(type=="SNOW") { NotifyEventAll(EV_CONCENTRATION,[[1.4],[objEnemy],[duration],[speed],[radius],color]); }
+		if(type=="CHERRY") { NotifyEventAll(EV_CONCENTRATION,[[1.5],[objEnemy],[duration],[speed],[radius],color]); }
+		if(type=="MUSIC") { NotifyEventAll(EV_CONCENTRATION,[[1.6],[objEnemy],[duration],[speed],[radius],color]); }
+		if(type=="FLOWER") { NotifyEventAll(EV_CONCENTRATION,[[1.7],[objEnemy],[duration],[speed],[radius],color]); }
+		if(type=="HEART") { NotifyEventAll(EV_CONCENTRATION,[[1.8],[objEnemy],[duration],[speed],[radius],color]); }
+	}
+	function ConcentrationA2(objEnemy,type,duration,speed,radius,color) { //Concentration effect with effects modeled from MSD's explosions
+		if(type=="STAR") { NotifyEventAll(EV_CONCENTRATION,[[2.1],[objEnemy],[duration],[speed],[radius],color]); }
+		if(type=="MAGIC") { NotifyEventAll(EV_CONCENTRATION,[[2.2],[objEnemy],[duration],[speed],[radius],color]); }
+		if(type=="MAPLE") { NotifyEventAll(EV_CONCENTRATION,[[2.3],[objEnemy],[duration],[speed],[radius],color]); }
+		if(type=="SNOW") { NotifyEventAll(EV_CONCENTRATION,[[2.4],[objEnemy],[duration],[speed],[radius],color]); }
+		if(type=="CHERRY") { NotifyEventAll(EV_CONCENTRATION,[[2.5],[objEnemy],[duration],[speed],[radius],color]); }
+		if(type=="MUSIC") { NotifyEventAll(EV_CONCENTRATION,[[2.6],[objEnemy],[duration],[speed],[radius],color]); }
+		if(type=="FLOWER") { NotifyEventAll(EV_CONCENTRATION,[[2.7],[objEnemy],[duration],[speed],[radius],color]); }
+		if(type=="HEART") { NotifyEventAll(EV_CONCENTRATION,[[2.8],[objEnemy],[duration],[speed],[radius],color]); }
+	}
+	function ConcentrationA3(objEnemy,type,duration,speed,radius,color) { //Standard concentration effect with a SpellBurstA1 at the end
+		if(type=="STAR") { NotifyEventAll(EV_CONCENTRATION,[[3.1],[objEnemy],[duration],[speed],[radius],color]); }
+		if(type=="MAGIC") { NotifyEventAll(EV_CONCENTRATION,[[3.2],[objEnemy],[duration],[speed],[radius],color]); }
+		if(type=="MAPLE") { NotifyEventAll(EV_CONCENTRATION,[[3.3],[objEnemy],[duration],[speed],[radius],color]); }
+		if(type=="SNOW") { NotifyEventAll(EV_CONCENTRATION,[[3.4],[objEnemy],[duration],[speed],[radius],color]); }
+		if(type=="CHERRY") { NotifyEventAll(EV_CONCENTRATION,[[3.5],[objEnemy],[duration],[speed],[radius],color]); }
+		if(type=="MUSIC") { NotifyEventAll(EV_CONCENTRATION,[[3.6],[objEnemy],[duration],[speed],[radius],color]); }
+		if(type=="FLOWER") { NotifyEventAll(EV_CONCENTRATION,[[3.7],[objEnemy],[duration],[speed],[radius],color]); }
+		if(type=="HEART") { NotifyEventAll(EV_CONCENTRATION,[[3.8],[objEnemy],[duration],[speed],[radius],color]); }
+	}
+	function ConcentrationA4(objEnemy,type,speed,radius,color) { //Smaller and shorter concentration effect
+		if(type=="STAR") { NotifyEventAll(EV_CONCENTRATION,[[4.1],[objEnemy],[speed],[radius],color]); }
+		if(type=="MAGIC") { NotifyEventAll(EV_CONCENTRATION,[[4.2],[objEnemy],[speed],[radius],color]); }
+		if(type=="MAPLE") { NotifyEventAll(EV_CONCENTRATION,[[4.3],[objEnemy],[speed],[radius],color]); }
+		if(type=="SNOW") { NotifyEventAll(EV_CONCENTRATION,[[4.4],[objEnemy],[speed],[radius],color]); }
+		if(type=="CHERRY") { NotifyEventAll(EV_CONCENTRATION,[[4.5],[objEnemy],[speed],[radius],color]); }
+		if(type=="MUSIC") { NotifyEventAll(EV_CONCENTRATION,[[4.6],[objEnemy],[speed],[radius],color]); }
+		if(type=="FLOWER") { NotifyEventAll(EV_CONCENTRATION,[[4.7],[objEnemy],[speed],[radius],color]); }
+		if(type=="HEART") { NotifyEventAll(EV_CONCENTRATION,[[4.8],[objEnemy],[speed],[radius],color]); }
+	}
+	function ConcentrationRainbowA1(objEnemy,type,duration,speed,radius) { //Rainbow version of A1
+		if(type=="STAR") { NotifyEventAll(EV_CONCENTRATION,[[5.1],[objEnemy],[duration],[speed],[radius]]); }
+		if(type=="MAGIC") { NotifyEventAll(EV_CONCENTRATION,[[5.2],[objEnemy],[duration],[speed],[radius]]); }
+		if(type=="MAPLE") { NotifyEventAll(EV_CONCENTRATION,[[5.3],[objEnemy],[duration],[speed],[radius]]); }
+		if(type=="SNOW") { NotifyEventAll(EV_CONCENTRATION,[[5.4],[objEnemy],[duration],[speed],[radius]]); }
+		if(type=="CHERRY") { NotifyEventAll(EV_CONCENTRATION,[[5.5],[objEnemy],[duration],[speed],[radius]]); }
+		if(type=="MUSIC") { NotifyEventAll(EV_CONCENTRATION,[[5.6],[objEnemy],[duration],[speed],[radius]]); }
+		if(type=="FLOWER") { NotifyEventAll(EV_CONCENTRATION,[[5.7],[objEnemy],[duration],[speed],[radius]]); }
+		if(type=="HEART") { NotifyEventAll(EV_CONCENTRATION,[[5.8],[objEnemy],[duration],[speed],[radius]]); }
+	}
+	function ConcentrationRainbowA2(objEnemy,type,duration,speed,radius) { //Rainbow version of A2
+		if(type=="STAR") { NotifyEventAll(EV_CONCENTRATION,[[6.1],[objEnemy],[duration],[speed],[radius]]); }
+		if(type=="MAGIC") { NotifyEventAll(EV_CONCENTRATION,[[6.2],[objEnemy],[duration],[speed],[radius]]); }
+		if(type=="MAPLE") { NotifyEventAll(EV_CONCENTRATION,[[6.3],[objEnemy],[duration],[speed],[radius]]); }
+		if(type=="SNOW") { NotifyEventAll(EV_CONCENTRATION,[[6.4],[objEnemy],[duration],[speed],[radius]]); }
+		if(type=="CHERRY") { NotifyEventAll(EV_CONCENTRATION,[[6.5],[objEnemy],[duration],[speed],[radius]]); }
+		if(type=="MUSIC") { NotifyEventAll(EV_CONCENTRATION,[[6.6],[objEnemy],[duration],[speed],[radius]]); }
+		if(type=="FLOWER") { NotifyEventAll(EV_CONCENTRATION,[[6.7],[objEnemy],[duration],[speed],[radius]]); }
+		if(type=="HEART") { NotifyEventAll(EV_CONCENTRATION,[[6.8],[objEnemy],[duration],[speed],[radius]]); }
+	}
+	function ConcentrationB1(objEnemy,duration,num,rot,speed,layer,color) { //"Dark" concentration effect modeled from Double Dealing Character (adapted from Mystical Power Plant)
+		NotifyEventAll(EV_CONCENTRATION,[[7],[objEnemy],[duration],[num],[rot],[speed],[layer],color]);
+	}
+	function ConcentrationB2(objEnemy,duration,num,speed,layer,color1,color2) { //Same as B1 but with two effects crisscrossing, like how bosses appear in later stages of DDC
+		NotifyEventAll(EV_CONCENTRATION,[[8],[objEnemy],[duration],[num],[speed],[layer],color1,color2]);
+	}
+	*/
+
+task ExplosionA1(objEnemy,type,circlecolor,starcolor) {
+	let x = rand(-45,45);
+	let y = rand(-45,45);
+	let z = rand(-90,90);
+	let dir = rand(0,360);
+	//SE_Play(defeated,90);
+	DefaultCircle(objEnemy,2.0,circlecolor,x,y,z);
+	DefaultCircle(objEnemy,2.0,circlecolor,x,y+90,z);
+	loop(4) {
+		ExplodeObject01(type, ObjMove_GetX(objEnemy), ObjMove_GetY(objEnemy), rand(2.5,3.5), dir+rand(-10,10), [255,255,255]);
+		ExplodeObject01(type, ObjMove_GetX(objEnemy), ObjMove_GetY(objEnemy), rand(2.5,3.5), dir+rand(-10,10), starcolor);
+		dir+=360/4;
+	}
+	//ObjEnemy_SetLife(objEnemy, 0);
+	//Obj_Delete(objEnemy);
+}
+task ExplosionA2(objEnemy,type,circlecolor,starcolor) {
+	let x = rand(-45,45);
+	let y = rand(-45,45);
+	let z = rand(-90,90);
+	let dir = rand(0,360);
+	//SE_Play(defeated,90);
+	DefaultCircle(objEnemy,2.0,circlecolor,x,y,z);
+	DefaultCircle(objEnemy,2.0,circlecolor,x,y+90,z);
+	loop(8) {
+		ExplodeObject01(type, ObjMove_GetX(objEnemy), ObjMove_GetY(objEnemy), rand(2.5,4.0), dir+rand(-10,10), [255,255,255]);
+		ExplodeObject01(type, ObjMove_GetX(objEnemy), ObjMove_GetY(objEnemy), rand(2.5,4.0), dir+rand(-10,10), starcolor);
+		dir+=360/8;
+	}
+	//ObjEnemy_SetLife(objEnemy, 0);
+	//Obj_Delete(objEnemy);
+}
+task ExplosionB1(objEnemy,type,circlecolor,starcolor) {
+let angle = rand(0,360);
+	ObjEnemy_SetLife(objEnemy, 1);
+	ObjEnemy_SetDamageRate(objEnemy,0,0);
+	SE_Play(defeated,90);
+	Screen_Shake(45,35);
+	DefaultCircle(objEnemy,3.0,circlecolor,0,0,0);
+	loop(35) {
+		ExplodeObject02(type, ObjMove_GetX(objEnemy), ObjMove_GetY(objEnemy), rand(2,6), angle, [255,255,255]);
+		angle+=360/70;
+		ExplodeObject02(type, ObjMove_GetX(objEnemy), ObjMove_GetY(objEnemy), rand(2,6), angle, starcolor);
+		angle+=360/70;
+	}
+	//ObjEnemy_SetLife(objEnemy, 0);
+	//Obj_Delete(objEnemy);
+}
+task ExplosionB2(objEnemy,type,circlecolor,starcolor) {
+	let angle = rand(0,360);
+	ObjEnemy_SetLife(objEnemy, 1);
+	ObjEnemy_SetDamageRate(objEnemy,0,0);
+	SE_Play(defeated,90);
+	DefaultCircle(objEnemy,3.0,circlecolor,0,0,0);
+	Screen_Shake(30,30);
+	ObjMove_SetSpeed(objEnemy,0.2);
+	ObjMove_SetAngle(objEnemy,195);
+	loop(90/4) {
+		ExplodeObject02(type, ObjMove_GetX(objEnemy), ObjMove_GetY(objEnemy), rand(1.5,4.0), rand(0,360), [255,255,255]);
+		ExplodeObject02(type, ObjMove_GetX(objEnemy), ObjMove_GetY(objEnemy), rand(1.5,4.0), rand(0,360), starcolor);
+		loop(4) { yield; }
+	}
+	SE_Play(defeated,90);
+	DefaultCircle(objEnemy,3.0,circlecolor,0,0,0);
+	Screen_Shake(90,50);
+	loop(40) {
+		ExplodeObject02(type, ObjMove_GetX(objEnemy), ObjMove_GetY(objEnemy), rand(2,6), angle, [255,255,255]);
+		angle+=360/80;
+		ExplodeObject02(type, ObjMove_GetX(objEnemy), ObjMove_GetY(objEnemy), rand(2,6), angle, starcolor);
+		angle+=360/80;
+	}
+	//ObjEnemy_SetLife(objEnemy, 0);
+	//Obj_Delete(objEnemy);
+	//DeleteShotAll(TYPE_ALL, TYPE_ITEM);
+}
+task ExplosionB3(objEnemy,type,circlecolor,starcolor) {
+	let angle = rand(0,360);
+	//ObjEnemy_SetLife(objEnemy, 1);
+	//ObjEnemy_SetDamageRate(objEnemy,0,0);
+	SE_Play(defeated,90);
+	Screen_Shake(30,30);
+	DefaultCircle(objEnemy,3.0,circlecolor,0,0,0);
+	MSDEffectExplode(objEnemy, ObjMove_GetX(objEnemy), ObjMove_GetY(objEnemy), starcolor);
+	loop(150/3) {
+		ExplodeObject02(type, ObjMove_GetX(objEnemy), ObjMove_GetY(objEnemy), rand(3.5,6.5), rand(0,360), [255,255,255]);
+		ExplodeObject02(type, ObjMove_GetX(objEnemy), ObjMove_GetY(objEnemy), rand(3.5,6.5), rand(0,360), starcolor);
+		loop(3) { yield; }
+	}
+	//SE_Play(brokenexplosion,90);
+	Screen_Shake(90,50);
+	loop(25) {
+		ExplodeObject02(type, ObjMove_GetX(objEnemy), ObjMove_GetY(objEnemy), rand(3.5,6.5), angle, [255,255,255]);
+		angle+=360/50;
+		ExplodeObject02(type, ObjMove_GetX(objEnemy), ObjMove_GetY(objEnemy), rand(3.5,6.5), angle, starcolor);
+		angle+=360/50;
+	}
+	//ObjEnemy_SetLife(objEnemy, 0);
+	//Obj_Delete(objEnemy);
+	//DeleteShotAll(TYPE_ALL, TYPE_ITEM);
+}
+task ExplosionB4(objEnemy,type,circlecolor,starcolor) {
+let angle = rand(0,360);
+	ObjEnemy_SetLife(objEnemy, 1);
+	ObjEnemy_SetDamageRate(objEnemy,0,0);
+	SE_Play(defeated,90);
+	DefaultCircle(objEnemy,3.0,circlecolor,0,0,0);
+	loop(75/3) {
+		ExplodeObject02(type, ObjMove_GetX(objEnemy), ObjMove_GetY(objEnemy), rand(3.5,6.5), rand(0,360), [255,255,255]);
+		ExplodeObject02(type, ObjMove_GetX(objEnemy), ObjMove_GetY(objEnemy), rand(3.5,6.5), rand(0,360), starcolor);
+		loop(3) { yield; }
+	}
+	SE_Play(defeated,90);
+	Screen_Shake(90,50);
+	loop(35) {
+		ExplodeObject02(type, ObjMove_GetX(objEnemy), ObjMove_GetY(objEnemy), rand(2,6), angle, [255,255,255]);
+		angle+=360/70;
+		ExplodeObject02(type, ObjMove_GetX(objEnemy), ObjMove_GetY(objEnemy), rand(2,6), angle, starcolor);
+		angle+=360/70;
+	}
+	//ObjEnemy_SetLife(objEnemy, 0);
+	//Obj_Delete(objEnemy);
+}
+task ExplosionRainbowB1(objEnemy,type) {
+let angle = rand(0,360);
+let colors = [[255,0,0],[255,128,0],[255,255,0],[0,255,0],[0,0,255],[255,0,255]];
+	ObjEnemy_SetLife(objEnemy, 1);
+	ObjEnemy_SetDamageRate(objEnemy,0,0);
+	SE_Play(defeated,90);
+	Screen_Shake(30,30);
+	DefaultCircle(objEnemy,3.0,[255,255,255],0,0,0);
+	loop(6) {
+		ascent(i in 0..6) {
+			ExplodeObject02(type, ObjMove_GetX(objEnemy), ObjMove_GetY(objEnemy), rand(2,6), angle, [255,255,255]);
+			angle+=360/72;
+			ExplodeObject02(type, ObjMove_GetX(objEnemy), ObjMove_GetY(objEnemy), rand(2,6), angle, colors[i]);
+			angle+=360/72;
+		}
+	}
+	//ObjEnemy_SetLife(objEnemy, 0);
+	//Obj_Delete(objEnemy);
+}
+task ExplosionRainbowB2(objEnemy,type) {
+let angle = rand(0,360);
+let colors = [[255,0,0],[255,128,0],[255,255,0],[0,255,0],[0,0,255],[255,0,255]];
+	//ObjEnemy_SetLife(objEnemy, 1);
+	//ObjEnemy_SetDamageRate(objEnemy,0,0);
+	SE_Play(defeated,90);
+	Screen_Shake(30,30);
+	DefaultCircle(objEnemy,3.0,[255,255,255],0,0,0);
+	loop(90/4/6) {
+		ascent(i in 0..6) {
+			ExplodeObject02(type, ObjMove_GetX(objEnemy), ObjMove_GetY(objEnemy), rand(1.5,4.0), rand(0,360), [255,255,255]);
+			ExplodeObject02(type, ObjMove_GetX(objEnemy), ObjMove_GetY(objEnemy), rand(1.5,4.0), rand(0,360), colors[i]);
+			loop(4) { yield; }
+		}
+	}
+	SE_Play(defeated,90);
+	Screen_Shake(90,50);
+	loop(8) {
+		ascent(i in 0..6) {
+			ExplodeObject02(type, ObjMove_GetX(objEnemy), ObjMove_GetY(objEnemy), rand(2,6), angle, [255,255,255]);
+			angle+=360/96;
+			ExplodeObject02(type, ObjMove_GetX(objEnemy), ObjMove_GetY(objEnemy), rand(2,6), angle, colors[i]);
+			angle+=360/96;
+		}
+	}
+	//ObjEnemy_SetLife(objEnemy, 0);
+	//Obj_Delete(objEnemy);
+}
+task ExplosionRainbowB3(objEnemy,type) {
+let angle = rand(0,360);
+let colors = [[255,0,0],[255,128,0],[255,255,0],[0,255,0],[0,0,255],[255,0,255]];
+	//ObjEnemy_SetLife(objEnemy, 1);
+	//ObjEnemy_SetDamageRate(objEnemy,0,0);
+	SE_Play(defeated,90);
+	Screen_Shake(30,30);
+	DefaultCircle(objEnemy,3.0,[255,255,255],0,0,0);
+	MSDEffectRainbowExplode(objEnemy, 180, ObjMove_GetX(objEnemy), ObjMove_GetY(objEnemy));
+	loop(15) {
+		ascent(i in 0..6) {
+			ExplodeObject02(type, ObjMove_GetX(objEnemy), ObjMove_GetY(objEnemy), rand(3.5,6.5), rand(0,360), [255,255,255]);
+			ExplodeObject02(type, ObjMove_GetX(objEnemy), ObjMove_GetY(objEnemy), rand(3.5,6.5), rand(0,360), colors[i]);
+			loop(2) { yield; }
+		}
+	}
+	SE_Play(defeated,190);
+	//SE_Play(brokenexplosion,90);
+	Screen_Shake(90,50);
+	loop(4) {
+		ascent(i in 0..6) {
+			ExplodeObject02(type, ObjMove_GetX(objEnemy), ObjMove_GetY(objEnemy), rand(3.5,6.5), angle, [255,255,255]);
+			angle+=360/48;
+			ExplodeObject02(type, ObjMove_GetX(objEnemy), ObjMove_GetY(objEnemy), rand(3.5,6.5), angle, colors[i]);
+			angle+=360/48;
+		}
+	}
+	//ObjEnemy_SetLife(objEnemy, 0);
+	//Obj_Delete(objEnemy);
+}
+task ConcentrationA1(objEnemy,type,duration,speed,radius,color) {
+let w = round(1/speed*10);
+	SpawnCircle;
+	loop(duration/w) {
+		if(!Obj_IsDeleted(objEnemy)) {
+			ConcObject01(type, ObjRender_GetX(objEnemy), ObjRender_GetY(objEnemy), speed, rand(0,360), -1, radius, [255,255,255], 180);
+			ConcObject01(type, ObjRender_GetX(objEnemy), ObjRender_GetY(objEnemy), speed, rand(0,360), 1, radius, color, 180);
+		}
+		loop(w) { yield; }
+	}
+	task SpawnCircle {
+	let count = 0;
+		loop(duration-10) {
+			count++;
+			if(count==20 && !Obj_IsDeleted(objEnemy)) { ConcCircle01(ObjRender_GetX(objEnemy), ObjRender_GetY(objEnemy), speed, radius, color); count = 0; }
+			yield;
+		}
+	}
+}
+task ConcentrationA2(objEnemy,type,duration,speed,radius,color) {
+let w = round(1/speed*10);
+	MSDEffect(objEnemy,duration,color);
+	loop(duration/w) {
+		if(!Obj_IsDeleted(objEnemy)) {
+			ConcObject01(type, ObjRender_GetX(objEnemy), ObjRender_GetY(objEnemy), speed, rand(0,360), -1, radius, [255,255,255], 180);
+			ConcObject01(type, ObjRender_GetX(objEnemy), ObjRender_GetY(objEnemy), speed, rand(0,360), 1, radius, color, 180);
+		}
+		loop(w) { yield; }
+	}
+}
+task ConcentrationA3(objEnemy,type,duration,speed,radius,color) {
+let w = round(1/speed*10);
+let angle = rand(0,360);
+	SpawnCircle;
+	loop(duration/w) {
+		if(!Obj_IsDeleted(objEnemy)) {
+			ConcObject01(type, ObjRender_GetX(objEnemy), ObjRender_GetY(objEnemy), speed, rand(0,360), -1, radius, [255,255,255], 180);
+			ConcObject01(type, ObjRender_GetX(objEnemy), ObjRender_GetY(objEnemy), speed, rand(0,360), 1, radius, color, 180);
+		}
+		loop(w) { yield; }
+	}
+	wait(20);
+	if(!Obj_IsDeleted(objEnemy)) {	SE_Play(explode,90); }
+	loop(30) {
+		if(!Obj_IsDeleted(objEnemy)) {
+			ExplodeObject03(type, ObjMove_GetX(objEnemy), ObjMove_GetY(objEnemy), rand(2,8), angle, [255,255,255]);
+			angle+=360/60;
+			ExplodeObject03(type, ObjMove_GetX(objEnemy), ObjMove_GetY(objEnemy), rand(2,8), angle, color);
+			angle+=360/60;
+		}
+	}
+	task SpawnCircle {
+		loop(duration-10) { yield; }
+		if(!Obj_IsDeleted(objEnemy)) { ConcCircle01(ObjRender_GetX(objEnemy), ObjRender_GetY(objEnemy), speed, radius, color); }
+		yield;
+	}
+}
+task ConcentrationA4(objEnemy,type,speed,radius,color) {
+let w = round(1/speed*10);
+let angle = rand(0,360);
+	loop(5) {
+		ConcObject02(type, ObjRender_GetX(objEnemy), ObjRender_GetY(objEnemy), speed, angle, -1, radius+rand(-50,50), [255,255,255], 230);
+		ConcObject02(type, ObjRender_GetX(objEnemy), ObjRender_GetY(objEnemy), speed, angle, 1, radius+rand(-50,50), color, 230);
+		angle+=360/5;
+	}
+	wait(w+6);
+	ConcCircle01(ObjRender_GetX(objEnemy), ObjRender_GetY(objEnemy), speed*0.7, radius, color);
+	angle+=360/10;
+	loop(4) {
+		ConcObject02(type, ObjRender_GetX(objEnemy), ObjRender_GetY(objEnemy), speed, angle, -1, radius+rand(-50,50), [255,255,255], 230);
+		ConcObject02(type, ObjRender_GetX(objEnemy), ObjRender_GetY(objEnemy), speed, angle, 1, radius+rand(-50,50), color, 230);
+		angle+=360/5;
+	}
+	wait(w+6);
+	angle+=360/10;
+	loop(4) {
+		ConcObject02(type, ObjRender_GetX(objEnemy), ObjRender_GetY(objEnemy), speed, angle, -1, radius+rand(-50,50), [255,255,255], 230);
+		ConcObject02(type, ObjRender_GetX(objEnemy), ObjRender_GetY(objEnemy), speed, angle, 1, radius+rand(-50,50), color, 230);
+		angle+=360/5;
+	}
+}
+
+task ConcentrationA4Invert(objEnemy,type,speed,radius,color) {
+let w = round(1/speed*10);
+let angle = rand(0,360);
+	loop(5) {
+		ConcObject02Invert(type, ObjRender_GetX(objEnemy), ObjRender_GetY(objEnemy), speed, angle, -1, radius+rand(-50,50), [255,255,255], 230);
+		ConcObject02Invert(type, ObjRender_GetX(objEnemy), ObjRender_GetY(objEnemy), speed, angle, 1, radius+rand(-50,50), color, 230);
+		angle+=360/5;
+	}
+	//wait(w+6);
+	ConcCircle02(ObjRender_GetX(objEnemy), ObjRender_GetY(objEnemy), speed*0.7, radius, color);
+	angle+=360/10;
+	loop(4) {
+		ConcObject02Invert(type, ObjRender_GetX(objEnemy), ObjRender_GetY(objEnemy), speed, angle, -1, radius+rand(-50,50), [255,255,255], 230);
+		ConcObject02Invert(type, ObjRender_GetX(objEnemy), ObjRender_GetY(objEnemy), speed, angle, 1, radius+rand(-50,50), color, 230);
+		angle+=360/5;
+	}
+	wait(w+6);
+	angle+=360/10;
+	loop(4) {
+		ConcObject02Invert(type, ObjRender_GetX(objEnemy), ObjRender_GetY(objEnemy), speed, angle, -1, radius+rand(-50,50), [255,255,255], 230);
+		ConcObject02Invert(type, ObjRender_GetX(objEnemy), ObjRender_GetY(objEnemy), speed, angle, 1, radius+rand(-50,50), color, 230);
+		angle+=360/5;
+	}
+}
+task ConcentrationB1(objEnemy,duration,num,rot,speed,layer,color) {
+	let angle = rand(0,360);
+	let color2 = [];
+	ascent(i in 0..length(color)) {
+		color2 = color2 ~ [color[i]/2];
+	}
+	loop(duration) {
+		if(!Obj_IsDeleted(objEnemy)) {
+			loop(num) {
+				DarkConcentration(objEnemy,angle,(1+rand(0.4,0.6))*rot,256+rand(0,128),speed,layer,color);
+				DarkConcentration(objEnemy,angle,rand(0.4,0.6)*rot,256+rand(0,128),speed,layer,color2);
+				angle+=360/num;
+			}
+		}
+		yield;
+	}
+}
+task ConcentrationB2(objEnemy,duration,num,speed,layer,color,color3) {
+	let angle = rand(0,360);
+	let color2 = [];
+	let color4 = [];
+	ascent(i in 0..length(color)) {
+		color2 = color2 ~ [color[i]/2];
+	}
+	ascent(i in 0..length(color3)) {
+		color4 = color4 ~ [color3[i]/2];
+	}
+	loop(duration) {
+		if(!Obj_IsDeleted(objEnemy)) {
+			loop(num) {
+				DarkConcentration(objEnemy,angle,(1+rand(0.4,0.6)),256+rand(0,128),speed,layer,color);
+				DarkConcentration(objEnemy,angle,rand(0.4,0.6),256+rand(0,128),speed,layer,color2);
+				angle+=360/num*2;
+				DarkConcentration(objEnemy,angle,-(1+rand(0.4,0.6)),256+rand(0,128),speed,layer,color);
+				DarkConcentration(objEnemy,angle,-rand(0.4,0.6),256+rand(0,128),speed,layer,color2);
+				angle+=360/num*2;
+			}
+		}
+		yield;
+	}
+}
+task ConcentrationRainbowA1(objEnemy,type,duration,speed,radius) {
+let angle = rand(0,360);
+let w = round(1/speed*10);
+let colors = [[255,64,64],[255,128,64],[255,255,64],[64,255,64],[64,64,255],[64,64,255]];
+	SpawnCircle;
+	loop(duration/w/6) {
+		ascent(i in 0..6) {
+			if(!Obj_IsDeleted(objEnemy)) {
+				ConcObject01(type, ObjRender_GetX(objEnemy), ObjRender_GetY(objEnemy), speed, rand(0,360), -1, radius, [255,255,255], 180);
+				ConcObject01(type, ObjRender_GetX(objEnemy), ObjRender_GetY(objEnemy), speed, rand(0,360), 1, radius, colors[i], 180);
+			}
+			loop(w) { yield; }
+		}
+	}
+	task SpawnCircle {
+	let count = 0;
+	let i = 0;
+		loop(duration-10) {
+			count++;
+			if(count==20 && !Obj_IsDeleted(objEnemy)) {
+				ConcCircle01(ObjRender_GetX(objEnemy), ObjRender_GetY(objEnemy), speed, radius, colors[i]);
+				i++;
+				count = 0;
+			}
+			if(i>6) { i = 0; }
+			yield;
+		}
+	}
+}
+task ConcentrationRainbowA2(objEnemy,type,duration,speed,radius) {
+let angle = rand(0,360);
+let w = round(1/speed*10);
+let colors = [[255,64,64],[255,128,64],[255,255,64],[64,255,64],[64,64,255],[64,64,255]];
+	MSDEffectRainbow(duration,objEnemy);
+	loop(duration/w/6) {
+		ascent(i in 0..6) {
+			if(!Obj_IsDeleted(objEnemy)) {
+				ConcObject01(type, ObjRender_GetX(objEnemy), ObjRender_GetY(objEnemy), speed, rand(0,360), -1, radius, [255,255,255], 180);
+				ConcObject01(type, ObjRender_GetX(objEnemy), ObjRender_GetY(objEnemy), speed, rand(0,360), 1, radius, colors[i], 180);
+			}
+			loop(w) { yield; }
+		}
+	}
+}
+task ConcentrationRainbowA2_2(destX,destY,type,duration,speed,radius) {
+let angle = rand(0,360);
+let w = round(1/speed*10);
+let colors = [[255,64,64],[255,128,64],[255,255,64],[64,255,64],[64,64,255],[64,64,255]];
+	MSDEffectRainbow_2(duration,destX,destY);
+	loop(duration/w/6) {
+		ascent(i in 0..6) {
+				ConcObject01(type, destX, destY, speed, rand(0,360), -1, radius, [255,255,255], 180);
+				ConcObject01(type, destX, destY, speed, rand(0,360), 1, radius, colors[i], 180);
+			loop(w) { yield; }
+		}
+	}
+}
+task SpellBurstA1(x,y,type,color) {
+let angle = rand(0,360);
+	loop(30) {
+		ExplodeObject03(type, x, y, rand(2,8), angle, [255,255,255]);
+		angle+=360/60;
+		ExplodeObject03(type, x, y, rand(2,8), angle, color);
+		angle+=360/60;
+	}
+}
+task SpellBurstB1(x,y,maxscale,color) {
+	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	
+	ObjPrim_SetTexture(obj, CSD ~ "../img/Effect/ConcentrationCircle.png");
+	ObjSprite2D_SetSourceRect(obj,0,0,256,256);
+	ObjSprite2D_SetDestCenter(obj);
+	ObjRender_SetBlendType(obj, BLEND_ADD_RGB);
+	Obj_SetRenderPriorityI(obj, 50);
+	
+	let RGB = color;
+	let alpha = 1.8;
+	let scale = 0;
+	
+	ascent(i in 0..30) {
+		scale = maxscale*sin(90*i/30);
+		alpha -= 255/30;
+		ObjRender_SetColor(obj,(alpha/255)*RGB[0],(alpha/255)*RGB[1],(alpha/255)*RGB[2]);
+		ObjRender_SetPosition(obj, x, y, 0);
+		ObjRender_SetScaleXYZ(obj, scale, scale, scale);
+		yield;
+	}
+	Obj_Delete(obj);
+}
+function PPCExplode(objEnemy,color) {
+	loop(6) {
+		MSDExplodeCircle(ObjMove_GetX(objEnemy),ObjMove_GetY(objEnemy),color);
+	}
+}
+function PPCExplodeRainbow(objEnemy) {
+	MSDExplodeCircle(ObjMove_GetX(objEnemy),ObjMove_GetY(objEnemy),[255,64,64]);
+	MSDExplodeCircle(ObjMove_GetX(objEnemy),ObjMove_GetY(objEnemy),[255,128,64]);
+	MSDExplodeCircle(ObjMove_GetX(objEnemy),ObjMove_GetY(objEnemy),[255,255,64]);
+	MSDExplodeCircle(ObjMove_GetX(objEnemy),ObjMove_GetY(objEnemy),[128,255,128]);
+	MSDExplodeCircle(ObjMove_GetX(objEnemy),ObjMove_GetY(objEnemy),[128,128,255]);
+	MSDExplodeCircle(ObjMove_GetX(objEnemy),ObjMove_GetY(objEnemy),[128,64,255]);
+}
+task MSDExplodeCircle(x,y,RGB) {
+	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	
+	ObjRender_SetBlendType(obj, BLEND_ADD_RGB);
+	Obj_SetRenderPriorityI(obj,41);
+	ObjPrim_SetTexture(obj, CSD ~ "../img/Effect/MSDEffect.png");
+	ObjSprite2D_SetSourceRect(obj, 128, 0, 256, 128);
+	ObjSprite2D_SetDestCenter(obj);
+
+	let alpha = 255;
+	let scale = 0;
+	let dscale = 0.6;
+	let anglex = rand(-90,90);
+	let angley = rand(-90,90);
+	let anglez = rand(-90,90);
+	let dx = rand(-1,1);
+	let dy = rand(-1,1);
+	let dz = rand(-1,1);
+	
+	ObjRender_SetPosition(obj, x, y, 0);
+	loop(40){
+		scale += dscale;
+		alpha -= 255/40;
+		anglex+=dx; angley+=dy; anglez+=dz;
+		if(dscale>0){ dscale-=0.55/40; }
+		else { dscale = 0; }
+		ObjRender_SetColor(obj,RGB[0]*(alpha/255),RGB[1]*(alpha/255),RGB[2]*(alpha/255));
+		ObjRender_SetScaleXYZ(obj, scale, scale, 1);
+		ObjRender_SetAngleXYZ(obj,anglex,angley,anglez);
+		yield;
+	}
+	Obj_Delete(obj);
+}
+task ExplodeObject01(type,x,y,speed,dir,color) {
+	let objStar = ObjPrim_Create(OBJ_SPRITE_2D);
+
+	let alpha = 130;
+	let spinA = rand(0,180);
+	let spinB = rand(0,180);
+	// let RED = rand(100,255);
+	// let GREEN = rand(100,255);
+	// let BLUE = rand(100,255);
+	let RED = color[0];
+	let GREEN = color[1];
+	let BLUE = color[2];
+	let scale = 0;
+	
+	ObjRender_SetBlendType(objStar, BLEND_ADD_RGB);
+	Obj_SetRenderPriorityI(objStar,41);
+	ObjPrim_SetTexture(objStar, CSD ~ "../img/Effect/" ~ type ~ ".png");
+	ObjSprite2D_SetSourceRect(objStar, 0, 0, 256, 256);
+	ObjSprite2D_SetDestCenter(objStar);
+	
+	while(!Obj_IsDeleted(objStar)) {
+		ObjRender_SetPosition(objStar, x, y, 0);
+		ObjRender_SetScaleXYZ(objStar, scale, scale, scale);
+		ObjRender_SetAngleXYZ(objStar, spinA, spinB, spinA);
+		ObjRender_SetAlpha(objStar, alpha);
+		ObjRender_SetColor(objStar, RED*(alpha/255), GREEN*(alpha/255), BLUE*(alpha/255));
+		if(scale<0.19 && speed>0) { scale+=0.03; }
+		if(speed>1.0) { speed-=0.094; }
+		if(speed<=1.0 && alpha>0) { alpha-=16; scale-=0.008; }
+		if(alpha<=0) { Obj_Delete(objStar); }
+		spinA+=rand(1,2);
+		spinB+=rand(-1,-2);
+		x+=speed*cos(dir);
+		y+=speed*sin(dir);
+		yield;
+	}
+}
+task ExplodeObject02(type,x,y,speed,dir,color) {
+	let objStar = ObjPrim_Create(OBJ_SPRITE_2D);
+
+	let alpha = 200;
+	let spinA = rand(0,180);
+	let spinB = rand(0,180);
+	let RED = color[0];
+	let GREEN = color[1];
+	let BLUE = color[2];
+	let scale = 0;
+	
+	ObjRender_SetBlendType(objStar, BLEND_ADD_RGB);
+	Obj_SetRenderPriorityI(objStar,45);
+	ObjPrim_SetTexture(objStar, CSD ~ "../img/Effect/" ~ type ~ ".png");
+	ObjSprite2D_SetSourceRect(objStar, 0, 0, 256, 256);
+	ObjSprite2D_SetDestCenter(objStar);
+	
+	while(!Obj_IsDeleted(objStar)) {
+		ObjRender_SetPosition(objStar, x, y, 0);
+		ObjRender_SetScaleXYZ(objStar, scale, scale, scale);
+		ObjRender_SetAngleXYZ(objStar, spinA, spinB, spinA);
+		ObjRender_SetAlpha(objStar, alpha);
+		ObjRender_SetColor(objStar, RED*(alpha/255), GREEN*(alpha/255), BLUE*(alpha/255));
+		if(scale<0.38 && speed>0 && GetCommonData("FREEZE",false)==false) { scale+=0.03; }
+		if(speed>1.0 && GetCommonData("FREEZE",false)==false) { speed-=0.038; }
+		if(speed<=1.0 && alpha>0 && GetCommonData("FREEZE",false)==false) { alpha-=15; scale-=0.035; }
+		if(alpha<=0 && GetCommonData("FREEZE",false)==false) { Obj_Delete(objStar); }
+		if(GetCommonData("FREEZE",false)==false){spinA+=rand(1,2);}
+		if(GetCommonData("FREEZE",false)==false){spinB+=rand(-1,-2);}
+		if(GetCommonData("FREEZE",false)==false){x+=speed*cos(dir);}
+		if(GetCommonData("FREEZE",false)==false){y+=speed*sin(dir);}
+		yield;
+	}
+}
+task ExplodeObject03(type,x,y,speed,dir,color) {
+	let objStar = ObjPrim_Create(OBJ_SPRITE_2D);
+
+	let alpha = 200;
+	let spinA = rand(0,180);
+	let spinB = rand(0,180);
+	let RED = color[0];
+	let GREEN = color[1];
+	let BLUE = color[2];
+	let scale = 0;
+	
+	ObjRender_SetBlendType(objStar, BLEND_ADD_RGB);
+	Obj_SetRenderPriorityI(objStar,41);
+	ObjPrim_SetTexture(objStar, CSD ~ "../img/Effect/" ~ type ~ ".png");
+	ObjSprite2D_SetSourceRect(objStar, 0, 0, 256, 256);
+	ObjSprite2D_SetDestCenter(objStar);
+	
+	while(!Obj_IsDeleted(objStar)) {
+		ObjRender_SetPosition(objStar, x, y, 0);
+		ObjRender_SetScaleXYZ(objStar, scale, scale, scale);
+		ObjRender_SetAngleXYZ(objStar, spinA, spinB, spinA);
+		ObjRender_SetAlpha(objStar, alpha);
+		ObjRender_SetColor(objStar, RED*(alpha/255), GREEN*(alpha/255), BLUE*(alpha/255));
+		if(scale<0.38 && speed>0) { scale+=0.03; }
+		if(speed>1.0) { speed-=0.09; }
+		if(speed<=2.0 && alpha>0) { alpha-=15; scale-=0.035; }
+		if(alpha<=0) { Obj_Delete(objStar); }
+		spinA+=rand(1,2);
+		spinB+=rand(-1,-2);
+		x+=speed*cos(dir);
+		y+=speed*sin(dir);
+		yield;
+	}
+}
+task DarkConcentration(objEnemy,angle,dangle,disp,ddisp,layer,color) { //Adapted from Mystical Power Plant
+	let objEffect = ObjPrim_Create(OBJ_SPRITE_2D);
+		
+	ObjRender_SetBlendType(objEffect,BLEND_SUBTRACT);
+	Obj_SetRenderPriorityI(objEffect,layer);
+	ObjPrim_SetTexture(objEffect, CSD ~ "../img/Effect/light.png");
+	ObjSprite2D_SetSourceRect(objEffect,0,0,64,64);
+	ObjSprite2D_SetDestCenter(objEffect);
+	ObjRender_SetAngleXYZ(objEffect,0,0,rand(0,360));
+	
+	let dispmax = rand(disp-64,disp);
+	let disp1 = 0;
+	let dispA = 0;
+	let alpha1 = 0;
+	let alphaA = 0;
+	let scalemax = rand(0.6,1.1);
+	let scale2 = scalemax*2;
+	let angle2 = rand(-16,16);
+	
+	while(disp1<0.999) {
+		angle2+=dangle;
+		
+		if(alpha1<1){ alphaA+=10; }
+		alpha1 = 1*sin(alphaA);
+		
+		dispA+=ddisp;
+		disp1 = 1*sin(dispA);
+		
+		ObjRender_SetPosition(objEffect,ObjMove_GetX(objEnemy)+(dispmax-disp1*dispmax)*cos(angle+angle2),ObjMove_GetY(objEnemy)+(dispmax-disp1*dispmax)*sin(angle+angle2),0);
+		ObjRender_SetScaleXYZ(objEffect,disp1*scalemax,disp1*scalemax,0);
+		ObjRender_SetColor(objEffect,alpha1*color[0],alpha1*color[1],alpha1*color[2]);
+		yield;
+	}
+	alpha1 = 0;
+	alphaA = 0;
+	while(alpha1<1) {
+		angle2+=dangle;
+		
+		alphaA+=2.5;
+		alpha1 = 1*sin(alphaA);
+		
+		if(scalemax<scale2) { scalemax+=(scale2/2)/30; }
+		
+		ObjRender_SetScaleXYZ(objEffect,disp1*scalemax,disp1*scalemax,0);
+		ObjRender_SetColor(objEffect,color[0]-alpha1*color[0],color[1]-alpha1*color[1],color[2]-alpha1*color[2]);
+		yield;
+	}
+	Obj_Delete(objEffect);
+}
+task ConcObject01(type,x,y,speed,dir,rot,r,color,opacity) {
+	let objStar = ObjPrim_Create(OBJ_SPRITE_2D);
+
+	let alpha = 0;
+	let spin = rand(0,180);
+	// let RED = rand(100,255);
+	// let GREEN = rand(100,255);
+	// let BLUE = rand(100,255);
+	let RED = color[0];
+	let GREEN = color[1];
+	let BLUE = color[2];
+	let scale = 0.75*(r/200);
+	
+	if(r > 200) { scale = 1.00; }
+	
+	ObjRender_SetBlendType(objStar, BLEND_ADD_RGB);
+	Obj_SetRenderPriorityI(objStar,44);
+	ObjPrim_SetTexture(objStar, CSD ~ "../img/Effect/" ~ type ~ ".png");
+	ObjSprite2D_SetSourceRect(objStar, 0, 0, 256, 256);
+	ObjSprite2D_SetDestCenter(objStar);
+	
+	while(!Obj_IsDeleted(objStar)) {
+		ObjRender_SetPosition(objStar, x+r*cos(dir), y+r*sin(dir), 0);
+		ObjRender_SetScaleXYZ(objStar, scale, scale, scale);
+		ObjRender_SetAngleXYZ(objStar, 0, 0, spin);
+		ObjRender_SetAlpha(objStar, alpha);
+		ObjRender_SetColor(objStar, RED*(alpha/255), GREEN*(alpha/255), BLUE*(alpha/255));
+		if(alpha<opacity && r>=10) { alpha+=opacity/90*speed; }
+		if(r<200) { scale-=0.75/200*speed; }
+		if(r<10) { alpha-=opacity/10*speed; }
+		if(alpha<=0) { Obj_Delete(objStar); }
+		spin+=rand(3,4)*rot;
+		r-=speed;
+		yield;
+	}
+}
+task ConcObject02(type,x,y,speed,dir,rot,r,color,opacity) {
+	let objStar = ObjPrim_Create(OBJ_SPRITE_2D);
+
+	let alpha = 0;
+	let spin = rand(0,180);
+	// let RED = rand(100,255);
+	// let GREEN = rand(100,255);
+	// let BLUE = rand(100,255);
+	let RED = color[0];
+	let GREEN = color[1];
+	let BLUE = color[2];
+	let initspeed = speed;
+	let scale = 0.75*(r/200);
+	
+	if(r > 200) { scale = 1.00; }
+	
+	ObjRender_SetBlendType(objStar, BLEND_ADD_RGB);
+	Obj_SetRenderPriorityI(objStar,41);
+	ObjPrim_SetTexture(objStar, CSD ~ "../img/Effect/" ~ type ~ ".png");
+	ObjSprite2D_SetSourceRect(objStar, 0, 0, 256, 256);
+	ObjSprite2D_SetDestCenter(objStar);
+	
+	while(!Obj_IsDeleted(objStar)) {
+		ObjRender_SetPosition(objStar, x+r*cos(dir), y+r*sin(dir), 0);
+		ObjRender_SetScaleXYZ(objStar, scale, scale, scale);
+		ObjRender_SetAngleXYZ(objStar, 0, 0, spin);
+		ObjRender_SetAlpha(objStar, alpha);
+		ObjRender_SetColor(objStar, RED*(alpha/255), GREEN*(alpha/255), BLUE*(alpha/255));
+		if(alpha<opacity && r>=30) { alpha+=opacity/90*speed; }
+		if(r<200 && r>30) { scale-=0.9/200*speed; }
+		if(r<30) { speed-=initspeed/30*speed; }
+		if(r<30) { alpha-=opacity/20; }
+		if(alpha<=0) { Obj_Delete(objStar); }
+		spin+=rand(3,4)*rot*(speed/7);
+		r-=speed;
+		yield;
+	}
+}
+//Modified to go outwards instead of inwards
+task ConcObject02Invert(type,x,y,speed,dir,rot,rmax,color,opacity) {
+	let objStar = ObjPrim_Create(OBJ_SPRITE_2D);
+	
+	let r = 0;
+	let alpha = opacity;
+	let spin = rand(0,180);
+	// let RED = rand(100,255);
+	// let GREEN = rand(100,255);
+	// let BLUE = rand(100,255);
+	let RED = color[0];
+	let GREEN = color[1];
+	let BLUE = color[2];
+	let initspeed = speed;
+	let scale = 0.75*(r/200);
+	
+//	if(r > 200) { scale = 1.00; }
+	
+	ObjRender_SetBlendType(objStar, BLEND_ADD_RGB);
+	Obj_SetRenderPriorityI(objStar,41);
+	ObjPrim_SetTexture(objStar, CSD ~ "../img/Effect/" ~ type ~ ".png");
+	ObjSprite2D_SetSourceRect(objStar, 0, 0, 256, 256);
+	ObjSprite2D_SetDestCenter(objStar);
+	
+	while(!Obj_IsDeleted(objStar)) {
+		ObjRender_SetPosition(objStar, x+r*cos(dir), y+r*sin(dir), 0);
+		ObjRender_SetScaleXYZ(objStar, scale, scale, scale);
+		ObjRender_SetAngleXYZ(objStar, 0, 0, spin);
+		ObjRender_SetAlpha(objStar, alpha);
+		ObjRender_SetColor(objStar, RED*(alpha/255), GREEN*(alpha/255), BLUE*(alpha/255));
+		if(r>=30) { alpha-=opacity/90*speed; }
+		if(r<200 && r<rmax-30) { scale+=0.9/200*speed; }
+		if(r>rmax-30) { speed+=initspeed/30*speed; }
+		if(r>rmax-30) { alpha-=opacity/20; }
+		if(alpha<=0) { Obj_Delete(objStar); }
+		spin+=rand(3,4)*rot*(speed/7);
+		r+=speed;
+		yield;
+	}
+}
+task ConcObject03(type,x,y,speed,dir,rot,r,color,opacity) { //I honestly don't remember what this was originally for. Not currently in use.
+	let objStar = ObjPrim_Create(OBJ_SPRITE_2D);
+
+	let alpha = 0;
+	let spin = rand(0,180);
+	// let RED = rand(100,255);
+	// let GREEN = rand(100,255);
+	// let BLUE = rand(100,255);
+	let RED = color[0];
+	let GREEN = color[1];
+	let BLUE = color[2];
+	let scale = 0.75*(r/200);
+	
+	if(r > 200) { scale = 1.00; }
+	
+	ObjRender_SetBlendType(objStar, BLEND_SUBTRACT);
+	Obj_SetRenderPriorityI(objStar,41);
+	ObjPrim_SetTexture(objStar, CSD ~ "../img/Effect/" ~ type ~ ".png");
+	ObjSprite2D_SetSourceRect(objStar, 0, 0, 256, 256);
+	ObjSprite2D_SetDestCenter(objStar);
+	
+	while(!Obj_IsDeleted(objStar)) {
+		ObjRender_SetPosition(objStar, x+r*cos(dir), y+r*sin(dir), 0);
+		ObjRender_SetScaleXYZ(objStar, scale, scale, scale);
+		ObjRender_SetAngleXYZ(objStar, 0, 0, spin);
+		ObjRender_SetAlpha(objStar, alpha);
+		ObjRender_SetColor(objStar, RED*(alpha/255), GREEN*(alpha/255), BLUE*(alpha/255));
+		if(alpha<opacity && r>=10) { alpha+=opacity/90*speed; }
+		if(r<200) { scale-=0.75/200*speed; }
+		if(r<10) { alpha-=opacity/10*speed; }
+		if(alpha<=0) { Obj_Delete(objStar); }
+		spin+=rand(3,4)*rot;
+		r-=speed;
+		yield;
+	}
+}
+task ExplodeCircle01(objEnemy,color) { //Meant to be used with ZUN's explode circles. Not currently in use.
+	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	
+	ObjRender_SetBlendType(obj, BLEND_ALPHA);
+	Obj_SetRenderPriorityI(obj,41);
+	ObjPrim_SetTexture(obj, CSD ~ "../img/Effect/Effect.png");
+	if(color == "Orange") { ObjSprite2D_SetSourceRect(obj, 0, 0, 64, 64); }
+	if(color == "Blue") { ObjSprite2D_SetSourceRect(obj, 64, 0, 128, 64); }
+	if(color == "Yellow") { ObjSprite2D_SetSourceRect(obj, 128, 0, 192, 64); }
+	if(color == "Green") { ObjSprite2D_SetSourceRect(obj, 192, 0, 256, 64); }
+	ObjSprite2D_SetDestCenter(obj);
+
+	let alpha = 220;
+	let scale = 0;
+	let dscale = 0.4;
+	
+	ObjRender_SetPosition(obj, ObjMove_GetX(objEnemy), ObjMove_GetY(objEnemy), 0);
+	loop(40){
+		scale += dscale;
+		alpha -= 5;
+		if(dscale>0){ dscale = dscale^1.13; }
+		ObjRender_SetAlpha(obj, alpha);
+		ObjRender_SetScaleXYZ(obj, scale, scale, 1);
+		yield;
+	}
+	Obj_Delete(obj);
+}
+task ExplodeCircle02(objEnemy,maxscale,color,x,y,z) { //Meant to be used with ZUN's explode circles. Not currently in use.
+	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	
+	ObjRender_SetBlendType(obj, BLEND_ALPHA);
+	Obj_SetRenderPriorityI(obj,41);
+	ObjPrim_SetTexture(obj, CSD ~ "../img/Effect/Effect.png");
+	if(color == "Orange") { ObjSprite2D_SetSourceRect(obj, 0, 0, 64, 64); }
+	if(color == "Blue") { ObjSprite2D_SetSourceRect(obj, 64, 0, 128, 64); }
+	if(color == "Yellow") { ObjSprite2D_SetSourceRect(obj, 128, 0, 192, 64); }
+	if(color == "Green") { ObjSprite2D_SetSourceRect(obj, 192, 0, 256, 64); }
+	ObjSprite2D_SetDestCenter(obj);
+
+	let alpha = 200;
+	let scale = 0;
+	let dscale = 0.4;
+	
+	ObjRender_SetPosition(obj, ObjMove_GetX(objEnemy), ObjMove_GetY(objEnemy), 0);
+	ObjRender_SetAngleXYZ(obj,x,y,z);
+	ascent(i in 0..30) {
+		scale = maxscale*sin(90*i/20);
+		alpha -= 255/30;
+		//if(dscale>0){ dscale = dscale^1.15; }
+		ObjRender_SetAlpha(obj, alpha);
+		ObjRender_SetScaleXYZ(obj, scale, scale, scale);
+		yield;
+	}
+	Obj_Delete(obj);
+}
+task DefaultCircle(objEnemy,maxscale,color,x,y,z) { //Uses Danmakufu's default explode circle
+	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	
+	let RGB = color;
+	
+	ObjRender_SetBlendType(obj, BLEND_ADD_RGB);
+	Obj_SetRenderPriorityI(obj,41);
+	ObjPrim_SetTexture(obj, CSD ~ "../img/Effect/Default_Effect.png");
+	ObjSprite2D_SetSourceRect(obj, 0, 0, 64, 64);
+	ObjSprite2D_SetDestCenter(obj);
+
+	let alpha = 255;
+	let scale = 0;
+	let dscale = 0.4;
+	
+	ObjRender_SetPosition(obj, ObjMove_GetX(objEnemy), ObjMove_GetY(objEnemy), 0);
+	ObjRender_SetAngleXYZ(obj,x,y,z);
+	ascent(i in 0..20) {
+		scale = maxscale*sin(90*i/20);
+		alpha -= 255/20;
+		//if(dscale>0){ dscale = dscale^1.15; }
+		ObjRender_SetColor(obj,(alpha/255)*RGB[0],(alpha/255)*RGB[1],(alpha/255)*RGB[2]);
+		ObjRender_SetScaleXYZ(obj, scale, scale, scale);
+		yield;
+	}
+	Obj_Delete(obj);
+}
+task ConcCircle01(x,y,speed,r,color) {
+	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	
+	let RGB = color;
+	
+	let alpha = 0;
+	let scale = 2.5*(r/200);
+	
+	ObjRender_SetBlendType(obj, BLEND_ADD_RGB);
+	Obj_SetRenderPriorityI(obj,41);
+	ObjPrim_SetTexture(obj, CSD ~ "../img/Effect/ConcentrationCircle.png");
+	ObjSprite2D_SetSourceRect(obj, 0, 0, 256, 256);
+	ObjSprite2D_SetDestCenter(obj);
+	
+	while(!Obj_IsDeleted(obj)) {
+		ObjRender_SetPosition(obj, x, y, 0);
+		ObjRender_SetScaleXYZ(obj, scale, scale, scale);
+		ObjRender_SetColor(obj, RGB[0]*(alpha/255), RGB[1]*(alpha/255), RGB[2]*(alpha/255));
+		if(alpha<255) { alpha+=255/(r-90)*speed; }
+		scale-=speed/100;
+		if(scale<=0) { Obj_Delete(obj); }
+		yield;
+	}
+}
+//previously unused and identical to ConcCircle01
+task ConcCircle02(x,y,speed,r,color) {
+	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	
+	let RGB = color;
+	
+	let alpha = 255;
+	let scale = 0;
+	
+	ObjRender_SetBlendType(obj, BLEND_ADD_ARGB);
+	Obj_SetRenderPriorityI(obj,41);
+	ObjPrim_SetTexture(obj, CSD ~ "../img/Effect/ConcentrationCircle.png");
+	ObjSprite2D_SetSourceRect(obj, 0, 0, 256, 256);
+	ObjSprite2D_SetDestCenter(obj);
+	
+	while(!Obj_IsDeleted(obj)) {
+		ObjRender_SetPosition(obj, x, y, 0);
+		ObjRender_SetScaleXYZ(obj, scale, scale, scale);
+		ObjRender_SetColor(obj, RGB[0]*(alpha/255), RGB[1]*(alpha/255), RGB[2]*(alpha/255));
+		if(alpha>0) { alpha -= speed; }	 //alpha-=255/(2.5*(r/200)-90)*speed; }
+		ObjRender_SetAlpha(obj,alpha);
+		scale+=speed/100;
+		if(scale>=2.5*(r/200)) { Obj_Delete(obj); }
+		yield;
+	}
+}
+task MSDEffect(objID,duration,color) { //Adapted from Magical Singular Day
+	let scale = 22;
+	let RGB = color;
+	
+	Concentration;
+	loop(duration/5) {
+		if(!Obj_IsDeleted(objID)) {
+			loop(2) {
+				Beam(ObjMove_GetX(objID),ObjMove_GetY(objID));
+			}
+		}
+		loop(5) { yield; }
+	}
+	task Concentration {
+		loop(duration/15) {
+			if(!Obj_IsDeleted(objID)) {
+				Concentrate(ObjMove_GetX(objID),ObjMove_GetY(objID));
+			}
+			loop(15) { yield; }
+		}
+	}
+	task Concentrate(ex,ey) {
+		let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+		let path = CSD ~ "../img/Effect/MSDEffect.png";
+		
+		let scale = 1.6;
+		let scaleX = rand(2,3);
+		let scaleY = rand(2,3);
+		let scaleZ = rand(2,3);
+		let alpha = 0;
+		let x = rand(-90,90);
+		let y = rand(-90,90);
+		let z = rand(-90,90);
+		let dx = rand(-1,1);
+		let dy = rand(-1,1);
+		let dz = rand(-1,1);
+		
+		ObjPrim_SetTexture(obj,path);
+		ObjRender_SetBlendType(obj,BLEND_ADD_RGB);
+		Obj_SetRenderPriorityI(obj, 44);
+		ObjSprite2D_SetSourceRect(obj,128,0,256,128);
+		ObjSprite2D_SetDestCenter(obj);
+		
+		ObjRender_SetPosition(obj, ex, ey, 0);
+		
+		loop(10) {
+			ObjRender_SetPosition(obj, ex, ey, 0);
+			ObjRender_SetScaleXYZ(obj,scaleX*scale,scaleY*scale,scaleZ*scale);
+			ObjRender_SetAngleXYZ(obj,x,y,z);
+			ObjRender_SetColor(obj,RGB[0]*(alpha/255),RGB[1]*(alpha/255),RGB[2]*(alpha/255));
+			alpha+=255/10;
+			scale-=1.6/60;
+			x+=dx; y+=dy; z+=dz;
+			yield;
+		}
+		loop(50) {
+			ObjRender_SetPosition(obj, ex, ey, 0);
+			ObjRender_SetScaleXYZ(obj,scaleX*scale,scaleY*scale,scaleZ*scale);
+			ObjRender_SetAngleXYZ(obj,x,y,z);
+			scale-=1.6/60;
+			x+=dx; y+=dy; z+=dz;
+			yield;
+		}
+		Obj_Delete(obj);
+	}
+	task Beam(ex,ey) {
+		let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+		let path = CSD ~ "../img/Effect/MSDEffect.png";
+		
+		let maxscale = rand(1.5,2.5);
+		let scale = 0;
+		let alpha = 0;
+		let x = rand(0,360);
+		let y = rand(0,360);
+		let z = rand(0,360);
+		let dx = rand(-1,1);
+		let dy = rand(-1,1);
+		let dz = rand(-1,1);
+		
+		ObjPrim_SetTexture(obj,path);
+		ObjRender_SetBlendType(obj,BLEND_ADD_RGB);
+		Obj_SetRenderPriorityI(obj, 43);
+		ObjSprite2D_SetSourceRect(obj,0,0,128,64);
+		ObjSprite2D_SetDestRect(obj,0,-32,128,32);
+		
+		ObjRender_SetPosition(obj, ex, ey, 0);
+		
+		loop(20) {
+			ObjRender_SetPosition(obj, ex, ey, 0);
+			ObjRender_SetScaleXYZ(obj,scale,scale,scale);
+			ObjRender_SetAngleXYZ(obj,x,y,z);
+			ObjRender_SetColor(obj,RGB[0]*(alpha/255),RGB[1]*(alpha/255),RGB[2]*(alpha/255));
+			alpha+=255/20;
+			x+=dx; y+=dy; z+=dz;
+			scale+=maxscale/20;
+			yield;
+		}
+		loop(30) {
+			ObjRender_SetPosition(obj, ex, ey, 0);
+			ObjRender_SetAngleXYZ(obj,x,y,z);
+			x+=dx; y+=dy; z+=dz;
+			yield;
+		}
+		loop(30) {
+			ObjRender_SetPosition(obj, ex, ey, 0);
+			ObjRender_SetAngleXYZ(obj,x,y,z);
+			ObjRender_SetColor(obj,RGB[0]*(alpha/255),RGB[1]*(alpha/255),RGB[2]*(alpha/255));
+			alpha-=255/30;
+			x+=dx; y+=dy; z+=dz;
+			yield;
+		}
+		Obj_Delete(obj);
+	}
+}
+task MSDEffectExplode(objID,ex,ey,color) {
+	let scale = 22;
+	let RGB = color;
+	
+	Concentration;
+	loop(150/5) {
+		loop(2) {
+			Beam;
+		}
+		loop(5) { yield; }
+	}
+	loop(75) {
+		loop(3) {
+			if(scale>8) { Beam; }
+		}
+		loop(2) {
+			Star(scale);
+		}
+		scale-=22/75;
+		loop(2) { yield; }
+	}
+	task Concentration {
+		loop(180/10) {
+			Concentrate;
+			loop(10) { yield; }
+		}
+	}
+	task Star(maxscale) {
+		let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+		let path = CSD ~ "../img/Effect/MSDEffect.png";
+		
+		let scale = 0;
+		let alpha = 255;
+		let x = rand(-30,30);
+		let y = rand(-30,30);
+		let z = rand(-30,30);
+		let dx = rand(-2,2);
+		let dy = rand(-2,2);
+		let dz = rand(-2,2);
+		
+		ObjPrim_SetTexture(obj,path);
+		ObjRender_SetBlendType(obj,BLEND_ADD_RGB);
+		Obj_SetRenderPriorityI(obj,40);
+		ObjSprite2D_SetSourceRect(obj,0,64,64,128);
+		ObjSprite2D_SetDestCenter(obj);
+		
+		ObjRender_SetPosition(obj, ex, ey, 0);
+		
+		loop(60) {
+			ObjRender_SetScaleXYZ(obj,scale,scale,scale);
+			ObjRender_SetAngleXYZ(obj,x,y,z);
+			ObjRender_SetColor(obj,RGB[0]*(alpha/255),RGB[1]*(alpha/255),RGB[2]*(alpha/255));
+			alpha-=255/60;
+			scale+=maxscale/60;
+			//x+=dx; y+=dy; z+=dz;
+			yield;
+		}
+		Obj_Delete(obj);
+	}
+	task Concentrate {
+		let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+		let path = CSD ~ "../img/Effect/MSDEffect.png";
+		
+		let scale = 1.6;
+		let scaleX = rand(2,3);
+		let scaleY = rand(2,3);
+		let scaleZ = rand(2,3);
+		let alpha = 0;
+		let x = rand(-90,90);
+		let y = rand(-90,90);
+		let z = rand(-90,90);
+		let dx = rand(-1,1);
+		let dy = rand(-1,1);
+		let dz = rand(-1,1);
+		
+		ObjPrim_SetTexture(obj,path);
+		ObjRender_SetBlendType(obj,BLEND_ADD_RGB);
+		Obj_SetRenderPriorityI(obj,40);
+		ObjSprite2D_SetSourceRect(obj,128,0,256,128);
+		ObjSprite2D_SetDestCenter(obj);
+		
+		ObjRender_SetPosition(obj, ex, ey, 0);
+		
+		loop(10) {
+			ObjRender_SetScaleXYZ(obj,scaleX*scale,scaleY*scale,scaleZ*scale);
+			ObjRender_SetAngleXYZ(obj,x,y,z);
+			ObjRender_SetColor(obj,RGB[0]*(alpha/255),RGB[1]*(alpha/255),RGB[2]*(alpha/255));
+			alpha+=255/10;
+			scale-=1.6/60;
+			x+=dx; y+=dy; z+=dz;
+			yield;
+		}
+		loop(50) {
+			ObjRender_SetScaleXYZ(obj,scaleX*scale,scaleY*scale,scaleZ*scale);
+			ObjRender_SetAngleXYZ(obj,x,y,z);
+			scale-=1.6/60;
+			x+=dx; y+=dy; z+=dz;
+			yield;
+		}
+		Obj_Delete(obj);
+	}
+	task Explode {
+		let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+		let path = CSD ~ "../img/Effect/MSDEffect.png";
+		
+		let scale = 0;
+		let scaleX = rand(2,3);
+		let scaleY = rand(2,3);
+		let scaleZ = rand(2,3);
+		let alpha = 0;
+		let x = rand(0,360);
+		let y = rand(0,360);
+		let z = rand(0,360);
+		let dx = rand(-1,1);
+		let dy = rand(-1,1);
+		let dz = rand(-1,1);
+		
+		ObjPrim_SetTexture(obj,path);
+		ObjRender_SetBlendType(obj,BLEND_ADD_RGB);
+		Obj_SetRenderPriorityI(obj,40);
+		ObjSprite2D_SetSourceRect(obj,128,0,256,128);
+		ObjSprite2D_SetDestCenter(obj);
+		
+		ObjRender_SetPosition(obj, ex, ey, 0);
+		
+		loop(10) {
+			ObjRender_SetScaleXYZ(obj,scaleX*scale,scaleY*scale,scaleZ*scale);
+			ObjRender_SetAngleXYZ(obj,x,y,z);
+			scale+=2.4/20;
+			x+=dx; y+=dy; z+=dz;
+			yield;
+		}
+		loop(10) {
+			ObjRender_SetScaleXYZ(obj,scaleX*scale,scaleY*scale,scaleZ*scale);
+			ObjRender_SetAngleXYZ(obj,x,y,z);
+			ObjRender_SetColor(obj,RGB[0]*(alpha/255),RGB[1]*(alpha/255),RGB[2]*(alpha/255));
+			alpha-=255/10;
+			scale+=1.6/20;
+			x+=dx; y+=dy; z+=dz;
+			yield;
+		}
+		Obj_Delete(obj);
+	}
+	task Beam {
+		let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+		let path = CSD ~ "../img/Effect/MSDEffect.png";
+		
+		let maxscale = rand(1.5,2.5);
+		let scale = 0;
+		let alpha = 0;
+		let x = rand(0,360);
+		let y = rand(0,360);
+		let z = rand(0,360);
+		let dx = rand(-1,1);
+		let dy = rand(-1,1);
+		let dz = rand(-1,1);
+		
+		ObjPrim_SetTexture(obj,path);
+		ObjRender_SetBlendType(obj,BLEND_ADD_RGB);
+		Obj_SetRenderPriorityI(obj,40);
+		ObjSprite2D_SetSourceRect(obj,0,0,128,64);
+		ObjSprite2D_SetDestRect(obj,0,-32,128,32);
+		
+		ObjRender_SetPosition(obj, ex, ey, 0);
+		
+		loop(20) {
+			ObjRender_SetScaleXYZ(obj,scale,scale,scale);
+			ObjRender_SetAngleXYZ(obj,x,y,z);
+			ObjRender_SetColor(obj,RGB[0]*(alpha/255),RGB[1]*(alpha/255),RGB[2]*(alpha/255));
+			alpha+=255/20;
+			x+=dx; y+=dy; z+=dz;
+			scale+=maxscale/20;
+			yield;
+		}
+		loop(30) {
+			ObjRender_SetAngleXYZ(obj,x,y,z);
+			x+=dx; y+=dy; z+=dz;
+			yield;
+		}
+		loop(30) {
+			ObjRender_SetAngleXYZ(obj,x,y,z);
+			ObjRender_SetColor(obj,RGB[0]*(alpha/255),RGB[1]*(alpha/255),RGB[2]*(alpha/255));
+			alpha-=255/30;
+			x+=dx; y+=dy; z+=dz;
+			yield;
+		}
+		Obj_Delete(obj);
+	}
+}
+task MSDEffectRainbow(duration,objID) {
+	let scale = 18;
+	let RGB = [[255,64,64],[255,128,64],[255,255,64],[64,255,64],[64,64,255],[64,64,255]];
+	let ex = ObjRender_GetX(objID);
+	let ey = ObjRender_GetY(objID);
+	
+	loop(duration/30) {
+		ascent(i in 0..6) {
+			ex = ObjRender_GetX(objID);
+			ey = ObjRender_GetY(objID);
+			if(!Obj_IsDeleted(objID)) {
+				Concentrate(RGB[i][0],RGB[i][1],RGB[i][2]);
+				loop(2) {
+					Beam(RGB[i][0],RGB[i][1],RGB[i][2]);
+				}
+				loop(5) { yield; }
+			}
+		}
+	}
+	task Star(maxscale,R,G,B) {
+		let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+		let path = CSD ~ "../img/Effect/MSDEffect.png";
+		
+		let scale = 0;
+		let alpha = 255;
+		let x = rand(-30,30);
+		let y = rand(-30,30);
+		let z = rand(-30,30);
+		let dx = rand(-2,2);
+		let dy = rand(-2,2);
+		let dz = rand(-2,2);
+		
+		ObjPrim_SetTexture(obj,path);
+		ObjRender_SetBlendType(obj,BLEND_ADD_RGB);
+		Obj_SetRenderPriorityI(obj, 30);
+		ObjSprite2D_SetSourceRect(obj,0,64,64,128);
+		ObjSprite2D_SetDestCenter(obj);
+		
+		ObjRender_SetPosition(obj, ex, ey, 0);
+		
+		loop(60) {
+			ObjRender_SetScaleXYZ(obj,scale,scale,scale);
+			ObjRender_SetAngleXYZ(obj,x,y,z);
+			ObjRender_SetColor(obj,R*(alpha/255),G*(alpha/255),B*(alpha/255));
+			alpha-=255/60;
+			scale+=maxscale/60;
+			//x+=dx; y+=dy; z+=dz;
+			yield;
+		}
+		Obj_Delete(obj);
+	}
+	task Concentrate(R,G,B) {
+		let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+		let path = CSD ~ "../img/Effect/MSDEffect.png";
+		
+		let scale = 1.6;
+		let scaleX = rand(2,3);
+		let scaleY = rand(2,3);
+		let scaleZ = rand(2,3);
+		let alpha = 0;
+		let x = rand(-90,90);
+		let y = rand(-90,90);
+		let z = rand(-90,90);
+		let dx = rand(-1,1);
+		let dy = rand(-1,1);
+		let dz = rand(-1,1);
+		
+		ObjPrim_SetTexture(obj,path);
+		ObjRender_SetBlendType(obj,BLEND_ADD_RGB);
+		Obj_SetRenderPriorityI(obj, 30);
+		ObjSprite2D_SetSourceRect(obj,128,0,256,128);
+		ObjSprite2D_SetDestCenter(obj);
+		
+		ObjRender_SetPosition(obj, ex, ey, 0);
+		
+		loop(10) {
+			ObjRender_SetScaleXYZ(obj,scaleX*scale,scaleY*scale,scaleZ*scale);
+			ObjRender_SetAngleXYZ(obj,x,y,z);
+			ObjRender_SetColor(obj,R*(alpha/255),G*(alpha/255),B*(alpha/255));
+			alpha+=255/10;
+			scale-=1.6/40;
+			x+=dx; y+=dy; z+=dz;
+			yield;
+		}
+		loop(30) {
+			ObjRender_SetScaleXYZ(obj,scaleX*scale,scaleY*scale,scaleZ*scale);
+			ObjRender_SetAngleXYZ(obj,x,y,z);
+			scale-=1.6/40;
+			x+=dx; y+=dy; z+=dz;
+			yield;
+		}
+		Obj_Delete(obj);
+	}
+	task Explode(R,G,B) {
+		let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+		let path = CSD ~ "../img/Effect/MSDEffect.png";
+		
+		let scale = 0;
+		let scaleX = rand(2,3);
+		let scaleY = rand(2,3);
+		let scaleZ = rand(2,3);
+		let alpha = 255;
+		let x = rand(-90,90);
+		let y = rand(-90,90);
+		let z = rand(-90,90);
+		let dx = rand(-1,1);
+		let dy = rand(-1,1);
+		let dz = rand(-1,1);
+		
+		ObjPrim_SetTexture(obj,path);
+		ObjRender_SetBlendType(obj,BLEND_ADD_RGB);
+		Obj_SetRenderPriorityI(obj, 30);
+		ObjSprite2D_SetSourceRect(obj,128,0,256,128);
+		ObjSprite2D_SetDestCenter(obj);
+		
+		ObjRender_SetPosition(obj, ex, ey, 0);
+		
+		loop(30) {
+			ObjRender_SetScaleXYZ(obj,scaleX*scale,scaleY*scale,scaleZ*scale);
+			ObjRender_SetAngleXYZ(obj,x,y,z);
+			ObjRender_SetColor(obj,R*(alpha/255),G*(alpha/255),B*(alpha/255));
+			scale+=3.0/40;
+			x+=dx; y+=dy; z+=dz;
+			yield;
+		}
+		loop(10) {
+			ObjRender_SetScaleXYZ(obj,scaleX*scale,scaleY*scale,scaleZ*scale);
+			ObjRender_SetAngleXYZ(obj,x,y,z);
+			ObjRender_SetColor(obj,R*(alpha/255),G*(alpha/255),B*(alpha/255));
+			alpha-=255/10;
+			scale+=3.0/40;
+			x+=dx; y+=dy; z+=dz;
+			yield;
+		}
+		Obj_Delete(obj);
+	}
+	task Beam(R,G,B) {
+		let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+		let path = CSD ~ "../img/Effect/MSDEffect.png";
+		
+		let maxscale = rand(1.5,2.5);
+		let scale = 0;
+		let alpha = 0;
+		let x = rand(0,360);
+		let y = rand(0,360);
+		let z = rand(0,360);
+		let dx = rand(-1,1);
+		let dy = rand(-1,1);
+		let dz = rand(-1,1);
+		
+		ObjPrim_SetTexture(obj,path);
+		ObjRender_SetBlendType(obj,BLEND_ADD_RGB);
+		Obj_SetRenderPriorityI(obj, 30);
+		ObjSprite2D_SetSourceRect(obj,0,0,128,64);
+		ObjSprite2D_SetDestRect(obj,0,-32,128,32);
+		
+		ObjRender_SetPosition(obj, ex, ey, 0);
+		
+		loop(20) {
+			ObjRender_SetScaleXYZ(obj,scale,scale,scale);
+			ObjRender_SetAngleXYZ(obj,x,y,z);
+			ObjRender_SetColor(obj,R*(alpha/255),G*(alpha/255),B*(alpha/255));
+			alpha+=255/20;
+			x+=dx; y+=dy; z+=dz;
+			scale+=maxscale/20;
+			yield;
+		}
+		loop(30) {
+			ObjRender_SetAngleXYZ(obj,x,y,z);
+			x+=dx; y+=dy; z+=dz;
+			yield;
+		}
+		loop(30) {
+			ObjRender_SetAngleXYZ(obj,x,y,z);
+			ObjRender_SetColor(obj,R*(alpha/255),G*(alpha/255),B*(alpha/255));
+			alpha-=255/30;
+			x+=dx; y+=dy; z+=dz;
+			yield;
+		}
+		Obj_Delete(obj);
+	}
+}
+task MSDEffectRainbow_2(duration,destX,destY) {
+	let scale = 18;
+	let RGB = [[255,64,64],[255,128,64],[255,255,64],[64,255,64],[64,64,255],[64,64,255]];
+	let ex = destX;
+	let ey = destY;
+	
+	loop(duration/30) {
+		ascent(i in 0..6) {
+			ex = destX;
+			ey = destY;
+				Concentrate(RGB[i][0],RGB[i][1],RGB[i][2]);
+				loop(2) {
+					Beam(RGB[i][0],RGB[i][1],RGB[i][2]);
+				}
+				loop(5) { yield; }
+			
+		}
+	}
+	task Star(maxscale,R,G,B) {
+		let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+		let path = CSD ~ "../img/Effect/MSDEffect.png";
+		
+		let scale = 0;
+		let alpha = 255;
+		let x = rand(-30,30);
+		let y = rand(-30,30);
+		let z = rand(-30,30);
+		let dx = rand(-2,2);
+		let dy = rand(-2,2);
+		let dz = rand(-2,2);
+		
+		ObjPrim_SetTexture(obj,path);
+		ObjRender_SetBlendType(obj,BLEND_ADD_RGB);
+		Obj_SetRenderPriorityI(obj, 30);
+		ObjSprite2D_SetSourceRect(obj,0,64,64,128);
+		ObjSprite2D_SetDestCenter(obj);
+		
+		ObjRender_SetPosition(obj, ex, ey, 0);
+		
+		loop(60) {
+			ObjRender_SetScaleXYZ(obj,scale,scale,scale);
+			ObjRender_SetAngleXYZ(obj,x,y,z);
+			ObjRender_SetColor(obj,R*(alpha/255),G*(alpha/255),B*(alpha/255));
+			alpha-=255/60;
+			scale+=maxscale/60;
+			//x+=dx; y+=dy; z+=dz;
+			yield;
+		}
+		Obj_Delete(obj);
+	}
+	task Concentrate(R,G,B) {
+		let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+		let path = CSD ~ "../img/Effect/MSDEffect.png";
+		
+		let scale = 1.6;
+		let scaleX = rand(2,3);
+		let scaleY = rand(2,3);
+		let scaleZ = rand(2,3);
+		let alpha = 0;
+		let x = rand(-90,90);
+		let y = rand(-90,90);
+		let z = rand(-90,90);
+		let dx = rand(-1,1);
+		let dy = rand(-1,1);
+		let dz = rand(-1,1);
+		
+		ObjPrim_SetTexture(obj,path);
+		ObjRender_SetBlendType(obj,BLEND_ADD_RGB);
+		Obj_SetRenderPriorityI(obj, 30);
+		ObjSprite2D_SetSourceRect(obj,128,0,256,128);
+		ObjSprite2D_SetDestCenter(obj);
+		
+		ObjRender_SetPosition(obj, ex, ey, 0);
+		
+		loop(10) {
+			ObjRender_SetScaleXYZ(obj,scaleX*scale,scaleY*scale,scaleZ*scale);
+			ObjRender_SetAngleXYZ(obj,x,y,z);
+			ObjRender_SetColor(obj,R*(alpha/255),G*(alpha/255),B*(alpha/255));
+			alpha+=255/10;
+			scale-=1.6/40;
+			x+=dx; y+=dy; z+=dz;
+			yield;
+		}
+		loop(30) {
+			ObjRender_SetScaleXYZ(obj,scaleX*scale,scaleY*scale,scaleZ*scale);
+			ObjRender_SetAngleXYZ(obj,x,y,z);
+			scale-=1.6/40;
+			x+=dx; y+=dy; z+=dz;
+			yield;
+		}
+		Obj_Delete(obj);
+	}
+	task Explode(R,G,B) {
+		let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+		let path = CSD ~ "../img/Effect/MSDEffect.png";
+		
+		let scale = 0;
+		let scaleX = rand(2,3);
+		let scaleY = rand(2,3);
+		let scaleZ = rand(2,3);
+		let alpha = 255;
+		let x = rand(-90,90);
+		let y = rand(-90,90);
+		let z = rand(-90,90);
+		let dx = rand(-1,1);
+		let dy = rand(-1,1);
+		let dz = rand(-1,1);
+		
+		ObjPrim_SetTexture(obj,path);
+		ObjRender_SetBlendType(obj,BLEND_ADD_RGB);
+		Obj_SetRenderPriorityI(obj, 30);
+		ObjSprite2D_SetSourceRect(obj,128,0,256,128);
+		ObjSprite2D_SetDestCenter(obj);
+		
+		ObjRender_SetPosition(obj, ex, ey, 0);
+		
+		loop(30) {
+			ObjRender_SetScaleXYZ(obj,scaleX*scale,scaleY*scale,scaleZ*scale);
+			ObjRender_SetAngleXYZ(obj,x,y,z);
+			ObjRender_SetColor(obj,R*(alpha/255),G*(alpha/255),B*(alpha/255));
+			scale+=3.0/40;
+			x+=dx; y+=dy; z+=dz;
+			yield;
+		}
+		loop(10) {
+			ObjRender_SetScaleXYZ(obj,scaleX*scale,scaleY*scale,scaleZ*scale);
+			ObjRender_SetAngleXYZ(obj,x,y,z);
+			ObjRender_SetColor(obj,R*(alpha/255),G*(alpha/255),B*(alpha/255));
+			alpha-=255/10;
+			scale+=3.0/40;
+			x+=dx; y+=dy; z+=dz;
+			yield;
+		}
+		Obj_Delete(obj);
+	}
+	task Beam(R,G,B) {
+		let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+		let path = CSD ~ "../img/Effect/MSDEffect.png";
+		
+		let maxscale = rand(1.5,2.5);
+		let scale = 0;
+		let alpha = 0;
+		let x = rand(0,360);
+		let y = rand(0,360);
+		let z = rand(0,360);
+		let dx = rand(-1,1);
+		let dy = rand(-1,1);
+		let dz = rand(-1,1);
+		
+		ObjPrim_SetTexture(obj,path);
+		ObjRender_SetBlendType(obj,BLEND_ADD_RGB);
+		Obj_SetRenderPriorityI(obj, 30);
+		ObjSprite2D_SetSourceRect(obj,0,0,128,64);
+		ObjSprite2D_SetDestRect(obj,0,-32,128,32);
+		
+		ObjRender_SetPosition(obj, ex, ey, 0);
+		
+		loop(20) {
+			ObjRender_SetScaleXYZ(obj,scale,scale,scale);
+			ObjRender_SetAngleXYZ(obj,x,y,z);
+			ObjRender_SetColor(obj,R*(alpha/255),G*(alpha/255),B*(alpha/255));
+			alpha+=255/20;
+			x+=dx; y+=dy; z+=dz;
+			scale+=maxscale/20;
+			yield;
+		}
+		loop(30) {
+			ObjRender_SetAngleXYZ(obj,x,y,z);
+			x+=dx; y+=dy; z+=dz;
+			yield;
+		}
+		loop(30) {
+			ObjRender_SetAngleXYZ(obj,x,y,z);
+			ObjRender_SetColor(obj,R*(alpha/255),G*(alpha/255),B*(alpha/255));
+			alpha-=255/30;
+			x+=dx; y+=dy; z+=dz;
+			yield;
+		}
+		Obj_Delete(obj);
+	}
+}
+task MSDEffectRainbowExplode(objID,duration,ex,ey) {
+	let scale = 18;
+	let RGB = [[255,64,64],[255,128,64],[255,255,64],[128,255,128],[128,128,255],[128,64,255]];
+	
+	loop(duration/48) {
+		ascent(i in 0..6) {
+			Concentrate(RGB[i][0],RGB[i][1],RGB[i][2]);
+			loop(2) {
+				Beam(RGB[i][0],RGB[i][1],RGB[i][2]);
+			}
+			loop(8) { yield; }
+		}
+	}
+	loop(12) {
+		ascent(i in 0..6) {
+			Explode(RGB[i][0],RGB[i][1],RGB[i][2]);
+			loop(3) {
+				if(scale>8) { Beam(RGB[i][0],RGB[i][1],RGB[i][2]); }
+			}
+			loop(2) {
+				Star(scale,RGB[i][0],RGB[i][1],RGB[i][2]);
+			}
+			scale-=18/75;
+			loop(2) { yield; }
+		}
+	}
+	task Star(maxscale,R,G,B) {
+		let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+		let path = CSD ~ "../img/Effect/MSDEffect.png";
+		
+		let scale = 0;
+		let alpha = 255;
+		let x = rand(-30,30);
+		let y = rand(-30,30);
+		let z = rand(-30,30);
+		let dx = rand(-2,2);
+		let dy = rand(-2,2);
+		let dz = rand(-2,2);
+		
+		ObjPrim_SetTexture(obj,path);
+		ObjRender_SetBlendType(obj,BLEND_ADD_RGB);
+		Obj_SetRenderPriorityI(obj,46);
+		ObjSprite2D_SetSourceRect(obj,0,64,64,128);
+		ObjSprite2D_SetDestCenter(obj);
+		
+		ObjRender_SetPosition(obj, ex, ey, 0);
+		
+		loop(60) {
+			ObjRender_SetScaleXYZ(obj,scale,scale,scale);
+			ObjRender_SetAngleXYZ(obj,x,y,z);
+			ObjRender_SetColor(obj,R*(alpha/255),G*(alpha/255),B*(alpha/255));
+			alpha-=255/60;
+			scale+=maxscale/60;
+			//x+=dx; y+=dy; z+=dz;
+			yield;
+		}
+		Obj_Delete(obj);
+	}
+	task Concentrate(R,G,B) {
+		let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+		let path = CSD ~ "../img/Effect/MSDEffect.png";
+		
+		let scale = 1.6;
+		let scaleX = rand(2,3);
+		let scaleY = rand(2,3);
+		let scaleZ = rand(2,3);
+		let alpha = 0;
+		let x = rand(-90,90);
+		let y = rand(-90,90);
+		let z = rand(-90,90);
+		let dx = rand(-1,1);
+		let dy = rand(-1,1);
+		let dz = rand(-1,1);
+		
+		ObjPrim_SetTexture(obj,path);
+		ObjRender_SetBlendType(obj,BLEND_ADD_RGB);
+		Obj_SetRenderPriorityI(obj,46);
+		ObjSprite2D_SetSourceRect(obj,128,0,256,128);
+		ObjSprite2D_SetDestCenter(obj);
+		
+		ObjRender_SetPosition(obj, ex, ey, 0);
+		
+		loop(10) {
+			ObjRender_SetScaleXYZ(obj,scaleX*scale,scaleY*scale,scaleZ*scale);
+			ObjRender_SetAngleXYZ(obj,x,y,z);
+			ObjRender_SetColor(obj,R*(alpha/255),G*(alpha/255),B*(alpha/255));
+			alpha+=255/10;
+			scale-=1.6/50;
+			x+=dx; y+=dy; z+=dz;
+			while(GetCommonData("FREEZE",false)==true){yield;}
+			yield;
+		}
+		loop(40) {
+			ObjRender_SetScaleXYZ(obj,scaleX*scale,scaleY*scale,scaleZ*scale);
+			ObjRender_SetAngleXYZ(obj,x,y,z);
+			scale-=1.6/50;
+			x+=dx; y+=dy; z+=dz;
+			while(GetCommonData("FREEZE",false)==true){yield;}
+			yield;
+		}
+		Obj_Delete(obj);
+	}
+	task Explode(R,G,B) {
+		let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+		let path = CSD ~ "../img/Effect/MSDEffect.png";
+		
+		let scale = 0;
+		let scaleX = rand(2,3);
+		let scaleY = rand(2,3);
+		let scaleZ = rand(2,3);
+		let alpha = 255;
+		let x = rand(-90,90);
+		let y = rand(-90,90);
+		let z = rand(-90,90);
+		let dx = rand(-1,1);
+		let dy = rand(-1,1);
+		let dz = rand(-1,1);
+		
+		ObjPrim_SetTexture(obj,path);
+		ObjRender_SetBlendType(obj,BLEND_ADD_RGB);
+		Obj_SetRenderPriorityI(obj,46);
+		ObjSprite2D_SetSourceRect(obj,128,0,256,128);
+		ObjSprite2D_SetDestCenter(obj);
+		
+		ObjRender_SetPosition(obj, ex, ey, 0);
+		
+		loop(40) {
+			ObjRender_SetScaleXYZ(obj,scaleX*scale,scaleY*scale,scaleZ*scale);
+			ObjRender_SetAngleXYZ(obj,x,y,z);
+			ObjRender_SetColor(obj,R*(alpha/255),G*(alpha/255),B*(alpha/255));
+			scale+=3.0/50;
+			x+=dx; y+=dy; z+=dz;
+			while(GetCommonData("FREEZE",false)==true){yield;}
+			yield;
+		}
+		loop(10) {
+			ObjRender_SetScaleXYZ(obj,scaleX*scale,scaleY*scale,scaleZ*scale);
+			ObjRender_SetAngleXYZ(obj,x,y,z);
+			ObjRender_SetColor(obj,R*(alpha/255),G*(alpha/255),B*(alpha/255));
+			alpha-=255/10;
+			scale+=3.0/50;
+			x+=dx; y+=dy; z+=dz;
+			while(GetCommonData("FREEZE",false)==true){yield;}
+			yield;
+		}
+		Obj_Delete(obj);
+	}
+	task Beam(R,G,B) {
+		let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+		let path = CSD ~ "../img/Effect/MSDEffect.png";
+		
+		let maxscale = rand(1.5,2.5);
+		let scale = 0;
+		let alpha = 0;
+		let x = rand(0,360);
+		let y = rand(0,360);
+		let z = rand(0,360);
+		let dx = rand(-1,1);
+		let dy = rand(-1,1);
+		let dz = rand(-1,1);
+		
+		ObjPrim_SetTexture(obj,path);
+		ObjRender_SetBlendType(obj,BLEND_ADD_RGB);
+		Obj_SetRenderPriorityI(obj,46);
+		ObjSprite2D_SetSourceRect(obj,0,0,128,64);
+		ObjSprite2D_SetDestRect(obj,0,-32,128,32);
+		
+		ObjRender_SetPosition(obj, ex, ey, 0);
+		
+		loop(20) {
+			ObjRender_SetScaleXYZ(obj,scale,scale,scale);
+			ObjRender_SetAngleXYZ(obj,x,y,z);
+			ObjRender_SetColor(obj,R*(alpha/255),G*(alpha/255),B*(alpha/255));
+			alpha+=255/20;
+			x+=dx; y+=dy; z+=dz;
+			scale+=maxscale/20;
+			while(GetCommonData("FREEZE",false)==true){yield;}
+			yield;
+		}
+		loop(30) {
+			ObjRender_SetAngleXYZ(obj,x,y,z);
+			x+=dx; y+=dy; z+=dz;
+			while(GetCommonData("FREEZE",false)==true){yield;}
+			yield;
+		}
+		loop(30) {
+			ObjRender_SetAngleXYZ(obj,x,y,z);
+			ObjRender_SetColor(obj,R*(alpha/255),G*(alpha/255),B*(alpha/255));
+			alpha-=255/30;
+			x+=dx; y+=dy; z+=dz;
+			while(GetCommonData("FREEZE",false)==true){yield;}
+			yield;
+		}
+		Obj_Delete(obj);
+	}
+}
+task Screen_Shake(duration,range) {
+let shake = range;
+	loop(duration) {
+		Set2DCameraFocusX(Get2DCameraX + rand(-shake, shake));
+		Set2DCameraFocusY(Get2DCameraY + rand(-shake, shake));
+		shake-=range/duration;
+		yield;
+		Reset2DCamera;
+	}
+}

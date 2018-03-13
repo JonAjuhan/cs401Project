@@ -1,0 +1,12 @@
+function PlaySound(numb,volume)
+	{
+	LoadCommonDataAreaA2("CONFIG",GetCurrentScriptDirectory ~ "./data/CONFIG");
+	
+	let soundObj = ObjSound_Create;
+	let path = GetCurrentScriptDirectory ~ "se/" ~ ToString(numb) ~ ".wav";
+	ObjSound_Load(soundObj,path);
+	ObjSound_Play(soundObj);
+	ObjSound_SetVolumeRate(soundObj,GetAreaCommonData("CONFIG","SOUND_VOLUME",1)*volume);
+	SetAutoDeleteObject(true);
+	return soundObj;
+	}

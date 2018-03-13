@@ -1,0 +1,501 @@
+task YinYangA1(x, y, v, a){
+	let obj = CreateEnemyObject(10, "", 0, 0, 0, 0);
+	ObjMove_SetPosition(obj, x, y);
+	ObjMove_SetSpeed(obj, v);
+	ObjMove_SetAngle(obj, a);
+
+	AnimateYinyang(obj, "PURPLE");
+	ObjEnemy_HandleCollisionA1(obj, 16); //Handle collision
+	ObjEnemy_PlayHitSound(obj);
+	alternative(GetCommonData("Difficulty", 0))
+	case(0){fireE;}
+	case(1){fireH;}
+
+	while(ObjEnemy_GetInfo(obj, INFO_LIFE) > 0){ //Wait until the enemy is dead
+		if(Obj_GetValueD(obj, "IsSpawning", false)){Obj_SetValue(obj, "CheckCollision", false);}
+		else{Obj_SetValue(obj, "CheckCollision", true);}
+		yield;
+	}
+	if(Obj_IsDeleted(obj)){return;}
+	NotifyEventAll(EV_USER_STAGE + 2, [ObjMove_GetX(obj), ObjMove_GetY(obj)]);
+	NotifyEvent(GetCommonData("SoundScript", GetOwnScriptID), EV_USER, [16, 80]);
+	EnemyExplosionEffect(obj, "MAPLE", [256, 0, 256], [256, 0, 256]);
+	AddScore(1000);
+	Obj_Delete(obj);
+
+	task fireE{
+		let dir = 1;
+		let v = 5;
+		if(Obj_IsDeleted(obj)){return;}
+		loop{
+			if(Obj_IsDeleted(obj)){return;}
+			if(!Obj_IsInArea(obj, -64, -64, GetClipMaxX + 64, GetClipMaxY + 64)){Obj_Delete(obj); return;}
+			v = 5;
+			dir = 1;
+			NotifyEvent(GetCommonData("SoundScript", GetOwnScriptID), EV_USER, [0, 40]);
+
+			CreateShotA1(ObjMove_GetX(obj), ObjMove_GetY(obj), v, GetAngleToPlayer(obj), ICE_MAGENTA, 10);
+			v -= 0.2;
+			loop(3){
+				CreateShotA1(ObjMove_GetX(obj), ObjMove_GetY(obj), v, GetAngleToPlayer(obj) + dir, ICE_MAGENTA, 10);
+				CreateShotA1(ObjMove_GetX(obj), ObjMove_GetY(obj), v, GetAngleToPlayer(obj) - dir, ICE_MAGENTA, 10);
+				dir++;
+				v -= 0.2;
+			}
+			wait(20);
+		}
+	}
+
+	task fireH{
+		let dir = 1;
+		let v = 5;
+		if(Obj_IsDeleted(obj)){return;}
+		loop{
+			if(Obj_IsDeleted(obj)){return;}
+			if(!Obj_IsInArea(obj, -64, -64, GetClipMaxX + 64, GetClipMaxY + 64)){Obj_Delete(obj); return;}
+			v = 5;
+			dir = 1;
+			NotifyEvent(GetCommonData("SoundScript", GetOwnScriptID), EV_USER, [0, 40]);
+
+			CreateShotA1(ObjMove_GetX(obj), ObjMove_GetY(obj), v, GetAngleToPlayer(obj), ICE_MAGENTA, 10);
+			v -= 0.2;
+			loop(5){
+				CreateShotA1(ObjMove_GetX(obj), ObjMove_GetY(obj), v, GetAngleToPlayer(obj) + dir, ICE_MAGENTA, 10);
+				CreateShotA1(ObjMove_GetX(obj), ObjMove_GetY(obj), v, GetAngleToPlayer(obj) - dir, ICE_MAGENTA, 10);
+				dir++;
+				v -= 0.2;
+			}
+			wait(10);
+		}
+	}
+}
+
+task YinYangB1(x, y, destX, destY, finalX, finalY, aplus, num, time){
+	let obj = CreateEnemyObject(10, "", 0, 0, 0, 0);
+	ObjMove_SetPosition(obj, x, y);
+	ObjMove_SetDestAtHermiteF(obj, destX, destY, 300, 180, 200, 0, time);
+	ObjRender_SetMoveFromBackground(obj, time, 0.1, 0.5);
+
+
+	AnimateYinyang(obj, "RED");
+	Move;
+	ObjEnemy_HandleCollisionA1(obj, 16); //Handle collision
+	ObjEnemy_PlayHitSound(obj);
+	alternative(GetCommonData("Difficulty", 0))
+	case(0){fireE;}
+	case(1){fireH;}
+
+	while(ObjEnemy_GetInfo(obj, INFO_LIFE) > 0){yield;} //Wait until the enemy is dead
+	if(Obj_IsDeleted(obj)){return;}
+	NotifyEventAll(EV_USER_STAGE + 2, [ObjMove_GetX(obj), ObjMove_GetY(obj)]);
+	NotifyEvent(GetCommonData("SoundScript", GetOwnScriptID), EV_USER, [16, 80]);
+	EnemyExplosionEffect(obj, "MAPLE", [256, 0, 0], [256, 0, 0]);
+	Obj_Delete(obj);
+
+	task Move{
+		Obj_SetValue(obj, "CheckCollision", false);
+		wait(time+1);
+		Obj_SetValue(obj, "CheckCollision", true);
+		ObjMove_SetDestAtFrame(obj, finalX, finalY, time/2);
+	}
+
+	task fireE{
+		wait(time);
+		NotifyEvent(GetCommonData("SoundScript", GetOwnScriptID), EV_USER, [0, 40]);
+		let dir = GetAngleToPlayer(obj);
+		loop{
+			if(!Obj_IsInArea(obj, -96, -96, GetClipMaxX + 96, GetClipMaxY + 96)){Obj_Delete(obj); return;}
+			if(ObjEnemy_GetInfo(obj, INFO_LIFE) <= 0){return;}
+			loop(num){
+				CreateShotA1(ObjMove_GetX(obj), ObjMove_GetY(obj), 4, dir, ARROWHEAD_RED, 10);
+				dir += 360/num;
+			}
+			dir += aplus;
+			wait(5);
+		}
+	}
+
+	task fireH{
+		wait(time);
+		NotifyEvent(GetCommonData("SoundScript", GetOwnScriptID), EV_USER, [0, 40]);
+		let dir = GetAngleToPlayer(obj);
+		loop{
+			if(!Obj_IsInArea(obj, -96, -96, GetClipMaxX + 96, GetClipMaxY + 96)){Obj_Delete(obj); return;}
+			if(ObjEnemy_GetInfo(obj, INFO_LIFE) <= 0){return;}
+			loop(num+2){
+				CreateShotA1(ObjMove_GetX(obj), ObjMove_GetY(obj), 4, dir, ARROWHEAD_RED, 10);
+				dir += 360/(num+2);
+			}
+			dir += (aplus*1.5);
+			wait(3);
+		}
+	}
+}
+
+task YinYangB2(x, y, destX, destY, finalX, finalY, aplus, num, time){
+	let obj = CreateEnemyObject(500, "", 0, 0, 0, 0);
+	ObjMove_SetPosition(obj, x, y);
+	ObjMove_SetDestAtHermiteF(obj, destX, destY, 300, 180, 200, 0, time);
+	ObjRender_SetMoveFromBackground(obj, time, 0.1, 0.5);
+
+
+	AnimateYinyang(obj, "ORANGE");
+	Move;
+	ObjEnemy_HandleCollisionA1(obj, 16); //Handle collision
+	ObjEnemy_PlayHitSound(obj);
+	alternative(GetCommonData("Difficulty", 0))
+	case(0){fireE;}
+	case(1){fireH;}
+
+	while(ObjEnemy_GetInfo(obj, INFO_LIFE) > 0){yield;} //Wait until the enemy is dead
+	if(Obj_IsDeleted(obj)){return;}
+	NotifyEventAll(EV_USER_STAGE + 2, [ObjMove_GetX(obj), ObjMove_GetY(obj)]);
+	NotifyEvent(GetCommonData("SoundScript", GetOwnScriptID), EV_USER, [16, 80]);
+	EnemyExplosionEffect(obj, "MAPLE", [256, 128, 0], [256, 128, 0]);
+	Obj_Delete(obj);
+
+	task Move{
+		Obj_SetValue(obj, "CheckCollision", false);
+		wait(time+1);
+		Obj_SetValue(obj, "CheckCollision", true);
+		ObjMove_SetDestAtFrame(obj, finalX, finalY, time);
+	}
+
+	task fireE{
+		wait(time);
+		NotifyEvent(GetCommonData("SoundScript", GetOwnScriptID), EV_USER, [0, 40]);
+		let dir = GetAngleToPlayer(obj);
+		loop{
+			if(!Obj_IsInArea(obj, -96, -96, GetClipMaxX + 96, GetClipMaxY + 96)){Obj_Delete(obj); return;}
+			if(ObjEnemy_GetInfo(obj, INFO_LIFE) <= 0){return;}
+			loop(num){
+				CreateShotA1(ObjMove_GetX(obj), ObjMove_GetY(obj), 4, dir, ARROWHEAD_RED, 10);
+				CreateShotA1(ObjMove_GetX(obj), ObjMove_GetY(obj), 3, dir, ARROWHEAD_ORANGE, 10);
+				CreateShotA1(ObjMove_GetX(obj), ObjMove_GetY(obj), 2, dir, ARROWHEAD_YELLOW, 10);
+				dir += 360/num;
+			}
+			dir += aplus;
+			wait(5);
+		}
+	}
+
+	task fireH{
+		wait(time);
+		NotifyEvent(GetCommonData("SoundScript", GetOwnScriptID), EV_USER, [0, 40]);
+		let dir = GetAngleToPlayer(obj);
+		loop{
+			if(!Obj_IsInArea(obj, -96, -96, GetClipMaxX + 96, GetClipMaxY + 96)){Obj_Delete(obj); return;}
+			if(ObjEnemy_GetInfo(obj, INFO_LIFE) <= 0){return;}
+			loop(num+1){
+				CreateShotA1(ObjMove_GetX(obj), ObjMove_GetY(obj), 4, dir, ARROWHEAD_RED, 10);
+				CreateShotA1(ObjMove_GetX(obj), ObjMove_GetY(obj), 3, dir, ARROWHEAD_ORANGE, 10);
+				CreateShotA1(ObjMove_GetX(obj), ObjMove_GetY(obj), 2, dir, ARROWHEAD_YELLOW, 10);
+				dir += 360/(num+1);
+			}
+			dir += aplus;
+			wait(3);
+		}
+	}
+}
+
+task FairyA1(x, y, destX, destY){
+	let obj = CreateEnemyObject(300, "", 0, 0, 0, 0);
+	ObjMove_SetPosition(obj, x, y);
+	ObjMove_SetDestAtWeight(obj, destX, destY, 5, 5);
+
+	AnimateFairy(obj, F_MEDIUM2, "RED"); //Handle animation
+	EnemyAura(obj, [256, 0, 0], 1.25); //Aura
+	ObjEnemy_HandleCollisionA1(obj, 24); //Handle collision
+	ObjEnemy_PlayHitSound(obj);
+	alternative(GetCommonData("Difficulty", 0))
+	case(0){fireE;}
+	case(1){fireH;}
+
+	while(ObjEnemy_GetInfo(obj, INFO_LIFE) > 0){yield;} //Wait until the enemy is dead
+	if(Obj_IsDeleted(obj)){return;}
+	NotifyEventAll(EV_USER_STAGE + 2, [ObjMove_GetX(obj), ObjMove_GetY(obj)]);
+	NotifyEvent(GetCommonData("SoundScript", GetOwnScriptID), EV_USER, [16, 80]);
+	EnemyExplosionEffect(obj, "MAPLE", [256, 0, 0], [256, 0, 0]);
+	Obj_Delete(obj);
+
+	task fireE{
+		wait(30);
+		let dir = 0;
+		let c = 0;
+		while(!Obj_IsDeleted(obj)){
+			if(!Obj_IsInArea(obj, -64, -64, GetClipMaxX + 64, GetClipMaxY + 64)){Obj_Delete(obj); return;}
+			if(ObjEnemy_GetInfo(obj, INFO_LIFE) <= 0){return;}
+			if(c > 10){break;}
+
+			NotifyEvent(GetCommonData("SoundScript", GetOwnScriptID), EV_USER, [7, 50]);
+			loop(16){
+				CreateLooseLaserA1(ObjMove_GetX(obj), ObjMove_GetY(obj), 4, dir + GetAngleToPlayer(obj), 150, 10, SMALL_RED, 10);
+				dir += 360/16;
+			}
+			c++;
+			wait(60);
+		}
+		ObjMove_SetSpeed(obj, 3);
+		ObjMove_SetAngle(obj, -90);
+		loop{
+			if(!Obj_IsInArea(obj, -64, -64, GetClipMaxX + 64, GetClipMaxY + 64)){Obj_Delete(obj); return;}
+			if(ObjEnemy_GetInfo(obj, INFO_LIFE) <= 0){return;}
+			yield;
+		}
+	}
+
+	task fireH{
+		wait(30);
+		let dir = 0;
+		let c = 0;
+		while(!Obj_IsDeleted(obj)){
+			if(!Obj_IsInArea(obj, -64, -64, GetClipMaxX + 64, GetClipMaxY + 64)){Obj_Delete(obj); return;}
+			if(ObjEnemy_GetInfo(obj, INFO_LIFE) <= 0){return;}
+			if(c > 10){break;}
+
+			NotifyEvent(GetCommonData("SoundScript", GetOwnScriptID), EV_USER, [7, 50]);
+			loop(30){
+				CreateLooseLaserA1(ObjMove_GetX(obj), ObjMove_GetY(obj), 4, dir + GetAngleToPlayer(obj), 200, 10, SMALL_RED, 10);
+				dir += 360/30;
+			}
+			c++;
+			wait(60);
+		}
+		ObjMove_SetSpeed(obj, 3);
+		ObjMove_SetAngle(obj, -90);
+		loop{
+			if(!Obj_IsInArea(obj, -64, -64, GetClipMaxX + 64, GetClipMaxY + 64)){Obj_Delete(obj); return;}
+			if(ObjEnemy_GetInfo(obj, INFO_LIFE) <= 0){return;}
+			yield;
+		}
+	}
+}
+
+task FairyB1(x, y, destX, destY){
+	let obj = CreateEnemyObject(1200, "", 0, 0, 0, 0);
+	ObjMove_SetPosition(obj, x, y);
+	ObjMove_SetDestAtWeight(obj, destX, destY, 5, 5);
+
+	AnimateFairy(obj, F_LARGE, "YELLOW"); //Handle animation
+	EnemyAura(obj, [256, 256, 0], 1.5); //Aura
+	ObjEnemy_HandleCollisionA1(obj, 24); //Handle collision
+	ObjEnemy_PlayHitSound(obj);
+	alternative(GetCommonData("Difficulty", 0))
+	case(0){fireE;}
+	case(1){fireH;}
+
+	while(ObjEnemy_GetInfo(obj, INFO_LIFE) > 0){yield;} //Wait until the enemy is dead
+	if(Obj_IsDeleted(obj)){return;}
+	NotifyEventAll(EV_USER_STAGE + 2, [ObjMove_GetX(obj), ObjMove_GetY(obj)]);
+	NotifyEvent(GetCommonData("SoundScript", GetOwnScriptID), EV_USER, [16, 80]);
+	EnemyExplosionEffect(obj, "MAPLE", [256, 256, 0], [256, 256, 0]);
+	Obj_Delete(obj);
+
+	task fireE{
+		wait(30);
+		let dir = 0;
+		let c = 0;
+		while(!Obj_IsDeleted(obj)){
+			if(!Obj_IsInArea(obj, -64, -64, GetClipMaxX + 64, GetClipMaxY + 64)){Obj_Delete(obj); return;}
+			if(ObjEnemy_GetInfo(obj, INFO_LIFE) <= 0){return;}
+			if(c > 30){break;}
+
+			loop(2){
+				DelayLaser(ObjMove_GetX(obj), ObjMove_GetY(obj), dir, 800, 30, 0, ST_LASER_YELLOW, 90);
+				shit(ObjMove_GetX(obj), ObjMove_GetY(obj), dir, 60);
+				dir += 180;
+			}
+			dir += 19;
+			wait(5);
+		}
+		ObjMove_SetSpeed(obj, 3);
+		ObjMove_SetAngle(obj, -90);
+		loop{
+			if(!Obj_IsInArea(obj, -64, -64, GetClipMaxX + 64, GetClipMaxY + 64)){Obj_Delete(obj); return;}
+			if(ObjEnemy_GetInfo(obj, INFO_LIFE) <= 0){return;}
+			yield;
+		}
+	}
+
+	task fireH{
+		wait(30);
+		let dir = 0;
+		let c = 0;
+		while(!Obj_IsDeleted(obj)){
+			if(!Obj_IsInArea(obj, -64, -64, GetClipMaxX + 64, GetClipMaxY + 64)){Obj_Delete(obj); return;}
+			if(ObjEnemy_GetInfo(obj, INFO_LIFE) <= 0){return;}
+			if(c > 30){break;}
+
+			loop(3){
+				DelayLaser(ObjMove_GetX(obj), ObjMove_GetY(obj), dir, 800, 30, 0, ST_LASER_YELLOW, 90);
+				shit(ObjMove_GetX(obj), ObjMove_GetY(obj), dir, 60);
+				dir -= 120;
+			}
+			dir -= 19;
+			wait(5);
+		}
+		ObjMove_SetSpeed(obj, 3);
+		ObjMove_SetAngle(obj, -90);
+		loop{
+			if(!Obj_IsInArea(obj, -64, -64, GetClipMaxX + 64, GetClipMaxY + 64)){Obj_Delete(obj); return;}
+			if(ObjEnemy_GetInfo(obj, INFO_LIFE) <= 0){return;}
+			yield;
+		}
+	}
+
+	task shit(x, y, dir, i){ //good shit good shit that's some good shit right there
+		wait(i);
+		if(Obj_IsDeleted(obj)){return;}
+		NotifyEvent(GetCommonData("SoundScript", GetOwnScriptID), EV_USER, [36, 60]);
+		CreateLenLaserA2(x, y, 20, dir, 20, 20, SMALL_ORANGE, 10, 40);
+	}
+}
+
+task FairyC1(x, y, v, a, av){
+	let obj = CreateEnemyObject(50, "", 0, 0, 0, 0);
+	ObjMove_SetPosition(obj, x, y);
+	ObjMove_SetSpeed(obj, v);
+	ObjMove_SetAngle(obj, a);
+	ObjMove_SetAngularVelocity(obj, av);
+
+	AnimateFairy(obj, F_SMALL, "YELLOW"); //Handle animation
+	EnemyAura(obj, [256, 256, 0], 1); //Aura
+	ObjEnemy_HandleCollisionA1(obj, 24); //Handle collision
+	ObjEnemy_PlayHitSound(obj);
+	alternative(GetCommonData("Difficulty", 0))
+	case(0){fireE;}
+	case(1){fireH;}
+
+	while(ObjEnemy_GetInfo(obj, INFO_LIFE) > 0){yield;} //Wait until the enemy is dead
+	if(Obj_IsDeleted(obj)){return;}
+	NotifyEventAll(EV_USER_STAGE + 2, [ObjMove_GetX(obj), ObjMove_GetY(obj)]);
+	NotifyEvent(GetCommonData("SoundScript", GetOwnScriptID), EV_USER, [16, 80]);
+	EnemyExplosionEffect(obj, "MAPLE", [256, 256, 0], [256, 256, 0]);
+	Obj_Delete(obj);
+
+	task fireE{
+		let dir = 0;
+		let v = 1.5;
+		while(!Obj_IsDeleted(obj)){
+			if(!Obj_IsInArea(obj, -96, -96, GetClipMaxX + 96, GetClipMaxY + 96)){Obj_Delete(obj); return;}
+			if(ObjEnemy_GetInfo(obj, INFO_LIFE) <= 0){return;}
+			v = 1.5;
+
+			NotifyEvent(GetCommonData("SoundScript", GetOwnScriptID), EV_USER, [0, 40]);
+			loop(10){
+				let obj2 = CreateShotA1(ObjMove_GetX(obj), ObjMove_GetY(obj), 0.5, 90, PELLET_ORANGE, 10);
+				ObjMove_AddPatternA2(obj2, 120, NO_CHANGE, NO_CHANGE, 0.15, 0, v);
+				v += 0.5;
+			}
+			wait(20);
+		}
+	}
+
+	task fireH{
+		let dir = 0;
+		let v = 1.5;
+		while(!Obj_IsDeleted(obj)){
+			if(!Obj_IsInArea(obj, -64, -64, GetClipMaxX + 64, GetClipMaxY + 64)){Obj_Delete(obj); return;}
+			if(ObjEnemy_GetInfo(obj, INFO_LIFE) <= 0){return;}
+			v = 1.5;
+
+			NotifyEvent(GetCommonData("SoundScript", GetOwnScriptID), EV_USER, [0, 40]);
+			loop(15){
+				let obj2 = CreateShotA1(ObjMove_GetX(obj), ObjMove_GetY(obj), 0.5, 90, PELLET_ORANGE, 10);
+				ObjMove_AddPatternA2(obj2, 120, NO_CHANGE, NO_CHANGE, 0.15, 0, v);
+				v += 0.25;
+			}
+			wait(10);
+		}
+	}
+}
+
+task SpiritA1(a, aplus, startrad, endrad){
+	let obj = CreateEnemyObject(150, "", 0, 0, 0, 0);
+	ObjMove_SetPosition(obj, GetCenterX + startrad*cos(a), GetCenterY + startrad*sin(a));
+	ObjMove_SetAngle(obj, a);
+
+	AnimateSpirit(obj, 6, 1);
+	move;
+	ObjEnemy_HandleCollisionA1(obj, 16); //Handle collision
+	ObjEnemy_PlayHitSound(obj);
+	alternative(GetCommonData("Difficulty", 0))
+	case(0){fireE;}
+	case(1){fireH;}
+
+	while(ObjEnemy_GetInfo(obj, INFO_LIFE) > 0){ //Wait until the enemy is dead
+		if(Obj_GetValueD(obj, "IsSpawning", false)){Obj_SetValue(obj, "CheckCollision", false);}
+		else{Obj_SetValue(obj, "CheckCollision", true);}
+		yield;
+	}
+	if(Obj_IsDeleted(obj)){return;}
+	NotifyEventAll(EV_USER_STAGE + 2, [ObjMove_GetX(obj), ObjMove_GetY(obj)]);
+	NotifyEvent(GetCommonData("SoundScript", GetOwnScriptID), EV_USER, [16, 80]);
+	EnemyExplosionEffect(obj, "MAPLE", [256, 0, 256], [256, 0, 256]);
+	AddScore(1000);
+	Obj_Delete(obj);
+
+	task move{
+		loop{
+			if(Obj_IsDeleted(obj)){break;}
+			ObjMove_SetPosition(obj, GetCenterX + startrad*cos(a), GetCenterY + startrad*sin(a));
+			if(startrad > endrad){startrad -= 0.5;}
+			a += aplus;
+			yield;
+		}
+	}
+
+	task fireE{
+		let dir = 1;
+		let v = 2;
+		let c = 0;
+		if(Obj_IsDeleted(obj)){return;}
+		loop{
+			if(c > 5){Obj_Delete(obj);}
+			if(Obj_IsDeleted(obj)){return;}
+			v = 2;
+			dir = 1;
+			NotifyEvent(GetCommonData("SoundScript", GetOwnScriptID), EV_USER, [0, 40]);
+
+			CreateShotA1(ObjMove_GetX(obj), ObjMove_GetY(obj), v, GetPointAngle(GetCenterX, GetCenterY, ObjMove_GetX(obj), ObjMove_GetY(obj)), PELLET_MAGENTA, 10);
+			v -= 0.1;
+			loop(1){
+				CreateShotA1(ObjMove_GetX(obj), ObjMove_GetY(obj), v, GetPointAngle(GetCenterX, GetCenterY, ObjMove_GetX(obj), ObjMove_GetY(obj)) + dir, PELLET_MAGENTA, 10);
+				CreateShotA1(ObjMove_GetX(obj), ObjMove_GetY(obj), v, GetPointAngle(GetCenterX, GetCenterY, ObjMove_GetX(obj), ObjMove_GetY(obj)) - dir, PELLET_MAGENTA, 10);
+				dir++;
+				v -= 0.1;
+			}
+			c++;
+			wait(120);
+		}
+	}
+
+	task fireH{
+		let dir = 1;
+		let v = 3;
+		let c = 0;
+		if(Obj_IsDeleted(obj)){return;}
+		loop{
+			if(c > 5){Obj_Delete(obj);}
+			if(Obj_IsDeleted(obj)){return;}
+			v = 2.5;
+			dir = 1;
+			NotifyEvent(GetCommonData("SoundScript", GetOwnScriptID), EV_USER, [0, 40]);
+
+			CreateShotA1(ObjMove_GetX(obj), ObjMove_GetY(obj), v, GetPointAngle(GetCenterX, GetCenterY, ObjMove_GetX(obj), ObjMove_GetY(obj)), PELLET_MAGENTA, 10);
+			CreateShotA1(ObjMove_GetX(obj), ObjMove_GetY(obj), v, GetPointAngle(GetCenterX, GetCenterY, ObjMove_GetX(obj), ObjMove_GetY(obj)) + 180, PELLET_MAGENTA, 10);
+			v -= 0.1;
+			loop(2){
+				CreateShotA1(ObjMove_GetX(obj), ObjMove_GetY(obj), v, GetPointAngle(GetCenterX, GetCenterY, ObjMove_GetX(obj), ObjMove_GetY(obj)) + dir, PELLET_MAGENTA, 10);
+				CreateShotA1(ObjMove_GetX(obj), ObjMove_GetY(obj), v, GetPointAngle(GetCenterX, GetCenterY, ObjMove_GetX(obj), ObjMove_GetY(obj)) - dir, PELLET_MAGENTA, 10);
+
+				CreateShotA1(ObjMove_GetX(obj), ObjMove_GetY(obj), v, GetPointAngle(GetCenterX, GetCenterY, ObjMove_GetX(obj), ObjMove_GetY(obj)) + 180 + dir, PELLET_MAGENTA, 10);
+				CreateShotA1(ObjMove_GetX(obj), ObjMove_GetY(obj), v, GetPointAngle(GetCenterX, GetCenterY, ObjMove_GetX(obj), ObjMove_GetY(obj)) + 180 - dir, PELLET_MAGENTA, 10);
+				dir++;
+				v -= 0.1;
+			}
+			c++;
+			wait(120);
+		}
+	}
+}

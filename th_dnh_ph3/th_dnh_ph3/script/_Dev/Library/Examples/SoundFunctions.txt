@@ -1,0 +1,131 @@
+let MainSTG = GetCurrentScriptDirectory;
+let soundarr = [];
+let se;
+
+
+task PlaySound(str,v,w){
+	let s = ObjSound_Create;
+	if(str == "Shot1"){ObjSound_Load(s,MainSTG~"sound/Shot1.wav");}
+	if(str == "Shot2"){ObjSound_Load(s,MainSTG~"sound/Shot2.wav");}
+	if(str == "Shot3"){ObjSound_Load(s,MainSTG~"sound/Shot3.wav");}
+	if(str == "Shot4"){ObjSound_Load(s,MainSTG~"sound/Shot4.wav");}
+	if(str == "Shot5"){ObjSound_Load(s,MainSTG~"sound/Shot5.wav");}
+	if(str == "Shot6"){ObjSound_Load(s,MainSTG~"sound/Shot6.wav");}
+	if(str == "Shot7"){ObjSound_Load(s,MainSTG~"sound/Shot7.wav");}
+	if(str == "Shot8"){ObjSound_Load(s,MainSTG~"sound/Shot8.wav");}
+	if(str == "Shot9"){ObjSound_Load(s,MainSTG~"sound/Shot9.wav");}
+	if(str == "Laser1"){ObjSound_Load(s,MainSTG~"sound/Laser1.wav");}
+	if(str == "Laser2"){ObjSound_Load(s,MainSTG~"sound/Laser2.wav");}
+	if(str == "Laser3"){ObjSound_Load(s,MainSTG~"sound/Laser3.wav");}
+	if(str == "Laser4"){ObjSound_Load(s,MainSTG~"sound/Laser4.wav");}
+	if(str == "Laser5"){ObjSound_Load(s,MainSTG~"sound/Laser5.wav");}
+	if(str == "Laser6"){ObjSound_Load(s,MainSTG~"sound/Laser6.wav");}
+	if(str == "Laser7"){ObjSound_Load(s,MainSTG~"sound/Laser7.wav");}
+	if(str == "Charge1"){ObjSound_Load(s,MainSTG~"sound/Charge1.wav");}
+	if(str == "Charge2"){ObjSound_Load(s,MainSTG~"sound/Charge2.wav");}
+	if(str == "Charge3"){ObjSound_Load(s,MainSTG~"sound/Charge3.wav");}
+	if(str == "Charge4"){ObjSound_Load(s,MainSTG~"sound/Charge4.wav");}
+	if(str == "Charge5"){ObjSound_Load(s,MainSTG~"sound/Charge5.wav");}
+	if(str == "Weird1"){ObjSound_Load(s,MainSTG~"sound/Weird1.wav");}
+	if(str == "Weird2"){ObjSound_Load(s,MainSTG~"sound/Weird2.wav");}
+	if(str == "Weird3"){ObjSound_Load(s,MainSTG~"sound/Weird3.wav");}
+	if(str == "BulletWave"){ObjSound_Load(s,MainSTG~"sound/BulletWave.wav");}
+	if(str == "BulletWave2"){ObjSound_Load(s,MainSTG~"sound/BulletWave2.wav");}
+	if(str == "bright"){ObjSound_Load(s,MainSTG~"sound/bright.wav");}
+	if(str == "Eff1"){ObjSound_Load(s,MainSTG~"sound/Eff1.wav");}
+	if(str == "Eff2"){ObjSound_Load(s,MainSTG~"sound/Eff2.wav");}
+	if(str == "Eff3"){ObjSound_Load(s,MainSTG~"sound/Eff3.wav");}
+	if(str == "Eff4"){ObjSound_Load(s,MainSTG~"sound/Eff4.wav");}
+	if(str == "Eff5"){ObjSound_Load(s,MainSTG~"sound/Eff5.wav");}
+	if(str == "Eff6"){ObjSound_Load(s,MainSTG~"sound/Eff6.wav");}
+	if(str == "Eff7"){ObjSound_Load(s,MainSTG~"sound/Eff7.wav");}
+	if(str == "fam"){ObjSound_Load(s,MainSTG~"sound/fam.wav");}
+	if(str == "stars"){ObjSound_Load(s,MainSTG~"sound/stars.wav");}
+	if(str == "Enep1"){ObjSound_Load(s,MainSTG~"sound/Enep1.wav");}
+	if(str == "Enep2"){ObjSound_Load(s,MainSTG~"sound/Enep2.wav");}
+	if(str == "Hidden"){ObjSound_Load(s,MainSTG~"sound/Sudden.wav");}
+	if(str == "famdie"){ObjSound_Load(s,MainSTG~"sound/famdie.wav");}
+	if(str == "nonfinish"){ObjSound_Load(s,MainSTG~"sound/nonfinish.wav");}
+	if(str == "cardcall"){ObjSound_Load(s,MainSTG~"sound/cardcall.wav");}
+	if(str == "piss"){ObjSound_Load(s,MainSTG~"sound/piss.wav");}
+	if(str == "Heal"){ObjSound_Load(s,MainSTG~"sound/Heal.wav");}
+	if(str == "enemoff"){ObjSound_Load(s,MainSTG~"sound/enemoff.wav");}
+	if(str == "byoro07"){ObjSound_Load(s,MainSTG~"sound/byoro07.wav");}
+	if(str == "time1"){ObjSound_Load(s,MainSTG~"sound/time1.wav");}
+	if(str == "time2"){ObjSound_Load(s,MainSTG~"sound/time2.wav");}
+	if(str == "Slash"){ObjSound_Load(s,MainSTG~"sound/Slash.wav");}
+	if(str == "Boon1"){ObjSound_Load(s,MainSTG~"sound/Boon1.wav");}
+	if(str == "Boon2"){ObjSound_Load(s,MainSTG~"sound/Boon2.wav");}
+	if(str == "fail"){ObjSound_Load(s,MainSTG~"sound/fail.wav");}
+	if(str == "extend"){ObjSound_Load(s,MainSTG~"sound/extend.wav");}
+	if(str == "soul"){ObjSound_Load(s,MainSTG~"sound/soul.wav");}
+	if(str == "water"){ObjSound_Load(s,MainSTG~"sound/water.wav");}
+	if(str == "don"){ObjSound_Load(s,MainSTG~"sound/don.wav");}
+	if(str == "select"){ObjSound_Load(s,MainSTG~"sound/select.wav");}
+	if(str == "item"){ObjSound_Load(s,MainSTG~"sound/item.wav");}
+	if(str == "ok"){ObjSound_Load(s,MainSTG~"sound/ok.wav");}
+	loop(w){yield;}
+	ObjSound_SetSoundDivision(s,SOUND_SE);
+	ObjSound_SetVolumeRate(s,v);
+	ObjSound_Play(s);
+	soundarr = soundarr ~ [s];
+	if(str=="item")
+	{
+		yield;
+		Obj_Delete(s);
+	}
+}
+
+
+task LoadSE{
+	LoadSound("./../../sound/Shot1.wav");
+	LoadSound("./../../sound/Shot2.wav");
+	LoadSound("./../../sound/Shot3.wav");
+	LoadSound("./../../sound/Shot4.wav");
+	LoadSound("./../../sound/Shot5.wav");
+	LoadSound("./../../sound/Shot6.wav");
+	LoadSound("./../../sound/Shot7.wav");
+	LoadSound("./../../sound/Shot8.wav");
+	LoadSound("./../../sound/Shot9.wav");
+	LoadSound("./../../sound/Laser1.wav");
+	LoadSound("./../../sound/Laser2.wav");
+	LoadSound("./../../sound/Laser3.wav");
+	LoadSound("./../../sound/Laser4.wav");
+	LoadSound("./../../sound/Laser5.wav");
+	LoadSound("./../../sound/Laser6.wav");
+	LoadSound("./../../sound/Laser7.wav");
+	LoadSound("./../../sound/Charge1.wav");
+	LoadSound("./../../sound/Charge2.wav");
+	LoadSound("./../../sound/Charge3.wav");
+	LoadSound("./../../sound/Charge4.wav");
+	LoadSound("./../../sound/Charge5.wav");
+	LoadSound("./../../sound/Weird1.wav");
+	LoadSound("./../../sound/Weird2.wav");
+	LoadSound("./../../sound/Weird3.wav");
+	LoadSound("./../../sound/BulletWave.wav");
+	LoadSound("./../../sound/BulletWave2.wav");
+	LoadSound("./../../sound/bright.wav");
+	LoadSound("./../../sound/Eff1.wav");
+	LoadSound("./../../sound/Eff2.wav");
+	LoadSound("./../../sound/Eff3.wav");
+	LoadSound("./../../sound/Eff4.wav");
+	LoadSound("./../../sound/Eff5.wav");
+	LoadSound("./../../sound/fam.wav");
+	LoadSound("./../../sound/stars.wav");
+	LoadSound("./../../sound/Enep1.wav");
+	LoadSound("./../../sound/Sudden.wav");
+	LoadSound("./../../sound/famdie.wav");
+	LoadSound("./../../sound/nonfinish.wav");
+	LoadSound("./../../sound/cardcall.wav");
+	LoadSound("./../../sound/piss.wav");
+	LoadSound("./../../sound/Heal.wav");
+	LoadSound("./../../sound/enemoff.wav");
+	LoadSound("./../../sound/byoro07.wav");
+	LoadSound("./../../sound/time1.wav");
+	LoadSound("./../../sound/time2.wav");
+	LoadSound("./../../sound/Slash.wav");
+	LoadSound("./../../sound/Boon1.wav");
+	LoadSound("./../../sound/Boon2.wav");
+	LoadSound("./../../sound/fail.wav");
+	LoadSound("./../../sound/extend.wav");
+	}

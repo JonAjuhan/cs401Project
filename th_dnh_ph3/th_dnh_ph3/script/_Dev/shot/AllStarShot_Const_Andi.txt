@@ -1,0 +1,460 @@
+/***************************************************************************
+*		Defines variables for easier access to bullet IDs and loads		   *
+*		the shotsheet into the system.									   *
+*																		   *
+*		For ADD_ARGB versions of the shots, use the regular ID plus 500.   *
+*																		   *
+*		NOTE: Not every bullet ID has a variable to represent it.		   *
+***************************************************************************/
+local {
+	let CSD = GetCurrentScriptDirectory;
+	let path = CSD ~ "AllStarShot_Andi.txt";
+	LoadEnemyShotData(path);
+}
+
+
+
+//Scales
+let SCALE_WHITE 	= 1;
+let SCALE_RED 		= 2;
+let SCALE_ORANGE	= 3;
+let SCALE_YELLOW 	= 4;
+let SCALE_GREEN 	= 5;
+let SCALE_AQUA 		= 6;
+let SCALE_BLUE 		= 7;
+let SCALE_MAGENTA 	= 8;
+let SCALE_PURPLE 	= 15;
+
+//Small ball with outer layer
+let BALL_O_WHITE   = 17;
+let BALL_O_RED     = 18;
+let BALL_O_ORANGE  = 19;
+let BALL_O_YELLOW  = 20;
+let BALL_O_GREEN   = 21;
+let BALL_O_AQUA    = 22;
+let BALL_O_BLUE    = 23;
+let BALL_O_MAGENTA = 24;
+
+let BALL_O_DRED    = 25;
+let BALL_O_YGREEN  = 26;
+let BALL_O_DGREEN  = 27;
+let BALL_O_SGREEN  = 28;
+let BALL_O_MINT    = 29;
+let BALL_O_DBLUE   = 30;
+let BALL_O_PURPLE  = 31;
+let BALL_O_GRAY    = 32;
+
+//Small ball
+let BALL_WHITE   = 33;
+let BALL_RED     = 34;
+let BALL_ORANGE  = 35;
+let BALL_YELLOW  = 36;
+let BALL_GREEN   = 37;
+let BALL_AQUA    = 38;
+let BALL_BLUE    = 39;
+let BALL_MAGENTA = 40;
+
+let BALL_DRED    = 41;
+let BALL_YGREEN  = 42;
+let BALL_DGREEN  = 43;
+let BALL_SGREEN  = 44;
+let BALL_MINT    = 45;
+let BALL_DBLUE   = 46;
+let BALL_PURPLE  = 47;
+let BALL_GRAY    = 48;
+
+//Pellets
+let PEL_WHITE   = 49;
+let PEL_RED     = 50;
+let PEL_ORANGE  = 51;
+let PEL_YELLOW  = 52;
+let PEL_GREEN   = 53;
+let PEL_AQUA    = 54;
+let PEL_BLUE    = 55;
+let PEL_MAGENTA = 56;
+
+let PEL_DRED    = 57;
+let PEL_YGREEN  = 58;
+let PEL_DGREEN  = 59;
+let PEL_SGREEN  = 60;
+let PEL_MINT    = 61;
+let PEL_DBLUE   = 62;
+let PEL_PURPLE  = 63;
+let PEL_GRAY    = 64;
+
+//Kunai
+let KUNAI_WHITE   = 65;
+let KUNAI_RED     = 66;
+let KUNAI_ORANGE  = 67;
+let KUNAI_YELLOW  = 68;
+let KUNAI_GREEN   = 69;
+let KUNAI_AQUA    = 70;
+let KUNAI_BLUE    = 71;
+let KUNAI_MAGENTA = 72;
+
+//Ice pellets
+let ICE_WHITE 	= 81;
+let ICE_RED     = 82;
+let ICE_ORANGE  = 83;
+let ICE_YELLOW  = 84;
+let ICE_GREEN   = 85;
+let ICE_AQUA    = 86;
+let ICE_BLUE    = 87;
+let ICE_MAGENTA = 88;
+
+//Cards (ofuda)
+let CARD_GRAY    = 97;
+let CARD_RED     = 98;
+let CARD_ORANGE  = 99;
+let CARD_YELLOW  = 100;
+let CARD_GREEN   = 101;
+let CARD_AQUA    = 102;
+let CARD_BLUE    = 103;
+let CARD_MAGENTA = 104;
+let CARD_BLACK   = 112;
+
+//Suppository (Reisen)
+let SUPP_WHITE   = 113;
+let SUPP_RED     = 114;
+let SUPP_ORANGE  = 115;
+let SUPP_YELLOW  = 116;
+let SUPP_GREEN   = 117;
+let SUPP_AQUA    = 118;
+let SUPP_BLUE    = 119;
+let SUPP_MAGENTA = 120;
+
+//Dark pellets (ZUN)
+let DARKPEL_Z_GRAY    = 129;
+let DARKPEL_Z_RED     = 130;
+let DARKPEL_Z_ORANGE  = 131;
+let DARKPEL_Z_YELLOW  = 132;
+let DARKPEL_Z_GREEN   = 133;
+let DARKPEL_Z_AQUA    = 134;
+let DARKPEL_Z_BLUE    = 135;
+let DARKPEL_Z_MAGENTA = 136;
+
+//Dark pellets (inverted)
+let DARKPEL_GRAY    = 145;
+let DARKPEL_RED     = 146;
+let DARKPEL_ORANGE  = 147;
+let DARKPEL_YELLOW  = 148;
+let DARKPEL_GREEN   = 149;
+let DARKPEL_AQUA    = 150;
+let DARKPEL_BLUE    = 151;
+let DARKPEL_MAGENTA = 152;
+
+//Marisa stars
+let STAR_GRAY    = 161;
+let STAR_RED     = 162;
+let STAR_ORANGE  = 163;
+let STAR_YELLOW  = 164;
+let STAR_GREEN   = 165;
+let STAR_AQUA    = 166;
+let STAR_BLUE    = 167;
+let STAR_MAGENTA = 168;
+
+//Stardots (MoF Stage 4 rainbow dots)
+let STARDOT_WHITE   = 177;
+let STARDOT_RED     = 178;
+let STARDOT_ORANGE  = 179;
+let STARDOT_YELLOW  = 180;
+let STARDOT_GREEN   = 181;
+let STARDOT_AQUA    = 182;
+let STARDOT_BLUE    = 183;
+let STARDOT_MAGENTA = 184;
+
+//Komachi coins
+let COIN_GRAY    = 193;
+let COIN_RED     = 194;
+let COIN_ORANGE  = 195;
+let COIN_YELLOW  = 196;
+let COIN_GREEN   = 197;
+let COIN_AQUA    = 198;
+let COIN_BLUE    = 199;
+let COIN_PURPLE  = 200;
+
+//Glow bullets (ZUN delay clouds)
+let GLOW_GRAY    = 201;
+let GLOW_RED     = 202;
+let GLOW_ORANGE  = 203;
+let GLOW_YELLOW  = 204;
+let GLOW_GREEN   = 205;
+let GLOW_AQUA    = 206;
+let GLOW_BLUE    = 207;
+let GLOW_MAGENTA = 208;
+
+//Small dots (EoSD)
+let DOT_WHITE   = 209;
+let DOT_RED     = 210;
+let DOT_ORANGE  = 211;
+let DOT_YELLOW  = 212;
+let DOT_GREEN   = 213;
+let DOT_AQUA    = 214;
+let DOT_BLUE    = 215;
+let DOT_MAGENTA = 216;
+
+//Slightly larger dots
+let BIGDOT_BLACK  = 225;
+let BIGDOT_RED    = 226;
+let BIGDOT_YELLOW = 227;
+let BIGDOT_GREEN  = 228;
+let BIGDOT_BLUE   = 229;
+
+//Slightly larger dots (hollow)
+let BIGDOT_H_BLACK  = 230; let BIGDOT_HOLLOW_BLACK  = 230;
+let BIGDOT_H_RED    = 231; let BIGDOT_HOLLOW_RED    = 231;
+let BIGDOT_H_YELLOW = 232; let BIGDOT_HOLLOW_YELLOW = 232;
+let BIGDOT_H_GREEN  = 233; let BIGDOT_HOLLOW_GREEN  = 233;
+let BIGDOT_H_BLUE   = 234; let BIGDOT_HOLLOW_BLUE   = 234;
+
+//Koishi hearts
+let HEART_GRAY    = 235;
+let HEART_RED     = 236;
+let HEART_ORANGE  = 237;
+let HEART_YELLOW  = 238;
+let HEART_GREEN   = 239;
+let HEART_AQUA    = 240;
+let HEART_BLUE    = 241;
+let HEART_MAGENTA = 242;
+
+//Laser tip (DDC and TD)
+let LASTIP_GRAY    = 243;
+let LASTIP_RED     = 244;
+let LASTIP_ORANGE  = 245;
+let LASTIP_YELLOW  = 246;
+let LASTIP_GREEN   = 247;
+let LASTIP_AQUA    = 248;
+let LASTIP_BLUE    = 249;
+let LASTIP_PURPLE  = 250;
+
+//Murasa droplets
+let DROP_WHITE   = 251;
+let DROP_RED     = 252;
+let DROP_ORANGE  = 253;
+let DROP_YELLOW  = 254;
+let DROP_GREEN   = 255;
+let DROP_AQUA    = 256;
+let DROP_BLUE    = 257;
+let DROP_MAGENTA = 258;
+
+//Marisa large stars
+let STAR_L_GRAY    = 267;
+let STAR_L_RED     = 268;
+let STAR_L_ORANGE  = 269;
+let STAR_L_YELLOW  = 270;
+let STAR_L_GREEN   = 271;
+let STAR_L_AQUA    = 272;
+let STAR_L_BLUE    = 273;
+let STAR_L_MAGENTA = 274;
+
+//Large round bullets (modern style)
+let LARGE_GRAY    = 275;
+let LARGE_RED     = 276;
+let LARGE_ORANGE  = 277;
+let LARGE_YELLOW  = 278;
+let LARGE_GREEN   = 279;
+let LARGE_AQUA    = 280;
+let LARGE_BLUE    = 281;
+let LARGE_MAGENTA = 282;
+
+//Large round bullets (PCB style)
+let LARGE_PCB_GRAY    = 283;
+let LARGE_PCB_RED     = 284;
+let LARGE_PCB_ORANGE  = 285;
+let LARGE_PCB_YELLOW  = 286;
+let LARGE_PCB_GREEN   = 287;
+let LARGE_PCB_AQUA    = 288;
+let LARGE_PCB_BLUE    = 289;
+let LARGE_PCB_MAGENTA = 290;
+
+//Butterflies
+let BUTT_WHITE   = 291;
+let BUTT_RED     = 292;
+let BUTT_ORANGE  = 293;
+let BUTT_YELLOW  = 294;
+let BUTT_GREEN   = 295;
+let BUTT_AQUA    = 296;
+let BUTT_BLUE    = 297;
+let BUTT_PURPLE  = 298;
+
+//Sakuya knives
+let KNIFE_GRAY    = 299;
+let KNIFE_RED     = 300;
+let KNIFE_ORANGE  = 301;
+let KNIFE_YELLOW  = 302;
+let KNIFE_GREEN   = 303;
+let KNIFE_AQUA    = 304;
+let KNIFE_BLUE    = 305;
+let KNIFE_PURPLE  = 306;
+
+//Oval bullets
+let OVAL_GRAY    = 307;
+let OVAL_RED     = 308;
+let OVAL_ORANGE  = 309;
+let OVAL_YELLOW  = 310;
+let OVAL_GREEN   = 311;
+let OVAL_AQUA    = 312;
+let OVAL_BLUE    = 313;
+let OVAL_PURPLE  = 314;
+
+//Prismriver music notes
+let NOTE_PRISM_GRAY    = 315;
+let NOTE_PRISM_RED     = 316;
+let NOTE_PRISM_ORANGE  = 317;
+let NOTE_PRISM_YELLOW  = 318;
+let NOTE_PRISM_GREEN   = 319;
+let NOTE_PRISM_AQUA    = 320;
+let NOTE_PRISM_BLUE    = 321;
+let NOTE_PRISM_PURPLE  = 322;
+
+//Bubbles
+let BUBBLE_GRAY    = 323;
+let BUBBLE_RED     = 324;
+let BUBBLE_ORANGE  = 325;
+let BUBBLE_YELLOW  = 326;
+let BUBBLE_GREEN   = 327;
+let BUBBLE_AQUA    = 328;
+let BUBBLE_BLUE    = 329;
+let BUBBLE_PURPLE  = 330;
+
+//Fireballs
+let FIRE_GRAY    = 331;
+let FIRE_RED     = 332;
+let FIRE_ORANGE  = 333;
+let FIRE_YELLOW  = 334;
+let FIRE_GREEN   = 335;
+let FIRE_AQUA    = 336;
+let FIRE_BLUE    = 337;
+let FIRE_PURPLE  = 338;
+
+//Tsukumo music notes
+let NOTE_TSUKU_GRAY    = 339;
+let NOTE_TSUKU_RED     = 340;
+let NOTE_TSUKU_ORANGE  = 341;
+let NOTE_TSUKU_YELLOW  = 342;
+let NOTE_TSUKU_GREEN   = 343;
+let NOTE_TSUKU_AQUA    = 344;
+let NOTE_TSUKU_BLUE    = 345;
+let NOTE_TSUKU_PURPLE  = 346;
+
+//Tsukumo music rests
+let NOTE_TSUKUREST_GRAY    = 347;
+let NOTE_TSUKUREST_RED     = 348;
+let NOTE_TSUKUREST_ORANGE  = 349;
+let NOTE_TSUKUREST_YELLOW  = 350;
+let NOTE_TSUKUREST_GREEN   = 351;
+let NOTE_TSUKUREST_AQUA    = 352;
+let NOTE_TSUKUREST_BLUE    = 353;
+let NOTE_TSUKUREST_PURPLE  = 354;
+
+//Miko glowing orbs
+let ORB_GRAY    = 355;
+let ORB_RED     = 356;
+let ORB_ORANGE  = 357;
+let ORB_YELLOW  = 358;
+let ORB_GREEN   = 359;
+let ORB_AQUA    = 360;
+let ORB_BLUE    = 361;
+let ORB_PURPLE  = 362;
+
+//Futo arrows
+let ARROW_WHITE   = 363;
+let ARROW_RED     = 364;
+let ARROW_ORANGE  = 365;
+let ARROW_YELLOW  = 366;
+let ARROW_GREEN   = 367;
+let ARROW_AQUA    = 368;
+let ARROW_BLUE    = 369;
+let ARROW_PURPLE  = 370;
+let ARROW_GRAY    = 371;
+
+
+//Reserved
+
+//----
+
+//Add-rendered
+
+//----
+
+
+//Mamizou animals
+let MAMI_HUMAN_RED  = 871;
+let MAMI_HUMAN_BLUE = 872;
+let MAMI_DOG_RIGHT  = 873;
+let MAMI_DOG_LEFT   = 874;
+let MAMI_BIRD       = 875;
+let MAMI_FROG       = 876;
+
+//PoFV EX shots
+let EX_TEWI    = 877;
+let EX_REIMU   = 878;
+let EX_CIRNO   = 879;
+let EX_AYA     = 880;
+let EX_SHIKI   = 881;
+let EX_YUUKA   = 882;
+
+let EX_YUUKA_WHITE = 883;
+let FLOWER_WHITE = 883;			let FLW_WHITE = 883;
+let FLOWER_COUNTER_WHITE = 884;	let FLW_CNT_WHITE = 884;
+let FLOWER_STILL_WHITE = 885;	let FLW_STILL_WHITE = 885;
+
+//Lasers
+
+//Straight lasers
+let LAS_WHITE   = 1001;
+let LAS_RED     = 1002;
+let LAS_ORANGE  = 1003;
+let LAS_YELLOW  = 1004;
+let LAS_GREEN   = 1005;
+let LAS_AQUA    = 1006;
+let LAS_BLUE    = 1007;
+let LAS_MAGENTA = 1008;
+let LAS_PURPLE  = 1015;
+
+//Curve lasers
+let LAS_C_WHITE   = 1017;
+let LAS_C_RED     = 1018;
+let LAS_C_ORANGE  = 1019;
+let LAS_C_YELLOW  = 1020;
+let LAS_C_GREEN   = 1021;
+let LAS_C_AQUA    = 1022;
+let LAS_C_BLUE    = 1023;
+let LAS_C_MAGENTA = 1024;
+let LAS_C_PURPLE  = 1031;
+
+//Bubble lasers
+let LAS_BUBBLE_GRAY    = 1033;
+let LAS_BUBBLE_RED     = 1034;
+let LAS_BUBBLE_ORANGE  = 1035;
+let LAS_BUBBLE_YELLOW  = 1036;
+let LAS_BUBBLE_GREEN   = 1037;
+let LAS_BUBBLE_AQUA    = 1038;
+let LAS_BUBBLE_BLUE    = 1039;
+let LAS_BUBBLE_PURPLE  = 1040;
+
+//Miko glowing orb lasers
+let LAS_ORB_GRAY    = 1041;
+let LAS_ORB_RED     = 1042;
+let LAS_ORB_ORANGE  = 1043;
+let LAS_ORB_YELLOW  = 1044;
+let LAS_ORB_GREEN   = 1045;
+let LAS_ORB_AQUA    = 1046;
+let LAS_ORB_BLUE    = 1047;
+let LAS_ORB_PURPLE  = 1048;
+
+//Large round bullet lasers
+let LAS_LARGE_GRAY    = 1049;
+let LAS_LARGE_RED     = 1050;
+let LAS_LARGE_ORANGE  = 1051;
+let LAS_LARGE_YELLOW  = 1052;
+let LAS_LARGE_GREEN   = 1053;
+let LAS_LARGE_AQUA    = 1054;
+let LAS_LARGE_BLUE    = 1055;
+let LAS_LARGE_PURPLE  = 1056;
+
+//Raiko's Lightning LaserTM
+let LAS_LIGHTNING = 1057;
+
+
+

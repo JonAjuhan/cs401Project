@@ -1,0 +1,126 @@
+/////////////////////////////////////////////////////////////
+//Andi - functions to predict the path of a shot
+/////////////////////////////////////////////////////////////
+
+
+//Find the distance a shot will travel in a given number of frames
+function projectdist(s,acc,mspd,t){
+	let t1=t; let t2=0;
+	if(s+acc*t > mspd){
+		let t1 = (mspd-s)/acc;	//time in which acceleration applies
+		let t2 = t-t1;			//time in which mspd has been reached
+	}
+	return s*t1+0.5*acc*(t1^2) + mspd*t2;
+}
+
+
+//Find the time it will take for a shot to travel a given distance
+function projecttime(s,acc,mspd,dist){
+	let t1 = sqrt(2*(mspd-s)/acc);	//time to accelerate to mspd
+	let dist1 = s*t1 + 0.5*acc*(t1^2); //total distance after accelerating to mspd
+	let dist2 = dist-dist1;	//how far we over/undershot
+	if(dist1<=dist){	//undershot
+		let t2 = dist2/mspd;
+		return t1+t2;
+	}
+	else{				//overshot
+		let t2 = ( -s + sqrt(s^2 - 4*acc*(-dist2)) )/(2*acc);
+		return t1-t2;
+	}
+	//	?at2 + ut - s = 0
+	//Using quadratic formula
+	//	t = ( -s + sqrt(s^2 - 4*acc*(-dist)) )/(2*acc)
+	
+}
+
+//WIP - find position of shot after given number of frames, assuming no angv
+function projectpos(x0,y0,s,ang,acc,mspd,t){
+	let dist = projectdist(s,acc,mspd,t);	
+	let dx = dist*cos(ang); let dy = dist*sin(ang);
+	return [x0+dx,y0+dy];
+}
+
+//WIP - find position of shot after given number of frames
+// function projectposangv(x,y,s,a,acc,angv,mspd,t){
+	// let dx = s*cos(a); let dy = s*sin(a);
+	// let ddx = acc*cos(a); let ddy = acc*sin(a);
+	// let x1 = dx*t+0.5*ddx*(t^2);
+	// let y1 = dy*t+0.5*ddy*(t^2);
+// }
+
+function projectposangv(x0,y0,s,ang,acc,angv,mspd,t){
+	
+	let r = (min(s+acc*t,mspd))/torad(angv); //radius of circular path - convert angv to radians
+	let cx = x0+r*cos(ang+90*sign(r));
+	let cy = y0+r*sin(ang+90*sign(r));
+	
+	DebugWarnShot(cx,cy);
+
+	let circ = 2*pi*r;
+	let dist = projectdist(s,acc,mspd,t); //linear distance - use as ratio with circumference
+	let arc = 360*dist/circ + ang;//-270*sin(r); //-90*sign(r);
+	let dx = r*cos(arc); let dy = r*sin(arc);
+	
+	return [cx+dx,cy+dy];
+}
+
+
+/////////////////////////////////////////////////////////////
+//End of shot prediction functions
+/////////////////////////////////////////////////////////////
+
+
+//mixed array - experimental
+function marr(arr,i){return getvald(arr,itoa(i),NULL);}
+function smarr(arr,i,v){
+	if(!isval(arr,itoa(i))){setval(arr,"MArrSize",lengthmarr(arr)+1);}
+	setval(arr,itoa(i),v);
+}
+function lengthmarr(arr){return getvald(arr,"MArrSize",0);}
+//End of mixed array functions
+
+
+
+
+
+
+
+
+
+
+
+
+/////////////////////////////////////////////////////////////////
+//Trickysticks functions - what do these do again?
+/////////////////////////////////////////////////////////////////
+
+
+//TODO experiment with this
+function GetLineBorderPoint(px, py, tx, ty){ //Trickysticks is such a nice person :D
+
+	let ta = atan2(ty-py, tx-px);
+
+	if( ta>= atan2(0 - py, 0 - px) && ta<=  atan2(0 - py, sx - px)){
+		return [px - (0-py)*tan(ta+90), 0];
+	}
+	if( ta>= atan2(0 - py, sx - px) && ta<=  atan2(sy - py, sx - px)){
+		return [sx, py + (sx-px)*tan(ta)];
+	}
+	if( ta>= atan2(sy - py, sx - px) && ta<=  atan2(sy - py, 0 - px)){
+		return [px - (sx-py)*tan(ta-90), sx];
+	}
+	if( ta> atan2(sx - py, 0 - px) || ta<  atan2(0 - py, 0 - px)){
+		return [0, py + (0-px)*tan(ta+180)];
+	}
+}
+
+function GetLineWallIntersection(px, py, tx, ty){ //Trickysticks is such a nice person :D
+    let ta = atan2(ty-py, tx-px);
+ 
+    if( ta>= atan2(0 - py, sx - px) && ta<=  atan2(sy - py, sx - px)){
+        return true;
+    }
+    if( ta> atan2(sy - py, 0 - px) || ta<  atan2(0 - py, 0 - px)){
+        return true;
+    }
+}
