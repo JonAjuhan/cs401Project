@@ -138,6 +138,25 @@ function DropItemsNonspellEnd{
 
 
 
+function CheckGameOver{
+	if(GetPlayerLife < 0){
+		PauseBGM;
+		CloseStgScene;
+		// let EndMenuScript = LoadScriptInThread(dirsys~"EndScene.txt");
+		// StartScript(EndMenuScript);
+		// while(!IsCloseScript(EndMenuScript)){yield;}
+		// let result = NULL;
+		// result = GetScriptResult(EndMenuScript);
+		// if(result != RESULT_CANCEL){
+			// CloseStgScene;
+		// }else{
+			// ResumeBGM;
+		// }
+	}
+}
+
+
+
 
 //Display "Item Get Border Line" - TresserT
 task ShowPointOfCollection{

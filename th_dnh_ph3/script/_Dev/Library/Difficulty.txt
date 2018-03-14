@@ -209,10 +209,21 @@ task DifficultyDisplay(){
 	Obj_SetRenderPriority(objText, 0.95);
 	ObjRender_SetX(objText, sx + 150); //todo: this should be a literal
 	ObjRender_SetY(objText, 24);
+	SetCommonData("DifficultyDisplayObject",objText);
 	ascent(i in 0..51){
 		ObjRender_SetAlpha(objText, i*5);
 		yield;
 	}
+	
+	while(!Obj_IsDeleted(objText)){
+		if(GetCommonData("DifficultyRow",1) != row){
+			row = GetCommonData("DifficultyRow",1);
+			ObjSprite2D_SetSourceRect(objText, 0,0+32*row,256,32+32*row);
+			ObjSprite2D_SetDestCenter(objText);
+		}
+		yield;
+	}
+	
 }
 
 

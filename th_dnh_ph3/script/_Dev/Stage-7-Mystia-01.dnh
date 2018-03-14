@@ -34,10 +34,7 @@ let bossBGM;
 }
 
 @MainLoop{
-	if(GetPlayerLife < 0){	
-		PauseBGM;
-		CloseStgScene;
-	}
+	CheckGameOver;
 	yield;
 }
 
