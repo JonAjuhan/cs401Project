@@ -1,5 +1,84 @@
+//Difficulty constants
+//Standard difficulties
+let EASY=1;			//For small children.
+let NORMAL=2;		//For most people.
+let HARD=3;			//For experienced players.
+let LUNATIC=4;		//For weird people.
+let EXTRA=3.01;		//Now challenge Extra Stage...
+//Other difficulties
+let PHANTASM=4.01;	//Now challenge next phantasm... (Yukari only.)
+let LAST_WORD=5;	//Spell Practice-only cards, with very high challenge.
+let AFTEREXTRA=4.02; let OVERDRIVE=10;	//Someone just made these up.
+
+
+//Default value - this is how to change the difficulty for now
+let DEFAULT_DIFFICULTY = NORMAL;
+
+
+
+
+
+//Rank constants (since some difficulties are about as hard as each other)
+let RANK_EASY = 1;
+let RANK_NORM = 2;
+let RANK_HARD = 3;
+let RANK_LUNA = 4; 
+let RANK_LAST=5;let RANK_OVER=10;
+
+
+
+//Get rank/difficulty
+function rank   {return GetCommonData("Rank",RANK_OVER);}
+function getrank{return GetCommonData("Rank",RANK_OVER);}
+function getdiff{return GetCommonData("Diff",OVERDRIVE);}
+
+
+
+/*
+HOW TO USE:
+
+Use rank to vary parameters in your shots, adjusting the intensity
+of the pattern to match the difficulty.
+
+EXAMPLE:
+
+let foo; let bar; let baz;
+@Initialize{
+	...
+	alternative(rank)
+	case(RANK_EASY){ foo = 90; bar = 0.5;  baz = 10;  }
+	case(RANK_NORM){ foo = 40; bar = 1;    baz = 20;  }
+	case(RANK_HARD){ foo = 25; bar = 1.25; baz = 30;  }
+	case(RANK_LUNA){ foo = 10; bar = 1.75; baz = 40;  }
+	others{foo=1;bar=5;baz=10;} //should never actually happen
+	...
+}
+
+...
+
+task TShoot{
+	while(stuff){
+		ascent(i in 0..baz){
+			CreateShotA1(x,y,speed*bar,i*360/baz, DOT_YELLOW,10);
+		}
+		wait(foo);
+	}
+}
+
+Here, 
+foo is used as the delay between shooting,
+bar is used as a multiplier for the shots' speed, and 
+baz is used as the number of shots in each ring.
+
+The alternative sets each to a value appropriate for
+the corresponding difficulty.
+
+*/
+
+
+
+
 //DIFFICULTY SYSTEM
-//Todo: Basically all of this should definitely be somewhere else.
 /*
 //An explanation of each difficulty
 //The ones we're mainly concerned with are:
@@ -71,28 +150,12 @@
 */
 
 
-//Difficulty constants
-//Standard difficulties
-let EASY=1;			//For small children.
-let NORMAL=2;		//For most people.
-let HARD=3;			//For experienced players.
-let LUNATIC=4;		//For weird people.
-let EXTRA=3.01;		//Now challenge Extra Stage...
-//Other difficulties
-let PHANTASM=4.01;	//Now challenge next phantasm... Yukari only.
-let LAST_WORD=5;	//Spell Practice-only cards with very high challenge.
-let AFTEREXTRA=4.02; let OVERDRIVE=10;	//Someone just made these up.
-
-//Rank constants (since some difficulties are about as hard as each other)
-let RANK_EASY = 1; //You guys should be able to dodge without issue.
-let RANK_NORM = 2; //You guys should reasonably be able to dodge. I should be able to dodge without issue.
-let RANK_HARD = 3;
-let RANK_LUNA = 4; 
-let RANK_LAST=5;let RANK_OVER=10;
 
 
-// SetDifficulty(NORMAL); //default value
-DifficultyDisplay; //this really shouldn't go here tbh
+
+
+
+// DifficultyDisplay; //this REALLY shouldn't go here tbh
 
 
 
@@ -120,14 +183,12 @@ function SetDifficulty(diff){
 }
 //Allows overriding with a default difficulty, e.g. for testing
 function SetDifficultyD(diff){
-	diff = getdiff;	//DEBUG VALUE
+	// diff = getdiff;
+	diff = DEFAULT_DIFFICULTY;
 	SetDifficulty(diff);
 }
 
-//Get rank/difficulty
-function rank   {return GetCommonData("Rank",RANK_OVER);}
-function getrank{return GetCommonData("Rank",RANK_OVER);}
-function getdiff{return GetCommonData("Diff",OVERDRIVE);}
+
 
 //makes it easier to nerf things on easy
 function isEasy{
@@ -153,4 +214,7 @@ task DifficultyDisplay(){
 		yield;
 	}
 }
+
+
+
 
