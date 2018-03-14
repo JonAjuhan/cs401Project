@@ -1,0 +1,36 @@
+//Main libraries
+#include "./Library/Resources.txt"	//Basic resources used to do other things
+#include "./Library/Functions.txt"	//Larger functions with more narrow purposes
+#include "./Library/ExtendedDNF.txt" //Functions extending DNF's library
+#include "./Library/LazyAlias.txt"	//shortened function names
+//System/"in the background" libraries
+#include "./shot/AllStarShot_Const_Andi.txt"	//Rearranged version of AllStarShot
+#include "./Library/selibrary.txt"  //constants for sound effects
+#include "./Library/DirPaths.txt"	//Constants for directories and function to get root script directory
+#include "./Library/Difficulty.txt"	//Difficulty system
+#include "./Library/Music.txt"	    //Easily control BGM
+//Enemy libraries
+#include "./Library/BossFunctions.txt"	//Functions spawning and controlling boss
+#include "./Gizmo's Touhou Boss Sprite Library/GizmoSpriteLibrary.txt"	//Premade functions to render bosses
+#include "./Library/AnimLib.dnh" //for animating other boss sprites
+#include "./Library/Fairies.txt"	//Functions to spawn and animate normal enemies and familiars
+//Effect libraries
+#include "./Library/AndiEffects.txt"   //Custom effects library
+#include "./Library/Cutin/Cutin.txt"   //Spellcard cutins and history
+#include "./Library/aura_anim.txt"     //Fancy aura on the boss
+#include "./Library/OzzieEffects.txt"  //the effects library I was using before writing my own
+//Other libraries
+#include "./Library/MagicCircle.txt" //kind of janky atm
+#include "./Library/EventList.txt" //Constants for events
+
+//Extra libraries
+//#include "./Library/AndiGapFunctions.txt"	//Portal-like gaps for general use
+// #include "./Library/Interpolation.txt" //extended interpolation
+// #include "./Library/ExperimentalFunctions.txt" //half-finished or half-baked functions
+
+
+
+//#include "./Library/Effects.txt"
+//#include "./Library/Bosses.txt"	//Functions to spawn and animate certain bosses
+//#include "./Library/FamiliarFunctions.txt" //old familiar library
+

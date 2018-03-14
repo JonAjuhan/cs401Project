@@ -1,0 +1,60 @@
+#TouhouDanmakufu[Single]
+#ScriptVersion[3]
+#Title["(Mystia end explosion)"]
+#Text["series 7: scales with difficulty"] 
+#BGM["./bgm/bgm - Deaf to All but the Song.ogg"]
+#System["./system/Default_System.txt"]
+#Background["./system/Background_Sky.txt"]
+
+#include "./Index.txt"
+
+@Event
+{
+	alternative(GetEventType())
+	case(EV_REQUEST_LIFE){ SetScriptResult(1); }
+}
+@Initialize
+{
+
+	boss = spawnBossBlank("Mystia Lorelai");
+	renderMystiaIN(boss,1);
+	
+	MainTask;
+	
+
+}
+@MainLoop{
+	frame++;yield;
+}
+
+
+task MainTask {
+	SE_Play(se_defeated,100);
+	let x = ObjMove_GetX(boss); let y = ObjMove_GetY(boss);
+	loop(9){
+		SE_Play(se_tan00,60);
+		loop(10){
+			loop(3){
+				EffectParticleA2(x,y,rand(2,6.5),rand(0,360),"CHERRY",25,0,0.25,  180,64,200);
+				EffectParticleA2(x,y,rand(2,5.5),rand(0,360),"CHERRY",15,0,0.25,  200,64, 64);
+				EffectParticleA2(x,y,rand(2,5.5),rand(0,360),"CHERRY",15,0,0.25,   64,64,200);
+			}
+			yield;
+		}
+	}
+	SE_Play(se_defeated,100);
+	Obj_Delete(boss);
+	ScreenShake(30,3,5);
+	loop(30){
+		loop(10){
+			EffectParticleA2(x,y,rand(1,7),rand(0,360),"CHERRY",60,0,0.5,  180,64,200);
+			EffectParticleA2(x,y,rand(1,7),rand(0,360),"CHERRY",60,0,0.5,  200,64, 64);
+			EffectParticleA2(x,y,rand(1,7),rand(0,360),"CHERRY",60,0,0.5,   64,64,200);
+		}
+		yield;
+	}
+	
+	wait(90);
+	CloseScript(GetOwnScriptID);
+}
+

@@ -1,0 +1,52 @@
+#TouhouDanmakufu[Plural]
+#ScriptVersion[3]
+#Title["(Mystia Plural) Stage 2(3?) boss"]
+#Text["A test plural."]
+
+#include "./Index.txt"
+#System["./system/Andi_System.txt"]
+#Background["./system/Background/Mystia/BG_work.txt"]
+
+#BGM["./bgm/bgm - Deaf to All but the Song.ogg"]
+
+@Loading {
+	//InstallFont(GetCurrentScriptDirectory() ~ "img/Helvetica.otf"); //.otf for One True Font
+	//I think this is being done somewhere else now?
+}
+
+@Event{
+}
+
+@Initialize{
+	SetCommonData("IsPlural",true); //to figure out what was selected from the menu, when needed
+	TPlural;
+}
+@MainLoop{
+	yield;
+}
+
+
+task TPlural {
+	let dir = GetCurrentScriptDirectory()~"./";
+    let obj = ObjEnemyBossScene_Create();
+	
+	//params: boss scene object, lifebar number, filepath
+	ObjEnemyBossScene_Add(obj,0,dir~"Single-7-Mystia-Non-01.dnh");
+	ObjEnemyBossScene_Add(obj,0,dir~"Single-7-Mystia-01.dnh");
+	ObjEnemyBossScene_Add(obj,1,dir~"Single-7-Mystia-Non-01.dnh"); //<-
+	ObjEnemyBossScene_Add(obj,1,dir~"Single-7-Mystia-02.dnh");
+	ObjEnemyBossScene_Add(obj,2,dir~"Single-7-Mystia-Non-01.dnh");
+	ObjEnemyBossScene_Add(obj,2,dir~"Single-7-Mystia-03.dnh");
+	ObjEnemyBossScene_Add(obj,2,dir~"Single-7-Mystia-Explode.dnh");
+	
+	
+	ObjEnemyBossScene_LoadInThread(obj);
+	ObjEnemyBossScene_Regist(obj);
+	
+	//wait for singles to end
+	while(!Obj_IsDeleted(obj)){yield;}
+	CloseScript(GetOwnScriptID());
+	
+}
+
+

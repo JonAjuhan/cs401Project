@@ -1,0 +1,206 @@
+#TouhouDanmakufu[Single]
+#ScriptVersion[3]
+#Title["(Mystia 3) Night Sign \"Raptor in the Dark\""]
+#Text["series 7: scales with difficulty"] 
+#BGM["./bgm/bgm - Deaf to All but the Song.ogg"]
+#System["./system/Andi_System.txt"]
+#Background["./system/Background/Mystia/BG_work.txt"]
+
+#include "./Index.txt"
+
+let timer = 47; //37
+let drate = 24; //24
+let mlife = 2000; //2000
+
+@Event
+{
+	alternative(GetEventType())
+	case(EV_REQUEST_LIFE){				SetScriptResult(mlife);		}
+	case(EV_REQUEST_SPELL_SCORE){		SetScriptResult(5000000);	}
+	case(EV_REQUEST_TIMER) {			SetScriptResult(timer*60);	}
+	case(EV_REQUEST_IS_DURABLE_SPELL) {	SetScriptResult(false);		}
+}
+@Initialize
+{
+	if(noPlural){	SetDifficultyD(HARD); }
+	alternative(rank)
+	case(RANK_EASY){	SetCommonData("CurrentSC","Late-Afternoon Sign \"Mildly Startling Bird\"");}
+	case(RANK_NORM){	SetCommonData("CurrentSC","Night Sign \"Ambush from Shadowed Sky\"");}
+	case(RANK_HARD){	SetCommonData("CurrentSC","Night Bird \"Raptor in the Dark\"");}
+	others         {	SetCommonData("CurrentSC","Night Hawk \"Fear of the Dark\"");}
+
+
+	
+	SetShotAutoDeleteClip(32,32,32,32);
+	
+	// boss = spawnBoss();
+	boss = spawnBossBlank("Mystia Lorelai");
+	renderMystiaIN(boss,1);
+	
+	MainTask;
+	
+
+}
+@MainLoop{
+	if(ObjEnemy_GetInfo(boss, INFO_LIFE) <= 0 && !finishing){
+		finishing = true;
+		DropItemsSpellEnd; //make sure this doesn't look weird
+		DeleteShotAll(TYPE_ALL,TYPE_ITEM);
+		TBreakSpell([BREAK_DEAD]);
+	}else {SetBossHitbox(boss,ex,ey);}
+	frame++;yield;
+}
+
+
+task MainTask {
+	ObjEnemy_SetDamageRate(boss,0,0);
+	ObjMove_SetDestAtFrame(boss, cx, cy-100, 60); //cy-120
+	
+	SetSpellCard;
+	
+	
+	ObjEnemyBossScene_StartSpell(objScene);
+	ObjEnemyBossScene_SetSpellTimer(objScene,timer*60); //5760
+	
+	//SetCaution;
+	// TSpellImmune;
+	Aura(boss,255,64,255,64);
+	SetMagicCircleAlpha(64,64);
+
+	wait(90);
+		
+	Tmovement(cx-120,cx+120, cy-90,cy-60, 60,240, [MOVE_PLAYERBIAS,2,0,MOVE_MAXSPEED,1.5] );
+	ObjEnemy_SetDamageRate(boss,drate,drate/3);
+	frame = 0;
+	
+	
+	TShoot;
+	
+}
+
+
+
+
+task TShoot{
+	wait(60);
+
+	let shot; 
+	
+	let gap;
+	let diff = rank();
+	alternative(diff)
+	case(RANK_EASY){	gap=90;}
+	case(RANK_NORM){	gap=60;}
+	case(RANK_HARD){	gap=45;}
+	case(RANK_LUNA){	gap=25;}
+	others { gap=20;}
+
+	
+	let count=0; let a0; let a;
+	let fog = NightBlindA1(800,800,300, 0,0,300); //not active yet
+	
+	while(!Obj_IsDeleted(boss)){
+		
+		//Create familiars
+		ascent(i in 0..10){
+			let fam = SpawnFamiliarC1(ex,ey,"blue",150+50*diff);
+			ObjMove_AddPatternA2(fam,0,3.5,15+15*i, -0.05, 0.55*sign(i-4.5)/cos(((|i-4.5|))), 1.25);
+			ObjMove_AddPatternA2(fam,90,NO_CHANGE,NO_CHANGE, -0.05, -0.55*sign(i-4.5)/cos(((|i-4.5|))), 1.25);
+			SE_Play(se_fam,100);
+			TFamShoot(fam);
+			//Each familiar's shots
+			task TFamShoot(fam){
+				wait(30); let shot; let fx; let fy; let fa; let off=0;
+				while(!Obj_IsDeleted(fam) && !isOffScreen(fam)){
+					fx = ObjMove_GetX(fam); fy = ObjMove_GetY(fam); fa = ObjMove_GetAngle(fam);
+					ascent(i in 0..3){
+						shot = CreateShotA2(fx,fy,0,fa+180+120*i+off, 0.005,1.5, SCALE_BLUE,0); //5
+						CheckShot(shot,30);
+					}
+					ascent(i in 0..2){
+						ascent(j in -1..2){
+							shot = CreateShotA2(fx,fy,0,fa+90+i*180+25*j+off, 0.015,2, SCALE_RED,0); //10
+							CheckShot(shot,30);
+						}
+					}
+					wait(gap); //...,60,45,...
+					off += 5*gap;
+				}
+				Obj_Delete(fam);
+			}//end of familiars' shots
+			wait(3);
+		}
+		wait(30);
+		
+		//Tighten night blindness
+		ObjFog_SetTargAtFrameA2(fog,GetPlayerObjectID,100,255-isEasy*16,180);
+		// ObjFog_SetTargAtFrameA2(fog,GetPlayerObjectID,100,255,120);
+		SetAttackPose(POSE_SET);
+		SE_Play(se_charge2,100);
+		EffectBurstOutB2 (boss,2,175,2.5,"MUSIC",200,64,200);
+		EffectBurstInB2 (GetPlayerObjectID,2,120,3.5,"MUSIC",200,64,200);
+		
+		// wait(120);
+		wait(60);
+		// SetAttackPose(POSE_END);
+		SetAttackPose(20);
+		wait(20);
+		
+		//Aimed wing of big shots, which then fly at the player all at once
+		let row; let vary;
+		ascent(f in 1..301){
+			if(f%5==0){
+				if(f%100!=0){
+					a0 = (270 + GetAngleToPlayer(boss)+180)/2;
+					row = 2*sin(f/5*45);
+					ascent(i in 0..(2*diff)){ //3
+						vary = f/300*(|sin(f*720/300)|)*i/2;
+						// shot = CreateShotA2(ex,ey, 3+4.5*vary,  a0+180+row*10*diff/3, -0.1, 1+3.5*vary,   LARGE_BLUE,10);
+						a = a0+row*(25+25*diff/3);
+						shot = CreateShotA2(ex,ey, 5+4.5*vary,  a, -0.15, 0,   LARGE_BLUE,10);
+						ObjMove_AddPatternA4(shot,100-(f%100),(5+5*vary)*(1-isEasy*0.25),0-diff/3*row,0,0,10,GetPlayerObjectID, LARGE_GREEN);
+						ObjShot_SetSpellResist(shot,true);
+						
+						task WarnGlow(shot){
+							let count=0;
+							while(ObjMove_GetSpeed(shot)>0.5){yield; count++; if(f%100==0 || Obj_IsDeleted(shot)){return;}}
+							let r; let g; let b;
+							if(diff<=NORMAL){r= 64; g=128; b=255;}
+							else{      	     r=255; g=  0; b=128;}
+							let eff = EffectParticleA3(ObjMove_GetX(shot),ObjMove_GetY(shot),2.5,a,"MUSIC",10,0,0.5,128,0,  r,g,b); //64,128,255
+							Obj_SetRenderPriority(eff,0.74);
+							loop(100-count-(f%100)){yield; if(Obj_IsDeleted(shot)){return;}}
+							// eff = EffectGlowA2(ObjMove_GetX(shot),ObjMove_GetY(shot),15, 0.35,0, 0,64,  rand(-20,20),  dirimg~"./wave.png",[132,132,251,251],[255,0,0]);
+							eff = EffectGlowA2(ObjMove_GetX(shot),ObjMove_GetY(shot),15, 0,0.5, 64,0,  rand(-20,20),  dirimg~"./Effect/warning.png",[0,0,63,63],[255,255,255]);
+							Obj_SetRenderPriority(eff,0.74);
+							ObjRender_SetBlendType(eff,BLEND_ADD_RGB);
+						}WarnGlow(shot);
+					}
+					SE_Play(se_shot,60);
+				}else{
+					SE_Play(se_chime,100);
+					SE_Play(se_chime2,100);
+					SE_Play(se_shot4,100);
+					let eff;
+					eff = EffectGlowA2(ex+20,ey,15,0,1, 255,0,-20,  dirimg~"./wave.png",[132,132,251,251],[255,0,0]);
+					Obj_SetRenderPriority(eff,0.74);
+					ObjRender_SetBlendType(eff,BLEND_ADD_RGB);
+					eff = EffectGlowA2(ex-20,ey,15,0,1, 255,0,-20,  dirimg~"./wave.png",[132,132,251,251],[255,0,0]);
+					Obj_SetRenderPriority(eff,0.74);
+					ObjRender_SetBlendType(eff,BLEND_ADD_RGB);
+				}
+			}
+			yield;
+		}
+
+		//Night blindness loosens
+		ObjFog_SetTargAtFrameA2(fog,GetPlayerObjectID,500,64,360); //240
+	
+		wait(180);
+	}
+	
+	
+	
+}
+
+
