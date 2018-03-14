@@ -50,8 +50,6 @@ let bossBGM;
 task TStage {
 	let csd = GetCurrentScriptDirectory();
 
-	// ShowBGMTitle("BGM: Song of the Night Sparrow ~ Night Bird");
-	// PlayBGM(stageBGM,145.8, 292.4);
 	SetBGM("Song of the Night Sparrow ~ Night Bird",145.8,292.4);
 	ShowPointOfCollection;
 	
@@ -86,25 +84,13 @@ task TStage {
 	
 	wait(300);
 	
-	//Stick a midboss in around here?
+	//Add more stuff before and stick a midboss in around here?
 	
 	
-	//slower aimy guys - this part's too hard
-	task DelAimFairies{ //so they come in the middle of the others
+	//4-fam covering-fire guys + more kedamas
+	task DelKedamas{ //so they come in the middle of the others
 		loop(2){
 			wait(180);
-			// ascent(i in 0..2){
-				// side = altSign(i); dir = -side;
-				// x = cx+(cx+30)*side;
-				// y = cy; //cy/2
-				// let fairy = TAimINFairy1(x,y,1.5,90-125*dir,60); //90-105*dir
-				// // ObjMove_AddPatternB2(fairy,120,NO_CHANGE,NO_CHANGE, 0,0.05,  1.5*dir,1.5);
-				// // ObjMove_AddPatternB2(fairy,240,NO_CHANGE,NO_CHANGE, -0.05,0, -1.5*dir,1.5);
-				// ObjMove_SetAcceleration(fairy,-0.01); ObjMove_SetMaxSpeed(fairy,1.5);
-				// ObjMove_AddPatternB2(fairy,120,NO_CHANGE,NO_CHANGE, 0       , 0.05,  1.5*dir, 1.5);
-				// ObjMove_AddPatternB2(fairy,240,NO_CHANGE,NO_CHANGE, 0.05*dir,-0.05,  1.5*dir,-1.5);
-				// // ObjMove_AddPatternB2(fairy,240,NO_CHANGE,NO_CHANGE, 0.05*dir,-0.15,  2.0*dir,-2.0);
-			// }
 			let typearr = ["red","blue"];
 			ascent(k in 0..3){
 				dir = altSign(k);
@@ -118,7 +104,7 @@ task TStage {
 				wait(60);
 			}
 		}
-	}DelAimFairies;
+	}DelKedamas;
 	//smol tewi guys
 	ascent(i in 0..20){
 		side = altSign(i);
@@ -190,9 +176,6 @@ task TStage {
 	}
 	//Start the boss plural
 	StartScript(bossScript);
-	// ShowBGMTitle("BGM: Deaf to All But the Song");
-	// PlayBGM(bossBGM,70.7, 141.38); //70.78, 142
-	// StopSound(stageBGM);
 	SetBGM("Deaf to All But the Song",70.7, 141.38);
 	while(!IsCloseScript(bossScript) && GetPlayerState() != STATE_END){
 		yield;
@@ -265,7 +248,7 @@ function TBigINFairy1(x,y,s,a,shootdel){
 		}
 		
 		//For first (shootdel) frames, count%10 cannot be 0, 
-		//since count won't be an int.
+		//since count won't be an integer.
 		//Kind of a hack but saves checking another thing in the loop
 		//or making a duplicate loop without the SE.
 		DelShoot; 
@@ -300,10 +283,10 @@ function TLittleINFairy1(x,y,s,a,shootdel){
 		let shot; let count=1;
 		let gap; let joff; let segap;
 		alternative(rank)
-			case(RANK_EASY){ gap = 30;  joff = 15; segap= 15; }
+			case(RANK_EASY){ gap = 30;  joff = 15; segap = 15; }
 			case(RANK_NORM){ gap = 20;  joff = 10; segap = 10; }
 			case(RANK_HARD){ gap = 10;  joff = 0;  segap = 10; }
-			case(RANK_LUNA){ gap = 10;  joff = 5;  segap =  5; } //10,5,5
+			case(RANK_LUNA){ gap = 10;  joff = 5;  segap =  5; }
 			others{ gap =  1; joff = 0; segap = 1; }
 		let FamCount = 4;
 		MakeFam;
@@ -342,14 +325,12 @@ function TLittleINFairy1(x,y,s,a,shootdel){
 				}
 			}
 		}
-		
 		//For first (shootdel) frames, count%10 cannot be 0, 
 		//since count won't be an int.
 		//Kind of a hack but saves checking another thing in the loop
 		//or making a duplicate loop without the SE.
 		DelShoot; 
 		task DelShoot{loop(shootdel){count+=1/shootdel;}}
-		
 		//Update loop - update fx,fy with fairy position, increment count, and play shot SE
 		while(!(ObjEnemy_GetLife(fairy)==0) && FamCount > 0){
 			fx=ObjMove_GetX(fairy); fy=ObjMove_GetY(fairy); //update each frame with the fairy's position
@@ -428,14 +409,12 @@ function TAimINFairy1(x,y,s,a,shootdel){
 				}
 			}
 		}
-		
 		//For first (shootdel) frames, count%10 cannot be 0, 
 		//since count won't be an int.
 		//Kind of a hack but saves checking another thing in the loop
 		//or making a duplicate loop without the SE.
 		DelShoot; 
 		task DelShoot{loop(shootdel){count+=1/shootdel;}}
-		
 		//Update loop - update fx,fy with fairy position, increment count, and play shot SE
 		while(!(ObjEnemy_GetLife(fairy)==0) && FamCount > 0){
 			fx=ObjMove_GetX(fairy); fy=ObjMove_GetY(fairy); //update each frame with the fairy's position
