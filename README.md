@@ -1,4 +1,9 @@
 # cs401Project
+
+In GitHub Desktop:
+To get everyone else's changes: Pull
+To give everyone else your changes: Pull, resolve any conflicts, then commit and push
+
 hello
 I think i figured something out :)
 I tested somethings in an alt repo and when i put in a racket file, it recognized the language.
