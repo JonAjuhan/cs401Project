@@ -3,6 +3,7 @@
 In GitHub Desktop:
 To get everyone else's changes: Pull
 To give everyone else your changes: Pull, resolve any conflicts, then commit and push
+Or, maybe better practices: Push to a different branch; Create pull request; merge the pull request
 
 hello
 I think i figured something out :)
