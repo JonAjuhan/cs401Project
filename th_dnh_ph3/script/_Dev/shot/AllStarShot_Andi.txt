@@ -12,6 +12,10 @@ shot_image = "./img/AllStarShot.png"
 //	delay_rect = (2,606,33,637)		//hollow star
 	delay_rect = (32,606,63,637)	//orb
 
+//Default collision radius of a bullet with m*n rect (tested by Drake):
+//	max(3, floor((min(m, n) - 12) / 3))
+//or can specify one or more with 
+//	collision = (r,x,y) 
 
 //ALPHA
 
