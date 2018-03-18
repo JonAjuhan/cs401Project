@@ -96,8 +96,8 @@ task TShoot{
 	alternative(diff)
 	case(RANK_EASY){	gap=45;}
 	case(RANK_NORM){	gap=25;}
-	case(RANK_HARD){	gap=15;}
-	case(RANK_LUNA){	gap=10;}
+	case(RANK_HARD){	gap=20;}
+	case(RANK_LUNA){	gap=15;}
 	others{ gap=5;}
 
 	
@@ -115,7 +115,9 @@ task TShoot{
 			TFamShoot(fam);
 			//Each familiar's shots
 			task TFamShoot(fam){
-				wait(30); let shot; let fx; let fy; let fa; let off=0;
+				// wait(35+gap); //30
+				wait(60); //30
+				let shot; let fx; let fy; let fa; let off=0;
 				while(!Obj_IsDeleted(fam) && !isOffScreen(fam)){
 					fx = ObjMove_GetX(fam); fy = ObjMove_GetY(fam); fa = ObjMove_GetAngle(fam);
 					ascent(i in 0..2){

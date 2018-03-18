@@ -203,7 +203,8 @@ task DifficultyDisplay(){
 	ObjPrim_SetTexture(objText, dirimg~"Difficulty.png");
 	ObjSprite2D_SetSourceRect(objText, 0,0+32*row,256,32+32*row);
 	ObjSprite2D_SetDestCenter(objText);
-	ObjRender_SetScaleXYZ(objText, 0.75, 0.75, 0);
+	// ObjRender_SetScaleXYZ(objText, 0.75, 0.75, 0);
+	ObjRender_SetScaleXYZ(objText, 0.65, 0.65, 0);
 	Obj_SetRenderPriority(objText, 0.95);
 	ObjRender_SetX(objText, sx + 150); //todo: this should be a literal
 	ObjRender_SetY(objText, 24);
