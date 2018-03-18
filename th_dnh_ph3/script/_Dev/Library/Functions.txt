@@ -6,23 +6,41 @@
 
 //Functions to do things rather than be used by other functions
 
-
+//Basic spellcard declaration, no cutin image
 function SetSpellCard() {
 	ObjCutin_SetSpellcardS3(GetCommonData("CurrentSC",""), 255, 128, 128);
 	let diff = GetCommonData("Difficulty","Normal");
 	ObjCutin_LaunchS3("AYA", "", diff);
 	TMagicCircle();
-	// Difficulty();
 	NotifyEventAll(EV_REQUEST_SPELL_SCORE,"");
 }
+
+//Spellcard declaration with cutin image
+function SetSpellCardA2(style,img) {
+	ObjCutin_SetSpellcardS4(GetCommonData("CurrentSC",""),img,style, 255, 128, 128);
+	let diff = GetCommonData("Difficulty","Normal");
+	ObjCutin_LaunchS3(style, img, diff);
+	TMagicCircle();
+	NotifyEventAll(EV_REQUEST_SPELL_SCORE,"");
+}
+
+//
 function SetSurvivalCard() {
 	ObjCutin_SetSpellcardS5(GetCommonData("CurrentSC",""),"","", 255, 128, 128, true);
 	let diff = GetCommonData("Difficulty","Normal");
 	ObjCutin_LaunchS3("AYA", "", diff);
-	// Difficulty();
 	NotifyEventAll(EV_REQUEST_SPELL_SCORE,"");
 	TMagicCircle();
 }
+//
+function SetSurvivalCardA2(style,img) {
+	ObjCutin_SetSpellcardS5(GetCommonData("CurrentSC",""),img,style, 255, 128, 128, true);
+	let diff = GetCommonData("Difficulty","Normal");
+	ObjCutin_LaunchS3(style, img, diff);
+	TMagicCircle();
+	NotifyEventAll(EV_REQUEST_SPELL_SCORE,"");
+}
+//
 function SetCaution() {
 	CautionCutin(51, cy-30, CSD~"../img/caution.png");
 	SE_Play(se_caution,120);

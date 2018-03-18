@@ -114,9 +114,11 @@ task TShoot{
 					dir = -altSign(k);
 					a = 270+(90+15+300/N*i)*dir;
 					dir = -altSign(j);
+					let isalt = frombool(altSign(j)==altSign(k));
 					// shot = CreateShotA2(ex,ey,5.5-0.5*j,a, -0.15,0, SCALE_GREEN,10);
 					// shot = CreateShotA2(ex,ey,5.5-0.5*j,a, -0.15,0, SCALE_BLUE-5*altBin(j),10);
-					shot = CreateShotA2(ex,ey,5.5-0.5*trunc(j/2+altBin(i)/3),a, -0.15,0, BALL_O_GREEN,10);
+					// shot = CreateShotA2(ex,ey,5.5-0.5*trunc(j/2+altBin(i)/3),a, -0.15,0, BALL_O_GREEN,10);
+					shot = CreateShotA2(ex,ey,5.5-0.5*trunc(j/2+altBin(i)/3),a, -0.15,0, BALL_O_GREEN+isalt*(SCALE_RED-BALL_O_GREEN+5*tobin(altBin(trunc(j/2+i)))),10);
 					//          (obj, del,     speed,    angle, acc,      angv, mspd,    jerk,  macc,      anga,    mangv)
 					AddPatternA5(shot,  0, NO_CHANGE,NO_CHANGE,   0,         0,    0,   -0.005,   -1,         0,        0);
 					// AddPatternA5(shot,  0, NO_CHANGE,NO_CHANGE,   6,         0,    0,   -0.05,   -1,         0,        0);
@@ -128,6 +130,19 @@ task TShoot{
 					let jerk = 0.003; //-0.0015
 					let macc = 0.15; //0.15
 					AddPatternA5(shot,del, spd,NO_CHANGE,  acc, -dir*3.55,   mspd,  jerk, macc, dir*0.15, dir*1.25);
+					
+					if(altSign(j)==altSign(k)){
+						Manage(shot);
+						task Manage(shot){
+							ObjRender_SetAlpha(shot,0);
+							wait(del);
+							ascent(i in 0..60){
+								ObjRender_SetAlpha(shot,255*(i/60)^2);
+								yield;
+							}
+						}
+					}
+					
 				}
 				SE_Play(se_shot,60);
 				DelayChime;
@@ -151,6 +166,7 @@ task TShoot{
 			//Each familiar's shots
 			task TFamShoot(fam){
 				wait(30); let shot; let fx; let fy; let fa; let off=0;
+				if(finishing){Obj_Delete(fam);return;}
 				while(!Obj_IsDeleted(fam) && !isOffScreen(fam)){
 					fx = ObjMove_GetX(fam); fy = ObjMove_GetY(fam); fa = ObjMove_GetAngle(fam);
 					ascent(i in 0..2){

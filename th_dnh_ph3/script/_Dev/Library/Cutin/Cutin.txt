@@ -2,19 +2,20 @@
 let current = GetCurrentScriptDirectory;
 let DEBUG = false;
 let CutinDifficulty = "";
-let SpellAttack_img = current~"SpellAttack.png"; 
-let img_SpellAttack = current~"SpellAttackText.png"; // Spell Declare
-let img_SurvivalAttack = current~"survival.png";
-let Alpha_HUD = [255, 255]; //top, bottom
+let SpellAttack_img = dirlib~"Cutin/SpellAttack.png"; 
+let img_SpellAttack = dirlib~"Cutin/SpellAttackText.png"; // Spell Declare
+let img_SurvivalAttack = dirlib~"Cutin/SurvivalAttackText.png";
+let Alpha_HUD = [255, 255]; //top, bottom	[255,255]
+let ALPHA_CUT = 180;
 
-let NAZRIN = "NAZRIN";
-let BYAKUREN = "BYAKUREN";
-let KANAKO = "KANAKO";
-let MOKOU = "MOKOU";
-let AYA = "AYA";
+let AYA      = "AYA";       //no portrait
+let MOKOU    = "MOKOU";     //no portrait or effects, just SC name
+let NAZRIN   = "NAZRIN";    //from right+up to left+dn
+let BYAKUREN = "BYAKUREN";  //from left to right, long hang
+let KANAKO   = "KANAKO";    //in from top-right, drift up and fade
+let LENEN    = "LENEN";     //funky Z thing from rgt to left
+
 let YABUSAME = "LENEN";
-
-let LENEN = "LENEN";
 
 let isSurvival = false;			 // GetScriptResult(NotifyEventAll(EV_REQUEST_IS_DURABLE_SPELL,""));
 
@@ -105,7 +106,7 @@ task CutinS3(Type, mimage, difficulty){
 			let locs = [ObjRender_GetX(SpellCutin), ObjRender_GetY(SpellCutin)];
 			ObjRender_SetPosition(SpellCutin, floor(locs[0]+ispeed*cos(angle)), floor(locs[1]+ispeed*sin(angle)), 0);
 			
-			let alph = min(255, 255*(mod*2));
+			let alph = min(ALPHA_CUT, ALPHA_CUT*(mod*2));
 			ObjRender_SetAlpha(SpellCutin, alph);
 			yield;
 		}
@@ -153,7 +154,7 @@ task CutinS3(Type, mimage, difficulty){
 				ny += mspeed*sin(cangle);
 				ObjRender_SetPosition(SpellCutin, nx, ny, 0);
 				yield;
-				alpha = min(max(alpha+alphinc, 0), 255);
+				alpha = min(max(alpha+alphinc, 0), ALPHA_CUT);
 				ObjRender_SetAlpha(SpellCutin, alpha);
 			}
 		}

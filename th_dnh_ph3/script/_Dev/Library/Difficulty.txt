@@ -181,11 +181,9 @@ function SetDifficulty(diff){
 	SetCommonData("Difficulty",str);
 	SetCommonData("DifficultyRow",row);
 }
-//Allows overriding with a default difficulty, e.g. for testing
+//Sets difficulty from saved config, using argument as default if no config exists
 function SetDifficultyD(diff){
-	// diff = getdiff;
-	diff = DEFAULT_DIFFICULTY;
-	SetDifficulty(diff);
+	SetDifficulty(GetAreaCommonData("Config","Difficulty",diff));
 }
 
 
