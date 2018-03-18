@@ -95,6 +95,23 @@ function signNZ(n){ alternative(n)   //guaranteed nonzero
 }
 
 
+
+function inrange(num, bound0,bound1){
+	if(bound1<bound0){let tmp=bound0; bound0=bound1; bound1=tmp;}
+	return ( bound0 <= num&&num <= bound1 );
+}
+
+function isapproaching(s,a,ms){
+	return ( s*a < ms*a );
+	// return ( s < (|ms|)*sign(a) );
+	// let dir = sign(a);
+	// let bound = ms;
+	// let side = -dir;
+	// let currside = sign(ms-s);
+	// return ( dir==currside || s==0&&ms!=0 );
+}
+
+
 //Working with angles
 function norma(a){ return ((a%360)+360)%360; } //make angle 0-360 - Andi
 function NormalizeAngle(angle){ angle %= 360; if(angle<0){angle += 360;} return angle; } //Ultima
@@ -213,6 +230,7 @@ function tobool(val){
 		return val==0;
 	}else{return !(val=="" || val=="false" || val=="0" || val=="f");}
 }
+function tobin(num){return (|sign(num)|);}
 function frombool(bl){if(bl){return 1;}else{return 0;}}
 
 
@@ -355,16 +373,6 @@ function TurnToPoint(shot, speed, PointX, PointY){
 
 
 
-
-function ObjShot_GetDelayColor(shot) {
-	if(isnull(shot)){return [0,0,0];}
-	return GetShotDataInfoA1(ObjShot_GetImageID(shot),TARGET_ENEMY,INFO_DELAY_COLOR);
-}
-
-function ObjShot_GetCollisionRadius(shot) {
-	if(isnull(shot)){return 0;}
-	return GetShotDataInfoA1(max(1,ObjShot_GetImageID(shot)),TARGET_ENEMY,INFO_COLLISION);
-}
 
 
 

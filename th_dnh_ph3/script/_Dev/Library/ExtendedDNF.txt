@@ -1,6 +1,11 @@
 
+//MISC
+
+
 
 function ObjEnemy_GetLife(enemy){return ObjEnemy_GetInfo(enemy,INFO_LIFE);}
+
+
 
 
 
@@ -166,7 +171,7 @@ function PrepareShotA2(x,y,s,a,acc,mspd,graph){
 //if a shot is too close to the player, don't create it after all
 //30 is a good radius
 function CheckShot(shot,r){
-	if(getdist(ObjMove_GetX(shot),ObjMove_GetY(shot),px,py) <= r){
+	if(getdistance(ObjMove_GetX(shot),ObjMove_GetY(shot),px,py) <= r){
 		let shot2 = CreateShotA1(ObjMove_GetX(shot),ObjMove_GetY(shot),0,0,ObjShot_GetImageID(shot),10);
 		ObjRender_SetAlpha(shot2,128);
 		ObjShot_SetDeleteFrame(shot2,0);
@@ -228,12 +233,30 @@ function CopyShot(shot){
 	ObjShot_SetIntersectionEnable(cpy,intersect);	
 	Obj_SetRenderPriority(cpy,Obj_GetRenderPriority(shot));
 	
-	setvals(cpy, ["Acceleration","AngularVelocity","MaxSpeed","Alpha"]	//"IsIntersectionEnable","Color","Alpha"]
-				,[acc			,angv			  ,mspd      ,alpha  ]);	//,intersect             ,color  ,alpha  ]);
-	setval(cpy,"Color",color); setval(cpy,"IsIntersectionEnable",intersect);
+	Obj_SetValue(cpy,"Acceleration",acc);
+	Obj_SetValue(cpy,"AngularVelocity",angv);
+	Obj_SetValue(cpy,"MaxSpeed",mspd);
+	Obj_SetValue(cpy,"Alpha",alpha);
+	Obj_SetValue(cpy,"Color",color); 
+	Obj_SetValue(cpy,"IsIntersectionEnable",intersect);
 	
 	return cpy;
 }
+
+
+
+
+function ObjShot_GetDelayColor(shot) {
+	if(isnull(shot)){return [0,0,0];}
+	return GetShotDataInfoA1(ObjShot_GetImageID(shot),TARGET_ENEMY,INFO_DELAY_COLOR);
+}
+
+function ObjShot_GetCollisionRadius(shot) {
+	if(isnull(shot)){return 0;}
+	return GetShotDataInfoA1(max(1,ObjShot_GetImageID(shot)),TARGET_ENEMY,INFO_COLLISION);
+}
+
+
 
 //////////////////////////////////////////////////////////////////////
 // Move Object Functions
@@ -278,21 +301,87 @@ task Obj_AddPatternA2(obj,fr,s,a,acc,mspd){
 
 
 
-task ObjMove_SetAngularAcceleration(shot,anga){
-	Obj_SetValue(shot,"AngularAcceleration",anga);
-	let angv = Obj_GetValueD(shot,"AngularVelocity",0);
-	while(!Obj_IsDeleted(shot) && Obj_GetValueD(shot,"AngularAcceleration",0)==anga ){
-		angv = Obj_GetValueD(shot,"AngularVelocity",0);
-		if( (|Obj_GetValueD(shot,"MaxAngularVelocity",0)|) < (|angv|) ){
-			ObjMove_SetAngularVelocity(shot,angv+anga);
-			Obj_SetValue(shot,"AngularVelocity",angv+anga);
+task ObjMove_SetAngularAcceleration(obj,anga){
+	Obj_SetValue(obj,"AngularAcceleration",anga);
+	let angv = Obj_GetValueD(obj,"AngularVelocity",0);
+	let mangv = Obj_GetValueD(obj,"MaxAngularVelocity",0);
+	while(!Obj_IsDeleted(obj) && Obj_GetValueD(obj,"AngularAcceleration",0)==anga ){
+		angv = Obj_GetValueD(obj,"AngularVelocity",0);
+		mangv = Obj_GetValueD(obj,"MaxAngularVelocity",0);
+		if( (|angv|) < (|mangv|) || sign(mangv-angv) == sign(anga) ){
+			angv += anga;
+			ObjMove_SetAngularVelocity(obj,angv);
+			Obj_SetValue(obj,"AngularVelocity",angv);
+		}else{
+			ObjMove_SetAngularVelocity(obj,mangv);
+			Obj_SetValue(obj,"AngularVelocity",mangv);
+			return;
 		}
 		yield;
 	}
 }
-function ObjMove_SetMaxAngularVelocity(shot,mangv){
-	Obj_SetValue(shot,"MaxAngularVelocity",mangv);
+function ObjMove_SetMaxAngularVelocity(obj,mangv){ Obj_SetValue(obj,"MaxAngularVelocity",mangv); }
+
+
+task ObjMove_SetJerk(obj,jerk){
+	Obj_SetValue(obj,"Jerk",jerk);
+	let acc = Obj_GetValueD(obj,"Acceleration",0);
+	let macc = Obj_GetValueD(obj,"MaxAcceleration",0);
+	while(!Obj_IsDeleted(obj) && Obj_GetValueD(obj,"Acceleration",0)==acc ){
+		acc = Obj_GetValueD(obj,"Acceleration",0);
+		macc = Obj_GetValueD(obj,"MaxAcceleration",0);
+		// if( (|acc|) < (|macc|) || sign(macc-acc) == sign(jerk) ){
+		// if( inrange(acc,0,(|macc|)*sign(jerk)) ){
+		// if( inrange(acc,99-99*sign(jerk),(|macc|)*sign(jerk)) ){
+		// if( (|acc+999|) < (|macc+999|) || sign(macc-acc) == sign(jerk) ){
+		if( isapproaching(acc,jerk,macc) ){
+			acc += jerk;
+			ObjMove_SetAcceleration(obj,acc);
+			Obj_SetValue(obj,"Acceleration",acc);
+		}else{
+			ObjMove_SetAcceleration(obj,macc);
+			Obj_SetValue(obj,"Acceleration",macc);
+			return;
+		}
+		yield;
+	}
 }
+function ObjMove_SetMaxAcceleration(obj,macc){ Obj_SetValue(obj,"MaxAcceleration",macc); }
+
+
+
+
+function ObjMove_SetSpeedAtExpression(obj,expr){
+	expr = TrimString(expr);
+	let terms = SplitString(expr,"+"); //todo: "-"?
+	
+	ascent(i in 0..length(terms)){
+		let term = terms[i];
+		term = SplitString(term,"*t");
+
+		//Find coefficient
+		let coeff = ator(term[0]);
+		
+		//Find exponent
+		let expon;
+		if(length(term)==1){ expon=0; }
+		else{ 
+			let tmp = SplitString(term[1],"^");
+			if(length(tmp)==1){ expon = "1"; }
+			else{ expon = tmp[length(tmp)-1]; }
+		}
+		
+		alternative(ator(expon))
+		case(0){ ObjMove_SetSpeed(obj,coeff); }
+	
+	}
+	
+}
+
+
+
+
+
 
 task ObjRender_SetAngularVelocity(obj,da){
 	Obj_SetValue(obj,"RenderAngularVelocity",da);
@@ -314,161 +403,166 @@ task ObjRender_SetAngularVelocityXYZ(obj,dxa,dya,dza){
 
 
 
-//move x% of the remaining distance
-function ObjMove_SetDestAtZeno(obj,x,y,ratio){
-	let x0 = ObjMove_GetX(obj); let y0 = ObjMove_GetY(obj);
-	//let dist = getdist(x0,y0,x,y); let ang = getangle(x0,y0,x,y);
-	ObjMove_SetPosition(obj,lerp(x0,x,ratio),lerp(y0,y,ratio));
+function SetSpeed(obj,val){
+	ObjMove_SetSpeed(obj,val);
+	Obj_SetValue(obj,"Speed",val);
 }
-
-//disappear and warp to the destination
-task ObjMove_SetDestAtWarp(obj, destX, destY, time){
-	let xscale = ObjRender_GetScaleX(obj);
-	let yscale = ObjRender_GetScaleY(obj);
-
-	let ori = [xscale, yscale]; let tmp;
-
-	Obj_SetValue(obj, "Warping", true);
-	Obj_SetValue(obj, "Destination", [destX, destY]);
-
-	let smooth=true;
-	if(time<0){time=(|time|);smooth=false;}
-	
-	let blinktime; let hidetime;
-	if(time!=0){
-		blinktime = min(20,time/2);
-		hidetime = time-2*blinktime;
-	}else{
-		blinktime = 20;
-		hidetime = 0;
-	}
-	
-	loop(blinktime){
-		ObjRender_SetScaleXYZ(obj, xscale, yscale, 0);
-		xscale -= ori[0]/blinktime;
-		yscale += ori[1]/blinktime;
-		yield;
-	}
-	if(hidetime!=0){
-		if(Obj_GetType(obj)==OBJ_SHOT){ObjShot_SetIntersectionEnable(obj,false);}
-		if(Obj_GetType(obj)==OBJ_ENEMY_BOSS){ tmp = IsBossIntersectionEnable; IsBossIntersectionEnable=false; }
-		
-		Obj_SetVisible(obj,false);
-		
-		if(smooth){
-			ObjMove_SetDestAtFrame(obj,destX,destY,hidetime);
-		}else{
-			let ang = getangle(ex,ey,destX,destY);
-			ObjMove_SetPosition(obj,ex+2000*cos(ang),ey+2000*sin(ang));
-		}
-		wait(hidetime);
-		Obj_SetVisible(obj,true);
-		ObjMove_SetPosition(obj,destX,destY);
-		
-		if(Obj_GetType(obj)==OBJ_SHOT){ObjShot_SetIntersectionEnable(obj,Obj_GetValueD(obj,"IsIntersectionEnable",true));}
-		if(Obj_GetType(obj)==OBJ_ENEMY_BOSS){ IsBossIntersectionEnable=tmp; }
-	}
-	ObjRender_SetPosition(obj, destX, destY, 0);
-	loop(20){
-		ObjRender_SetScaleXYZ(obj, xscale, yscale, 0);
-		xscale += ori[0]/20;
-		yscale -= ori[1]/20;
-		yield;
-	}
-	Obj_SetValue(obj, "Warping", false);
-	ObjRender_SetScaleXYZ(obj, ori[0], ori[1], 0);
+function SetAngle(obj,val){
+	ObjMove_SetAngle(obj,val);
+	Obj_SetValue(obj,"Angle",val);
 }
-
-//"Jump" to a location, growing larger and then smaller again
-task ObjMove_SetDestAtScale(obj,destX,destY,time,scaleincr){
-	let xscale = ObjRender_GetScaleX(obj);
-	let yscale = ObjRender_GetScaleY(obj);
-	
-	let dx = (destX - getrx(obj))/time;
-	let dy = (destY - getry(obj))/time;
-	
-	let xs; let ys;
-
-	Obj_SetValue(obj, "Warping", true);
-	Obj_SetValue(obj, "Destination", [destX, destY]);
-
-	let tmp;
-	if(Obj_GetType(obj)==OBJ_SHOT){ObjShot_SetIntersectionEnable(obj,false);}
-	if(Obj_GetType(obj)==OBJ_ENEMY_BOSS){ tmp = IsBossIntersectionEnable; IsBossIntersectionEnable=false; }
-	
-	ascent(i in 0..time){
-		xs = xscale+xscale*scaleincr*sin(i*180/time);
-		ys = yscale+yscale*scaleincr*sin(i*180/time);
-		ObjRender_SetScaleXYZ(obj, xs,ys, 0);
-		ObjRender_SetPosition(obj,getrx(obj)+dx,getry(obj)+dy,0);
-		yield;
-	}
-	
-	if(Obj_GetType(obj)==OBJ_SHOT){ObjShot_SetIntersectionEnable(obj,Obj_GetValueD(obj,"IsIntersectionEnable",true));}
-	if(Obj_GetType(obj)==OBJ_ENEMY_BOSS){ IsBossIntersectionEnable=tmp; }
-
-	Obj_SetValue(obj, "Warping", false);
-//	ObjRender_SetScaleXYZ(obj, ori[0], ori[1], 0);
+function SetAcceleration(obj,val){
+	ObjMove_SetAcceleration(obj,val);
+	Obj_SetValue(obj,"Acceleration",val);
+}
+function SetMaxSpeed(obj,val){
+	ObjMove_SetMaxSpeed(obj,val);
+	Obj_SetValue(obj,"MaxSpeed",val);
+}
+function SetAngularVelocity(obj,val){
+	ObjMove_SetAngularVelocity(obj,val);
+	Obj_SetValue(obj,"AngularVelocity",val);
 }
 
 
-//Add pattern to shot and store parameters in the shot's dictionary
-function AddPatternA1(shot,del,spd,ang){
-	setvals(shot,["PatternDelay","PatternSpeed","PatternAngle"],
-				 [del,spd,ang]);
-	ObjMove_AddPatternA1(shot,del,spd,ang);
+
+
+
+//Add pattern and store parameters in the object's dictionary
+function AddPatternA1(obj,del,spd,ang){
+	Obj_SetValue(obj,"PatternDelay",del);
+	Obj_SetValue(obj,"PatternSpeed",spd);
+	Obj_SetValue(obj,"PatternAngle",ang);
+	ObjMove_AddPatternA1(obj,del,spd,ang);
+	Manage;
+	task Manage{
+		wait(del);
+		Obj_SetValue(obj,"Speed",spd);
+		Obj_SetValue(obj,"Angle",ang);
+	}
+}
+
+function AddPatternA2(obj,del,spd,ang,acc,angv,mspd){
+	Obj_SetValue(obj,"PatternDelay",del);
+	Obj_SetValue(obj,"PatternSpeed",spd);
+	Obj_SetValue(obj,"PatternAngle",ang);
+	Obj_SetValue(obj,"PatternAcceleration",acc);
+	Obj_SetValue(obj,"PatternAngularVelocity",angv);
+	Obj_SetValue(obj,"PatternMaxSpeed",mspd);
+	ObjMove_AddPatternA2(obj,del,spd,ang,acc,angv,mspd);
+	Manage;
+	task Manage{
+		wait(del);
+		Obj_SetValue(obj,"Speed",spd);
+		Obj_SetValue(obj,"Angle",ang);
+		Obj_SetValue(obj,"Acceleration",acc);
+		Obj_SetValue(obj,"AngularVelocity",angv);
+		Obj_SetValue(obj,"MaxSpeed",mspd);
+	}
+}
+
+function AddPatternA3(obj,del,spd,ang,acc,angv,mspd,graph){
+	Obj_SetValue(obj,"PatternDelay",del);
+	Obj_SetValue(obj,"PatternSpeed",spd);
+	Obj_SetValue(obj,"PatternAngle",ang);
+	Obj_SetValue(obj,"PatternAcceleration",acc);
+	Obj_SetValue(obj,"PatternAngularVelocity",angv);
+	Obj_SetValue(obj,"PatternMaxSpeed",mspd);
+	Obj_SetValue(obj,"PatternGraphic",graph);
+	ObjMove_AddPatternA3(obj,del,spd,ang,acc,angv,mspd,graph);
+	Manage;
+	task Manage{
+		wait(del);
+		Obj_SetValue(obj,"Speed",spd);
+		Obj_SetValue(obj,"Angle",ang);
+		Obj_SetValue(obj,"Acceleration",acc);
+		Obj_SetValue(obj,"AngularVelocity",angv);
+		Obj_SetValue(obj,"MaxSpeed",mspd);
+		Obj_SetValue(obj,"Graphic",graph);
+	}
+}
+
+
+
+
+
+
+function AddPatternA5(obj,del,spd,ang,acc,angv,mspd,jerk,macc,anga,mangv){
+	Obj_SetValue(obj,"PatternDelay",del);
+	Obj_SetValue(obj,"PatternSpeed",spd);
+	Obj_SetValue(obj,"PatternAngle",ang);
+	Obj_SetValue(obj,"PatternAcceleration",acc);
+	Obj_SetValue(obj,"PatternAngularVelocity",angv);
+	Obj_SetValue(obj,"PatternMaxSpeed",mspd);
+	Obj_SetValue(obj,"PatternJerk",jerk);
+	Obj_SetValue(obj,"PatternMaxAcceleration",macc);
+	Obj_SetValue(obj,"PatternAngularAcceleration",anga);
+	Obj_SetValue(obj,"PatternMaxAngularVelocity",mangv);
+	ObjMove_AddPatternA2(obj,del,spd,ang,acc,angv,mspd);
+	Manage;
+	task Manage{
+		wait(del);
+		Obj_SetValue(obj,"Speed",spd);
+		Obj_SetValue(obj,"Angle",ang);
+		Obj_SetValue(obj,"Acceleration",acc);
+		Obj_SetValue(obj,"AngularVelocity",angv);
+		Obj_SetValue(obj,"MaxSpeed",mspd);
+		Obj_SetValue(obj,"Jerk",jerk);
+		Obj_SetValue(obj,"MaxAcceleration",macc);
+		Obj_SetValue(obj,"AngularAcceleration",anga);
+		Obj_SetValue(obj,"MaxAngularVelocity",mangv);
+		ObjMove_SetJerk(obj,jerk);
+		ObjMove_SetAngularAcceleration(obj,anga);
+	}
+}
+
+
+
+
+function AddPatternB1(obj,del,xspd,yspd){
+	Obj_SetValue(obj,"PatternDelay",del);
+	Obj_SetValue(obj,"PatternUseXYSystem",true);
+	Obj_SetValue(obj,"PatternUseSASystem",false);
+	Obj_SetValue(obj,"PatternXSpeed",xspd);
+	Obj_SetValue(obj,"PatternYSpeed",yspd);
+	ObjMove_AddPatternB1(obj,del,xspd,yspd);
 	Update;
 	task Update{
 		wait(del);
-		setvals(shot,["Speed","Angle"],
-					 [spd,ang]);
+		Obj_SetValue(obj,"UseXYSystem",true);
+		Obj_SetValue(obj,"UseSASystem",false);
+		Obj_SetValue(obj,"XSpeed",xspd);
+		Obj_SetValue(obj,"YSpeed",yspd);
 	}
 }
-function AddPatternA2(shot,del,spd,ang,acc,angv,mspd){
-	setvals(shot,["PatternDelay","PatternSpeed","PatternAngle","PatternAcceleration","PatternAngularVelocity","PatternMaxSpeed"],
-				 [del,spd,ang,acc,angv,mspd]);
-	ObjMove_AddPatternA2(shot,del,spd,ang,acc,angv,mspd);
+function AddPatternB2(obj,del,xspd,yspd,xacc,yacc,xmspd,ymspd){
+	Obj_SetValue(obj,"PatternDelay",del);
+	Obj_SetValue(obj,"PatternUseXYSystem",true);
+	Obj_SetValue(obj,"PatternUseSASystem",false);
+	Obj_SetValue(obj,"PatternXSpeed",xspd);
+	Obj_SetValue(obj,"PatternYSpeed",yspd);
+	Obj_SetValue(obj,"PatternXAcceleration",xacc);
+	Obj_SetValue(obj,"PatternYAcceleration",yacc);
+	Obj_SetValue(obj,"PatternXMaxSpeed",xmspd);
+	Obj_SetValue(obj,"PatternYMaxSpeed",ymspd);
+	ObjMove_AddPatternB2(obj,del,xspd,yspd,xacc,yacc,xmspd,ymspd);
 	Update;
 	task Update{
 		wait(del);
-		setvals(shot,["Speed","Angle","Acceleration","AngularVelocity","MaxSpeed"],
-					 [spd,ang,acc,angv,mspd]);
-	}
-}
-function AddPatternA3(shot,del,spd,ang,acc,angv,mspd,graph){
-	setvals(shot,["PatternDelay","PatternSpeed","PatternAngle","PatternAcceleration","PatternAngularVelocity","PatternMaxSpeed","PatternGraphic"],
-				 [del,spd,ang,acc,angv,mspd,graph]);
-	ObjMove_AddPatternA3(shot,del,spd,ang,acc,angv,mspd,graph);
-	Update;
-	task Update{
-		wait(del);
-		setvals(shot,["Speed","Angle","Acceleration","AngularVelocity","MaxSpeed","Graphic"],
-					 [spd,ang,acc,angv,mspd,graph]);
+		Obj_SetValue(obj,"UseXYSystem",true);
+		Obj_SetValue(obj,"UseSASystem",false);
+		Obj_SetValue(obj,"XSpeed",xspd);
+		Obj_SetValue(obj,"YSpeed",yspd);
+		Obj_SetValue(obj,"XAcceleration",xacc);
+		Obj_SetValue(obj,"YAcceleration",yacc);
+		Obj_SetValue(obj,"XMaxSpeed",xmspd);
+		Obj_SetValue(obj,"YMaxSpeed",ymspd);
 	}
 }
 
-function AddPatternB1(shot,del,xspd,yspd){
-	setvals(shot,["PatternDelay","PatternXSpeed","PatternYSpeed"],
-				 [del,xspd,yspd]);
-	ObjMove_AddPatternB1(shot,del,xspd,yspd);
-	Update;
-	task Update{
-		wait(del);
-		setvals(shot,["XSpeed","YSpeed"],
-					 [xspd,yspd]);
-	}
-}
-function AddPatternB2(shot,del,xspd,yspd,xacc,yacc,xmspd,ymspd){
-	setvals(shot,["PatternDelay","PatternXSpeed","PatternYSpeed","PatternXAcceleration","PatternYAcceleration","PatternXMaxSpeed","PatternYMaxSpeed"],
-				 [del,xspd,yspd,xacc,yacc,xmspd,ymspd]);
-	ObjMove_AddPatternB2(shot,del,xspd,yspd,xacc,yacc,xmspd,ymspd);
-	Update;
-	task Update{
-		wait(del);
-		setvals(shot,["XSpeed","YSpeed","XAcceleration","YAcceleration","XMaxSpeed","YMaxSpeed"],
-					 [xspd,yspd,xacc,yacc,xmspd,ymspd]);
-	}
-}
+
+
+
 
 
 
@@ -482,6 +576,18 @@ task ObjMove_Still(obj,time){
 	}
 	ObjMove_SetAngularVelocity(obj,0);
 }
+
+
+
+
+
+
+
+
+
+
+
+
 
 //////////////////////////////////////////////////////////////////
 // Laser Object Functions
@@ -510,7 +616,7 @@ function ObjStLaser_SetMaxAngularVelocity(las,mangv){ObjMove_SetMaxAngularVeloci
 
 function ObjStLaser_SetTipPosition(las,x,y){
 	let x0 = ObjMove_GetX(las);	let y0 = ObjMove_GetY(las);
-	let len = getdist(x0,y0,x,y);
+	let len = getdistance(x0,y0,x,y);
 	let ang = getangle(x0,y0,x,y);
 	ObjLaser_SetLength(las,len);
 	ObjStLaser_SetAngle(las,ang);

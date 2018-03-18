@@ -1543,7 +1543,7 @@ task ObjFog_SetTargAtFrameA2(fog,targ,r,a, time){
 }
 
 
-
+//why do I even have this
 function GetFigureEightPoint(x0,y0, x1,y1, t){
 	let rad = getdist(x0,y0,x1,y1)/2;
 	let ang = getangle(x0,y0,x1,y1); let dir;
@@ -1561,6 +1561,120 @@ function GetFigureEightPoint(x0,y0, x1,y1, t){
 	y = cy+rad*sin(ang+360*t*dir);
 	return [x,y];
 }
+
+
+
+
+
+
+
+
+//move x% of the remaining distance
+function ObjMove_SetDestAtZeno(obj,x,y,ratio){
+	let x0 = ObjMove_GetX(obj); let y0 = ObjMove_GetY(obj);
+	//let dist = getdist(x0,y0,x,y); let ang = getangle(x0,y0,x,y);
+	ObjMove_SetPosition(obj,lerp(x0,x,ratio),lerp(y0,y,ratio));
+}
+
+//disappear and warp to the destination
+task ObjMove_SetDestAtWarp(obj, destX, destY, time){
+	let xscale = ObjRender_GetScaleX(obj);
+	let yscale = ObjRender_GetScaleY(obj);
+
+	let ori = [xscale, yscale]; let tmp;
+
+	Obj_SetValue(obj, "Warping", true);
+	Obj_SetValue(obj, "Destination", [destX, destY]);
+
+	let smooth=true;
+	if(time<0){time=(|time|);smooth=false;}
+	
+	let blinktime; let hidetime;
+	if(time!=0){
+		blinktime = min(20,time/2);
+		hidetime = time-2*blinktime;
+	}else{
+		blinktime = 20;
+		hidetime = 0;
+	}
+	
+	loop(blinktime){
+		ObjRender_SetScaleXYZ(obj, xscale, yscale, 0);
+		xscale -= ori[0]/blinktime;
+		yscale += ori[1]/blinktime;
+		yield;
+	}
+	if(hidetime!=0){
+		if(Obj_GetType(obj)==OBJ_SHOT){tmp = Obj_GetValueD(obj,"IsIntersectionEnable",true); ObjShot_SetIntersectionEnable(obj,false);}
+		if(Obj_GetType(obj)==OBJ_ENEMY_BOSS){ tmp = Obj_GetValueD(obj,"IsIntersectionEnable",true); Obj_SetValue(obj,"IsIntersectionEnable",false); }
+		if(Obj_GetType(obj)==OBJ_ENEMY){ tmp = Obj_GetValueD(obj,"IsIntersectionEnable",true); Obj_SetValue(obj,"IsIntersectionEnable",false); }
+		
+		Obj_SetVisible(obj,false);
+		
+		if(smooth){
+			ObjMove_SetDestAtFrame(obj,destX,destY,hidetime);
+		}else{
+			let ang = getangle(ex,ey,destX,destY);
+			ObjMove_SetPosition(obj,ex+2000*cos(ang),ey+2000*sin(ang));
+		}
+		wait(hidetime);
+		Obj_SetVisible(obj,true);
+		ObjMove_SetPosition(obj,destX,destY);
+		
+		if(Obj_GetType(obj)==OBJ_SHOT){ObjShot_SetIntersectionEnable(obj,Obj_GetValueD(obj,"IsIntersectionEnable",true));}
+		if(Obj_GetType(obj)==OBJ_ENEMY_BOSS){ Obj_SetValue(obj,"IsIntersectionEnable",tmp); }
+		if(Obj_GetType(obj)==OBJ_ENEMY){ Obj_SetValue(obj,"IsIntersectionEnable",tmp); }
+	}
+	ObjRender_SetPosition(obj, destX, destY, 0);
+	loop(20){
+		ObjRender_SetScaleXYZ(obj, xscale, yscale, 0);
+		xscale += ori[0]/20;
+		yscale -= ori[1]/20;
+		yield;
+	}
+	Obj_SetValue(obj, "Warping", false);
+	ObjRender_SetScaleXYZ(obj, ori[0], ori[1], 0);
+}
+
+//"Jump" to a location, growing larger and then smaller again
+task ObjMove_SetDestAtScale(obj,destX,destY,time,scaleincr){
+	let xscale = ObjRender_GetScaleX(obj);
+	let yscale = ObjRender_GetScaleY(obj);
+	
+	let dx = (destX - ObjRender_GetX(obj))/time;
+	let dy = (destY - ObjRender_GetY(obj))/time;
+	
+	let xs; let ys;
+
+	Obj_SetValue(obj, "Warping", true);
+	Obj_SetValue(obj, "Destination", [destX, destY]);
+
+	let tmp;
+	if(Obj_GetType(obj)==OBJ_SHOT){tmp = Obj_GetValueD(obj,"IsIntersectionEnable",true); ObjShot_SetIntersectionEnable(obj,false);}
+	if(Obj_GetType(obj)==OBJ_ENEMY_BOSS){ tmp = Obj_GetValueD(obj,"IsIntersectionEnable",true); Obj_SetValue(obj,"IsIntersectionEnable",false); }
+	if(Obj_GetType(obj)==OBJ_ENEMY){ tmp = Obj_GetValueD(obj,"IsIntersectionEnable",true); Obj_SetValue(obj,"IsIntersectionEnable",false); }
+	
+	ascent(i in 0..time){
+		xs = xscale+xscale*scaleincr*sin(i*180/time);
+		ys = yscale+yscale*scaleincr*sin(i*180/time);
+		ObjRender_SetScaleXYZ(obj, xs,ys, 0);
+		ObjRender_SetPosition(obj,ObjRender_GetX(obj)+dx,ObjRender_GetY(obj)+dy,0);
+		yield;
+	}
+	
+	if(Obj_GetType(obj)==OBJ_SHOT){ObjShot_SetIntersectionEnable(obj,Obj_GetValueD(obj,"IsIntersectionEnable",true));}
+	if(Obj_GetType(obj)==OBJ_ENEMY_BOSS){ Obj_SetValue(obj,"IsIntersectionEnable",tmp); }
+	if(Obj_GetType(obj)==OBJ_ENEMY){ Obj_SetValue(obj,"IsIntersectionEnable",tmp); }
+
+	Obj_SetValue(obj, "Warping", false);
+//	ObjRender_SetScaleXYZ(obj, ori[0], ori[1], 0);
+}
+
+
+
+
+
+
 
 
 //How many shots can you dodge in the stopped time?
@@ -1722,6 +1836,7 @@ task ObjPlayer_DisableControl(frame){
 		yield;
 	}
 }
+
 
 
 

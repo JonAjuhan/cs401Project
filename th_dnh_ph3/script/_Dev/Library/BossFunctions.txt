@@ -99,7 +99,7 @@ function SetAttackPose(dur){
 //Set boss to use "blurred" version of sprite, like Suwako or Murasa
 //Also disables her hitbox while blurred
 function SetBossBlur(blur){
-	if(Obj_GetValueD(boss,"DisplayName","Andi")=="Andi"){
+	if(Obj_GetValueD(boss,"DisplayName","")=="Andi"){
 		let yoff; let frames; let frame;
 		if(blur){yoff=255;}else{yoff=0;}
 		
@@ -116,10 +116,13 @@ function SetBossBlur(blur){
 			}
 			Obj_SetValue(boss,"anim_"~type,frames);
 		}
-		IsBossIntersectionEnable = !blur;
+		Obj_SetValue(boss,"IsIntersectionEnable",!blur);
+		// IsBossIntersectionEnable = !blur;
 		return frames;
-	}else{
-		IsBossIntersectionEnable = !blur;
+	}
+	else{
+		Obj_SetValue(boss,"IsIntersectionEnable",!blur);
+		// IsBossIntersectionEnable = !blur;
 		if(blur){
 			ObjRender_SetAlpha(boss,64);
 			let obj = CreateSprite2(dirimg~"mist.png", 24, [0, 0, 128, 128], [64, 64]);
@@ -128,7 +131,7 @@ function SetBossBlur(blur){
 			ObjRender_SetBlendType(obj, BLEND_ADD_ARGB);
 			task TFollow{
 				let i=0;
-				while(!IsBossIntersectionEnable && !Obj_IsDeleted(obj)) {
+				while(!Obj_GetValueD(boss,"IsIntersectionEnable",true) && !Obj_IsDeleted(obj)) {
 					ObjRender_SetPosition(obj, ex, ey, 0);
 					ObjRender_SetAngleZ(obj, i);
 					i++; yield;
@@ -145,9 +148,9 @@ function SetBossBlur(blur){
 	}
 }
 
-let IsBossIntersectionEnable = true;
+// let IsBossIntersectionEnable = true;
 function SetBossHitbox(boss,ex,ey){
-	if(IsBossIntersectionEnable){
+	if(Obj_GetValueD(boss,"IsIntersectionEnable",true)){
 		ObjEnemy_SetIntersectionCircleToShot(boss, ex, ey, 32);
 		ObjEnemy_SetIntersectionCircleToPlayer(boss, ex, ey, 24);
 	}
@@ -157,7 +160,7 @@ task TSpellImmune{
 	let wasIntersection;
 	while(!Obj_IsDeleted(boss)){
 		while(!IsPlayerSpellActive){yield;}
-		wasIntersection = IsBossIntersectionEnable;
+		wasIntersection = Obj_GetValueD(boss,"IsIntersectionEnable",true);
 		SetBossBlur(true);
 		while(IsPlayerSpellActive){yield;}
 		SetBossBlur(!wasIntersection);
@@ -176,24 +179,18 @@ function GetSwordTipY(){
 	if(!isAttackPose){ return ey-26; }
 	else { return ey-38; }
 }
-//TODO: slashing sprite
 
 //Makes sure px,py,ex,ey,etc are always up-to-date
 task UpdatePositions {
 	yield;
 //	let boss = GetEnemyBossObjectID();
-	// WriteLog("Resources: Started updating positions with boss "~ToString(boss));
 	while(!Obj_IsDeleted(boss)) {
 		px = GetPlayerX;
 		py = GetPlayerY;
 		ex = ObjMove_GetX(boss);
 		ey = ObjMove_GetY(boss);
-		// swdx = GetSwordTipX();
-		// swdy = GetSwordTipY();
-	//	WriteLog("Resources: Updated positions to "~IntToString(px)~","~IntToString(py)~","~IntToString(ex)~","~IntToString(ey));
 		yield;
 	}
-	// WriteLog("Resources: Stopped updating positions");
 }
 
 
