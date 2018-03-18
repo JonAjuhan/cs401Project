@@ -72,9 +72,7 @@ task InitializePowerAndOptions{
 			IsHitboxActive = false;
 			optionAlive = false;
 			Spawn;
-			// DropPower(); //do this in system script instead.
-			// Actually, TODO: do all the item stuff in system script.
-			//LosePower
+			// DropPower(); //now done in system script
 		}
 		case(EV_PLAYER_REBIRTH)
 		{
@@ -178,8 +176,8 @@ task InitializePowerAndOptions{
 //	if(GetVirtualKeyState(VK_USER1) == KEY_PUSH && GetPlayerSpell >= 3){Hyper;}
 //	else if(GetVirtualKeyState(VK_USER1) == KEY_PUSH && GetPlayerSpell < 3){PlaySE(current~"se_invalid.wav");}
 //
-	if(GetPlayerState==STATE_DOWN || GetPlayerState==STATE_END){SetForbidPlayerShot(true); SetForbidPlayerSpell(true);}
 	if(GetPlayerState==STATE_NORMAL){SetForbidPlayerShot(false); SetForbidPlayerSpell(false);}
+	else if(GetPlayerState==STATE_DOWN || GetPlayerState==STATE_END){SetForbidPlayerShot(true); SetForbidPlayerSpell(true);}
 	SetPlayerClip(11,11,GetStgFrameWidth-11,GetStgFrameHeight-18);
 	if(GetVirtualKeyState(VK_SLOWMOVE)==KEY_HOLD&&!IsHitboxActive&&GetPlayerState==STATE_NORMAL){RenderHitboxImage(objPlayer, 0, 1);}
 	yield;
@@ -209,6 +207,14 @@ task Shoot{
 }
 
 task Options{
+	
+	if(GetCommonData("Cheat_OverdriveShot",false)){
+		let N=4+floor(GetPlayerPower/100); if(GetCommonData("Rank",2)==1){ N=16*min(1,floor(GetPlayerPower/100)); } let da = 360/N; let da2 = 180/N;
+		ascent(i in 0..N){ Fam(  32*cos(da*i),32*sin(da*i),24*cos(da*i),24*sin(da*i),da*i+3.5*(2*(i%2-0.5)), 3*(2*(i%2-0.5))); }
+		ascent(i in 1..N){ Fam(  48*cos(180+da2*i),48*sin(180+da2*i)-8*sin(i*da2)^6,32*cos(180+da2*i),32*sin(180+da2*i)-8*sin(i*da2)^6,270, 0.5*(2*(i%2-0.5))); }
+		return;
+	}
+	
 	alternative(floor(GetPlayerPower/100))
 	case(4,5){
 		//Inner familiars
