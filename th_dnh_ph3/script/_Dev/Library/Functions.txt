@@ -888,7 +888,7 @@ function BounceCircleA1(cx,cy,rad0,rad1,dur,exargs){
 				x=getx(shot); y=gety(shot); a=norma(geta(shot));
 				d = getdist(cx,cy,x,y); 
 				
-				errmargin = GetShotHitboxRadius(shot)*2+s;
+				errmargin = ObjShot_GetCollisionRadius(shot)*2+s;
 				if( d < rad+errmargin && d >= rad-errmargin ){
 					//dir = getangle(cx,cy,x,y); //da = GetAngularDistance(dir,da);
 					let isinside = (getdist(cx,cy,x+10*s*cos(a),y+10*s*sin(a)) >= d)  &&  (d < rad);
@@ -1292,7 +1292,7 @@ function DebugWarnShot2(pos) {
 
 //set a shot's color according to its delay color
 function TintShot(shot,brightness){
-	let color = GetDelayColor(shot);
+	let color = ObjShot_GetDelayColor(shot);
 	color = [brightness+color[0],brightness+color[1],brightness+color[2]];
 	setcolor(shot,color);
 }

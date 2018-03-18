@@ -356,12 +356,12 @@ function TurnToPoint(shot, speed, PointX, PointY){
 
 
 
-function GetDelayColor(shot) {
+function ObjShot_GetDelayColor(shot) {
 	if(isnull(shot)){return [0,0,0];}
 	return GetShotDataInfoA1(ObjShot_GetImageID(shot),TARGET_ENEMY,INFO_DELAY_COLOR);
 }
 
-function GetShotHitboxRadius(shot) {
+function ObjShot_GetCollisionRadius(shot) {
 	if(isnull(shot)){return 0;}
 	return GetShotDataInfoA1(max(1,ObjShot_GetImageID(shot)),TARGET_ENEMY,INFO_COLLISION);
 }
