@@ -1,0 +1,26 @@
+#UserItemData
+
+item_image = "./../IMG/Item.png"
+
+//Bullet deletion item
+ItemData{ id = 1 rect = (0,64,32,96) out = (0,96,32,128) render = ALPHA }
+
+//Point item
+ItemData{ id = 2 rect = (192,0,224,32) out = (192,32,224,64) render = ALPHA }
+
+//Power item
+ItemData{ id = 3 rect = (128,0,160,32) out = (128,32,160,64) render = ALPHA }
+
+//Full power item
+ItemData{ id = 4 rect = (224,0,256,32) out = (224,32,256,64) render = ALPHA }
+
+//Spell fragment & spell item
+ItemData{ id = 5 rect = (32,0,64,32) out = (32,32,64,64) render = ALPHA }
+ItemData{ id = 6 rect = (96,0,128,32) out = (96,32,128,64) render = ALPHA }
+
+//Life fragment & life item
+ItemData{ id = 7 rect = (0,0,32,32) out = (0,32,32,64) render = ALPHA }
+ItemData{ id = 8 rect = (64,0,96,32) out = (64,32,96,64) render = ALPHA }
+
+//Ichor drop item
+ItemData{ id = 9 rect = (32,64,64,96) out = (32,96,64,128) render = ALPHA }

@@ -1,0 +1,695 @@
+#TouhouDanmakufu[Player]
+#ScriptVersion[3]
+#ID["AoCF_YkRm"]
+#Title["Yukari Yakumo & Reimu Hakurei"]
+#Text["Press A to switch.[r]Press C to use your Occult Attack."]
+#Image["./Image/YukariReimuCut.png"]
+#ReplayName["AoCF_YkRm"]
+#include "./Functions.dnh"
+#include "./ShotFunctions.dnh"
+#include "./SoundFunctions.dnh"
+
+let current = GetCurrentScriptDirectory();
+
+let objPlayer = GetPlayerObjectID();
+//let GetPlayerObjectID = ObjPrim_Create(OBJ_SPRITE_2D);
+let playerdead = false;
+let IsPlayerSpawning = false;
+let IsHitboxActive = false;
+let optionAlive = true;
+
+let isvisible = true;
+let spellActive = false;
+
+let imgPlayer = [current ~ "Image/Yukari.png", current ~ "Image/Reimu.png"];
+let imgOption = current ~ "Image/option.png";
+let snowflake = current ~ "Image/Focus.png";
+
+let speeds = [[3, 1], [4, 1.5]];
+
+let level = 1;
+let damage = 1; //bullet damage factor
+let enableRidiculousTag = false;
+
+let VK_OCCULT = 100;
+let VK_TAG = 101;
+
+let player = 0;
+
+let CanSwap = true;
+let CanOccult = true;
+let CanShoot = true;
+
+let IsYukariSplit = false;
+
+@Initialize{
+	LoadPlayerShotData(current ~ "Shotdata.dnh");
+	SetPlayerAutoItemCollectLine(130);
+	ObjPlayer_AddIntersectionCircleA1(objPlayer, 0, 0, 0.5, 30);
+
+	SetPlayerSpeed(speeds[player][0], speeds[player][1]);
+	SetPlayerClip(11,11,GetStgFrameWidth-11,GetStgFrameHeight-18);
+	RenderPlayerImage(GetPlayerObjectID, 0, false);
+
+	AddVirtualKey(VK_OCCULT, KEY_C, KEY_INVALID); //occult attack
+	AddVirtualKey(VK_TAG, KEY_A, KEY_INVALID); //partner swap
+	AddReplayTargetVirtualKey(VK_OCCULT);
+	AddReplayTargetVirtualKey(VK_TAG);
+
+	OptionsYukari;
+	Shoot;
+	TMagicCircle;
+}
+
+@Event{
+	alternative(GetEventType())
+		case(EV_REQUEST_SPELL)
+		{	
+			let spell = GetPlayerSpell();
+			if(spell >= 1 && IsPermitPlayerSpell() && !spellActive){
+				if(player == 0){SpellYukari(false);}
+				if(player == 1){SpellReimu(false);}
+
+				SetScriptResult(true);
+				SetPlayerSpell(spell-1);
+			}else{
+				SetScriptResult(false);
+			}
+		}
+		case(EV_GRAZE){
+			let num = GetEventArgument(0);
+
+			PlaySoundA1(2, 70, 0);
+			loop(num){
+				SetAreaCommonData("System", "PointValue", GetAreaCommonData("System", "PointValue", 10000) + 0.5);
+				GrazePiece(255, 255, 255);
+			}
+		}
+		case(EV_HIT)
+		{
+			PlaySoundA1(5, 70, 0);
+			PlayerExplode(current ~ "Image/Explode.png");
+		}
+		case(EV_PLAYER_SHOOTDOWN){
+			playerdead = true;
+			IsHitboxActive = false;
+			optionAlive = false;
+		}
+		case(EV_PLAYER_REBIRTH)
+		{
+			SetPlayerSpell(3 + GetAreaCommonData("System", "SpellFragmentNum", 0)*GetAreaCommonData("System", "SpellFragmentValue", [1/5, 5])[0]);
+			optionAlive = true;
+			playerdead = false;
+
+			OptionRespawn;
+
+			SetPlayerInvincibilityFrame(180);
+			DeleteShotAll(TYPE_SHOT, TYPE_IMMEDIATE);
+		}
+		case(EV_GET_ITEM)
+		{
+			let itemType = GetEventArgument(0);
+
+			alternative(itemType)
+			case(ITEM_1UP){
+				PlaySoundA1(1, 70, 0);
+				SetPlayerLife(GetPlayerLife + 1);
+				WriteLog("ITEM_1UP");
+			}
+			case(ITEM_1UP_S){
+				PlaySoundA1(1, 70, 0);
+				SetPlayerLife(GetPlayerLife + 1/5);
+				WriteLog("ITEM_1UP_S");
+			}
+			case(ITEM_SPELL){
+				PlaySoundA1(0, 70, 0);
+				SetPlayerSpell(GetPlayerSpell + 1);
+				WriteLog("ITEM_SPELL");
+			}
+			case(ITEM_SPELL_S){
+				PlaySoundA1(0, 70, 0);
+				SetPlayerSpell(GetPlayerSpell + 1/5);
+				WriteLog("ITEM_SPELL_S");
+			}
+			case(ITEM_POWER){
+				PlaySoundA1(3, 70, 0);
+				WriteLog("ITEM_POWER");
+			}
+			case(ITEM_POWER_S){
+				PlaySoundA1(3, 70, 0);
+				WriteLog("ITEM_POWER_S");
+			}
+			case(ITEM_POINT){
+				PlaySoundA1(3, 70, 0);
+				WriteLog("ITEM_POWER");
+			}
+			case(ITEM_POINT_S){
+				PlaySoundA1(3, 70, 0);
+				WriteLog("ITEM_POWER_S");
+			}
+		}
+}
+
+@Loading{
+}
+
+@MainLoop{
+	if(GetPlayerState==STATE_DOWN || IsPermitPlayerShot==false){CanShoot = false;}
+	if(GetPlayerState==STATE_NORMAL && IsPermitPlayerShot==true){CanShoot = true;}
+
+	SetPlayerClip(11,11,GetStgFrameWidth-11,GetStgFrameHeight-18);
+	if(GetVirtualKeyState(VK_SLOWMOVE)==KEY_HOLD&&!IsHitboxActive){RenderHitboxImage(objPlayer, 0, 1);}
+
+
+	if(GetVirtualKeyState(VK_TAG) == KEY_PUSH && CanSwap){
+		PlaySoundA1(10, 70, 0);
+		PartnerSwitchEff(GetPlayerX, GetPlayerY, 2);
+		optionAlive = false;
+
+		player++;
+		if(player > 1){player = 0;}
+
+		SetPlayerSpeed(speeds[player][0], speeds[player][1]);
+		ObjPrim_SetTexture(GetPlayerObjectID, imgPlayer[player]);
+
+		OptionRespawn;
+	}
+
+	if(GetVirtualKeyState(VK_OCCULT) == KEY_PUSH && CanOccult){
+		PlaySoundA1(8, 70, 0);
+		PartnerSwitchEff(GetPlayerX, GetPlayerY, 1);
+		let dir = rand(0, 360);
+		loop(3){
+			OccultLightning(GetPlayerX, GetPlayerY, dir + rand(-15, 15));
+			dir += 360/3;
+		}
+
+		if(player == 0){OccultYukari;}
+		if(player == 1){OccultReimu;}
+	}
+	yield;
+}
+
+@Finalize{
+
+}
+
+task Shoot{
+	let count = 0;
+	loop{
+		if(GetVirtualKeyState(VK_SHOT) != KEY_FREE && count%2 == 0){
+			if(CanShoot && !IsPlayerSpellActive){
+				//Regular shots
+				if(player == 0){
+					if(!IsYukariSplit){
+						PlaySoundA1(6, 70, 0);
+						ShotDieAnim(GetPlayerX + 8, GetPlayerY, 30, 270, 5, damage*3);
+						ShotDieAnim(GetPlayerX - 8, GetPlayerY, 30, 270, 5, damage*3);
+					}else{
+						if(count % 4 == 0 && count % 8 != 0){
+							PlaySoundA1(13, 70, 0);
+							Slash(GetPlayerX - rand(32, 0), GetPlayerY - rand(24, 32), rand(-50, 0), 255, rand(0.25, 0.4), damage*60, false, 2, false);
+						}
+						if(count % 8 == 0){
+							PlaySoundA1(13, 70, 0);
+							Slash(GetPlayerX + rand(32, 0), GetPlayerY - rand(24, 32), rand(130, 180), 255, rand(0.25, 0.4), damage*60, false, 2, true);
+						}
+					}
+				}
+				if(player == 1){
+					PlaySoundA1(6, 70, 0);
+					ShotDieAnim(GetPlayerX + 8, GetPlayerY, 30, 270, 1, damage*3);
+					ShotDieAnim(GetPlayerX - 8, GetPlayerY, 30, 270, 1, damage*3);
+				}
+			}
+		}
+		count++;
+		yield;
+	}
+}
+
+task OptionRespawn{
+	yield;
+	optionAlive = true;
+
+	if(player == 0){OptionsYukari;}
+	if(player == 1){OptionsReimu;}
+}
+
+task OptionsYukari{
+	let areFocusOptionsThere = false;
+	let c = 00;
+	loop{
+		if(optionAlive == false){return;}
+		if(GetVirtualKeyState(VK_SLOWMOVE) == KEY_FREE && !IsYukariSplit){
+			areFocusOptionsThere = false;
+
+			if(c % 2 == 0 && GetVirtualKeyState(VK_SHOT) != KEY_FREE){
+				OptionYukari_00(GetPlayerX + rand(-64, 64), GetPlayerY + rand(-64, 64));
+			}
+
+			c++;
+		}
+
+		if(GetVirtualKeyState(VK_SLOWMOVE) != KEY_FREE && !areFocusOptionsThere && !IsYukariSplit){
+			areFocusOptionsThere = true;
+			c = 0;
+
+			OptionYukari_01(16, -32, rand(10, 25) * [-1, 1][round(rand(0, 1))], rand(0.25, 0.5));
+			OptionYukari_01(-16, -32, rand(10, 25) * [-1, 1][round(rand(0, 1))], rand(0.25, 0.5));
+
+			OptionYukari_01(32, 0, rand(10, 25) * [-1, 1][round(rand(0, 1))], rand(0.25, 0.5));
+			OptionYukari_01(-32, 0, rand(10, 25) * [-1, 1][round(rand(0, 1))], rand(0.25, 0.5));
+
+			OptionYukari_01(16, 32, rand(10, 25) * [-1, 1][round(rand(0, 1))], rand(0.25, 0.5));
+			OptionYukari_01(-16, 32, rand(10, 25) * [-1, 1][round(rand(0, 1))], rand(0.25, 0.5));
+		}
+
+		if(IsYukariSplit){
+			areFocusOptionsThere = false;
+			c = 0;
+		}
+		yield;
+	}
+}
+
+task OptionsReimu{
+	OptionReimu(-48, -24, -24, -24);
+	OptionReimu(-16, -48, -12, -32);
+
+	OptionReimu(48, -24, 24, -24);
+	OptionReimu(16, -48, 12, -32);
+}
+
+task OptionYukari_00(x, y){
+	let objOption = ObjPrim_Create(OBJ_SPRITE_2D);
+	Obj_SetRenderPriorityI(objOption, 31);
+	ObjRender_SetBlendType(objOption, BLEND_ALPHA);
+	ObjPrim_SetTexture(objOption, GetCurrentScriptDirectory ~ "Image/optionYukari.png");
+	ObjSprite2D_SetSourceRect(objOption, 0, 0, 32, 16);
+	ObjSprite2D_SetDestCenter(objOption);
+	ObjRender_SetPosition(objOption, x, y, 0);
+	ObjRender_SetScaleY(objOption, 0);
+
+	let minDis = 10000;
+	let enem = [0, 0, minDis];
+	let ar = GetIntersectionRegistedEnemyID;
+	let angle = 270;
+	if(length(ar) > 0){
+		ascent(i in 0..(length(ar))){
+			let dis = GetDist(GetPlayerX, ObjMove_GetX(ar[i]), GetPlayerX, ObjMove_GetY(ar[i]));
+			if(dis<enem[2]){
+				enem[2] = dis;
+				enem[0] = ObjMove_GetX(ar[i]);
+				enem[1] = ObjMove_GetY(ar[i]);
+			}
+		}
+
+		angle = NormalizeAngle(atan2(enem[1] - GetPlayerY, enem[0] - GetPlayerX));
+	}
+
+	ObjRender_SetAngleZ(objOption, angle + 90);
+
+	ascent(i in 0 .. 11){
+		ObjRender_SetScaleY(objOption, linear(0, 1, i/10));
+		yield;
+	}
+
+	if(CanShoot && !IsPlayerSpellActive){
+		PlaySoundA1(6, 60, 0);
+		ShotNeedle(x, y, rand(5, 10), angle, 6, damage*4);
+	}
+
+	descent(i in 0 .. 11){
+		ObjRender_SetScaleY(objOption, linear(0, 1, i/10));
+		yield;
+	}
+
+	Obj_Delete(objOption);
+}
+
+task OptionYukari_01(x, y, swing_a, swing_speed){
+	let objOption = ObjPrim_Create(OBJ_SPRITE_2D);
+	Obj_SetRenderPriorityI(objOption, 31);
+	ObjRender_SetBlendType(objOption, BLEND_ALPHA);
+	ObjPrim_SetTexture(objOption, GetCurrentScriptDirectory ~ "Image/optionYukari.png");
+	ObjSprite2D_SetSourceRect(objOption, 0, 0, 32, 16);
+	ObjSprite2D_SetDestCenter(objOption);
+	ObjRender_SetPosition(objOption, GetPlayerX, GetPlayerY, 0);
+	ObjRender_SetScaleY(objOption, 0);
+
+	let destX;
+	let destY;
+	let dist;
+	let dir;
+
+	let lasersactive = false;
+	let laserObj = ID_INVALID;
+
+	let count = 0;
+	while(!Obj_IsDeleted(objOption)){
+		if(!optionAlive || GetVirtualKeyState(VK_SLOWMOVE) == KEY_FREE || IsYukariSplit){
+			OptionDespawn;
+			Obj_Delete(laserObj);
+			return;
+		}
+
+		if(count < 11){
+			ObjRender_SetScaleY(objOption, linear(0, 1, count/10));
+		}
+
+		destX = GetPlayerX + x;
+		destY = GetPlayerY + y;
+
+		let opX = ObjRender_GetX(objOption);
+		let opY = ObjRender_GetY(objOption);
+		dist = GetDist(opX, opY, destX, destY);
+		dir = GetAngle(opX, opY, destX, destY);
+		opX += 0.25 * dist * cos(dir);
+		opY += 0.25 * dist * sin(dir);
+		ObjRender_SetPosition(objOption, opX, opY, 0);
+
+		if(GetVirtualKeyState(VK_SHOT) != KEY_FREE){
+			if(CanShoot && !IsPlayerSpellActive){
+				if(!lasersactive){
+					PlaySoundA1(7, 70, 0);
+					laserObj = Laser(objOption, 270, damage*2, swing_a, swing_speed);
+					lasersactive = true;
+				}
+			}
+		}
+
+		if(GetVirtualKeyState(VK_SHOT) == KEY_FREE || !CanShoot || IsPlayerSpellActive){
+			Obj_Delete(laserObj);
+			lasersactive = false;
+		}
+
+		count++;
+		yield;
+	}
+
+	task OptionDespawn{
+		descent(i in 0 .. 11){
+			ObjRender_SetScaleY(objOption, linear(0, 1, i/10));
+			yield;
+		}
+		Obj_Delete(objOption);
+	}
+}
+
+task OptionReimu(x, y, focx, focy){
+	let objOption = ObjPrim_Create(OBJ_SPRITE_2D);
+	Obj_SetRenderPriorityI(objOption, 31);
+	ObjRender_SetBlendType(objOption, BLEND_ALPHA);
+	ObjPrim_SetTexture(objOption, GetCurrentScriptDirectory ~ "Image/optionReimu.png");
+	ObjSprite2D_SetSourceRect(objOption, 0, 0, 16, 16);
+	ObjSprite2D_SetDestCenter(objOption);
+	ObjRender_SetPosition(objOption, GetPlayerX, GetPlayerY, 0);
+
+	let objOptionBack = ObjPrim_Create(OBJ_SPRITE_2D);
+	Obj_SetRenderPriorityI(objOptionBack, 30);
+	ObjRender_SetBlendType(objOptionBack, BLEND_ADD_ARGB);
+	ObjPrim_SetTexture(objOptionBack, GetCurrentScriptDirectory ~ "Image/optionReimu.png");
+	ObjSprite2D_SetSourceRect(objOptionBack, 0, 0, 16, 16);
+	ObjSprite2D_SetDestCenter(objOptionBack);
+	ObjRender_SetPosition(objOptionBack, GetPlayerX, GetPlayerY, 0);
+
+	let destX;
+	let destY;
+	let dist;
+	let dir;
+
+	let a = 0;
+
+	let count = 0;
+	let animCount = 0;
+	while(!Obj_IsDeleted(objOption)){
+		if(!optionAlive){Obj_Delete(objOption); Obj_Delete(objOptionBack);}
+
+		if(GetVirtualKeyState(VK_SLOWMOVE) == KEY_FREE){
+			destX = GetPlayerX + x;
+			destY = GetPlayerY + y
+		}else{
+			destX = GetPlayerX + focx;
+			destY = GetPlayerY + focy;
+		}
+
+		let opX = ObjRender_GetX(objOption);
+		let opY = ObjRender_GetY(objOption);
+		dist = GetDist(opX, opY, destX, destY);
+		dir = GetAngle(opX, opY, destX, destY);
+		opX += 0.25 * dist * cos(dir);
+		opY += 0.25 * dist * sin(dir);
+		ObjRender_SetPosition(objOption, opX, opY, 0);
+		ObjRender_SetPosition(objOptionBack, opX, opY, 0);
+
+		if(GetVirtualKeyState(VK_SHOT) != KEY_FREE && count%3 == 0){
+			if(CanShoot && !IsPlayerSpellActive){
+				if(GetVirtualKeyState(VK_SLOWMOVE) == KEY_FREE){
+					let an = GetAngleToPlayer(objOption);
+
+					ShotDieAnim(opX, opY, 30, 270, 2, damage*2);
+					//ShotDieAnim(opX, opY, 30, an + 180, 2, damage*2);
+					ShotDieAnim(opX, opY, 30, an/2 + 225, 2, damage*2);
+				}else{
+					ShotNeedle(opX + 4, opY, 30, 270, 3, damage*2);
+					ShotNeedle(opX - 4, opY, 30, 270, 3, damage*2);
+				}
+			}
+		}
+		ObjRender_SetScaleXYZ(objOptionBack, (|cos(count*2)*0.5|) + 1, (|cos(count*2)*0.5|) + 1, 0);
+		ObjRender_SetAngleZ(objOption, count*2);
+		ObjRender_SetAngleZ(objOptionBack, -count*2);
+		count++;
+		a += 2;
+		yield;
+	}
+}
+
+task RenderPlayerImage(ObjectRender, offset, isStationary){
+	let anim_count = 0;
+	let anim_type = 0;
+	let Uber = 0;
+	let Uberblink = 0;
+	
+	let x = 32;
+	let y = 48;
+	let ri = 6;
+	let rm = 4;
+	let bn = 0;
+	
+	ObjPrim_SetTexture(ObjectRender, imgPlayer[player]);
+	Obj_SetRenderPriority(ObjectRender, 0.45);
+	
+	loop{
+		if(Obj_IsDeleted(ObjectRender)){return;}
+
+		if(GetPlayerState!=STATE_DOWN && isvisible){
+			ObjRender_SetAlpha(ObjectRender, 255);
+		}
+		if(GetPlayerState==STATE_DOWN || playerdead || !isvisible){ObjRender_SetAlpha(ObjectRender, 0);}
+		
+		
+		if(!isStationary){ObjRender_SetPosition(ObjectRender, GetPlayerX, GetPlayerY, 0);}
+		if(!IsPlayerSpawning){
+			if(GetPlayerState!=STATE_HIT){
+				Blink;
+				if(GetVirtualKeyState(VK_RIGHT) == KEY_FREE && GetVirtualKeyState(VK_LEFT) == KEY_FREE){
+					if(anim_type != 0){
+						bn = 0;
+						anim_count = 0;
+						anim_type = 0;
+					}
+				}
+				if(GetVirtualKeyState(VK_LEFT) == KEY_PUSH || GetVirtualKeyState(VK_LEFT) == KEY_HOLD){
+					if(GetVirtualKeyState(VK_RIGHT) != KEY_HOLD && anim_type != 1){
+						bn = 0;
+						anim_count = 0;
+						anim_type = 1;
+					}
+				}
+				if(GetVirtualKeyState(VK_RIGHT) == KEY_PUSH || GetVirtualKeyState(VK_RIGHT) == KEY_HOLD){
+					if(anim_type != 2){
+						bn = 0;
+						anim_count = 0;
+						anim_type = 2;
+					}
+				}
+				anim_count+=(1+bn);
+				if(floor(anim_count) != anim_count && bn == 0){
+					anim_count = floor(anim_count);
+				}
+			}
+		}else{
+			Blink;
+			anim_count+=1;
+			if(anim_type != 0){
+				anim_count = 0;
+				anim_type = 0;
+			}
+		}
+		//0 - Idle; 1 - Left; 2 - Right
+	
+		if(anim_type==0){
+			if(round(anim_count) >= 0){ObjSprite2D_SetSourceRect(ObjectRender, 0, 0+offset, x, y+offset);}
+			if(round(anim_count) >= ri){ObjSprite2D_SetSourceRect(ObjectRender, x, 0+offset, x*2, y+offset);}
+			if(round(anim_count) >= ri*2){ObjSprite2D_SetSourceRect(ObjectRender, x*2, 0+offset, x*3, y+offset);}
+			if(round(anim_count) >= ri*3){ObjSprite2D_SetSourceRect(ObjectRender, x*3, 0+offset, x*4, y+offset);}
+			if(round(anim_count) >= ri*4){ObjSprite2D_SetSourceRect(ObjectRender, x*4, 0+offset, x*5, y+offset);}
+			if(round(anim_count) >= ri*5){ObjSprite2D_SetSourceRect(ObjectRender, x*5, 0+offset, x*6, y+offset);}
+			if(round(anim_count) >= ri*6){ObjSprite2D_SetSourceRect(ObjectRender, x*6, 0+offset, x*7, y+offset);}
+			if(round(anim_count) >= ri*7){ObjSprite2D_SetSourceRect(ObjectRender, x*7, 0+offset, x*8, y+offset);}
+			if(round(anim_count) >= ri*8-1){anim_count = ri-1;}
+		}
+		if(anim_type==1){
+			if(round(anim_count) >= 0){ObjSprite2D_SetSourceRect(ObjectRender, 0, y+offset, x, y*2+offset);}
+			if(round(anim_count) >= ri){ObjSprite2D_SetSourceRect(ObjectRender, x, y+offset, x*2, y*2+offset);}
+			if(round(anim_count) >= ri*2){ObjSprite2D_SetSourceRect(ObjectRender, x*2, y+offset, x*3, y*2+offset);}
+			if(round(anim_count) >= ri*3){ObjSprite2D_SetSourceRect(ObjectRender, x*3, y+offset, x*4, y*2+offset);}
+			if(round(anim_count) >= ri*4){ObjSprite2D_SetSourceRect(ObjectRender, x*4, y+offset, x*5, y*2+offset);}
+			if(round(anim_count) >= ri*5){ObjSprite2D_SetSourceRect(ObjectRender, x*5, y+offset, x*6, y*2+offset);}
+			if(round(anim_count) >= ri*6){ObjSprite2D_SetSourceRect(ObjectRender, x*6, y+offset, x*7, y*2+offset);}
+			if(round(anim_count) >= ri*7){ObjSprite2D_SetSourceRect(ObjectRender, x*7, y+offset, x*8, y*2+offset);}
+			if(round(anim_count) >= ri*8-1){anim_count = ri*4-1;}
+		}
+		if(anim_type==2){
+			if(round(anim_count) >= 0){ObjSprite2D_SetSourceRect(ObjectRender, 0, y*2+offset, x, y*3+offset);}
+			if(round(anim_count) >= ri){ObjSprite2D_SetSourceRect(ObjectRender, x, y*2+offset, x*2, y*3+offset);}
+			if(round(anim_count) >= ri*2){ObjSprite2D_SetSourceRect(ObjectRender, x*2, y*2+offset, x*3, y*3+offset);}
+			if(round(anim_count) >= ri*3){ObjSprite2D_SetSourceRect(ObjectRender, x*3, y*2+offset, x*4, y*3+offset);}
+			if(round(anim_count) >= ri*4){ObjSprite2D_SetSourceRect(ObjectRender, x*4, y*2+offset, x*5, y*3+offset);}
+			if(round(anim_count) >= ri*5){ObjSprite2D_SetSourceRect(ObjectRender, x*5, y*2+offset, x*6, y*3+offset);}
+			if(round(anim_count) >= ri*6){ObjSprite2D_SetSourceRect(ObjectRender, x*6, y*2+offset, x*7, y*3+offset);}
+			if(round(anim_count) >= ri*7){ObjSprite2D_SetSourceRect(ObjectRender, x*7, y*2+offset, x*8, y*3+offset);}
+			if(round(anim_count) >= ri*8-1){anim_count = ri*4-1;}
+		}
+		
+		ObjSprite2D_SetDestCenter(ObjectRender);
+		yield;
+	}	
+	task Blink{
+		if(GetPlayerInvincibilityFrame>0){
+			if(Uber==0){ObjRender_SetColor(ObjectRender, 255, 255, 255);}
+			if(Uber!=0){ObjRender_SetColor(ObjectRender, 32, 32, 255);}
+			Uberblink+=1;
+			if(Uberblink>1){Uberblink=0;Uber++;if(Uber>1){Uber=0}}
+		}else{
+			ObjRender_SetColor(ObjectRender, 255, 255, 255);
+		}
+	}
+}
+
+task RenderHitboxImage(plobj, offx, hitboxnum){
+	if(IsHitboxActive){return;}
+	while(playerdead){
+		if(GetVirtualKeyState(VK_SLOWMOVE)!=KEY_FREE){return;}
+		yield;
+	}
+	IsHitboxActive = true;
+	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjRender_SetBlendType(obj, BLEND_ALPHA);
+	Obj_SetRenderPriority(obj, 0.39);
+	ObjRender_SetAlpha(obj, 220);
+	ObjPrim_SetTexture(obj, snowflake);
+	ObjSprite2D_SetSourceRect(obj, 0, 0, 64, 64);
+	ObjSprite2D_SetDestCenter(obj);
+	
+	let obj2 = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjRender_SetBlendType(obj2, BLEND_ALPHA);
+	Obj_SetRenderPriority(obj2, 0.69);
+	ObjRender_SetAlpha(obj2, 220);
+	ObjPrim_SetTexture(obj2, snowflake);
+	ObjSprite2D_SetSourceRect(obj2, 0, 0, 64, 64);
+	ObjSprite2D_SetDestCenter(obj2);
+	
+	
+	let ObjTime = 0;
+	
+	let AlphaSet = 0;
+	let ObjAlpha = 0;
+	let ObjScale = 1;
+	
+	while(GetVirtualKeyState(VK_SLOWMOVE)==KEY_HOLD){
+		if(!isvisible){ObjRender_SetAlpha(obj, 0); ObjRender_SetAlpha(obj2, 0);}else{ObjRender_SetAlpha(obj, 255); ObjRender_SetAlpha(obj2, 255);}
+
+		ObjPrim_SetTexture(obj, snowflake);
+		ObjPrim_SetTexture(obj2, snowflake);
+
+		if(ObjScale<1.4&&!playerdead){
+			ObjTime+=8;
+			ObjScale += 0.125;
+			PositionSet;
+		}else{break;}
+		yield;
+	}
+	while(GetVirtualKeyState(VK_SLOWMOVE)==KEY_HOLD){
+		if(!isvisible){ObjRender_SetAlpha(obj, 0); ObjRender_SetAlpha(obj2, 0);}else{ObjRender_SetAlpha(obj, 255); ObjRender_SetAlpha(obj2, 255);}
+
+		ObjPrim_SetTexture(obj, snowflake);
+		ObjPrim_SetTexture(obj2, snowflake);
+
+		if(ObjScale>1&&!playerdead){
+			ObjTime+=8;
+			ObjScale -= 0.1;
+			PositionSet;
+		}else{break;}
+		yield;
+	}
+	ObjScale = 1;
+	yield;
+	while(GetVirtualKeyState(VK_SLOWMOVE)==KEY_HOLD){
+		if(!isvisible){ObjRender_SetAlpha(obj, 0); ObjRender_SetAlpha(obj2, 0);}else{ObjRender_SetAlpha(obj, 255); ObjRender_SetAlpha(obj2, 255);}
+
+		ObjPrim_SetTexture(obj, snowflake);
+		ObjPrim_SetTexture(obj2, snowflake);
+
+		if(!playerdead){
+			ObjTime+=3;
+			PositionSet;
+		}else{break;}
+		yield;
+	}
+	IsHitboxActive = false;
+	while(ObjScale>0){
+		if(!isvisible){ObjRender_SetAlpha(obj, 0); ObjRender_SetAlpha(obj2, 0);}else{ObjRender_SetAlpha(obj, 255); ObjRender_SetAlpha(obj2, 255);}
+
+		ObjPrim_SetTexture(obj, snowflake);
+		ObjPrim_SetTexture(obj2, snowflake);
+
+		ObjTime+=3;
+		ObjScale -= 0.25;
+		PositionSet;
+		yield;
+	}
+
+	Obj_Delete(obj);
+	Obj_Delete(obj2);
+	IsHitboxActive = false;
+	
+	task PositionSet{
+		ObjRender_SetPosition(obj, GetPlayerX, GetPlayerY, 0);
+		ObjRender_SetAngleZ(obj, ObjTime);
+		ObjRender_SetPosition(obj2, GetPlayerX, GetPlayerY, 0);
+		ObjRender_SetScaleXYZ(obj, ObjScale, ObjScale, ObjScale);
+		ObjRender_SetScaleXYZ(obj2, ObjScale, ObjScale, ObjScale);
+	}
+	
+}
+
+task Spawn{
+	let obj = GetPlayerObjectID;
+	let y = 0;
+	ObjRender_SetX(obj, GetStgFrameWidth/2);
+	ObjRender_SetY(obj, GetStgFrameHeight-32);
+	SetPlayerSpeed(0,0);
+	IsPlayerSpawning = true;
+	while(y<82){
+		SetPlayerClip(11,11,GetStgFrameWidth-11,GetStgFrameHeight+64);	
+		SetPlayerSpeed(0,0);
+		ObjRender_SetY(obj, GetStgFrameHeight+32-y);
+		y+=2;
+		yield;
+	}
+	IsPlayerSpawning = false;
+	SetPlayerSpeed(speeds[player], speeds[player]);
+}

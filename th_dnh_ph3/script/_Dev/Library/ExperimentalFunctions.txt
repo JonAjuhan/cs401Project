@@ -180,3 +180,352 @@ function GetLineWallIntersection(px, py, tx, ty){ //Trickysticks is such a nice 
         return true;
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+//Python options select
+task Settings{
+	let endSettings = false;
+	let globalSettingID = 0;
+	let frameKeyHold = 0;
+	let frameKeyHold2 = 0;
+	let countMenu = 2;
+	SetCommonData("Hold",true);
+
+	let difficultyID = 0;
+	let selectedLifeAmount = 2;
+
+	let cursor = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjPrim_SetTexture(cursor, GetCurrentScriptDirectory ~ "System/img/setting.png");
+	ObjSprite2D_SetSourceRect(cursor, 224, 224, 256, 256);
+	ObjSprite2D_SetDestCenter(cursor);
+	ObjRender_SetScaleXYZ(cursor, 0.65, 0.65, 0);
+	ObjRender_SetPosition(cursor, 28, GetCenterY - 24, 0);
+	Obj_SetRenderPriorityI(cursor, 60);
+	Obj_SetVisible(cursor, false);
+	Obj_SpinXYZ(cursor, 0, 0, 7, 0);
+
+	let difficulty = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjPrim_SetTexture(difficulty, GetCurrentScriptDirectory ~ "System/img/difficulty.png");
+	ObjSprite2D_SetSourceRect(difficulty, 0, 64, 1024, 128);
+	ObjSprite2D_SetDestCenter(difficulty);
+	ObjRender_SetPosition(difficulty, 256, GetCenterY - 24, 0);
+	Obj_SetRenderPriorityI(difficulty, 60);
+	ObjRender_SetScaleXYZ(difficulty, 0.8, 0.8, 0);
+	Obj_SetVisible(difficulty, false);
+
+
+	SetForbidPlayerShot(true);
+	SetForbidPlayerSpell(true);
+
+	Background;
+	wait(60);
+
+	while(!endSettings){
+		ObjRender_SetPosition(cursor, 28, GetCenterY - 24 + 48*globalSettingID, 0);
+		ObjSprite2D_SetSourceRect(difficulty, 0, 32 * difficultyID, 256, 32 * (difficultyID + 1));
+		ObjSprite2D_SetDestCenter(difficulty);
+
+
+		if(GetVirtualKeyState(VK_OK) == KEY_PUSH)
+		{	
+			PlaySoundA1(74, 80, 0);
+			endSettings = true;
+			break;
+		}
+
+		//カーソル移動
+		if(GetVirtualKeyState(VK_UP) == KEY_PUSH)
+		{
+			PlaySoundA1(91, 80, 0);
+			globalSettingID--;
+		}
+		else if(GetVirtualKeyState(VK_DOWN) == KEY_PUSH)
+		{
+			PlaySoundA1(91, 80, 0);
+			globalSettingID++;
+		}
+		else if(GetVirtualKeyState(VK_UP) == KEY_HOLD)
+		{
+			frameKeyHold++;
+			if(frameKeyHold == 30 || (frameKeyHold > 30 && (frameKeyHold % 10 == 0)))
+			{
+				PlaySoundA1(91, 80, 0);
+				globalSettingID--;
+			}
+		}
+		else if(GetVirtualKeyState(VK_DOWN) == KEY_HOLD)
+		{
+			frameKeyHold++;
+			if(frameKeyHold == 30 || (frameKeyHold > 30 && (frameKeyHold % 10 == 0)))
+			{
+				PlaySoundA1(91, 80, 0);
+				globalSettingID++;
+			}
+		}
+		else
+		{
+			frameKeyHold = 0;
+		}
+
+		if(globalSettingID < 0) 
+		{
+			globalSettingID = countMenu - 1;
+		}
+		else
+		{
+			globalSettingID %= countMenu;
+		}
+
+
+
+		if(globalSettingID == 0){
+			if(GetVirtualKeyState(VK_LEFT) == KEY_PUSH)
+			{
+				PlaySoundA1(91, 80, 0);
+				difficultyID--;
+			}
+			else if(GetVirtualKeyState(VK_RIGHT) == KEY_PUSH)
+			{
+				PlaySoundA1(91, 80, 0);
+				difficultyID++;
+			}
+			else if(GetVirtualKeyState(VK_LEFT) == KEY_HOLD)
+			{
+				frameKeyHold2++;
+				if(frameKeyHold2 == 30 || (frameKeyHold2 > 30 && (frameKeyHold2 % 10 == 0)))
+				{
+					PlaySoundA1(91, 80, 0);
+					difficultyID--;
+				}
+			}
+			else if(GetVirtualKeyState(VK_RIGHT) == KEY_HOLD)
+			{
+				frameKeyHold2++;
+				if(frameKeyHold2 == 30 || (frameKeyHold2 > 30 && (frameKeyHold2 % 10 == 0)))
+				{
+					PlaySoundA1(91, 80, 0);
+					difficultyID++;
+				}
+			}
+			else
+			{
+				frameKeyHold2 = 0;
+			}
+
+			if(difficultyID < 0) 
+			{
+				difficultyID = 3;
+			}
+			else
+			{
+				difficultyID %= 4;
+			}
+		}
+
+		yield;
+	}
+
+	Obj_Delete(cursor);
+	Obj_Delete(difficulty);
+
+	if(selectedLifeAmount == 9){enableInfiniteLives = true; Disable;}
+	SetPlayerLife(selectedLifeAmount);
+	SetCommonData("Difficulty", difficultyID);
+
+	Plural;
+
+	wait(60);
+
+	Difficulty(GetCurrentScriptDirectory ~ "System/img/Difficulty.png", 0, 32 * difficultyID, 256, 32 * (difficultyID + 1));
+
+	SetForbidPlayerShot(false);
+	SetForbidPlayerSpell(false);
+
+	wait(120);
+
+	SetCommonData("Hold",false);
+	// Muzak;
+	// Stage;
+
+	task Background{
+		let bg = ObjPrim_CreateRegularPolygon(GetCenterX+1, GetCenterY, 0, 4, 4608^0.5);
+		let lineArray = [[GetCenterX, GetCenterY, 0], [GetCenterX, GetCenterY, 0], [GetCenterX, GetCenterY, 0], [GetCenterX, GetCenterY, 0], [GetCenterX, GetCenterY, 0]];
+		let lineArrayDest = [[16, 176, 0], [368, 176, 0], [368, 272, 0], [16, 272, 0], [16, 176, 0]];
+
+		let dir = 45;
+		ascent(i in 1 .. ObjPrim_GetVertexCount(bg)){
+		    ObjPrim_SetVertexPosition(bg, i, 4608^0.5*cos(dir), 4608^0.5*sin(dir), 0);
+
+		    ObjPrim_SetVertexUVT(bg, i, 0, 0);
+
+	        dir += 360/4;
+		}
+
+		ObjRender_SetColor(bg, 0, 0, 0);
+		ObjRender_SetAngleZ(bg, 0);
+		ObjRender_SetAlpha(bg, 192);
+		ObjRender_SetScaleXYZ(bg, 0, 0, 0);
+		Obj_SetRenderPriorityI(bg, 50);
+
+		let line = ObjPrim_CreateLine(lineArray);
+		Obj_SetRenderPriorityI(line, 51);
+		//ObjRender_SetScaleXYZ(line, 0, 0, 0);
+
+		ascent(i in 0 .. 61){
+			ObjRender_SetScaleXYZ(bg, (352/96)/60 * i, 1/60 * i, 0);
+
+			ascent(j in 0 .. 5){
+				ObjPrim_SetVertexPosition(line, j, linear(lineArray[j][0], lineArrayDest[j][0], i/60), linear(lineArray[j][1], lineArrayDest[j][1], i/60), linear(lineArray[j][2], lineArrayDest[j][2], i/60));
+			}
+			yield;
+		}
+
+		Texts;
+		Lives;
+		Obj_SetVisible(cursor, true);
+		Obj_SetVisible(difficulty, true);
+		while(!endSettings){
+			yield;
+		}
+
+		descent(i in 0 .. 61){
+			ObjRender_SetScaleXYZ(bg, (352/96)/60 * i, 1/60 * i, 0);
+			
+			ascent(j in 0 .. 5){
+				ObjPrim_SetVertexPosition(line, j, linear(lineArray[j][0], lineArrayDest[j][0], i/60), linear(lineArray[j][1], lineArrayDest[j][1], i/60), linear(lineArray[j][2], lineArrayDest[j][2], i/60));
+			}
+			yield;
+		}
+
+		Obj_Delete(bg);
+		Obj_Delete(line);
+	}
+
+	task Texts{
+		let objDiff = ObjPrim_Create(OBJ_SPRITE_2D);
+		ObjPrim_SetTexture(objDiff, GetCurrentScriptDirectory ~ "System/img/setting.png");
+		ObjSprite2D_SetSourceRect(objDiff, 0, 0, 256, 64);
+		ObjSprite2D_SetDestCenter(objDiff);
+		ObjRender_SetScaleXYZ(objDiff, 0.5, 0.5, 0);
+		ObjRender_SetPosition(objDiff, 96, GetCenterY - 24, 0);
+
+		let objLives = ObjPrim_Create(OBJ_SPRITE_2D);
+		ObjPrim_SetTexture(objLives, GetCurrentScriptDirectory ~ "System/img/setting.png");
+		ObjSprite2D_SetSourceRect(objLives, 0, 64, 256, 128);
+		ObjSprite2D_SetDestCenter(objLives);
+		ObjRender_SetScaleXYZ(objLives, 0.5, 0.5, 0);
+		ObjRender_SetPosition(objLives, 96, GetCenterY + 24, 0);
+
+		while(!endSettings){
+			yield;
+		}
+		Obj_Delete(objDiff);
+		Obj_Delete(objLives);
+	}
+
+	task Lives{
+		selectedLifeAmount = 2;
+		let frameKeyHold = 0;
+
+		let obj2 = ObjPrim_Create(OBJ_SPRITE_2D);
+		ObjPrim_SetTexture(obj2, GetCurrentScriptDirectory ~ "System/img/disable.png");
+		ObjSprite2D_SetSourceRect(obj2, 0, 0, 256, 64);
+		ObjSprite2D_SetDestCenter(obj2);
+		Obj_SetRenderPriorityI(obj2, 61);
+		ObjRender_SetPosition(obj2, 256, GetCenterY + 24, 0);
+		Obj_SetVisible(obj2, false);
+
+		ascent(i in 0 .. 8){
+			SingleLife(176 + i*24, i);
+		}
+
+		while(!endSettings){
+			if(selectedLifeAmount > 8){
+				Obj_SetVisible(obj2, true);
+			}else{
+				Obj_SetVisible(obj2, false);
+			}
+
+
+			if(globalSettingID == 1){
+				if(GetVirtualKeyState(VK_LEFT) == KEY_PUSH)
+				{
+					PlaySoundA1(91, 80, 0);
+					selectedLifeAmount--;
+				}
+				else if(GetVirtualKeyState(VK_RIGHT) == KEY_PUSH)
+				{
+					PlaySoundA1(91, 80, 0);
+					selectedLifeAmount++;
+				}
+				else if(GetVirtualKeyState(VK_LEFT) == KEY_HOLD)
+				{
+					frameKeyHold++;
+					if(frameKeyHold == 30 || (frameKeyHold > 30 && (frameKeyHold % 10 == 0)))
+					{
+						PlaySoundA1(91, 80, 0);
+						selectedLifeAmount--;
+					}
+				}
+				else if(GetVirtualKeyState(VK_RIGHT) == KEY_HOLD)
+				{
+					frameKeyHold++;
+					if(frameKeyHold == 30 || (frameKeyHold > 30 && (frameKeyHold % 10 == 0)))
+					{
+						PlaySoundA1(91, 80, 0);
+						selectedLifeAmount++;
+					}
+				}
+				else
+				{
+					frameKeyHold = 0;
+				}
+
+				if(difficultyID < 0) 
+				{
+					selectedLifeAmount = 9;
+				}
+				else
+				{
+					selectedLifeAmount %= 10;
+				}
+			}
+			yield;
+		}
+
+		Obj_Delete(obj2);
+
+		task SingleLife(x, num){
+			let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+			ObjPrim_SetTexture(obj, GetCurrentScriptDirectory ~ "System/img/setting.png");
+			ObjSprite2D_SetSourceRect(obj, 32, 224, 64, 256);
+			ObjSprite2D_SetDestCenter(obj);
+			ObjRender_SetScaleXYZ(obj, 0.75, 0.75, 0);
+			Obj_SetRenderPriorityI(obj, 60);
+			ObjRender_SetPosition(obj, x, GetCenterY + 24, 0);
+
+			while(!endSettings){
+				if(selectedLifeAmount > num){
+					ObjSprite2D_SetSourceRect(obj, 0, 224, 32, 256);
+					ObjSprite2D_SetDestCenter(obj);
+				}else{
+					ObjSprite2D_SetSourceRect(obj, 32, 224, 64, 256);
+					ObjSprite2D_SetDestCenter(obj);
+				}
+				yield;
+			}
+			Obj_Delete(obj);
+		}
+	}
+}

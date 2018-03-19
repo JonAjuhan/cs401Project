@@ -1301,6 +1301,23 @@ task GrowShot(shot,scale0,scale1,dur){
 }
 
 
+
+//Python
+task ObjRender_SetMoveFromBackground(obj, time, startscale, endscale){
+	let s = startscale;
+	Obj_SetValue(obj, "IsSpawning", true);
+	Obj_SetRenderPriorityI(obj, 24);
+	loop(time){
+		ObjRender_SetScaleXYZ(obj, s, s, 0);
+		s += (endscale - startscale)/time;
+		yield;
+	}
+	Obj_SetValue(obj, "IsSpawning", false);
+	Obj_SetRenderPriorityI(obj, 30);
+}
+
+
+
 function WarnShot(shot) {
 	let warn = CreateShotA1(ObjMove_GetX(shot),ObjMove_GetY(shot),0,0,ObjShot_GetImageID(shot),15);
 	ObjShot_SetIntersectionEnable(warn,false);

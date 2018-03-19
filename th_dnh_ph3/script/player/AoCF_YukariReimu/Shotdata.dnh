@@ -1,0 +1,50 @@
+shot_image  = "./Image/Shot.png"
+
+
+ShotData{
+	id = 1 //Reimu amulet (red)
+	rect = (0, 0, 16, 48)
+	render = ALPHA
+	alpha=96
+	collision = 10
+}
+
+ShotData{
+	id = 2 //Reimu amulet (pink)
+	rect = (16, 0, 32, 48)
+	render = ALPHA
+	alpha=96
+	collision = 10
+}
+
+ShotData{
+	id = 3 //Reimu needle
+	rect = (32, 0, 48, 64)
+	render = ALPHA
+	alpha=96
+	collision = 10
+}
+
+ShotData{
+	id = 4 //Reimu sotoba
+	rect = (96, 0, 112, 96)
+	render = ALPHA
+	alpha=96
+	collision = 10
+}
+
+ShotData{
+	id = 5 //Yukari shot
+	rect = (64, 0, 80, 48)
+	render = ALPHA
+	alpha=96
+	collision = 10
+}
+
+ShotData{
+	id = 6 //Yukari option shot
+	rect = (80, 0, 96, 48)
+	render = ALPHA
+	alpha=96
+	collision = 10
+}

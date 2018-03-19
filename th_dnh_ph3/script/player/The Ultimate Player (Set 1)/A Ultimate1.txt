@@ -1,0 +1,1333 @@
+
+#TouhouDanmakufu[Player]
+#ScriptVersion[3]	
+#ID["Ultimate1A"]
+#Title["Player Delux (Set 1)"]
+#Image["./img/PD.png"]
+#Text["Bombing causes you to switch[r]character."]
+#ReplayName["Works"]
+
+let objPlayer = GetPlayerObjectID();
+let PlayerPower=400;
+let PlayerPower_Int=PlayerPower/100;
+let objOption =[];
+let OptionX=[GetStgFrameWidth/2,GetStgFrameWidth/2,GetStgFrameWidth/2,GetStgFrameWidth/2];
+let OptionY=[416,416,416,416];
+let RodFlag=false;
+let RodFlag2=false;
+let RodX;
+let RodY;
+let RodX2;
+let RodY2;
+let SpellMove=0;
+let RebirthFlag=false;
+let HatateAngleType = 1;
+
+//----------------------------------------
+let RandomBomb = true;
+let DebugSelect = false;
+//----------------------------------------
+let OnSpell=false;
+let InvincibleSystem=false;
+let AutoBombFlag=false;
+let InvincibleFlag=false;
+let InvincibleCount=0;
+InvincibleSystem=false;
+
+let current = GetCurrentScriptDirectory();
+
+let DownFrames = -10;
+//-------------------------------------------------
+//-------------------------------------------------
+//-------------------------------------------------
+let SELECT_PLAYER = 4;
+let SELECT_TEST = 4;
+let cooldown = 0;
+let SELECT_REIMU = 0; 
+let SELECT_MARISA = 1;
+let SELECT_SAKUYA = 2;
+let SELECT_REISEN = 3;
+let SELECT_SANAE = 4;
+let SELECT_YOUMU = 5;
+let SELECT_AYA = 6;
+let SELECT_ALICE = 7;
+let SELECT_CIRNO = 8;
+let SELECT_SEIJA = 9;
+
+let PlayAr = [
+GetCurrentScriptDirectory() ~ "./playersprite/reimu.png",
+GetCurrentScriptDirectory() ~ "./playersprite/marisa.png",
+GetCurrentScriptDirectory() ~ "./playersprite/sakuya.png",
+GetCurrentScriptDirectory() ~ "./playersprite/reisen.png",
+GetCurrentScriptDirectory() ~ "./playersprite/sanae.png",
+GetCurrentScriptDirectory() ~ "./playersprite/youmu.png",
+GetCurrentScriptDirectory() ~ "./playersprite/aya2.png",
+GetCurrentScriptDirectory() ~ "./playersprite/alice.png",
+GetCurrentScriptDirectory() ~ "./playersprite/cirno.png",
+GetCurrentScriptDirectory() ~ "./playersprite/seija.png",
+];
+let SpeedAr = [
+//First Row
+[4.0,2.3],//Reimu
+[5.5,3.2],//Marisa
+[4.5,2.7],//Sakuya
+[5.1,2.5],//Reisen
+[4.7,2.4],//Sanae
+[4.5,2.2],//Youmu
+[6.0,4.0],//Aya
+[4.5,3.0],//Alice
+[5.1,3.9],//Cirno
+[4.5,2.7]//Seija
+
+];
+//-------------------------------------------------
+//-------------------------------------------------
+//-------------------------------------------------
+let IMG_PLAYER=PlayAr[4];
+let IMG_OPTION="";
+#include"./images.txt"
+
+#include"./Shot.txt"
+#include"./Option.txt"
+#include"./Spell.txt"
+@Initialize
+{
+	PlayerLoad;
+	SoundLoad;
+    let path = current ~ "ShotData.txt";
+    LoadPlayerShotData(path);
+    //自弾画像ロード
+    ObjPlayer_AddIntersectionCircleA1(objPlayer, 0, 0, 0.2, 35);
+    //当たり判定登録
+    SetPlayerSpeed(4.7,2.4);
+	
+	TShotAll;
+	OptionManage;
+	
+    TImage();
+    //自機描画用タスク起動
+    //オプション描画用タスク
+    SlowEffect;
+    //低速魔方陣エフェクト用タスク
+    InvincibleSystemTask;
+    //特殊無敵用タスク
+	SetPlayerRebirthFrame(18);
+	SetPlayerRebirthLossFrame(0);
+	SetPlayerDownStateFrame(40);
+    
+}
+task PlayerLoad
+{
+	ascent(i in 0..10)
+	{
+		LoadTexture(PlayAr[i]);
+		yield;
+	}
+}
+@MainLoop
+{
+	SetCommonData("PlayerX",0);
+	SetCommonData("PlayerY",0);
+	if(GetKeyState(KEY_L)==KEY_PUSH)
+	{
+		SetPlayerInvincibilityFrame_Special(999999);
+	}
+	if(GetKeyState(KEY_K)==KEY_PUSH)
+	{
+		SetPlayerInvincibilityFrame_Special(0);
+	}
+	if(GetPlayerState==STATE_DOWN)
+	{
+		DownFrames = 2;
+	}
+	if(GetPlayerState==STATE_NORMAL)
+	{
+		SetCommonData("StateFace",0);
+		SetCommonData("StateFaceR",255);
+		SetCommonData("StateFaceG",255);
+		SetCommonData("StateFaceB",255);
+	}
+	if(GetPlayerState==STATE_HIT)
+	{
+		SetCommonData("StateFace",1);
+		SetCommonData("StateFaceR",255);
+		SetCommonData("StateFaceG",64);
+		SetCommonData("StateFaceB",64);
+	}
+	if(OnSpell)
+	{
+		SetCommonData("StateFace",3);
+		SetCommonData("StateFaceR",255);
+		SetCommonData("StateFaceG",255);
+		SetCommonData("StateFaceB",255);
+	}
+	if(DownFrames>0)
+	{
+		SetCommonData("StateFace",2);
+		SetCommonData("StateFaceR",64);
+		SetCommonData("StateFaceG",64);
+		SetCommonData("StateFaceB",64);
+	}
+	if(DownFrames==0)
+	{
+		PlaySE(BARRIERON);
+	}
+	DownFrames--;
+	
+	
+	
+	/*
+	if(GetCommonData("PlayerFace",0)==3&&OnSpell==false&&GetPlayerState==STATE_NORMAL)
+	{
+		SetPlayerSpeed(4.5,2.7);
+		SELECT_PLAYER = SELECT_SAKUYA;
+		IMG_PLAYER = PlayAr[2];
+	}
+	if(GetCommonData("PlayerFace",0)==4&&OnSpell==false&&GetPlayerState==STATE_NORMAL)
+	{						
+		SetPlayerSpeed(5.1,2.5);
+		SELECT_PLAYER = SELECT_REISEN;
+		IMG_PLAYER = PlayAr[3];
+	}			
+	if(GetCommonData("PlayerFace",0)==5&&OnSpell==false&&GetPlayerState==STATE_NORMAL)
+	{				
+		SetPlayerSpeed(4.7,2.4);
+		SELECT_PLAYER = SELECT_SANAE;
+		IMG_PLAYER = PlayAr[4];
+	}
+	if(GetCommonData("PlayerFace",0)==6&&OnSpell==false&&GetPlayerState==STATE_NORMAL)
+	{				
+		SetPlayerSpeed(4.5,2.2);
+		SELECT_PLAYER = SELECT_YOUMU;
+		IMG_PLAYER = PlayAr[5];
+	}
+	if(GetCommonData("PlayerFace",0)==7&&OnSpell==false&&GetPlayerState==STATE_NORMAL)
+	{				
+		SetPlayerSpeed(6.0,4.0);
+		SELECT_PLAYER = SELECT_AYA;
+		IMG_PLAYER = PlayAr[6];
+	}
+	if(GetCommonData("PlayerFace",0)==8&&OnSpell==false&&GetPlayerState==STATE_NORMAL)
+	{				
+		SetPlayerSpeed(4.5,3.0);
+		SELECT_PLAYER = SELECT_ALICE;
+		IMG_PLAYER = PlayAr[7];
+	}
+	if(GetCommonData("PlayerFace",0)==9&&OnSpell==false&&GetPlayerState==STATE_NORMAL)
+	{				
+		SetPlayerSpeed(5.1,3.9);
+		SELECT_PLAYER = SELECT_CIRNO;
+		IMG_PLAYER = PlayAr[8];
+	}
+	if(GetCommonData("PlayerFace",0)==10&&OnSpell==false&&GetPlayerState==STATE_NORMAL)
+	{				
+		SetPlayerSpeed(4.5,2.7);
+		SELECT_PLAYER = SELECT_SEIJA;
+		IMG_PLAYER = PlayAr[9];
+	}
+	*///-----------------
+	if(OnSpell)
+	{
+		CollectItemsInCircle(ObjMove_GetX(GetPlayerObjectID), ObjMove_GetY(GetPlayerObjectID), 1280);
+	}
+	else
+	{
+		CollectItemsInCircle(ObjMove_GetX(GetPlayerObjectID), ObjMove_GetY(GetPlayerObjectID), 75);
+	}
+	if(SELECT_TEST!=SELECT_PLAYER)
+	{
+		cooldown = 0;
+		OptionX=[GetPlayerX,GetPlayerX,GetPlayerX,GetPlayerX];
+		OptionY=[GetPlayerY,GetPlayerY,GetPlayerY,GetPlayerY];
+		//PlaySE(GAP);
+		ShockEffect(255,255,255,1,1);
+	}
+	SELECT_TEST = SELECT_PLAYER;
+	cooldown++;
+	
+    yield;
+}
+task ShockEffect(R,G,B,XTimes,YTimes)
+{
+	let obj = ObjPrim_Create(OBJ_PRIMITIVE_2D);
+	ObjPrim_SetTexture(obj,IMG_SHOCK);
+	ObjPrim_SetPrimitiveType(obj, PRIMITIVE_TRIANGLEFAN);
+	ObjPrim_SetVertexCount(obj, 4);
+	ObjRender_SetBlendType(obj, BLEND_ADD_ARGB);
+	Obj_SetRenderPriorityI(obj,40);
+	ObjRender_SetAngleZ(obj,0);
+
+	ObjPrim_SetDestCenter(obj,0,0,512,512);
+
+	ObjRender_SetPosition(obj,GetPlayerX,GetPlayerY,0);
+
+	//let Zangle=-num*60;
+	let Alpha=1;
+	let AlphaMax=Alpha;
+
+
+	let Scale=0;
+	let ScaleSpeed=0.09;
+	ObjRender_SetScaleXYZ(obj,Scale,Scale,Scale);
+	loop(20)
+	{
+		ObjRender_SetPosition(obj,GetPlayerX,GetPlayerY,0);
+		ObjRender_SetColor(obj,R*Alpha,G*Alpha,B*Alpha);
+		ObjRender_SetScaleXYZ(obj,Scale*XTimes,Scale*YTimes,Scale);
+		Alpha-=1/20;
+		Scale+=ScaleSpeed/4;
+		ScaleSpeed-=ScaleSpeed/20;
+		yield;
+	}
+	Obj_Delete(obj);
+}
+@Finalize
+{
+}
+let xsp = 0;
+let ysp = 0;
+@Event
+{
+    alternative(GetEventType())
+    case(EV_REQUEST_SPELL)
+    {
+        //スペルカード要求
+        let spell = GetPlayerSpell();
+        //残りスペル数
+        if((spell >= 1 && !RebirthFlag) || AutoBombFlag)
+        {
+            SetScriptResult(true);
+            //スペル発動可能
+            if(!AutoBombFlag || GetVirtualKeyState(VK_BOMB)==KEY_PUSH && !OnSpell)
+            {
+                SetPlayerSpell(spell-1);
+                //スペル数を1減らす
+                TSpell();
+                //スペルタスク起動
+            }
+            else
+            {
+                DummySpell();
+                //スペルタスク起動
+            }
+        }
+        else
+        {
+            SetScriptResult(false);
+            //スペル発動不可
+        }
+        AutoBombFlag=false;
+    }
+    case(EV_HIT)
+    {
+        //被弾
+		xsp = GetPlayerX;
+		ysp = GetPlayerY;
+        if(InvincibleCount>0)
+        {
+            AutoBombFlag=true;
+            CallSpell;
+        }
+        else
+        {
+			PlaySE(HIT);
+            TExplosion();
+        }
+    }
+    case(EV_PLAYER_REBIRTH)
+    {
+        //復帰
+        SetPlayerSpell(3);
+        SetPlayerInvincibilityFrame_Special(240);
+		DownFrames = 240;
+    }
+    case(EV_GET_ITEM)
+    {
+        //アイテム取得通知
+        let itemType = GetEventArgument(0);
+        alternative(itemType)
+        case(ITEM_1UP)
+        {
+            WriteLog("ITEM_1UP");
+            PlaySE(LIFEGET);
+        }
+        case(ITEM_1UP_S)
+        {
+            WriteLog("ITEM_SPELL_S");
+            PlaySE(LIFEGET);
+        }
+        case(ITEM_SPELL)
+        {
+            WriteLog("ITEM_SPELL");
+            PlaySE(SPELLGET);
+        }
+        case(ITEM_SPELL_S)
+        {
+            WriteLog("ITEM_SPELL_S");
+            PlaySE(SPELLGET);
+        }
+        case(ITEM_POWER)
+        {
+            WriteLog("ITEM_POWER");
+            PlaySE(ITEMGET);
+        }
+        case(ITEM_POWER_S)
+        {
+            WriteLog("ITEM_POWER_S");
+            PlaySE(ITEMGET);
+        }
+        case(ITEM_POINT)
+        {
+            WriteLog("ITEM_POINT");
+            PlaySE(ITEMGET);
+        }
+        case(ITEM_POINT_S)
+        {
+            WriteLog("ITEM_POINT_S");
+            PlaySE(ITEMGET);
+        }
+    }
+    case(EV_GRAZE)
+    {
+        //グレイズ通知
+        //GrazeEffect(GetEventArgument(1));
+        PlaySE(SE_GRAZE);
+    }
+}
+//-----------------------------------------
+//-------------EFFECTS RENDER--------------
+//-----------------------------------------
+function ObjPrim_SetDestCenter(obj,x1,y1,x2,y2)
+{
+    //指定域の画像の中心をobjの中心に設定する(よく使うタイプ)
+    ObjPrim_SetVertexPosition(obj, 0, -(x2-x1)/2, -(y2-y1)/2, -0);
+    ObjPrim_SetVertexPosition(obj, 1, (x2-x1)/2, -(y2-y1)/2, -0);
+    ObjPrim_SetVertexPosition(obj, 2, (x2-x1)/2, (y2-y1)/2, 0);
+    ObjPrim_SetVertexPosition(obj, 3, -(x2-x1)/2, (y2-y1)/2, 0);
+    ObjPrim_SetVertexUVT(obj, 0, x1, y1);
+    ObjPrim_SetVertexUVT(obj, 1, x2, y1);
+    ObjPrim_SetVertexUVT(obj, 2, x2, y2);
+    ObjPrim_SetVertexUVT(obj, 3, x1, y2);
+}
+function RainbowArray
+{
+    //七色RGB配列を返す
+    let color=[
+    [255,63,63],
+    [255,127,63],
+    [255,255,127],
+    [127,255,127],
+    [63,255,255],
+    [127,127,255],
+    [255,63,255]
+    ];
+    return color;
+}
+function rand_degree
+{
+    //1or-1or0を出力
+    let num=rand_dire;
+    if(rand(0,3)<=1)
+    {
+        num=0;
+    }
+    return(num);
+}
+function rand_inta(n,m)
+{
+    //nからmの間で、m含む整数をランダムに出力
+    return(floor(rand(n,m+1-0.00001)));
+}
+function rand_dire
+{
+    //1or-1を出力
+    return((rand_inta(0,1)*2-1));
+}
+function SetPlayerInvincibilityFrame_Special(t)
+{
+    //特殊無敵システムにより場合わけ
+    if(InvincibleSystem)
+    {
+        InvincibleCount=t;
+    }
+    else
+    {
+        SetPlayerInvincibilityFrame(t);
+    }
+}
+task InvincibleSystemTask
+{
+	if(InvincibleSystem)
+	{
+		loop
+		{
+			if(InvincibleCount>0){InvincibleCount--;}
+			if(InvincibleSystem)
+			{
+				Obj_SetValue(objPlayer,"OnSpell",OnSpell);
+			}
+			yield;
+		}
+	}
+}
+task ClimaxCircle(XX,YY,type,scaleplus,duration,delay,Xang,Yang,Zang,startalf)
+{
+	loop(delay){yield;}
+	let objRing = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjPrim_SetTexture(objRing, IMG_CLIMAX);	
+	Obj_SetRenderPriorityI(objRing,39);
+	//ObjRender_SetAngleZ(obj,rand(0,360));
+	ObjRender_SetAlpha(objRing,0);
+	if(type==0)
+	{
+		ObjSprite2D_SetSourceRect(objRing, 256*0, 256*0, 256*1, 256*1);
+	}
+	if(type==1)
+	{
+		ObjSprite2D_SetSourceRect(objRing, 256*1, 256*0, 256*2, 256*1);
+	}
+	if(type==2)
+	{
+		ObjSprite2D_SetSourceRect(objRing, 256*2, 256*0, 256*3, 256*1);
+	}
+	if(type==3)
+	{
+		ObjSprite2D_SetSourceRect(objRing, 256*3, 256*0, 256*4, 256*1);
+	}
+	if(type==4)
+	{
+		ObjSprite2D_SetSourceRect(objRing, 256*0, 256*1, 256*1, 256*2);
+	}
+	if(type==5)
+	{
+		ObjSprite2D_SetSourceRect(objRing, 256*1, 256*1, 256*2, 256*2);
+	}
+	if(type==6)
+	{
+		ObjSprite2D_SetSourceRect(objRing, 256*2, 256*1, 256*3, 256*2);
+	}
+	if(type==7)
+	{
+		ObjSprite2D_SetSourceRect(objRing, 256*3, 256*1, 256*4, 256*2);
+	}
+	ObjRender_SetScaleXYZ(objRing,0,0,0);
+	ObjSprite2D_SetDestCenter(objRing);
+	ObjRender_SetBlendType(objRing,BLEND_ADD_ARGB);
+	let scale = 0;
+	let Alpha = startalf;
+	ObjRender_SetPosition(objRing,XX,YY,0);
+	ObjRender_SetAngleXYZ(objRing,Xang,Yang,Zang);
+	loop(duration)
+	{
+		ObjRender_SetAlpha(objRing,Alpha);
+		ObjRender_SetScaleXYZ(objRing,scale,scale,scale);
+		scale+=scaleplus;
+
+		Alpha -= startalf/duration;
+		yield;
+	}
+	Obj_Delete(objRing);
+}
+task ClimaxCircle2(XX,YY,scaleplus,duration,delay,Xang,Yang,Zang)
+{
+	loop(delay){yield;}
+	let objRing = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjPrim_SetTexture(objRing, IMG_WHITECIRCLE_S);	
+	Obj_SetRenderPriorityI(objRing,39);
+	//ObjRender_SetAngleZ(obj,rand(0,360));
+	ObjRender_SetAlpha(objRing,0);
+
+		ObjSprite2D_SetSourceRect(objRing, 128*0, 128*0, 128*1, 128*1);
+
+
+	ObjRender_SetScaleXYZ(objRing,0,0,0);
+	ObjSprite2D_SetDestCenter(objRing);
+	ObjRender_SetBlendType(objRing,BLEND_ADD_ARGB);
+	let scale = 0;
+	let Alpha = 255;
+	ObjRender_SetPosition(objRing,XX,YY,0);
+	ObjRender_SetAngleXYZ(objRing,Xang,Yang,Zang);
+	loop(duration)
+	{
+		ObjRender_SetAlpha(objRing,Alpha);
+		ObjRender_SetScaleXYZ(objRing,scale,scale,scale);
+		scale+=scaleplus;
+
+		Alpha -= 255/duration;
+		yield;
+	}
+	Obj_Delete(objRing);
+}
+task DARKNESS(R,G,B,BLEND,MaxAlpha,DarkScale,Duration)
+{
+		let scale = 0;
+		let path = IMG_BACKGROUND;
+		let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+		ObjPrim_SetTexture(obj, path);	
+		Obj_SetRenderPriorityI(obj,27);
+		let BIT=0;
+		ObjSprite2D_SetSourceRect(obj, 0, 0, 640, 480);
+		ObjRender_SetBlendType(obj,BLEND);
+		ObjSprite2D_SetDestCenter(obj);
+		ObjRender_SetColor(obj,R,G,B);
+		let ALPHA=0;
+		let amount=0;
+		ObjSprite2D_SetSourceRect(obj, 0, 0, 128, 128);
+		ObjRender_SetScaleXYZ(obj,100,100,100);
+		loop(Duration)
+		{
+
+			ObjRender_SetAlpha(obj,ALPHA);
+			if(ALPHA<128){ALPHA+=DarkScale;}
+			ObjRender_SetPosition(obj, GetPlayerX, GetPlayerY, 0);
+			yield;
+		}
+		loop(20)
+		{
+			ObjRender_SetAlpha(obj,ALPHA);
+			if(ALPHA>0){ALPHA-=10;}
+			ObjRender_SetPosition(obj, GetPlayerX, GetPlayerY, 0);
+			yield;
+		}
+
+		Obj_Delete(obj);
+}
+task GrazeEffect(BulletArray)
+{//グレイズエフェクト
+	ascent(i in 0..length(BulletArray))
+	{
+		if(!Obj_IsDeleted(BulletArray[i]))
+		{
+		Effect(BulletArray[i]);
+		}
+	}
+
+	task Effect(Bobj)
+	{
+		let obj = ObjPrim_Create(OBJ_PRIMITIVE_2D);
+		ObjPrim_SetTexture(obj,IMG_WHITECIRCLE_S);
+		ObjPrim_SetPrimitiveType(obj, PRIMITIVE_TRIANGLEFAN);
+		ObjPrim_SetVertexCount(obj, 4);
+		ObjRender_SetBlendType(obj, BLEND_ADD_RGB);
+		Obj_SetRenderPriorityI(obj,30);
+		ObjRender_SetAngleZ(obj,0);
+
+		ObjPrim_SetDestCenter(obj,0,0,128,128);
+
+		let x=(GetPlayerX+ObjRender_GetX(Bobj))/2;
+		let y=(GetPlayerY+ObjRender_GetY(Bobj))/2;
+		ObjRender_SetPosition(obj,x,y,0);
+
+		let Alpha=0.75;
+		let R=255;
+		let G=255;
+		let B=255;
+		let speed=rand(2,6);
+		let angle=rand(0,360);
+		let Scale=0.1;
+		let ScaleMax=Scale;
+		loop(10)
+		{
+			ObjRender_SetPosition(obj,ObjRender_GetX(obj)+speed*cos(angle),ObjRender_GetY(obj)+speed*sin(angle),0);
+			ObjRender_SetScaleXYZ(obj,Scale,Scale,1);
+			ObjRender_SetColor(obj,R*Alpha,G*Alpha,B*Alpha);
+	//		ObjRender_SetAngleZ(obj,Zangle);
+	//		Alpha-=1.0/8;
+			Scale-=ScaleMax/10;
+			yield;
+		}
+		Obj_Delete(obj);
+	}
+}
+task SlowEffect
+{//低速エフェクト
+	loop
+	{
+		if(GetVirtualKeyState(VK_SLOWMOVE)==KEY_PUSH || GetVirtualKeyState(VK_SLOWMOVE)==KEY_HOLD)
+		{
+			SlowEffectRender1;
+			SlowEffectRender2;
+			while(GetVirtualKeyState(VK_SLOWMOVE)==KEY_PUSH || GetVirtualKeyState(VK_SLOWMOVE)==KEY_HOLD){yield;}
+		}
+		yield;
+	}
+
+	//時計、反時計で若干挙動が違う
+
+	task SlowEffectRender1
+	{
+		let obj = ObjPrim_Create(OBJ_PRIMITIVE_2D);
+		ObjPrim_SetTexture(obj,IMG_MOVEMAGICCIRCLE);
+		ObjPrim_SetPrimitiveType(obj, PRIMITIVE_TRIANGLEFAN);
+		ObjPrim_SetVertexCount(obj, 4);
+	//	ObjRender_SetBlendType(obj, BLEND_ADD_RGB);
+		Obj_SetRenderPriorityI(obj,44);
+		ObjRender_SetAngleZ(obj,0);
+
+		ObjPrim_SetDestCenter(obj,0,0,256,256);
+
+		let Alpha=0;
+		let R=255;
+		let G=255;
+		let B=255;
+		let Zangle=0;
+		let Scale=0.25;
+		let ScaleMax=Scale;
+		let ScaleAmount = 1;
+		if(IMG_PLAYER==IMG_SHINMY)
+		{
+			ScaleAmount = 1/1.5;
+		}
+		loop(5)
+		{
+			if(GetVirtualKeyState(VK_SLOWMOVE)!=KEY_PUSH && GetVirtualKeyState(VK_SLOWMOVE)!=KEY_HOLD){break;}
+			ObjRender_SetPosition(obj,GetPlayerX,GetPlayerY,0);
+			ObjRender_SetScaleXYZ(obj,Scale*ScaleAmount,Scale*ScaleAmount,1);
+			ObjRender_SetAlpha(obj,255*Alpha);
+			ObjRender_SetAngleZ(obj,Zangle);
+			Alpha+=1.0/15;
+			Scale+=0.0125;
+			yield;
+		}
+		loop(10)
+		{
+			if(GetVirtualKeyState(VK_SLOWMOVE)!=KEY_PUSH && GetVirtualKeyState(VK_SLOWMOVE)!=KEY_HOLD){break;}
+			ObjRender_SetPosition(obj,GetPlayerX,GetPlayerY,0);
+			ObjRender_SetScaleXYZ(obj,Scale*ScaleAmount,Scale*ScaleAmount,1);
+			ObjRender_SetAlpha(obj,255*Alpha);
+			ObjRender_SetAngleZ(obj,Zangle);
+			Alpha+=1.0/15;
+			Scale-=0.00625;
+			yield;
+		}
+		loop
+		{
+			if(GetVirtualKeyState(VK_SLOWMOVE)!=KEY_PUSH && GetVirtualKeyState(VK_SLOWMOVE)!=KEY_HOLD){break;}
+			ObjRender_SetPosition(obj,GetPlayerX,GetPlayerY,0);
+			ObjRender_SetScaleXYZ(obj,Scale*ScaleAmount,Scale*ScaleAmount,1);
+			ObjRender_SetAlpha(obj,255*Alpha);
+			ObjRender_SetAngleZ(obj,Zangle);
+			Zangle-=3;
+			yield;
+		}
+		Obj_Delete(obj);
+	}
+
+	task SlowEffectRender2
+	{
+		let obj = ObjPrim_Create(OBJ_PRIMITIVE_2D);
+		ObjPrim_SetTexture(obj,IMG_MOVEMAGICCIRCLE);
+		ObjPrim_SetPrimitiveType(obj, PRIMITIVE_TRIANGLEFAN);
+		ObjPrim_SetVertexCount(obj, 4);
+	//	ObjRender_SetBlendType(obj, BLEND_ADD_RGB);
+		Obj_SetRenderPriorityI(obj,44);
+		ObjRender_SetAngleZ(obj,0);
+
+		ObjPrim_SetDestCenter(obj,0,0,256,256);
+
+		let Alpha=0;
+		let R=255;
+		let G=255;
+		let B=255;
+		let Zangle=0;
+		let ZanglePlus=6;
+		let Scale=0.25;
+		let ScaleAmount = 1;
+		if(IMG_PLAYER==IMG_SHINMY)
+		{
+			ScaleAmount = 1/1.5;
+		}
+		loop(5)
+		{
+			Zangle+=ZanglePlus;
+			ZanglePlus-=6/15;
+			if(GetVirtualKeyState(VK_SLOWMOVE)!=KEY_PUSH && GetVirtualKeyState(VK_SLOWMOVE)!=KEY_HOLD){break;}
+			ObjRender_SetPosition(obj,GetPlayerX,GetPlayerY,0);
+			ObjRender_SetScaleXYZ(obj,Scale*ScaleAmount,Scale*ScaleAmount,1);
+			ObjRender_SetAlpha(obj,255*Alpha);
+			ObjRender_SetAngleZ(obj,Zangle);
+			Alpha+=1.0/15;
+			yield;
+		}
+		loop(10)
+		{
+			Zangle+=ZanglePlus;
+			ZanglePlus-=6/15;
+			if(GetVirtualKeyState(VK_SLOWMOVE)!=KEY_PUSH && GetVirtualKeyState(VK_SLOWMOVE)!=KEY_HOLD){break;}
+			ObjRender_SetPosition(obj,GetPlayerX,GetPlayerY,0);
+			ObjRender_SetScaleXYZ(obj,Scale*ScaleAmount,Scale*ScaleAmount,1);
+			ObjRender_SetAlpha(obj,255*Alpha);
+			ObjRender_SetAngleZ(obj,Zangle);
+			Alpha+=1.0/15;
+			yield;
+		}
+		loop
+		{
+			if(GetVirtualKeyState(VK_SLOWMOVE)!=KEY_PUSH && GetVirtualKeyState(VK_SLOWMOVE)!=KEY_HOLD){break;}
+			ObjRender_SetPosition(obj,GetPlayerX,GetPlayerY,0);
+			ObjRender_SetScaleXYZ(obj,Scale*ScaleAmount,Scale*ScaleAmount,1);
+			ObjRender_SetAlpha(obj,255*Alpha);
+			ObjRender_SetAngleZ(obj,Zangle);
+			Zangle+=3;
+			yield;
+		}
+		Obj_Delete(obj);
+	}
+}
+task TExplosion
+{//被弾エフェクト
+	let XXX = GetPlayerX;
+	let YYY = GetPlayerY;
+	while(GetPlayerState==STATE_HIT)
+	{//喰らいボム可能時のエフェクト
+		loop(3)
+		{
+		Particle(1);
+		}
+		yield;
+	}
+
+	//反転エフェクトの終了合図用フラグ
+	let ReverseEffectFlag=true;
+
+	if(GetPlayerState!=STATE_NORMAL)
+	{
+		
+		Shaker;
+		PlaySE(SE_PLAYERDOWN);
+		loop(30){Particle(2);}
+		RebirthEffect(GetStgFrameWidth/2,466);
+		
+		ExplodeEffect;
+		ShockWave;
+		let rx=GetPlayerX;
+		let ry=GetPlayerY;
+		ReverseEffect(rx,ry);
+		loop(4){yield;}
+		ReverseEffect(rx+32,ry);
+		ReverseEffect(rx-32,ry);
+		ReverseEffect(rx,ry+32);
+		ReverseEffect(rx,ry-32);
+		loop(23){yield;}
+		ReverseEffect(rx,ry);
+		loop(13){yield;}
+		loop(47){yield;}
+	}
+	ReverseEffectFlag=false;
+	task Shaker
+	{
+		let amount = 3;
+		loop(50)
+		{
+			SetCommonData("StateFaceShake",amount);
+			amount-=3/50;
+			yield;
+		}
+		SetCommonData("StateFaceShake",0);
+	}
+	task ShockWave
+	{//衝撃波
+		let x=GetPlayerX;
+		let y=GetPlayerY;
+		loop(30){yield;}
+		let obj=CreatePlayerShotA1(x,y,0,0,8,65535,100);
+		let range=0;
+		loop(30)
+		{
+			//ObjShot_SetIntersectionCircleA1(obj,range);
+			range+=20;
+			yield;
+		}
+		//DeleteShotAll(TYPE_SHOT,TYPE_IMMEDIATE);
+		Obj_Delete(obj);
+	}
+
+	task Particle(type)
+	{
+		let obj = ObjPrim_Create(OBJ_PRIMITIVE_2D);
+		ObjPrim_SetTexture(obj,IMG_LIGHT);
+		ObjPrim_SetPrimitiveType(obj, PRIMITIVE_TRIANGLEFAN);
+		ObjPrim_SetVertexCount(obj, 4);
+		Obj_SetRenderPriorityI(obj,69);
+		ObjRender_SetAngleZ(obj,0);
+
+		ObjPrim_SetDestCenter(obj,0,0,64,64);
+
+		ObjRender_SetPosition(obj,GetPlayerX,GetPlayerY,0);
+
+		let Alpha=1.0;
+		let Scale=rand(0.5,0.75);
+		let ScaleMax=Scale;
+		let R=255;
+		let G=255;
+		let B=255;
+		if(rand_dire>0 || type==2)
+		{
+			ObjRender_SetBlendType(obj, BLEND_ADD_RGB);
+			R=255;
+			G=150;
+			B=255;
+		}
+		else
+		{
+			ObjRender_SetBlendType(obj, BLEND_SUBTRACT);
+			R=0;
+			G=105;
+			B=0;
+		}
+		ObjRender_SetColor(obj,R*Alpha,G*Alpha,B*Alpha);
+		let speed=rand(5,15);
+		let Angle=rand(0,360);
+		let time=rand_inta(15,20);
+		loop(time)
+		{
+			ObjRender_SetPosition(obj,ObjRender_GetX(obj)+speed*cos(Angle),ObjRender_GetY(obj)+speed*sin(Angle),0);
+			Scale-=ScaleMax/time;
+			ObjRender_SetScaleXYZ(obj,Scale,Scale,1);
+			yield;
+		}
+		Obj_Delete(obj);
+	}
+
+	task ReverseEffect(x,y)
+	{//反転複合エフェクト
+		let obj = ObjPrim_Create(OBJ_PRIMITIVE_2D);
+		ObjPrim_SetTexture(obj,IMG_WHITECIRCLE_L);
+		ObjPrim_SetPrimitiveType(obj, PRIMITIVE_TRIANGLEFAN);
+		ObjRender_SetBlendType(obj, BLEND_INV_DESTRGB);
+		ObjPrim_SetVertexCount(obj, 4);
+		Obj_SetRenderPriorityI(obj,69);
+		ObjRender_SetAngleZ(obj,0);
+
+		ObjPrim_SetDestCenter(obj,0,0,512,512);
+
+		ObjRender_SetPosition(obj,x,y,0);
+
+		let Alpha=1.0;
+		let Scale=0;
+		let ScalePlus=0;
+		let ScalePlusSpeed=0.0125/8*1.33;
+		let R=255;
+		let G=255;
+		let B=255;
+
+		while(ReverseEffectFlag)
+		{
+			ScalePlus+=ScalePlusSpeed;
+			Scale+=ScalePlus;
+			ObjRender_SetScaleXYZ(obj,Scale,Scale,1);
+			yield;
+		}
+		Obj_Delete(obj);
+	}
+
+	task ExplodeEffect
+	{
+		let obj = ObjPrim_Create(OBJ_PRIMITIVE_2D);
+		ObjPrim_SetTexture(obj,IMG_DEADCIRCLE);
+		ObjPrim_SetPrimitiveType(obj, PRIMITIVE_TRIANGLEFAN);
+		ObjPrim_SetVertexCount(obj, 4);
+		ObjRender_SetBlendType(obj, BLEND_ADD_RGB);
+		Obj_SetRenderPriorityI(obj,30);
+		ObjRender_SetAngleZ(obj,0);
+
+		ObjPrim_SetDestCenter(obj,0,128,64,192);
+
+		ObjRender_SetPosition(obj,GetPlayerX,GetPlayerY,0);
+
+		let Alpha=1.0;
+		let Scale=1;
+		let R=255;
+		let G=255;
+		let B=255;
+
+
+		loop(24)
+		{
+			Alpha-=1.0/24;
+			Scale+=4.5/24;
+			ObjRender_SetScaleXYZ(obj,Scale,Scale,1);
+			ObjRender_SetColor(obj,R*Alpha,G*Alpha,B*Alpha);
+			yield;
+		}
+		Obj_Delete(obj);
+	}
+
+	task RebirthEffect(X,Y)
+	{//復活時の自機制御
+	//	let X=GetStgFrameWidth/2;
+	//	let Y=466;//416
+		RebirthFlag=true;
+	
+		loop(10){yield;}
+		loop(25)
+		{
+			ObjRender_SetPosition(objPlayer, X,Y, 0);
+			yield;
+		}
+		SetForbidPlayerShot(true);
+		loop(5)
+		{
+			ObjRender_SetPosition(objPlayer, X,Y, 0);
+			yield;
+		}
+		loop(50)
+		{
+			ObjRender_SetPosition(objPlayer, X,Y, 0);
+			Y-=1;
+			yield;
+		}
+	
+		RebirthFlag=false;
+		SetForbidPlayerShot(false);
+	}
+}
+task SoundLoad
+{
+	
+	LoadSound(SE_GRAZE);yield;
+	LoadSound(SE_PLAYERDOWN);yield;
+	LoadSound(SE_PLAYERDOWN2);yield;
+	LoadSound(SE_SHOT);yield;
+	LoadSound(SE_SPELL1);yield;
+	LoadSound(SE_SPELL2);yield;
+	LoadSound(SE_SPELL3);yield;
+	LoadSound(SE_BONUS);yield;
+	//LoadSound(SE_MISSILE);
+	//LoadSound(SE_MISSILE2);
+	LoadSound(BIGSPARK);yield;
+	//ObjSound_SetVolumeRate(SE_MISSILE2,25);
+	LoadSound(SE_EXPLODE);yield;
+	LoadSound(SE_EXPLODE2);yield;
+	LoadSound(ITEMGET);yield;
+	LoadSound(SE_REIS);yield;
+	LoadSound(SPELLGET);yield;
+	LoadSound(BOON);yield;
+	LoadSound(TIMESTOP);yield;
+	LoadSound(SHOUT);yield;
+	LoadSound(SHOT);yield;
+	LoadSound(KHIT);yield;
+	//LoadSound(EX);
+	//LoadSound(EX2);
+	LoadSound(BOON2);yield;
+	LoadSound(CHARGE);yield;
+
+	//LoadSound(SE_EXPLODE2_REV);
+	LoadSound(BIGBOOM);yield;
+	LoadSound(LASER);yield;
+
+
+	LoadSound(HIT);yield;
+	LoadSound(BARRIERON);
+	LoadSound(SANAESLICE);
+	LoadSound(SANAESHOCK);
+	LoadSound(SPELLTHING);
+}
+//-----------------------------------------
+//-------------RENDER SPRITE---------------
+//-----------------------------------------
+task TImage
+{
+	let path = IMG_PLAYER;
+	ObjPrim_SetTexture(objPlayer, path);
+	Obj_SetRenderPriorityI(objPlayer,44);
+	//ObjRender_SetBlendType(objPlayer, BLEND_ADD_RGB);
+	let FrameCount=0;
+	let RectX=[];
+	let RectY=[];
+	let Rotate = 0;
+	let InvincibleFrame=0;
+	let IdleMark = true;
+	loop
+	{
+		path = IMG_PLAYER;
+		ObjPrim_SetTexture(objPlayer, path);
+		if(GetVirtualKeyState(VK_RIGHT) == KEY_PUSH || SpellMove==1)
+		{
+			if(SELECT_PLAYER==SELECT_ALICE)
+			{
+				ObjRender_SetAngleY(objPlayer,0);
+				Rotate = 0;
+			}
+			else if(IMG_PLAYER==GetCurrentScriptDirectory() ~ "./playersprite/yuyuko.png")
+			{
+				ObjRender_SetAngleY(objPlayer,180);
+				Rotate = 180;
+			}
+			else
+			{
+				ObjRender_SetAngleY(objPlayer,0);
+				Rotate = 0;
+			}
+			RectY=[96,144];
+			FrameCount=5;
+			IdleMark = false;
+		}
+		else if(GetVirtualKeyState(VK_RIGHT) == KEY_HOLD || SpellMove>1)
+		{
+			RectY=[96,144];
+			if(SELECT_PLAYER==SELECT_ALICE)
+			{
+				ObjRender_SetAngleY(objPlayer,0);
+				Rotate = 0;
+			}
+			else if(IMG_PLAYER==GetCurrentScriptDirectory() ~ "./playersprite/yuyuko.png")
+			{
+				ObjRender_SetAngleY(objPlayer,180);
+				Rotate = 180;
+			}
+			else
+			{
+				ObjRender_SetAngleY(objPlayer,0);
+				Rotate = 0;
+			}
+			if(FrameCount==0)
+			{
+					FrameCount=20;
+			}
+			else if(FrameCount==6)
+			{
+				FrameCount=10;
+			}
+			else if(FrameCount==11)
+			{
+				FrameCount=15;
+			}
+			else if(FrameCount==16)
+			{
+				FrameCount=20;
+			}
+			IdleMark = false;
+		}
+		else if(GetVirtualKeyState(VK_LEFT) == KEY_PUSH || SpellMove==-1)
+		{
+			if(SELECT_PLAYER==SELECT_ALICE)
+			{
+				ObjRender_SetAngleY(objPlayer,180);
+				Rotate = 180;
+				RectY=[96,144];
+			}
+			else if(IMG_PLAYER==GetCurrentScriptDirectory() ~ "./playersprite/yuyuko.png")
+			{
+				ObjRender_SetAngleY(objPlayer,0);
+				Rotate = 0;
+				RectY=[96,144];
+			}
+			else
+			{
+				ObjRender_SetAngleY(objPlayer,0);
+				Rotate = 0;
+				RectY=[48,96];
+			}
+			FrameCount=5;
+			IdleMark = false;
+		}
+		else if(GetVirtualKeyState(VK_LEFT) == KEY_HOLD || SpellMove<-1)
+		{
+			if(SELECT_PLAYER==SELECT_ALICE)
+			{
+				ObjRender_SetAngleY(objPlayer,180);
+				Rotate = 180;
+				RectY=[96,144];
+			}
+			else if(IMG_PLAYER==GetCurrentScriptDirectory() ~ "./playersprite/yuyuko.png")
+			{
+				ObjRender_SetAngleY(objPlayer,0);
+				Rotate = 0;
+				RectY=[96,144];
+			}
+			else
+			{
+				ObjRender_SetAngleY(objPlayer,0);
+				Rotate = 0;
+				RectY=[48,96];
+			}
+			if(FrameCount==0){FrameCount=20;}
+			else if(FrameCount==6)
+			{
+				FrameCount=10;
+			}
+			else if(FrameCount==11)
+			{
+				FrameCount=15;
+			}
+			else if(FrameCount==16)
+			{
+				FrameCount=20;
+			}
+			IdleMark = false;
+		}
+		else
+		{
+			IdleMark = true;
+		if(SELECT_PLAYER==SELECT_ALICE||IMG_PLAYER==GetCurrentScriptDirectory() ~ "./playersprite/yuyuko.png")
+		{
+			RectY=[1,48];
+		}
+		if(IMG_PLAYER==GetCurrentScriptDirectory() ~ "./playersprite/koishi.png")
+		{
+			RectY=[1,48];
+		}
+		else
+		{
+			RectY=[0,48];
+		}
+		}
+
+		if(RebirthFlag)
+		{
+			IdleMark = true;
+		if(SELECT_PLAYER==SELECT_ALICE||IMG_PLAYER==GetCurrentScriptDirectory() ~ "./playersprite/yuyuko.png")
+		{
+			RectY=[1,48];
+		}
+		else
+		{
+			RectY=[0,48];
+		}
+		}
+
+		ObjSprite2D_SetDestCenter(objPlayer);
+ 		if(GetPlayerState==STATE_NORMAL)
+		{
+				ObjRender_SetAlpha(objPlayer,255);
+				ObjRender_SetColor(objPlayer,255,255,255);
+		}
+		if(SELECT_PLAYER==SELECT_ALICE||IMG_PLAYER==GetCurrentScriptDirectory() ~ "./playersprite/yuyuko.png")
+		{
+			if(IdleMark==true)
+			{
+				if(FrameCount>=5*8||FrameCount<5*4){FrameCount=5*4;}
+			}
+			else
+			{
+				if(FrameCount>=5*7){FrameCount=0;}
+			}
+		}
+		if(GetPlayerInvincibilityFrame>0 || GetPlayerState==STATE_HIT || InvincibleCount>0)
+		{
+		if(InvincibleFrame%3==2)
+		{
+			ObjRender_SetColor(objPlayer,0,0,255);
+			Pulse(RectX,RectY,Rotate);
+		}
+			RectX=[0+32*floor(FrameCount/5),32+32*floor(FrameCount/5)];
+		}
+
+		else
+		{
+			RectX=[0+32*floor(FrameCount/5),32+32*floor(FrameCount/5)];
+		}
+		if(IMG_PLAYER==GetCurrentScriptDirectory() ~ "./playersprite/yuuka.png")
+		{
+			ObjSprite2D_SetSourceRect(objPlayer, RectX[0]+1, RectY[0], RectX[1]-1, RectY[1]);
+		}
+		else
+		{
+			ObjSprite2D_SetSourceRect(objPlayer, RectX[0], RectY[0], RectX[1], RectY[1]);
+		}
+		FrameCount++;
+		if(SELECT_PLAYER==SELECT_ALICE||IMG_PLAYER==GetCurrentScriptDirectory() ~ "./playersprite/yuyuko.png")
+		{
+			if(IdleMark==true)
+			{
+				if(FrameCount>=5*8||FrameCount<5*4){FrameCount=5*4;}
+			}
+			else
+			{
+				if(FrameCount>=5*7){FrameCount=0;}
+			}
+		}
+		else
+		{
+			if(FrameCount>=5*8){FrameCount=0;}
+		}
+		InvincibleFrame+=1;
+		yield;
+	}
+	task Pulse(x,y,Rotate)
+	{
+		let objPulse = ObjPrim_Create(OBJ_PRIMITIVE_2D);
+		ObjPrim_SetTexture(objPulse,path);
+		ObjPrim_SetPrimitiveType(objPulse, PRIMITIVE_TRIANGLEFAN);
+		ObjPrim_SetVertexCount(objPulse, 4);
+		ObjRender_SetBlendType(objPulse, BLEND_ADD_ARGB);
+		Obj_SetRenderPriorityI(objPulse,43);
+	
+		if(IMG_PLAYER==GetCurrentScriptDirectory() ~ "./playersprite/yuuka.png")
+		{
+			ObjSprite2D_SetSourceRect(objPulse, x[0]+1, y[0], x[1]-1, y[1]);
+		}
+		else
+		{
+			ObjSprite2D_SetSourceRect(objPulse, x[0], y[0], x[1], y[1]);
+		}
+		
+		ObjRender_SetPosition(objPulse,GetPlayerX,GetPlayerY,0);
+		let scale = ObjRender_GetScaleX(objPlayer)*1.5;
+		let Alpha = 255;
+		ObjRender_SetAngleY(objPulse,Rotate);
+		loop(20)
+		{
+			ObjRender_SetScaleXYZ(objPulse,scale,scale,scale);
+			ObjRender_SetAlpha(objPulse,Alpha);
+			Alpha-=255/20;
+			
+			scale+=0.75/20;
+			
+			yield;
+		}
+		Obj_Delete(objPulse);
+	}
+}
+//-----------------------------------------
+//------------------SHOT-------------------
+//-----------------------------------------
+//メイン＆サブショット
+task HitboxSingle(obj,scaleX,scaleY)
+{
+	if(!Obj_IsDeleted(obj))
+	{
+		let angleG = ObjMove_GetAngle(obj);
+		ObjShot_SetIntersectionLine(obj,ObjMove_GetX(obj)+(scaleX)*cos(angleG),ObjMove_GetY(obj)+(scaleX)*sin(angleG),ObjMove_GetX(obj)-(scaleX)*cos(angleG),ObjMove_GetY(obj)-(scaleX)*sin(angleG),scaleY);
+		yield;
+	}
+}
+ function getDotAngle(x1,y1,x2,y2)
+{
+	let angle=atan2(y1-y2,x1-x2);
+	return angle;
+}
+
+//-----------------------------------------
+//-----------------SPELL-------------------
+//-----------------------------------------
+//スペルとダミースペル
+
+
+task DummySpell
+{//特殊無敵システム用
+
+	let objManage = GetSpellManageObject();
+	Obj_Delete(objManage);
+	if(OnSpell)
+	{
+	//	SetPlayerSpeed(1.0*2,0.4*2);	
+	}
+	else
+	{
+		//SetPlayerSpeed(5.0*2,2.0*2);
+	}
+	yield;
+	if(OnSpell)
+	{
+	//	SetPlayerSpeed(1.0,0.4);	
+	}
+	else
+	{
+	//	SetPlayerSpeed(5.0,2.0);
+	}
+}
+//-----------------------------------------
+//----------------OPTION-------------------
+//--------------------------------------------

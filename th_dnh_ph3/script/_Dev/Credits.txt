@@ -1,4 +1,14 @@
-Uh. Lots of people. I've tried to put people's names by any functions of theirs I use, but that's not necessarily comprehensive... And some stuff I have no idea who originally created it...
+Uh. Lots of people. I've tried to put people's names by any functions of theirs I use, but that's not necessarily comprehensive... And some stuff I have no idea who originally created it... A lot of this I'm reconstructing after the fact.
+
+
+Enemy library (base):
+	Python
+Dialogue library (may change):
+	Python?
+Difficulty display: 
+	Python
+Option select:
+	Python
 
 
 Music:
@@ -15,3 +25,7 @@ Items:
 	Drake
 	Sparen
 	TresserT
+	Python
+	Ultima
+	
+	...and probably others

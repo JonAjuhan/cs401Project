@@ -1,0 +1,136 @@
+task OptionManage
+{
+	OptionMoveSanae;
+	TRenderOptionSanae;
+}
+task OptionMoveSanae
+{
+	let HiOpX_P4=[34,34,-34,-34];
+	let HiOpY_P4=[7,-7,7,-7];
+	let LowOpX_P4=[-28,-17,17,28];
+	let LowOpY_P4=[7,34,34,7];
+
+	let HiOpX=[HiOpX_P4,HiOpX_P4,HiOpX_P4,HiOpX_P4];
+	let HiOpY=[ HiOpY_P4, HiOpY_P4, HiOpY_P4, HiOpY_P4];
+	let LowOpX=[LowOpX_P4,LowOpX_P4,LowOpX_P4,LowOpX_P4];
+	let LowOpY=[LowOpY_P4,LowOpY_P4,LowOpY_P4,LowOpY_P4];
+
+	let LowCount=0;
+	let D_OptionX=[0,0,0,0];
+	let D_OptionY=[0,0,0,0];
+	while(SELECT_PLAYER==SELECT_SANAE)
+	{
+		ascent(i in 0..4)
+		{
+			if(SELECT_PLAYER==SELECT_SANAE)
+			{
+				if(GetVirtualKeyState(VK_SLOWMOVE) == KEY_PUSH || GetVirtualKeyState(VK_SLOWMOVE) == KEY_HOLD)
+				{
+					D_OptionX[i]=GetPlayerX+LowOpX[PlayerPower_Int-1][i];
+					D_OptionY[i]=GetPlayerY+LowOpY[PlayerPower_Int-1][i];
+				}
+				else
+				{
+					D_OptionX[i]=GetPlayerX+HiOpX[PlayerPower_Int-1][i];
+					D_OptionY[i]=GetPlayerY+HiOpY[PlayerPower_Int-1][i];
+				}
+				OptionX[i]=OptionX[i]*0.70+D_OptionX[i]*0.30;
+				OptionY[i]=OptionY[i]*0.70+D_OptionY[i]*0.30;
+			}
+		}
+		yield;
+	}
+}
+task TRenderOptionSanae
+{
+	let CurrentPower;
+	
+
+	CurrentPower=PlayerPower_Int;
+	DrawOption(0);
+	DrawOption(1);
+	DrawOption(2);
+	DrawOption(3);
+	while(SELECT_PLAYER==SELECT_SANAE){yield;}
+
+	task DrawOption(num)
+	{
+		let path = GetCurrentScriptDirectory() ~ "./optionimg/sanae.png";
+		let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+		objOption=objOption~[obj];
+		ObjPrim_SetTexture(obj, path);	
+		Obj_SetRenderPriorityI(obj,43);
+		let Zangle=0;
+		ObjSprite2D_SetSourceRect(obj, 0, 0, 256, 256);
+		ObjSprite2D_SetDestCenter(obj);
+		DrawOptionBlur(obj,num,Zangle);
+		let DownCount=0;
+		let ScaleTheta=0;
+		let scale=0.065+0.010*sin(ScaleTheta);
+		while(SELECT_PLAYER==SELECT_SANAE)
+		{
+			ObjRender_SetScaleXYZ(obj,scale,scale,scale);
+			scale=0.065+0.010*sin(ScaleTheta);
+			//ScaleTheta+=1;
+			ObjRender_SetAngleZ(obj,ObjRender_GetAngleZ(obj)+1);
+			ObjRender_SetPosition(obj, OptionX[num],OptionY[num], 0);
+			if(SELECT_PLAYER==SELECT_SANAE)
+			{
+				ObjRender_SetAlpha(obj,255);
+			}
+			else
+			{
+				ObjRender_SetAlpha(obj,0);
+			}
+ 			if(GetPlayerState==STATE_DOWN)
+			{
+				ObjRender_SetAlpha(obj,0);
+				DownCount=50;
+			}
+ 			if(DownCount>0)
+			{
+				ObjRender_SetAlpha(obj,0);
+			}
+			DownCount-=1;
+			yield;
+		}
+		Obj_Delete(obj);
+	}
+
+	task DrawOptionBlur(objOption,num,Zangle)
+	{//???4???????????
+		let path = GetCurrentScriptDirectory() ~ "./optionimg/sanae.png";
+		let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+		ObjPrim_SetTexture(obj, path);	
+		Obj_SetRenderPriorityI(obj,42);
+		ObjSprite2D_SetSourceRect(obj, 0, 0, 256, 256);
+		ObjSprite2D_SetDestCenter(obj);
+		let scale=0.20/2;
+		ObjRender_SetScaleXYZ(obj,scale,scale,scale);
+		ObjRender_SetBlendType(obj, BLEND_ADD_ARGB);
+		ObjRender_SetAlpha(obj,150);
+		let DownCount=0;
+		while(SELECT_PLAYER==SELECT_SANAE)
+		{
+			ObjRender_SetAngleZ(obj,ObjRender_GetAngleZ(obj)-1);
+			ObjRender_SetPosition(obj, OptionX[num],OptionY[num], 0);
+ 			if(GetPlayerState==STATE_DOWN)
+			{
+				ObjRender_SetAlpha(obj,0);
+				DownCount=50;
+			}
+			else
+			{
+				ObjRender_SetAlpha(obj,150);
+			}
+
+ 			if(DownCount>0)
+			{
+				ObjRender_SetAlpha(obj,0);
+			}
+			DownCount-=1;
+			yield;
+		}
+		Obj_Delete(obj);
+	}
+}

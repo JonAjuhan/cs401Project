@@ -1,0 +1,795 @@
+task BossIntroduction(num, color){
+	let title = ObjPrim_Create(OBJ_SPRITE_2D);
+	Obj_SetRenderPriorityI(title, 30);
+	ObjPrim_SetTexture(title, GetCurrentScriptDirectory ~ "../IMG/Effect/intro_bossTitle_" ~ IntToString(num) ~ ".png");
+	ObjSprite2D_SetSourceRect(title, 0, 0, 512, 64);
+	ObjSprite2D_SetDestCenter(title);
+	ObjRender_SetPosition(title, -256, GetCenterY - 96, 0);
+
+	let name = ObjPrim_Create(OBJ_SPRITE_2D);
+	Obj_SetRenderPriorityI(name, 30);
+	ObjPrim_SetTexture(name, GetCurrentScriptDirectory ~ "../IMG/Effect/intro_bossName_" ~ IntToString(num) ~ ".png");
+	ObjSprite2D_SetSourceRect(name, 0, 0, 512, 128);
+	ObjSprite2D_SetDestCenter(name);
+	ObjRender_SetPosition(name, GetClipMaxX + 256, GetCenterY - 32, 0);
+
+	let magicCircle1 = ObjPrim_Create(OBJ_SPRITE_2D);
+	Obj_SetRenderPriorityI(magicCircle1, 29);
+	ObjPrim_SetTexture(magicCircle1, GetCurrentScriptDirectory ~ "../IMG/Effect/fam.png");
+	ObjSprite2D_SetSourceRect(magicCircle1, 0, 0, 125, 125);
+	ObjSprite2D_SetDestCenter(magicCircle1);
+	ObjRender_SetPosition(magicCircle1, GetCenterX, GetCenterY - 64, 0);
+	ObjRender_SetColor(magicCircle1, color[0], color[1], color[2]);
+	ObjRender_SetBlendType(magicCircle1, BLEND_ADD_ARGB);
+	ObjRender_SetAlpha(magicCircle1, 0);
+	ObjRender_SetScaleXYZ(magicCircle1, 1.5, 1.5, 0);
+	Obj_SpinXYZ(magicCircle1, 0, 0, 5, 0);
+
+	let magicCircle2 = ObjPrim_Create(OBJ_SPRITE_2D);
+	Obj_SetRenderPriorityI(magicCircle2, 29);
+	ObjPrim_SetTexture(magicCircle2, GetCurrentScriptDirectory ~ "../IMG/Effect/fam.png");
+	ObjSprite2D_SetSourceRect(magicCircle2, 0, 0, 125, 125);
+	ObjSprite2D_SetDestCenter(magicCircle2);
+	ObjRender_SetPosition(magicCircle2, GetCenterX, GetCenterY - 64, 0);
+	ObjRender_SetColor(magicCircle2, color[0], color[1], color[2]);
+	ObjRender_SetBlendType(magicCircle2, BLEND_ADD_ARGB);
+	ObjRender_SetAlpha(magicCircle2, 0);
+	ObjRender_SetScaleXYZ(magicCircle2, 2.5, 2.5, 0);
+	Obj_SpinXYZ(magicCircle2, 0, 0, -5, 0);
+
+	Intro_MagicCircles;
+
+	moveLinear(title, GetCenterX - 16, GetCenterY - 96, 15, false);
+	moveLinear(name, GetCenterX + 16, GetCenterY - 32, 15, false);
+	wait(15);
+	moveLinear(title, GetCenterX + 16, GetCenterY - 96, 120, false);
+	moveLinear(name, GetCenterX - 16, GetCenterY - 32, 120, false);
+	wait(120);
+	moveLinear(title, GetClipMaxX + 256, GetCenterY - 96, 15, false);
+	moveLinear(name, -256, GetCenterY - 32, 15, false);
+	wait(15);
+
+	Obj_Delete(title);
+	Obj_Delete(name);
+
+	task Intro_MagicCircles{
+		let a = 0;
+		loop(30){
+			ObjRender_SetAlpha(magicCircle1, a);
+			ObjRender_SetAlpha(magicCircle2, a * 0.75);
+			a += 255/30;
+			yield;
+		}
+		ObjRender_SetAlpha(magicCircle1, 255);
+		ObjRender_SetAlpha(magicCircle2, 255 * 0.75);
+		wait(90);
+
+		loop(30){
+			ObjRender_SetAlpha(magicCircle1, a);
+			ObjRender_SetAlpha(magicCircle2, a * 0.75);
+			a -= 255/30;
+			yield;
+		}
+		Obj_Delete(magicCircle1);
+		Obj_Delete(magicCircle2);
+	}
+}
+
+task MagicCircle(enemy, s, z){
+	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjPrim_SetTexture(obj, GetCurrentScriptDirectory~"../IMG/Effect/magiccircle.png");
+	Obj_SetRenderPriorityI(obj, 24);
+	ObjSprite2D_SetSourceRect(obj, 0, 0, 256, 256);
+	ObjSprite2D_SetDestCenter(obj);
+	ObjRender_SetScaleXYZ(obj, 0, 0, 0);
+
+
+	let core;
+	if(enemy != ID_INVALID){core = enemy;}
+	else{core = GetEnemyBossSceneObjectID;}
+
+	while(!Obj_IsDeleted(core)){
+		if(enemy == ID_INVALID){
+			if(length(GetEnemyBossObjectID) > 0){ObjRender_SetPosition(obj, ObjRender_GetX(GetEnemyBossObjectID[0]), ObjRender_GetY(GetEnemyBossObjectID[0]), 0);}
+			if(GetAreaCommonData("System", "HideBoss", false)){ObjRender_SetAlpha(obj, 0);}else{ObjRender_SetAlpha(obj, 255);}
+		}else{
+			ObjRender_SetPosition(obj, ObjRender_GetX(enemy), ObjRender_GetY(enemy), 0);
+			Obj_SetValue(obj, "MagicCircleData", [s, z]);
+		}
+		ObjRender_SetScaleXYZ(obj, s, s, s);
+		ObjRender_SetAngleXYZ(obj, z/20, z/20, z);
+
+		if(s < 1){s += 0.025;}
+		z += 4;
+		yield;
+	}
+	Obj_Delete(obj);
+}
+
+task SomeSortofAura(obj, img, rect, color, s, a, aplus, rp){
+	let obj1 = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjPrim_SetTexture(obj1, img);
+	ObjSprite2D_SetSourceRect(obj1, rect[0], rect[1], rect[2], rect[3]);
+	ObjSprite2D_SetDestCenter(obj1);
+	ObjRender_SetColor(obj1, color[0], color[1], color[2]);
+	ObjRender_SetAlpha(obj1, 192);
+	ObjRender_SetScaleXYZ(obj1, 0, 0, 0);
+	ObjRender_SetBlendType(obj1, BLEND_ADD_ARGB);
+	Obj_SetRenderPriorityI(obj1, rp);
+
+	let obj2 = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjPrim_SetTexture(obj2, img);
+	ObjSprite2D_SetSourceRect(obj2, rect[0], rect[1], rect[2], rect[3]);
+	ObjSprite2D_SetDestCenter(obj2);
+	ObjRender_SetColor(obj2, color[0], color[1], color[2]);
+	ObjRender_SetAlpha(obj2, 192);
+	ObjRender_SetScaleXYZ(obj2, 0, 0, 0);
+	ObjRender_SetBlendType(obj2, BLEND_ADD_ARGB);
+	Obj_SetRenderPriorityI(obj2, rp);
+
+	let ss = 0;
+	while(!Obj_IsDeleted(obj)){
+		if(ss < s){
+			ObjRender_SetScaleXYZ(obj1, ss, ss, 0);
+			ObjRender_SetScaleXYZ(obj2, ss, ss, 0);
+			ss += s/15;
+		}else{
+			ObjRender_SetScaleXYZ(obj1, s, s, 0);
+			ObjRender_SetScaleXYZ(obj2, s, s, 0);
+		}
+
+		ObjRender_SetPosition(obj1, ObjMove_GetX(obj), ObjMove_GetY(obj), 0);
+		ObjRender_SetPosition(obj2, ObjMove_GetX(obj), ObjMove_GetY(obj), 0);
+		ObjRender_SetAngleXYZ(obj1, 200*cos(a), 200*sin(a), 200*sin(a));
+		ObjRender_SetAngleXYZ(obj2, 200*cos(-a), 200*sin(-a), 200*sin(-a));
+
+		a += aplus;
+		yield;
+	}
+	Obj_Delete(obj1);
+	Obj_Delete(obj2);
+}
+
+task WizemanAura(z, img){
+	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjPrim_SetTexture(obj, GetCurrentScriptDirectory~"../IMG/Effect/" ~ img ~ ".png");
+	Obj_SetRenderPriorityI(obj, 24);
+	ObjSprite2D_SetSourceRect(obj, 0, 0, 256, 256);
+	ObjSprite2D_SetDestCenter(obj);
+	ObjRender_SetScaleXYZ(obj, 0, 0, 0);
+	ObjRender_SetBlendType(obj, BLEND_ADD_ARGB);
+
+	let s = 0;
+	while(!Obj_IsDeleted(GetEnemyBossSceneObjectID)){
+		if(length(GetEnemyBossObjectID) > 0){ObjRender_SetPosition(obj, ObjRender_GetX(GetEnemyBossObjectID[0]) + 64*cos(z), ObjRender_GetY(GetEnemyBossObjectID[0]) + 64*sin(z), 0);}
+		ObjRender_SetScaleXYZ(obj, s, s, s);
+		ObjRender_SetAngleZ(obj, -z*2);
+
+		if(s < 0.75){s += 0.025;}
+		z += 0.5;
+		yield;
+	}
+	Obj_Delete(obj);
+}
+
+task EnemyAura(tobj, color, scale){
+	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjPrim_SetTexture(obj, GetCurrentScriptDirectory~"../IMG/Effect/enemy_aura.png");
+	ObjSprite2D_SetSourceRect(obj, 0, 0, 64, 64);
+	ObjSprite2D_SetDestCenter(obj);
+	Obj_SetRenderPriorityI(obj, 25);
+	ObjRender_SetBlendType(obj, BLEND_ADD_ARGB);
+	ObjRender_SetScaleXYZ(obj, scale, scale, scale);
+	ObjRender_SetColor(obj, color[0], color[1], color[2]);
+
+	let i = 0;
+	while(!Obj_IsDeleted(tobj)){
+		ObjRender_SetPosition(obj, ObjRender_GetX(tobj), ObjRender_GetY(tobj), 0);
+		if(i < 3){ObjSprite2D_SetSourceRect(obj, 0*64, 0, 1*64, 64);}
+		if(i >= 3 && i < 6){ObjSprite2D_SetSourceRect(obj, 1*64, 0, 2*64, 64);}
+		if(i >= 6 && i < 9){ObjSprite2D_SetSourceRect(obj, 2*64, 0, 3*64, 64);}
+		if(i >= 9 && i < 12){ObjSprite2D_SetSourceRect(obj, 3*64, 0, 4*64, 64);}
+		if(i >= 12 && i < 15){ObjSprite2D_SetSourceRect(obj, 4*64, 0, 5*64, 64);}
+		if(i >= 15 && i < 18){ObjSprite2D_SetSourceRect(obj, 5*64, 0, 6*64, 64);}
+		if(i >= 18 && i < 21){ObjSprite2D_SetSourceRect(obj, 6*64, 0, 7*64, 64);}
+		if(i >= 21 && i < 24){ObjSprite2D_SetSourceRect(obj, 7*64, 0, 8*64, 64);}
+		if(i >= 24){i = 0;}
+		i++;
+		yield;
+	}
+	Obj_Delete(obj);
+}
+
+task FlameAura(tobj,color,scale){	
+	let angle = rand(0,360);
+	
+	while(!Obj_IsDeleted(tobj)){
+		if(!Obj_GetValueD(tobj, "AuraInvisible", false)){
+			flame(tobj,color,scale);
+			flamebase(tobj,color,scale,angle);
+			angle+=rand(45,90);
+		}
+		wait(10);
+	}
+}
+
+task flame(tobj,color,scale){
+	let frame = 0;
+	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	let Xscale = scale/2;
+	let Yscale = scale/6;
+	let trans = 255;
+	
+	ObjPrim_SetTexture(obj, GetCurrentScriptDirectory~"../IMG/Effect/boss_aura.png");
+	ObjSprite2D_SetSourceRect(obj, 0, 0, 64, 64);
+	ObjRender_SetScaleXYZ(obj,Xscale,Yscale,1);
+	Obj_SetRenderPriorityI(obj,25);
+	ObjSprite2D_SetDestRect(obj, -32, -64, 32, 0);
+	ObjRender_SetBlendType(obj,BLEND_ADD_ARGB);
+	ObjRender_SetPosition(obj,ObjRender_GetX(tobj),ObjRender_GetY(tobj),0);
+	ObjRender_SetAngleXYZ(obj,0,0,rand(-5,5));
+	ObjRender_SetColor(obj,color[0],color[1],color[2]);
+	loop(30){
+		if(Obj_IsDeleted(tobj)){break;}
+		ObjRender_SetScaleXYZ(obj,Xscale,Yscale,1);
+		ObjRender_SetAlpha(obj,trans);
+		ObjRender_SetPosition(obj,ObjRender_GetX(tobj),ObjRender_GetY(tobj) + 10*scale,0);
+		trans-=255/30;
+		Xscale+=(scale/4)/40;
+		Yscale+=(scale*2)/40;
+		yield;
+	}
+	Obj_Delete(obj);
+}
+
+task flamebase(tobj,color,scale,angle){
+	let frame = 0;
+	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	let Xscale = scale/6;
+	let Yscale = scale/6;
+	let trans = 255;
+	
+	ObjPrim_SetTexture(obj, GetCurrentScriptDirectory~"../IMG/Effect/boss_aura.png");
+	ObjSprite2D_SetSourceRect(obj,64, 0, 128, 64);
+	ObjRender_SetScaleXYZ(obj,Xscale,Yscale,1);
+	Obj_SetRenderPriorityI(obj,25);
+	ObjSprite2D_SetDestCenter(obj);
+	ObjRender_SetBlendType(obj,BLEND_ADD_ARGB);
+	ObjRender_SetPosition(obj,ObjRender_GetX(tobj),ObjRender_GetY(tobj),0);
+	ObjRender_SetAngleXYZ(obj,0,0,angle);
+	ObjRender_SetColor(obj,color[0],color[1],color[2]);
+	loop(30){
+		if(Obj_IsDeleted(tobj)){break;}
+		ObjRender_SetScaleXYZ(obj,Xscale,Yscale,1);
+		ObjRender_SetAlpha(obj,trans);
+		ObjRender_SetPosition(obj,ObjRender_GetX(tobj),ObjRender_GetY(tobj)+20,0);
+		trans-=255/30;
+		Xscale+=scale/40;
+		Yscale+=scale/40;
+		yield;
+	}
+	Obj_Delete(obj);
+}
+
+task AfterImage(tobj, texture, color, startscale, scaleinc, time, x1, y1, x2, y2, blend){
+	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	let scale = startscale;
+	let alpha = 255;
+	
+	ObjPrim_SetTexture(obj, texture);
+	ObjSprite2D_SetSourceRect(obj, x1, y1, x2, y2);
+	ObjRender_SetScaleXYZ(obj, scale, scale,0);
+	Obj_SetRenderPriorityI(obj, 25);
+	ObjSprite2D_SetDestCenter(obj);
+	ObjRender_SetPosition(obj, ObjRender_GetX(tobj), ObjRender_GetY(tobj),0);
+	ObjRender_SetAlpha(obj, alpha);
+	ObjRender_SetBlendType(obj, blend);
+	ObjRender_SetColor(obj, color[0], color[1], color[2]);
+	ObjRender_SetAngleZ(obj, ObjMove_GetAngle(tobj) + 90);
+	
+
+	let startc = color;
+	loop(time){
+		scale += scaleinc/time;
+		ObjRender_SetScaleXYZ(obj, scale, scale,0);
+	
+		alpha -= 255/time;
+		/*color[0] = color[0] - startc[0]/[time];
+		color[1] = color[1] - startc[1]/[time];
+		color[2] = color[2] - startc[2]/[time];*/
+
+		ObjRender_SetAlpha(obj, alpha);
+		ObjRender_SetColor(obj, color[0], color[1], color[2]);
+		yield;
+	}
+	Obj_Delete(obj);
+}
+
+task ConcentrationEffect(obj, type, duration, speed, radius, color, blend){ //Based on Ozzy's functions
+	let w = round(1/speed*10);
+	Circles;
+	loop(duration/w){
+		if(!Obj_IsDeleted(obj)){
+			ConcentrationObject(ObjRender_GetX(obj), ObjRender_GetY(obj), type, speed, rand(0,360), 1, radius, [256, 256, 256], blend);
+			ConcentrationObject(ObjRender_GetX(obj), ObjRender_GetY(obj), type, speed, rand(0,360), -1, radius, color, blend);
+		}
+		wait(w);
+	}
+	task Circles{
+		let count = 0;
+		loop(duration-10) {
+			count++;
+			if(count==20 && !Obj_IsDeleted(obj)){
+				ConcentrationCircle(ObjRender_GetX(obj), ObjRender_GetY(obj), speed, radius, color, blend);
+				count = 0;
+			}
+			yield;
+		}
+	}
+}
+
+task ConcentrationObject(x, y, type, speed, dir, rot, r, color, blend){ //Based on Ozzy's functions
+	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+
+	let alpha = 0;
+	let spin = rand(0, 180);
+	let sc = 0.75*(r/200);
+	let opacity = 200;
+		
+	if(r > 200){sc = 1.00;}
+		
+	ObjRender_SetBlendType(obj, blend);
+	Obj_SetRenderPriorityI(obj, 45);
+	ObjPrim_SetTexture(obj, GetCurrentScriptDirectory ~ "../IMG/Effect/" ~ type ~ ".png");
+	ObjSprite2D_SetSourceRect(obj, 0, 0, 256, 256);
+	ObjSprite2D_SetDestCenter(obj);
+		
+	while(!Obj_IsDeleted(obj)) {
+		ObjRender_SetPosition(obj, x+r*cos(dir), y+r*sin(dir), 0);
+		ObjRender_SetScaleXYZ(obj, sc, sc, sc);
+		ObjRender_SetAngleXYZ(obj, 0, 0, spin);
+		ObjRender_SetAlpha(obj, alpha);
+		ObjRender_SetColor(obj, color[0]*(alpha/255), color[1]*(alpha/255), color[2]*(alpha/255));
+
+		if(alpha < opacity && r>= 10){alpha+=opacity/90*speed;}
+		if(r < 200){sc -= 0.75/200 * speed;}
+		if(r < 10){alpha -= opacity/10 * speed;}
+		if(alpha <= 0){Obj_Delete(obj);}
+
+		spin += rand(3, 4) * rot;
+		r -= speed;
+		yield;
+	}
+}
+
+task ConcentrationCircle(x, y, speed, r, color, blend){ //Based on Ozzy's functions
+	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+
+	
+	let alpha = 0;
+	let scale = 2.5*(r/200);
+	
+	ObjRender_SetBlendType(obj, blend);
+	Obj_SetRenderPriorityI(obj, 44);
+	ObjPrim_SetTexture(obj, GetCurrentScriptDirectory ~ "../IMG/Effect/ConcentrationCircle.png");
+	ObjSprite2D_SetSourceRect(obj, 0, 0, 256, 256);
+	ObjSprite2D_SetDestCenter(obj);
+	
+	while(!Obj_IsDeleted(obj)) {
+		ObjRender_SetPosition(obj, x, y, 0);
+		ObjRender_SetScaleXYZ(obj, scale, scale, scale);
+		ObjRender_SetColor(obj, color[0]*(alpha/255), color[1]*(alpha/255), color[2]*(alpha/255));
+
+		if(alpha<255){alpha+=255/(r-90)*speed;}
+		scale-=speed/100;
+		if(scale<=0){Obj_Delete(obj);}
+		yield;
+	}
+}
+
+task DarkConcentration(obj, prio, rad, starta, enda, duration, timeMove, color, size, additive){
+	let radOff = 0;
+	let sc = 0;
+	loop(duration/2){
+		if(Obj_IsDeleted(obj)){return;}
+		radOff = rand(-16, 32);
+		sc = rand(size - 0.25, size + 0.25);
+		DarkConcentrationObject(obj, rad + radOff, prio-1, sc, [255 - color[0], 255 - color[1], 255 - color[2]]);
+		DarkConcentrationObject(obj, rad + radOff, prio, sc*0.75, [255, 255, 255]);
+		wait(2);
+	}
+
+	task DarkConcentrationObject(target, radius, pri, scale, destColor){
+		let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+		Obj_SetRenderPriorityI(obj, pri);
+		ObjPrim_SetTexture(obj, GetCurrentScriptDirectory ~ "../IMG/Effect/Light.png");
+		ObjSprite2D_SetSourceRect(obj, 0, 0, 64, 64);
+		ObjSprite2D_SetDestCenter(obj);
+		ObjRender_SetScaleXYZ(obj, scale, scale, 0);
+		if(additive){ObjRender_SetBlendType(obj, BLEND_ADD_ARGB);}else{ObjRender_SetBlendType(obj, BLEND_SUBTRACT);}
+		ObjRender_SetColor(obj, 0, 0, 0);
+		ObjRender_SetPosition(obj, ObjRender_GetX(target) + radius*cos(starta), ObjRender_GetY(target) + radius*sin(starta), 0);
+
+		let a = starta;
+		let r = radius;
+		ascent(i in 0 .. timeMove+1){
+			if(Obj_IsDeleted(target)){break;}
+			if(i <= 20){
+				ObjRender_SetColor(obj, linear(0, destColor[0], i/20), linear(0, destColor[1], i/20), linear(0, destColor[2], i/20));
+			}
+
+			a = deceleration(starta, enda, i/timeMove);
+			r = deceleration(radius, 0, i/timeMove);
+			ObjRender_SetPosition(obj, ObjRender_GetX(target) + r*cos(a), ObjRender_GetY(target) + r*sin(a), 0);
+			yield;
+		}
+		ascent(i in 0 .. 21){
+			ObjRender_SetColor(obj, linear(destColor[0], 0, i/20), linear(destColor[1], 0, i/20), linear(destColor[2], 0, i/20));
+			yield;
+		}
+		Obj_Delete(obj);
+	}
+}
+
+task EnemyExplosionEffect(objEnemy, type, circlecolor, starcolor){ //Based on Ozzy's functions
+	let x = rand(-45, 45);
+	let y = rand(-45, 45);
+	let z = rand(-90, 90);
+	let dir = rand(0, 360);
+	DefaultCircle(objEnemy, 2.0, circlecolor, x, y, z);
+	DefaultCircle(objEnemy, 2.0, circlecolor, x, y+90, z);
+	loop(4) {
+		EnemyExplodeObject(type, ObjRender_GetX(objEnemy), ObjRender_GetY(objEnemy), rand(2.5,3.5), dir+rand(-10,10), [255,255,255]);
+		EnemyExplodeObject(type, ObjRender_GetX(objEnemy), ObjRender_GetY(objEnemy), rand(2.5,3.5), dir+rand(-10,10), starcolor);
+		dir+=360/4;
+	}
+}
+
+task EnemyExplodeObject(type, x, y, speed, dir, color){ //Based on Ozzy's functions
+	let objStar = ObjPrim_Create(OBJ_SPRITE_2D);
+
+	let alpha = 130;
+	let spinA = rand(0,180);
+	let spinB = rand(0,180);
+	// let RED = rand(100,255);
+	// let GREEN = rand(100,255);
+	// let BLUE = rand(100,255);
+	let RED = color[0];
+	let GREEN = color[1];
+	let BLUE = color[2];
+	let scale = 0;
+	
+	ObjRender_SetBlendType(objStar, BLEND_ADD_ARGB);
+	Obj_SetRenderPriorityI(objStar,45);
+	ObjPrim_SetTexture(objStar, GetCurrentScriptDirectory ~ "../IMG/Effect/" ~ type ~ ".png");
+	ObjSprite2D_SetSourceRect(objStar, 0, 0, 256, 256);
+	ObjSprite2D_SetDestCenter(objStar);
+	
+	while(!Obj_IsDeleted(objStar)) {
+		ObjRender_SetPosition(objStar, x, y, 0);
+		ObjRender_SetScaleXYZ(objStar, scale, scale, scale);
+		ObjRender_SetAngleXYZ(objStar, spinA, spinB, spinA);
+		ObjRender_SetAlpha(objStar, alpha);
+		ObjRender_SetColor(objStar, RED*(alpha/255), GREEN*(alpha/255), BLUE*(alpha/255));
+		if(scale < 0.19 && speed > 0){scale += 0.03;}
+		if(speed > 1.0){speed -= 0.094;}
+		if(speed <= 1.0 && alpha > 0){alpha -= 16; scale -= 0.008;}
+		if(alpha <= 0){Obj_Delete(objStar);}
+		spinA += rand(1, 2);
+		spinB += rand(-1, -2);
+		x += speed*cos(dir);
+		y += speed*sin(dir);
+		yield;
+	}
+}
+
+task BossExplosionEffect(obj, type, circlecolor, starcolor, blend){ //Based on Ozzy's functions
+	let angle = rand(0,360);
+	//ObjEnemy_SetLife(obj, 1);
+	ObjEnemy_SetDamageRate(obj, 0, 0);
+	loop(45) {
+		BossExplodeObject(ObjRender_GetX(obj), ObjRender_GetY(obj), type, rand(3, 6), angle, [255, 255, 255], blend);
+		angle+=360/70;
+		BossExplodeObject(ObjRender_GetX(obj), ObjRender_GetY(obj), type, rand(3, 6), angle, starcolor, blend);
+		angle+=360/70;
+	}
+	angle = 0;
+	loop(4){
+		NegativeExplodeCircle(ObjRender_GetX(obj) + 128*cos(angle), ObjRender_GetY(obj) + 128*sin(angle), 10);
+		angle += 90;
+	}
+	let xy = [ObjRender_GetX(obj), ObjRender_GetY(obj)];
+	NegativeExplodeCircle(xy[0], xy[1], 10);
+	wait(30);
+	NegativeExplodeCircle(xy[0], xy[1], 10);
+}
+
+task BossExplodeObject(x, y, type, speed, dir, color, blend){ //Based on Ozzy's functions
+	let objStar = ObjPrim_Create(OBJ_SPRITE_2D);
+
+	let alpha = 200;
+	let spinA = rand(0, 180);
+	let spinB = rand(0, 180);
+	let scale = 0;
+	
+	ObjRender_SetBlendType(objStar, blend);
+	Obj_SetRenderPriorityI(objStar, 45);
+	ObjPrim_SetTexture(objStar, GetCurrentScriptDirectory ~ "../IMG/Effect/" ~ type ~ ".png");
+	ObjSprite2D_SetSourceRect(objStar, 0, 0, 256, 256);
+	ObjSprite2D_SetDestCenter(objStar);
+	
+	while(!Obj_IsDeleted(objStar)) {
+		ObjRender_SetPosition(objStar, x, y, 0);
+		ObjRender_SetScaleXYZ(objStar, scale, scale, scale);
+		ObjRender_SetAngleXYZ(objStar, spinA, spinB, spinA);
+		ObjRender_SetAlpha(objStar, alpha);
+		ObjRender_SetColor(objStar, color[0]*(alpha/255), color[1]*(alpha/255), color[2]*(alpha/255));
+		if(scale <0.38 && speed > 0){scale += 0.03;}
+		if(speed > 1.0){speed -= 0.038;}
+		if(speed <= 1.0 && alpha> 0){alpha -= 15; scale -= 0.035;}
+		if(alpha <= 0){Obj_Delete(objStar);}
+
+		spinA += rand(1,2);
+		spinB += rand(-1,-2);
+		x += speed*cos(dir);
+		y += speed*sin(dir);
+		yield;
+	}
+}
+
+task DefaultCircle(objEnemy, maxscale, color, x, y, z){ //Uses Danmakufu's default explode circle
+	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	
+	ObjRender_SetBlendType(obj, BLEND_ADD_ARGB);
+	Obj_SetRenderPriorityI(obj, 41);
+	ObjPrim_SetTexture(obj, GetCurrentScriptDirectory ~ "../IMG/Effect/BurstCircle.png");
+	ObjSprite2D_SetSourceRect(obj, 0, 0, 64, 64);
+	ObjSprite2D_SetDestCenter(obj);
+
+	let alpha = 255;
+	let scale = 0;
+	let dscale = 0.4;
+	
+	ObjRender_SetPosition(obj, ObjRender_GetX(objEnemy), ObjRender_GetY(objEnemy), 0);
+	ObjRender_SetAngleXYZ(obj, x, y, z);
+	ascent(i in 0..20) {
+		scale = maxscale*sin(90*i/20);
+		alpha -= 255/20;
+		ObjRender_SetColor(obj, (alpha/255)*color[0], (alpha/255)*color[1], (alpha/255)*color[2]);
+		ObjRender_SetScaleXYZ(obj, scale, scale, scale);
+		yield;
+	}
+	Obj_Delete(obj);
+}
+
+task NegativeExplodeCircle(x, y, speed){
+	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjRender_SetBlendType(obj, BLEND_INV_DESTRGB);
+	Obj_SetRenderPriorityI(obj, 70);
+	ObjPrim_SetTexture(obj, GetCurrentScriptDirectory ~ "../IMG/Effect/Circle.png");
+	ObjSprite2D_SetSourceRect(obj, 0, 0, 256, 256);
+	ObjSprite2D_SetDestCenter(obj);
+
+	ObjRender_SetScaleXYZ(obj, 0, 0, 0);
+	ObjRender_SetPosition(obj, x, y, 0);
+
+	let s = 0;
+	while(s < 10){
+		ObjRender_SetScaleXYZ(obj, s, s, 0);
+		s += speed/100;
+		yield;
+	}
+}
+
+function ObjPrim_CreateRegularPolygon(x, y, z, corn, distToCenter){
+	let v_count = corn + 2;
+
+	let obj = ObjPrim_Create(OBJ_PRIMITIVE_2D);
+	ObjPrim_SetPrimitiveType(obj, PRIMITIVE_TRIANGLEFAN);
+	ObjPrim_SetTexture(obj, GetCurrentScriptDirectory ~ "../IMG/Field.png");
+	ObjPrim_SetVertexCount(obj, v_count);
+	ObjRender_SetPosition(obj, x, y, z);
+
+	ObjPrim_SetVertexPosition(obj, 0, 0, 0, 0);
+	ObjPrim_SetVertexUVT(obj, 0, 0, 0);
+
+	let dir = 0;
+	ascent(i in 1 .. v_count){
+	    ObjPrim_SetVertexPosition(obj, i, distToCenter*cos(dir), distToCenter*sin(dir), 0);
+
+	    ObjPrim_SetVertexUVT(obj, i, 0, 0);
+
+        dir += 360/corn;
+	}
+	return obj;
+}
+
+function ObjPrim_CreateStarPolygon(x, y, z, corn, distToCenter_in, distToCenter_out){
+	let v_count = (corn*2) + 2;
+
+	let obj = ObjPrim_Create(OBJ_PRIMITIVE_2D);
+	ObjPrim_SetPrimitiveType(obj, PRIMITIVE_TRIANGLEFAN);
+	ObjPrim_SetTexture(obj, GetCurrentScriptDirectory ~ "../IMG/Field.png");
+	ObjPrim_SetVertexCount(obj, v_count);
+	ObjRender_SetPosition(obj, x, y, z);
+
+	ObjPrim_SetVertexPosition(obj, 0, 0, 0, 0);
+	ObjPrim_SetVertexUVT(obj, 0, 0, 0);
+
+	let dir = 0;
+	let j = 0;
+	ascent(i in 1 .. v_count/2){
+		j = i*2;
+
+	    ObjPrim_SetVertexPosition(obj, j, distToCenter_out*cos(dir), distToCenter_out*sin(dir), 0);
+	    ObjPrim_SetVertexPosition(obj, j+1, distToCenter_in*cos(dir), distToCenter_in*sin(dir), 0);
+
+	    ObjPrim_SetVertexUVT(obj, j, 0, 0);
+	    ObjPrim_SetVertexUVT(obj, j+1, 0, 0);
+
+        dir += 360/corn;
+	}
+	return obj;
+}
+
+function ObjPrim_CreateLine(pos_arr){ //[ [x, y, z], [x, y, z], [x, y, z] .. ]
+	let v_count = length(pos_arr);
+
+	let obj = ObjPrim_Create(OBJ_PRIMITIVE_2D);
+	ObjPrim_SetPrimitiveType(obj, PRIMITIVE_LINESTRIP);
+	ObjPrim_SetTexture(obj, GetCurrentScriptDirectory ~ "../IMG/Field.png");
+	ObjPrim_SetVertexCount(obj, v_count);
+
+	ascent(i in 0 .. v_count){
+		ObjPrim_SetVertexPosition(obj, i, pos_arr[i][0], pos_arr[i][1], pos_arr[i][2]);
+		ObjPrim_SetVertexUVT(obj, i, 0, 0);
+	}
+	return obj;
+}
+
+function ObjPrimLine_SetLineArray(obj, pos_arr){
+	let v_count = length(pos_arr);
+
+	ObjPrim_SetVertexCount(obj, v_count);
+	ascent(i in 0 .. v_count){
+		ObjPrim_SetVertexPosition(obj, i, pos_arr[i][0], pos_arr[i][1], pos_arr[i][2]);
+		ObjPrim_SetVertexUVT(obj, i, 0, 0);
+	}
+}
+
+function JunkAura(tobj, color, angle, angleswing, delay){
+	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	Obj_SetRenderPriorityI(obj, 30);
+	ObjPrim_SetTexture(obj, GetCurrentScriptDirectory() ~ "../IMG/JunkoAura.png");
+	ObjSprite2D_SetSourceRect(obj, 0, 0, 128, 128);
+	ObjSprite2D_SetDestRect(obj, 0, -64, 128, 64);
+	ObjRender_SetBlendType(obj, BLEND_ADD_ARGB);
+	ObjRender_SetColor(obj, color[0], color[1], color[2]);
+	ObjRender_SetAlpha(obj, 0);
+	ObjRender_SetAngleZ(obj, -90);
+
+	let core;
+	if(tobj != ID_INVALID){core = tobj;}
+	else{core = GetEnemyBossSceneObjectID;}
+
+	ObjRender_SetPosition(obj, ObjRender_GetX(tobj), ObjRender_GetY(tobj), 0);
+
+	Blerg;
+
+	return obj;
+
+	task Blerg{
+		ascent(i in 0 .. 61){
+			if(Obj_IsDeleted(core)){Obj_Delete(obj); return;}
+			if(tobj == ID_INVALID){
+				if(length(GetEnemyBossObjectID) > 0){ObjRender_SetPosition(obj, ObjRender_GetX(GetEnemyBossObjectID[0]), ObjRender_GetY(GetEnemyBossObjectID[0]), 0);}
+				if(GetAreaCommonData("System", "HideBoss", false)){Obj_SetVisible(obj, false);}else{Obj_SetVisible(obj, true);}
+			}else{
+				ObjRender_SetPosition(obj, ObjRender_GetX(tobj), ObjRender_GetY(tobj), 0);
+			}
+
+			ObjRender_SetAlpha(obj, linear(0, 255, i/60));
+			ObjRender_SetAngleZ(obj, overshoot(-90, angle, i/60, 2));
+			yield;
+		}
+		ObjRender_SetAlpha(obj, 255);
+		ObjRender_SetAngleZ(obj, angle);
+
+		let i = 0;
+		let baseangle = angle;
+		while(!Obj_IsDeleted(core)){
+			if(Obj_GetValueD(obj, "KillAura", false)){break;}
+			if(tobj == ID_INVALID){
+				if(length(GetEnemyBossObjectID) > 0){ObjRender_SetPosition(obj, ObjRender_GetX(GetEnemyBossObjectID[0]), ObjRender_GetY(GetEnemyBossObjectID[0]), 0);}
+				if(GetAreaCommonData("System", "HideBoss", false)){Obj_SetVisible(obj, false);}else{Obj_SetVisible(obj, true);}
+			}else{
+				ObjRender_SetPosition(obj, ObjRender_GetX(tobj), ObjRender_GetY(tobj), 0);
+			}
+
+			if(i % 90 == 0 && i > 0){AuraFlash([255, 255, 255], delay);}
+			
+			ObjRender_SetAngleZ(obj, angle);
+
+			angle = angleswing*sin(i*1.5) + baseangle;
+			i++;
+			yield;
+		}
+		
+		let angle_x = 0;
+		let angle_y = 0;
+		let angle_z = angle;
+
+		let spins = [rand(-1.5, 1.5), rand(-1.5, 1.5), rand(-1.5, 1.5)];
+		moveAcceleration(obj, ObjRender_GetX(obj), ObjRender_GetY(obj) + 256, 90, false);
+		ascent(i in 0 .. 91){
+			ObjRender_SetAngleXYZ(obj, angle_x, angle_y, angle_z);
+			ObjRender_SetAlpha(obj, linear(255, 0, i/90));
+
+			angle_x += spins[0];
+			angle_y += spins[1];
+			angle_z += spins[2];
+			yield;
+		}
+		Obj_Delete(obj);
+	}
+
+	task AuraFlash(flashColor, delay){
+		wait(delay);
+		if(Obj_IsDeleted(obj)){return;}
+
+		let obj2 = ObjPrim_Create(OBJ_SPRITE_2D);
+		Obj_SetRenderPriorityI(obj2, 30);
+		ObjPrim_SetTexture(obj2, GetCurrentScriptDirectory() ~ "../IMG/JunkoAura.png");
+		ObjSprite2D_SetSourceRect(obj2, 0, 0, 128, 128);
+		ObjSprite2D_SetDestRect(obj2, 0, -64, 128, 64);
+		ObjRender_SetBlendType(obj, BLEND_ADD_ARGB);
+		ObjRender_SetColor(obj2, flashColor[0], flashColor[1], flashColor[2]);
+		ObjRender_SetAlpha(obj2, 255);
+		ObjRender_SetAngleZ(obj2, angle);
+		ObjRender_SetPosition(obj2, ObjRender_GetX(obj), ObjRender_GetY(obj), 0);
+
+		ascent(i in 0 .. 46){
+			ObjRender_SetScaleXYZ(obj2, acceleration(1, 2, i/45), acceleration(1, 0, i/45), 0);
+			ObjRender_SetAlpha(obj2, linear(255, 0, i/45));
+			ObjRender_SetPosition(obj2, ObjRender_GetX(obj), ObjRender_GetY(obj), 0);
+			yield;
+		}
+		Obj_Delete(obj2);
+	}
+}
+
+task PossessionTag(x, y){
+	PlaySoundA1(89, 60, 0);
+	PartnerSwitchEff(x, y, 1.5, 2);
+	PartnerSwitchEff(x, y, 2.5, 1);
+
+	loop(20){
+		BossExplodeObject(x, y, "Cherry", rand(2, 4), rand(0, 360), [192, 0, 255], BLEND_ADD_ARGB);
+		BossExplodeObject(x, y, "Cherry", rand(2, 4), rand(0, 360), [192, 192, 192], BLEND_ADD_ARGB);
+	}
+}
+
+task PartnerSwitchEff(x, y, scale, type){
+	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	Obj_SetRenderPriorityI(obj, 60);
+	ObjPrim_SetTexture(obj, GetCurrentScriptDirectory ~ "../IMG/switch" ~ IntToString(type) ~ ".png");
+	ObjSprite2D_SetSourceRect(obj, 0, 0, 256, 256);
+	ObjSprite2D_SetDestCenter(obj);
+	ObjRender_SetScaleXYZ(obj, 0, 0, 0);
+	ObjRender_SetPosition(obj, x, y, 0);
+
+	let s = 0;
+	let a = 0;
+	let al = 255;
+	loop(30){
+		ObjRender_SetScaleXYZ(obj, s, s, 0);
+		ObjRender_SetAngleZ(obj, a);
+		ObjRender_SetAlpha(obj, al);
+
+		s += scale/30;
+		a += 180/30;
+		al -= 255/30;
+		yield;
+	}
+	Obj_Delete(obj);
+}

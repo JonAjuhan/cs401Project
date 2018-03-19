@@ -1,0 +1,172 @@
+//#include "./../LIB/SoundLib.dnh"
+
+//Item names, for easier access
+let PY_ITEM_DELETE 				= 1;
+let PY_ITEM_POINT		 		= 2;
+let PY_ITEM_POWER		 		= 3;
+let PY_ITEM_FULL		 		= 4;
+let PY_ITEM_SPELLPART			= 5;
+let PY_ITEM_SPELL				= 6;
+let PY_ITEM_LIFEPART			= 7;
+let PY_ITEM_LIFE				= 8;
+let PY_ITEM_ICHOR				= 9;
+
+@Initialize{
+	SetItemRenderPriorityI(40);
+	SetDefaultBonusItemEnable(false);
+	LoadItemData(GetCurrentScriptDirectory ~ "./Item.txt");
+}
+
+@MainLoop{
+	CollectItemsInCircle(GetPlayerX, GetPlayerY, 64);
+
+	if(GetAreaCommonData("System", "SpellFragmentNum", 0) == GetAreaCommonData("System", "SpellFragmentValue", [1/5, 5])[1]){
+		Notification(0, 256, 512, 320);
+		SetAreaCommonData("System", "SpellFragmentNum", 0);
+		NotifyEvent(GetCommonData("SoundScript", GetOwnScriptID), EV_USER, [12, 70]); //Spell extend sound effect
+	}
+	if(GetAreaCommonData("System", "LifeFragmentNum", 0) == GetAreaCommonData("System", "LifeFragmentValue", [1/5, 5])[1]){
+		Notification(0, 320, 512, 384);
+		SetAreaCommonData("System", "LifeFragmentNum", 0);
+		NotifyEvent(GetCommonData("SoundScript", GetOwnScriptID), EV_USER, [34, 70]); //Life extend sound effect
+	}
+
+	if(GetAreaCommonData("System", "PointValue", 10000) > GetAreaCommonData("System", "MaxPointValue", 250000)){
+		SetAreaCommonData("System", "PointValue", GetAreaCommonData("System", "MaxPointValue", 250000));
+	}
+
+	if(GetPlayerPower < 400){
+		SetAreaCommonData("System", "IsPlayerMaxPower", false);
+	}
+	yield;
+}
+
+@Event{
+	alternative(GetEventType)
+	case(EV_DELETE_SHOT_TO_ITEM){
+		BulletDeleteItem(GetEventArgument(1));
+		BulletDelete(GetEventArgument(0), GetEventArgument(1), 8);
+	}
+	case(EV_GET_ITEM){
+		let ItemType = GetEventArgument(0);
+		let obj = GetEventArgument(1);
+
+		alternative(ItemType)
+		case(PY_ITEM_DELETE){
+			SetAreaCommonData("System", "PointValue", GetAreaCommonData("System", "PointValue", 10000) + 0.25);
+			NotifyEvent(GetCommonData("SoundScript", GetOwnScriptID), EV_USER, [52, 70]); //Collection sound effect
+			//if(GetPlayerLife < GetCommonData("PlayerMaxLife", 0)){SetPlayerLife(GetPlayerLife + 0.0025);}
+		}
+		case(PY_ITEM_POINT){
+			NotifyEvent(GetCommonData("SoundScript", GetOwnScriptID), EV_USER, [52, 70]); //Collection sound effect
+		}
+		case(PY_ITEM_POWER){
+			if(GetPlayerPower >= GetAreaCommonData("System", "PlayerMaxPower", 400) && !GetAreaCommonData("System", "IsPlayerMaxPower", false)){
+				Notification(0, 192, 512, 256);
+				SetAreaCommonData("System", "IsPlayerMaxPower", true);
+			}
+			SetPlayerPower(GetPlayerPower + Obj_GetValueD(obj, "AddPower", 1));
+			NotifyEvent(GetCommonData("SoundScript", GetOwnScriptID), EV_USER, [52, 70]); //Collection sound effect
+		}
+		case(PY_ITEM_FULL){
+			if(!GetAreaCommonData("System", "IsPlayerMaxPower", false)){
+				Notification(0, 192, 512, 256);
+			}
+			SetPlayerPower(GetAreaCommonData("System", "PlayerMaxPower", 400));
+			SetAreaCommonData("System", "IsPlayerMaxPower", true);
+			NotifyEvent(GetCommonData("SoundScript", GetOwnScriptID), EV_USER, [52, 70]); //Collection sound effect
+		}
+		case(PY_ITEM_SPELLPART){
+			SetPlayerSpell(GetPlayerSpell + GetAreaCommonData("System", "SpellFragmentValue", [1/5, 5])[0]);
+			SetAreaCommonData("System", "SpellFragmentNum", GetAreaCommonData("System", "SpellFragmentNum", 0) + 1);
+			NotifyEvent(GetCommonData("SoundScript", GetOwnScriptID), EV_USER, [52, 70]); //Collection sound effect
+		}
+		case(PY_ITEM_SPELL){
+			Notification(0, 256, 512, 320);
+			SetPlayerSpell(GetPlayerSpell + 1);
+			NotifyEvent(GetCommonData("SoundScript", GetOwnScriptID), EV_USER, [12, 70]); //Spell extend sound effect
+		}
+		case(PY_ITEM_LIFEPART){
+			SetPlayerLife(GetPlayerLife + GetAreaCommonData("System", "LifeFragmentValue", [1/5, 5])[0]);
+			SetAreaCommonData("System", "LifeFragmentNum", GetAreaCommonData("System", "LifeFragmentNum", 0) + 1);
+			NotifyEvent(GetCommonData("SoundScript", GetOwnScriptID), EV_USER, [52, 70]); //Collection sound effect
+		}
+		case(PY_ITEM_LIFE){
+			Notification(0, 320, 512, 384);
+			SetPlayerLife(GetPlayerLife + 1);
+			NotifyEvent(GetCommonData("SoundScript", GetOwnScriptID), EV_USER, [34, 100]); //Life extend sound effect
+		}
+		case(PY_ITEM_ICHOR){
+			NotifyEvent(GetCommonData("SoundScript", GetOwnScriptID), EV_USER, [52, 70]); //Collection sound effect
+			SetAreaCommonData("System", "IchorGauge", GetAreaCommonData("System", "IchorGauge", 0) + 1);
+		}
+	}
+}
+
+//TD - 8
+//DDC - 8
+//RSS - 8
+//SWR - 11
+task BulletDelete(bullet, pos, frame){
+	if(ObjShot_GetImageID(bullet) == 0){return;} //prevents errors from "dummy bullets"
+	NotifyEvent(GetCommonData("SoundScript", GetOwnScriptID), EV_USER, [31, 100]); //Life extend sound effect
+	let c = GetShotDataInfoA1(ObjShot_GetImageID(bullet), TARGET_ENEMY, INFO_DELAY_COLOR); //deletion effect color should match the delay effect's
+
+	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjPrim_SetTexture(obj, GetCurrentScriptDirectory() ~ "../IMG/Effect/etbreak_" ~ GetAreaCommonData("System", "BulletKillType", "td") ~ ".png");
+	ObjSprite2D_SetSourceRect(obj, 0, 0, 32, 32);
+	ObjSprite2D_SetDestCenter(obj);
+	ObjRender_SetScaleXYZ(obj, 1.5, 1.5, 1.5);
+	ObjRender_SetColor(obj, c[0], c[1], c[2]);
+	ObjRender_SetPosition(obj, pos[0], pos[1], 0);
+	ObjRender_SetAngleZ(obj, rand(0, 360));
+	ObjRender_SetBlendType(obj, BLEND_ADD_ARGB);
+
+	if(c == [0, 0, 0]){ObjRender_SetBlendType(obj, BLEND_ALPHA);}
+
+	ascent(i in 0 .. frame){ //animation (number of frames defined by parameter "frame")
+		ObjSprite2D_SetSourceRect(obj, 32*i, 0, 32*(i+1), 32);
+		loop(2){yield;}
+	}
+	Obj_Delete(obj);
+}
+
+//Item that will be created upon bullet deletion
+task BulletDeleteItem(pos){
+	let obj	= CreateItemU2(PY_ITEM_DELETE, pos[0], pos[1], pos[0], pos[1]-32, 10);
+	ObjItem_SetRenderScoreEnable(obj, false);
+		
+	loop(60){yield;}
+	
+	ObjItem_SetDefinedMovePatternA1(obj, ITEM_MOVE_TOPLAYER);
+	
+	while(!Obj_IsDeleted(obj)){
+		yield;
+	}
+}
+
+task Notification(l, t, r, b){
+	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjPrim_SetTexture(obj, GetCurrentScriptDirectory ~ "./../System/img/boni.png");
+	ObjSprite2D_SetSourceRect(obj, l, t, r, b);
+	ObjSprite2D_SetDestCenter(obj);
+	ObjRender_SetScaleXYZ(obj, 0.5, 0.5, 0.5);
+	ObjRender_SetAngleX(obj, 90);
+	Obj_SetRenderPriority(obj, 0.6);
+	ObjRender_SetX(obj, GetStgFrameWidth/2);
+	ObjRender_SetY(obj, 64);
+	
+	let anx = 90;
+	while(anx > 0){
+		ObjRender_SetAngleX(obj, anx);
+		anx -= 6;
+		yield;
+	}
+	loop(60){yield;}
+	while(anx < 90){
+		ObjRender_SetAngleX(obj, anx);
+		anx += 6;
+		yield;
+	}
+	Obj_Delete(obj);
+}
