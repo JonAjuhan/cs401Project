@@ -1,4 +1,4 @@
-let ITEM_CANCEL = 1;
+let ITEM_CANCEL = 3;
 
 let ITEM_SCORE_M = ITEM_POINT+500;
 let ITEM_SCORE_S = ITEM_POINT_S+500;
@@ -24,12 +24,12 @@ let ITEM_SPELLPIECE = ITEM_SPELL_S+500;
 
 @Event{
 	alternative(GetEventType())
-	case(EV_USER+72){
-		let pos = GetEventArgument(0);
-		if(length(pos) == 2){
-			TItem(ITEM_CANCEL, pos[0], pos[1]);
-		}
-	}
+	// case(EV_USER+72){ //I'm not sure what this is for
+		// let pos = GetEventArgument(0);
+		// if(length(pos) == 2 && (pos[0]!=0 || pos[1]!=0)){
+			// TItem(ITEM_CANCEL, pos[0], pos[1]);
+		// }
+	// }
 	case(EV_GET_ITEM){
 		let type = GetEventArgument(0);
 		let item = GetEventArgument(1);
@@ -51,13 +51,19 @@ let ITEM_SPELLPIECE = ITEM_SPELL_S+500;
 	case(EV_DELETE_SHOT_TO_ITEM){
 		let shot = GetEventArgument(0);
 		let pos = GetEventArgument(1);
-		let item = TItem(ITEM_CANCEL, pos[0], pos[1]);
-		CollectItemsByType(ITEM_CANCEL);
+		if(!(pos[0]==0 && pos[1]==0)){
+			let item = TItem(ITEM_CANCEL, pos[0], pos[1]);
+			// CollectItemsByType(ITEM_CANCEL);
+			CollectItemsInCircle(pos[0],pos[1],1);
+		}
 	}
 }
 
 function TItem(type, x, y){
+	if(x==0 && y==0){return NULL;}
+	// return NULL;
 	let obj = CreateItemU2(type, x, y, x,y, 100);
-	Obj_SetRenderPriorityI(obj, 60);
+	// Obj_SetRenderPriorityI(obj, 60);
+	Obj_SetRenderPriorityI(obj, 39);
 	return obj;
 }

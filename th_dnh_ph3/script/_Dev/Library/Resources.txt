@@ -265,7 +265,8 @@ function todeg(a){return a*360/(2*pi);}
 function topolar(x,y){ return [ sqrt(x^2+y^2), atan2(y,x) ]; }
 function tocart(r,a) { return [ r*cos(a), r*sin(a) ]; }
 
-function ln(n){return log(n);} //wait hold on what base is that
+//wait hold on what base is that
+function ln(n){return log(n);} //log10, log2 are things so probably e
 /////////////////////////////////////////////////////////////////////
 //Other resources
 /////////////////////////////////////////////////////////////////////

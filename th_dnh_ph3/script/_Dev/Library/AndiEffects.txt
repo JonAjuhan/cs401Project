@@ -147,9 +147,10 @@ function EffectParticleA1(x,y,speed,angle,type,r,g,b){
 	ObjSprite2D_SetDestCenter(obj);
 	ObjRender_SetBlendType(obj,BLEND_ADD_RGB);
 	ObjRender_SetPosition(obj,x,y,0);
-
-	Update;
-	task Update{
+	OR_SetColor(obj,r,g,b);
+	
+	Manage;
+	task Manage{
 		while(!Obj_IsDeleted(obj)&&alpha>0){
 			ObjRender_SetColor(obj,alpha*r,alpha*g,alpha*b);
 			ObjRender_SetScaleXYZ(obj,s,s,s);
@@ -208,8 +209,10 @@ function EffectParticleA2(x,y,speed,angle,type,dur,s0,s1,r,g,b){
 	ObjSprite2D_SetDestCenter(obj);
 	ObjRender_SetBlendType(obj,BLEND_ADD_RGB);
 	ObjRender_SetPosition(obj,x,y,0);
+	OR_SetColor(obj,r,g,b);
 
-	task Update{
+	Manage;
+	task Manage{
 		while(!Obj_IsDeleted(obj) && alpha>=0 && !(ds<0 && s<s1) ){ // && (ds>0&&s<=s1)||(s>=s1) ){
 			ObjRender_SetColor(obj,alpha*r,alpha*g,alpha*b);
 			ObjRender_SetScaleXYZ(obj,s,s,s);
@@ -231,7 +234,6 @@ function EffectParticleA2(x,y,speed,angle,type,dur,s0,s1,r,g,b){
 		Obj_Delete(obj);
 	}
 	
-	Update;
 	return obj;
 }
 
@@ -274,8 +276,10 @@ function EffectParticleA3(x,y,speed,angle,type,dur,s0,s1,alpha0,alpha1,r,g,b){
 	ObjSprite2D_SetDestCenter(obj);
 	ObjRender_SetBlendType(obj,BLEND_ADD_RGB);
 	ObjRender_SetPosition(obj,x,y,0);
-
-	task Update{
+	OR_SetColor(obj,r,g,b);
+	
+	Manage;
+	task Manage{
 		while(!Obj_IsDeleted(obj) && alpha>=0 && !(ds<0 && s<s1) ){ // && (ds>0&&s<=s1)||(s>=s1) ){
 			ObjRender_SetColor(obj,alpha*r,alpha*g,alpha*b);
 			ObjRender_SetScaleXYZ(obj,s,s,s);
@@ -297,7 +301,6 @@ function EffectParticleA3(x,y,speed,angle,type,dur,s0,s1,alpha0,alpha1,r,g,b){
 		Obj_Delete(obj);
 	}
 	
-	Update;
 	return obj;
 }
 
@@ -339,8 +342,10 @@ function EffectParticleC3(followobj,x,y,type,dur,s0,s1,alpha0,alpha1,r,g,b){
 	ObjSprite2D_SetDestCenter(obj);
 	ObjRender_SetBlendType(obj,BLEND_ADD_RGB);
 	ObjRender_SetPosition(obj,x,y,0);
-
-	task Update{
+	OR_SetColor(obj,r,g,b);
+	
+	Manage;
+	task Manage{
 		while(!Obj_IsDeleted(obj) && !Obj_IsDeleted(followobj) && alpha>=0 && !(ds<0 && s<s1) ){ // && (ds>0&&s<=s1)||(s>=s1) ){
 			ObjRender_SetColor(obj,alpha*r,alpha*g,alpha*b);
 			ObjRender_SetScaleXYZ(obj,s,s,s);
@@ -357,9 +362,7 @@ function EffectParticleC3(followobj,x,y,type,dur,s0,s1,alpha0,alpha1,r,g,b){
 			yield; //t+=dt;
 		}
 		Obj_Delete(obj);
-	}
-	
-	Update;
+	}	
 	return obj;
 }
 
@@ -414,8 +417,6 @@ function EffectGlowA1(x,y,time,scale0,scale1, texture,rect,color){
 	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
 	ObjRender_SetBlendType(obj,BLEND_ADD_ARGB);
 	Manage;
-	return obj;
-	
 	task Manage{
 		let scale = scale0;
 		let scaleinc = (scale1-scale0)/time;
@@ -432,15 +433,15 @@ function EffectGlowA1(x,y,time,scale0,scale1, texture,rect,color){
 		
 		task SafeColor{			
 			ObjRender_SetAlpha(obj,0);
-			ObjRender_SetRGB(obj,R,G,B);
+			OR_SetColorRGB(obj,R,G,B);
 			ObjRender_SetColor(obj,0,0,0);
 			yield;
 			if(!Obj_IsValueExists(obj,"AlphaHandler")){
 				alternative(ObjRender_GetBlendType(obj))
 				case(BLEND_ALPHA,BLEND_ADD_ARGB){
-					ObjRender_SetRGBA(obj,R,G,B,alpha);
+					OR_SetColorRGBA(obj,R,G,B,alpha);
 				}others{
-					ObjRender_SetRGB(obj,R,G,B);
+					OR_SetColorRGB(obj,R,G,B);
 				}
 			}
 		}SafeColor;
@@ -451,12 +452,13 @@ function EffectGlowA1(x,y,time,scale0,scale1, texture,rect,color){
 			
 			if(!Obj_IsValueExists(obj,"AlphaHandler")){
 				alpha-=255/time;
-				ObjRender_SetTrueAlpha(obj,alpha);
+				OR_SetAlpha(obj,alpha);
 			}
 			yield;
 		}
 		Obj_Delete(obj);
 	}
+	return obj;
 }
 
 
@@ -464,7 +466,6 @@ function EffectGlowA1(x,y,time,scale0,scale1, texture,rect,color){
 function EffectGlowB1(tobj,time, scale0,scale1, texture,rect,color){
 	let obj = EffectGlowA1(ObjRender_GetX(tobj),ObjRender_GetY(tobj),time,scale0,scale1, texture,rect,color);
 	Manage;
-	return obj;
 	task Manage{
 		loop(time){
 			ObjRender_SetPosition(obj,ObjRender_GetX(tobj),ObjRender_GetY(tobj),0); //didn't originally do this for some reason?
@@ -472,6 +473,7 @@ function EffectGlowB1(tobj,time, scale0,scale1, texture,rect,color){
 		}
 		Obj_Delete(obj);
 	}
+	return obj;
 }
 
 
@@ -479,7 +481,6 @@ function EffectGlowB1(tobj,time, scale0,scale1, texture,rect,color){
 function EffectGlowA2(x,y, time, scale0,scale1, alpha0,alpha1, spin, texture,rect,color){
 	let obj = EffectGlowA1(x,y,time,scale0,scale1, texture,rect,color);
 	Manage;
-	return obj;
 	task Manage{
 		Obj_SetValue(obj,"AlphaHandler","A2");
 		let dalpha = (alpha1-alpha0)/time;
@@ -488,10 +489,11 @@ function EffectGlowA2(x,y, time, scale0,scale1, alpha0,alpha1, spin, texture,rec
 		loop(time){
 			ObjRender_SetAngleZ(obj,ObjRender_GetAngleZ(obj)+spin);
 			alpha += dalpha;
-			ObjRender_SetTrueAlpha(obj,alpha);
+			OR_SetAlpha(obj,alpha);
 			yield;
 		}
 		Obj_Delete(obj);
 	}
+	return obj;
 }
 

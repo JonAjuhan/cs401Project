@@ -44,8 +44,8 @@ let se_explode = csd~"../se/explode.wav"; let explode = se_explode;
 let se_horn = csd~"../se/se_horn.wav"; let horn = se_horn;
 let se_hornshort = csd~"../se/se_hornshort.wav";
 
-let nyaa = csd~"../se/orin.wav";
-let awoo = csd~"../se/wolf.wav";
+let nyaa = csd~"../se/orin.wav"; let se_nyaa=nyaa;
+let awoo = csd~"../se/wolf.wav"; let se_awoo=awoo;
 let se_laugh = sed~"se_laugh.wav";
 
 let se_gap = csd~"../se/gap.wav";

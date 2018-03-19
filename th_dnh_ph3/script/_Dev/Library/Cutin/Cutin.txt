@@ -19,8 +19,12 @@ let YABUSAME = "LENEN";
 
 let isSurvival = false;			 // GetScriptResult(NotifyEventAll(EV_REQUEST_IS_DURABLE_SPELL,""));
 
+let slots = [];
+ascent(i in 0..20){slots = slots ~ [0] };
+
 //If you have any questions or requests, send them to gtbot/TheGtbot (I go by either on different places)
 //Version 1.3
+
 
 
 task ObjCutin_SetSpellcardS3(SpellName, R, G, B){
@@ -49,19 +53,23 @@ task ObjCutin_SetSpellcardS5(SpellName, image, cuttype, R, G, B, durable) {
 	ObjCutin_SetSpellcardS4(SpellName, image, cuttype, R, G, B);
 }
 
+task ObjCutin_Remove(index){
+	let boss = GetEnemyBossObjectID[0];
+	index = min(index,length(Obj_GetValueD(boss,"Spellcards",[])));
+	Obj_SetValue(boss,"RemoveSpell",index);
+}
+
 task ObjCutin_LaunchS3(type, image, difficulty){
 	CutinS3(type, image, difficulty);
 }
 
 task CutinS3(Type, mimage, difficulty){
-	let spells = Obj_GetValueD(GetEnemyBossObjectID[0], "Spellcards", []);
 	let boss = GetEnemyBossObjectID[0];
+	let spells = Obj_GetValueD(boss, "Spellcards", []);
 	let spcount = length(spells);
 	CutinDifficulty = difficulty;
 	let IsSpellAttackAnimation = false;
-	if(!IsCommonDataAreaExists("cutin_History")){
-		CreateCommonDataArea("cutin_History");
-	}
+	if(!IsCommonDataAreaExists("cutin_History")){CreateCommonDataArea("cutin_History");}
 	LoadCommonDataAreaA1("cutin_History");
 
 
@@ -71,20 +79,24 @@ task CutinS3(Type, mimage, difficulty){
 	//
 	//let Colors = [[r, g, b]];
 
-	descent(i in 0..spcount){SpellText(6*i, i);}
+	// descent(i in 0..spcount){SpellText(6*i, i);}
+	ascent(i in 0..spcount){SpellText(6*i, i);}
 	SpawnCutinImage(Type, mimage);
 	
 	
+	//Watch for new spellcards
 	let delay = 6;
 	while(!Obj_IsDeleted(boss)){
 		spells = Obj_GetValueD(GetEnemyBossObjectID[0], "Spellcards", []);
 		if(length(spells)!=spcount&&delay==0){
-			delay = 6;
-			SpellText(0, spcount);
-			let newtype = spells[spcount][4];
-			if(newtype == ""){newtype = Type;}
-			SpawnCutinImage(newtype, spells[spcount][5]);
-			spcount++;
+			if(length(spells) > spcount){
+				delay = 6;
+				SpellText(0, spcount); //<--
+				let newtype = spells[spcount][4];
+				if(newtype == ""){newtype = Type;}
+				SpawnCutinImage(newtype, spells[spcount][5]);
+			}
+			spcount = length(spells);
 		}
 		delay = max(delay-1, 0);
 		yield;
@@ -218,7 +230,7 @@ task CutinS3(Type, mimage, difficulty){
 		else{RaiseError("Not a valid cutin type.");}
 	}
 	
-	task SpellText(delay, num){
+	task SpellText(delay, num){		
 		let tspell = spells[num];
 		let SpellName = tspell[0];
 		let r = atoi(tspell[1]);
@@ -226,6 +238,10 @@ task CutinS3(Type, mimage, difficulty){
 		let b = atoi(tspell[3]);
 		
 		let Colors = [[r,g,b]];
+		
+		slots[num] = slots[num]+1;
+		
+		let isbeingdeleted = false;
 		
 		//These are long-looking common data group names
 		let SpellDataAttempt = SpellName~"|"~CutinDifficulty~"|"~GetPlayerID~"|"~"Attempt";
@@ -251,6 +267,7 @@ task CutinS3(Type, mimage, difficulty){
 		let SpellText = ObjText_Create;
 		ObjText_SetText(SpellText,SpellName);
 		ObjText_SetFontSize(SpellText,12);
+		// ObjText_SetFontType(SpellText,"THSpatial");
 		ObjText_SetFontColorTop(SpellText,255,255,255);
 		ObjText_SetFontColorBottom(SpellText, Colors[0][0], Colors[0][1], Colors[0][2]);
 		ObjText_SetFontBorderType(SpellText,BORDER_FULL);
@@ -259,8 +276,21 @@ task CutinS3(Type, mimage, difficulty){
 		ObjText_SetHorizontalAlignment(SpellText, ALIGNMENT_RIGHT);
 		ObjText_SetMaxWidth(SpellText, GetStgFrameWidth-24);
 		Obj_SetRenderPriority(SpellText, 0.79+0.01*max(0, 1-num));
-		ObjRender_SetPosition(SpellText, 0, 320+40*num, 0);
+		ObjRender_SetPosition(SpellText, 0, 320+40*(num%3), 0);
 		ObjRender_SetAlpha(SpellText, 0);
+		
+		let yoff = 0;
+		let newlines = length(ObjText_GetTextLengthCUL(SpellText))-1;
+		if(newlines>0){
+			// WriteLog("Newlines: "~itoa(newlines));
+			// ObjText_SetLinePitch(SpellText,0);
+			ObjText_SetLinePitch(SpellText,-2.5*(newlines/3));
+			let textheight = ObjText_GetTotalHeight(SpellText);
+			yoff = textheight*0.80 *(newlines/(newlines+1))  +newlines;
+			
+			// ObjRender_SetPosition(SpellText, 0, 320+40*num - yoff, 0);
+			ObjRender_SetY(SpellText, ObjRender_GetY(SpellText) - yoff);
+		}
 		
 		
 		let SpellInfo = ObjPrim_Create(OBJ_SPRITE_LIST_2D);
@@ -290,8 +320,9 @@ task CutinS3(Type, mimage, difficulty){
 		loop(40){yield;}
 		let mov = 0;
 		
+		SpellcardFloatUp([ObjRender_GetY(SpellText)+yoff, 32+32*num, 0.135, 12]);
 		if(Type == "MOKOU"){SpellcardDeclareMovement([ObjRender_GetY(SpellText), 48+32*num, 0.175, 9]);loop(60){yield;}}
-		else{RegularSpellCardDeclare([ObjRender_GetY(SpellText), 32+32*num, 0.135, 12]);}
+		else{RegularSpellCardDeclare([ObjRender_GetY(SpellText)+yoff, 32+32*num, 0.135, 12]);}
 		//32 is the offset from the top of the screen
 		//If using a system where the lifebar is on the boss rather than the top of the screen, 12 is a good value
 
@@ -311,13 +342,64 @@ task CutinS3(Type, mimage, difficulty){
 		function SpellcardDeclareMovement(dest){
 			ObjRender_SetY(SpellInfo, 24+dest[1]);
 			while(dest[0]>dest[1]){
-				dest[0] = ObjRender_GetY(SpellText);
+				dest[0] = ObjRender_GetY(SpellText) + yoff;
 				mov = min(mov+dest[2], (dest[0]-dest[1])/dest[3]+0.125);
 				ObjRender_SetY(SpellBG, dest[0]-mov);
-				ObjRender_SetY(SpellText, dest[0]-mov);
+				ObjRender_SetY(SpellText, dest[0]-mov - yoff);
 				yield;
 			}
 		}
+		
+		function SpellcardFloatMovement(dest){
+			// ObjRender_SetY(SpellInfo, 24+dest[1]);
+			while(dest[0]>dest[1]  && !Obj_IsDeleted(SpellText)){
+				dest[0] = ObjRender_GetY(SpellText) + yoff;
+				mov = min(mov+dest[2], (dest[0]-dest[1])/dest[3]+0.125);
+				ObjRender_SetY(SpellBG, dest[0]-mov);
+				ObjRender_SetY(SpellText, dest[0]-mov - yoff);
+				yield;
+			}
+		}
+		
+		
+		task SpellcardFloatUp(dest){
+			while(!Obj_IsDeleted(boss) && !Obj_IsDeleted(SpellText)){
+				if(Obj_IsValueExists(boss,"RemoveSpell")){
+					let removed = Obj_GetValueD(boss,"RemoveSpell",NULL);
+					
+					if(removed==num){
+						isbeingdeleted = true;
+						Obj_SetValue(boss,"SpellsBeenRemoved",true);
+						FadeOutB1(SpellBG,   Alpha_HUD[0], 60);
+						FadeOutB1(SpellText, Alpha_HUD[0], 60);
+						slots[num] = slots[num]-1;
+						
+						let spells = Obj_GetValueD(boss,"Spellcards",[]);
+						Obj_DeleteValue(boss,"RemoveSpell");
+						spells = erase(spells,num);
+						Obj_SetValue(boss,"Spellcards",spells);
+						
+						
+						loop(60){yield;}
+						Obj_Delete(SpellBG);
+						Obj_Delete(SpellText);
+						return;
+					}
+				}
+				while(num>0 && Obj_GetValueD(boss,"SpellsBeenRemoved",false) && slots[num-1] == 0){
+					dest[0] = ObjRender_GetY(SpellText) + yoff;
+					slots[num] = slots[num]-1;
+					num = num-1;
+					slots[num] = slots[num]+1;
+					dest[1] = 32+32*num;
+					SpellcardFloatMovement(dest);
+					wait(15);
+				}
+				yield;
+			}
+		}
+		
+		
 		
 		function RegularSpellCardDeclare(dest){
 			if(num!=0){Obj_Delete(SpellInfo);}
@@ -329,9 +411,11 @@ task CutinS3(Type, mimage, difficulty){
 			}
 			let timerf = ObjEnemyBossScene_GetInfo(GetEnemyBossSceneObjectID, INFO_ORGTIMERF);
 			let startdiff = timerf-(timerf-5*60);
-			while(!Obj_IsDeleted(boss)){
-				ObjRender_SetAlpha(SpellBG, Alpha_HUD[0]);
-				ObjRender_SetAlpha(SpellText, Alpha_HUD[0]);
+			while(!Obj_IsDeleted(boss) && !Obj_IsDeleted(SpellText)){
+				if(!isbeingdeleted){
+					ObjRender_SetAlpha(SpellBG, Alpha_HUD[0]);
+					ObjRender_SetAlpha(SpellText, Alpha_HUD[0]);
+				}
 				ObjRender_SetAlpha(SpellInfo, Alpha_HUD[0]);
 				
 			//	let modif = min(1, ((ObjEnemyBossScene_GetInfo(GetEnemyBossSceneObjectID, INFO_TIMERF))/(ObjEnemyBossScene_GetInfo(GetEnemyBossSceneObjectID, INFO_ORGTIMERF)-startdiff)));
@@ -354,6 +438,8 @@ task CutinS3(Type, mimage, difficulty){
 			//	FailedSpellCard;
 			}
 		}
+		
+	
 		sub DrawScoreBonus{
 			if(GetPlayerY<128+32*length(spells)){Alpha_HUD[0] = max(Alpha_HUD[0]-10, 85);}else{Alpha_HUD[0] = min(Alpha_HUD[0]+11, 255);}
 			

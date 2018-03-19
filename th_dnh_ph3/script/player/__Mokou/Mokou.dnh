@@ -635,8 +635,7 @@ task PlayerRebirthWindow{
 task TMagicCircle{
 		let countVertex = 64;
 		let listRadius = [];
-		loop(countVertex)
-		{
+		loop(countVertex){
 			listRadius = listRadius ~ [0];
 		}
 
@@ -647,8 +646,7 @@ task TMagicCircle{
 		ObjRender_SetBlendType(obj, BLEND_ADD_RGB);
 		Obj_SetRenderPriority(obj, 0.60);
 		ObjPrim_SetTexture(obj, path);
-		ascent(iVert in 0..countVertex / 2)
-		{
+		ascent(iVert in 0..countVertex / 2){
 			let left = iVert * 128;
 			let indexVert = iVert * 2;
 			ObjPrim_SetVertexUVT(obj, indexVert + 0, left, 0);
@@ -663,21 +661,16 @@ task TMagicCircle{
 		let angleRender = 0;
 		let frameInvOld = 0;
 
-		while(true)
-		{
+		while(true){
 			let frameInv = GetPlayerInvincibilityFrame();
 
-			if(frameInv <= 0)
-			{
+			if(frameInv <= 0){
 				Obj_SetVisible(obj, false);
 				frameInvOld = 0;
 			}
-			else
-			{
-				if(frameInvOld == 0)
-				{
-					ascent(iVert in 0..countVertex)
-					{
+			else{
+				if(frameInvOld == 0){
+					ascent(iVert in 0..countVertex){
 						listRadius[iVert] = 0;
 					}
 					alpha = 0;
@@ -696,8 +689,7 @@ task TMagicCircle{
 				frameInv = min(100, frameInv);
 				let rRate = frameInv / 100;
 
-				ascent(iVert in 0..countVertex / 2)
-				{
+				ascent(iVert in 0..countVertex / 2){
 					let indexVert = iVert * 2;
 					let angle = 360 / (countVertex / 2 - 1) * iVert;
 
@@ -709,13 +701,11 @@ task TMagicCircle{
 					let vy2 = listRadius[indexVert+1] * sin(angle);
 					ObjPrim_SetVertexPosition(obj, indexVert + 1, vx2, vy2, 0);
 
-					if(frame >= 0)
-					{
+					if(frame >= 0){
 						let dr = (maxRadius * rRate - listRadius[indexVert]) / 8;
 						listRadius[indexVert] = listRadius[indexVert] + dr;
 					}
-					if(frame > 10)
-					{
+					if(frame > 10){
 						let rRateIn = rRate - 0.12;
 						if(rRateIn < 0){rRateIn=0;}
 						let dr= (maxRadius * rRateIn - listRadius[indexVert + 1]) / 16;
@@ -758,6 +748,7 @@ task Combustion{		//bomb
 	loop(30){yield};
 	PlaySE(current~"se_chargeup.wav");
 	isvisible = true;
+	ResetOptions(false);
 	SetPlayerSpeed(speed[0], speed[1]);
 	SetForbidPlayerShot(false);
 	// loop(120){yield}; //120

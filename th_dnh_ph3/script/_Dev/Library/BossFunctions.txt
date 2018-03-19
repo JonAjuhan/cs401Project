@@ -328,29 +328,32 @@ task Tmovement(x1,x2, y1,y2, time,del0, exargs) {
 	}		
 }
 
-//Sparen
-task EnemyName(obj, name, r, g, b){ //Blurred originally
-  let objText = ObjText_Create();
-  //ObjText_SetFontSize(objText,20);//pre23
-  ObjText_SetFontSize(objText,12);//new
-  InstallFont("./Russell Square Regular.ttf");
-  ObjText_SetFontType(objText,"Russell Square Regular");//Helvetica: Use 14 pt font, All caps.
-  ObjText_SetFontBold(objText, true);
-  ObjText_SetFontColorTop(objText, 255, 255, 255);
-  ObjText_SetFontColorBottom(objText, 255, 255, 255);
-  ObjText_SetFontBorderType(objText, BORDER_FULL);
-  ObjText_SetFontBorderColor(objText,255, 255, 255);
-  ObjText_SetFontBorderWidth(objText, 1);
-  Obj_SetRenderPriority(objText, 0.8);
-  ObjRender_SetX(objText, 5);
-  ObjRender_SetY(objText, 12);//Orig 15, but some spell names were too long... (edited in conjunction with cutin.h)
-  ObjText_SetFontBorderColor(objText, r, g, b);
-  ObjText_SetText(objText, name);
-  Obj_SetValue(obj,"DisplayName",name);
+//Sparen, originally
+task EnemyName(obj, name, r, g, b){ //Blurred originally	
+	let text = ObjText_Create;
+	ObjText_SetText(text,name);
+	ObjText_SetFontType(text,"Russell Square Regular"); //Helvetica: Use 14 pt font, All caps.
+	// ObjText_SetFontType(text,"Cirno");
+	ObjText_SetFontSize(text,12); //11, 12
 
-  while(ObjEnemy_GetInfo(obj,INFO_LIFE)>0){yield;}
-  wait(12);//It can only handle 12 yields, currently, before the script is closed.
-  Obj_Delete(objText);
+	ObjText_SetFontBold(text, true);
+	ObjText_SetFontColorTop(text,255,255,255);
+	ObjText_SetFontColorBottom(text, r, g, b);
+	ObjText_SetFontBorderType(text,BORDER_FULL);
+	ObjText_SetFontBorderColor(text,32,32,32);
+	ObjText_SetFontBorderWidth(text,1);
+	ObjText_SetHorizontalAlignment(text, ALIGNMENT_LEFT);
+	ObjText_SetMaxWidth(text, GetStgFrameWidth-24);
+	Obj_SetRenderPriority(text, 0.79+0.01);
+	ObjRender_SetPosition(text,5,12,0); //Orig 5,15, but some spell names were too long... (edited in conjunction with cutin.h)
+	ObjRender_SetAlpha(text, 150);
+
+	Obj_SetValue(obj,"DisplayName",name);
+	
+	
+	while(ObjEnemy_GetInfo(obj,INFO_LIFE)>0){yield;}
+	wait(12);//It can only handle 12 yields, currently, before the script is closed.
+	Obj_Delete(text);
 }
 
 

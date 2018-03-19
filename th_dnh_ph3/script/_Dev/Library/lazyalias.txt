@@ -92,17 +92,13 @@ function setangv(obj,v){
 
 
 function setcolor(obj,color){
-	ObjRender_SetTrueColor(obj,color[0],color[1],color[2]);
-	setval(obj,"Color",color);
-	if(length(color)>3){ObjRender_SetTrueAlpha(obj,color[3]);setval(obj,"Alpha",color[3]);}
+	OR_SetColor(obj,color[0],color[1],color[2]);
+	if(length(color)>3){OR_SetAlpha(obj,color[3]);}
 }
-function getcolor(obj){return getvald(obj,"Color",ObjShot_GetDelayColor(obj));}
+function getcolor(obj){return OR_GetColor(obj);}
 
-function setalpha(obj,alpha){
-	ObjRender_SetAlpha(obj,alpha);
-	setval(obj,"Alpha",alpha);
-}
-function getalpha(obj){return getvald(obj,"Alpha",255);}
+function setalpha(obj,alpha){ OR_SetAlpha(obj,alpha); }
+function getalpha(obj){return OR_GetAlpha(obj);}
 
 
 

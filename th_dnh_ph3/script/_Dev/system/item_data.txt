@@ -2,11 +2,18 @@
 
 item_image = "./img/Item.png"
 
-//Shot delete item
+//Normal delete item (gray box with star)
 ItemData{
-	id = 1
+	id = 2
 	rect = (97,  3, 108, 14)
-	// out  = (96, 19, 109, 32)
+	render = ALPHA
+	alpha = 64
+}
+
+//IN time item 
+ItemData{
+	id = 3
+	rect = (113, 3, 124, 14)
 	render = ALPHA
 	alpha = 128
 }

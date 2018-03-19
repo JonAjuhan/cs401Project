@@ -19,10 +19,22 @@ function SetSpellCard() {
 function SetSpellCardA2(style,img) {
 	ObjCutin_SetSpellcardS4(GetCommonData("CurrentSC",""),img,style, 255, 128, 128);
 	let diff = GetCommonData("Difficulty","Normal");
-	ObjCutin_LaunchS3(style, img, diff);
-	TMagicCircle();
+	if(length(Obj_GetValueD(GetEnemyBossObjectID[0], "Spellcards", [])) < 2){
+		ObjCutin_LaunchS3(style, img, diff);
+		TMagicCircle();
+	}
 	NotifyEventAll(EV_REQUEST_SPELL_SCORE,"");
 }
+
+
+function DeclareSpellCardA2(style,img) {
+	ObjCutin_SetSpellcardS4(GetCommonData("CurrentSC",""),img,style, 255, 128, 128);
+	let diff = GetCommonData("Difficulty","Normal");
+	// ObjCutin_LaunchS3(style, img, diff);
+	// TMagicCircle();
+	NotifyEventAll(EV_REQUEST_SPELL_SCORE,"");
+}
+
 
 //
 function SetSurvivalCard() {
@@ -98,6 +110,7 @@ task TBreakNonspell(args) {
 // DropItems(x,y, [ITEM_TYPE,number,radius,angle] );
 // DropItems(x,y, [ITEM_TYPE,(n,r,a),ITEM_TYPE,(n,r,a),ITEM_TYPE,(n,r,a),...] );
 function DropItems(x,y,args){
+	if(x==0 && y==0){ return []; }
 	function IsItemType(v){ 
 		alternative(v)
 		case(ITEM_1UP,ITEM_1UP_S,ITEM_SPELL,ITEM_SPELL_S,ITEM_POINT,ITEM_POINT_S,ITEM_POWER,ITEM_POWER_S){ return true; }
@@ -906,10 +919,10 @@ function BounceCircleA1(cx,cy,rad0,rad1,dur,exargs){
 				x=getx(shot); y=gety(shot); a=norma(geta(shot));
 				d = getdist(cx,cy,x,y); 
 				
-				errmargin = ObjShot_GetCollisionRadius(shot)*2+s;
+				errmargin = OS_GetCollisionRadius(shot)*2+s;
 				if( d < rad+errmargin && d >= rad-errmargin ){
 					//dir = getangle(cx,cy,x,y); //da = GetAngularDistance(dir,da);
-					let isinside = (getdist(cx,cy,x+10*s*cos(a),y+10*s*sin(a)) >= d)  &&  (d < rad);
+					let isinside = (getdistance(cx,cy,x+10*s*cos(a),y+10*s*sin(a)) >= d)  &&  (d < rad);
 					if( (isinside && bounceinner) || (!isinside && bounceouter) ){
 						//WriteLog("Reflected shot from "~tost(a)~" to "~tost( reflect( a, getangle(x,y,xof(shot),yof(shot))+90 )  )~" at radius="~tost(rad)~", distance="~tost(d)~", rad0="~tost(rad0)~", rad1="~tost(rad1)~", drad="~tost(drad)~", cx="~tost(cx)~", cy="~tost(cy)~", x="~tost(x)~", y="~tost(y)  );
 						seta(shot, reflect( a, getangle(x,y,cx,cy)+90 ) );
@@ -1078,7 +1091,7 @@ function InfluenceCircleA1(cx,cy,rad,type,mag,subarg){ //[spd,ang,acc,angv,mspd,
 		ObjRender_SetScaleXYZ(whl,rad/128,rad/128,1);
 		ObjRender_SetBlendType(whl,BLEND_ADD_RGB);
 		Obj_SetValue(cnt,"RenderObject",whl);
-		BindPos(whl,cnt);
+		OM_BindPos(whl,cnt);
 		
 		while(!Obj_IsDeleted(cnt)){
 			ObjRender_SetScaleXYZ(whl,ObjRender_GetScaleX(cnt)*0.95,ObjRender_GetScaleY(cnt)*0.95,1);
@@ -1101,13 +1114,18 @@ function InfluenceCircleA1(cx,cy,rad,type,mag,subarg){ //[spd,ang,acc,angv,mspd,
 
 
 
-task BindPos(obj2,obj1){
+task OM_BindPos(obj2,obj1){
 	while(!Obj_IsDeleted(obj1) && !Obj_IsDeleted(obj2)){
 		ObjRender_SetPosition(obj2,getrx(obj1),getry(obj1),0);
 		yield;
 	}
 }
-
+task OM_BindPosA2(obj2,obj1,x,y){
+	while(!Obj_IsDeleted(obj1) && !Obj_IsDeleted(obj2)){
+		ObjRender_SetPosition(obj2,getrx(obj1)+x,getry(obj1)+y,0);
+		yield;
+	}
+}
 
 
 
@@ -1165,7 +1183,7 @@ function LasBounceA1(las, width,dur,del, rgt,top,lft,btm, wrap) {
 
 //Set a bullet on a stable orbit around a point
 //Based on real math!
-function setOrbit(shot,cx,cy,speed, nudge) {
+function SetOrbit(shot,cx,cy,speed, nudge) {
 	//reach 360 after traveling (circumference)
 	let sx = ObjMove_GetX(shot); let sy = ObjMove_GetY(shot);
 	let radius = getdist(sx,sy,cx,cy);
@@ -1176,14 +1194,23 @@ function setOrbit(shot,cx,cy,speed, nudge) {
 	ObjMove_AddPatternA2(shot,0,speed,angle,0,angv,speed);
 }
 
-function setOrbitB1(shot,c,speed, nudge) {setOrbit(shot,ObjMove_GetX(c),ObjMove_GetY(c),speed,nudge);}
-task setOrbitA2(shot,cx,cy,speed,nudge,delay) {wait(delay);setOrbit(shot,cx,cy,speed,nudge);}
-task setOrbitB2(shot,c,speed,nudge,delay) {wait(delay);setOrbitB1(shot,c,speed,nudge);}
+function SetOrbitB1(shot,c,speed, nudge) {SetOrbit(shot,ObjMove_GetX(c),ObjMove_GetY(c),speed,nudge);}
+task SetOrbitA2(shot,cx,cy,speed,nudge,delay) {wait(delay);SetOrbit(shot,cx,cy,speed,nudge);}
+task SetOrbitB2(shot,c,speed,nudge,delay) {wait(delay);SetOrbitB1(shot,c,speed,nudge);}
 //Try to get shots with different radii orbit at the same RPM
-function syncOrbit(rad,spd) {
-	let n = 500/spd; //500 probably isn't exactly the right constant
-	return 2*pi()*rad/n;
+function SyncOrbit(rad,spd) {
+	let n = 500/spd; //based on testing - 500 probably isn't exactly the right constant
+	return 2*pi()*rad/n; //I no longer remember what this does
 }
+
+//todo
+function GetLimitAngv(obj){
+	let s = OM_GetMaxSpeed(obj);
+	
+	// let angv = 2*pi() / period * 57.2958;
+}
+
+
 
 //Another from TalosMistake
 task SetHoming(obj,maxTraverse,time,delay){ 
@@ -1247,18 +1274,18 @@ task DelayFadeDelete(shot,del) {
 	wait(del);
 	ObjShot_FadeDelete(shot);
 }
-task ObjShot_SetFadeDeleteFrame(shot,del) {
+task OS_SetFadeDeleteFrame(shot,del) {
 	wait(del);
 	ObjShot_FadeDelete(shot);
 }
-task Obj_SetFadeDeleteFrame(obj,del) {
+task O_SetFadeDeleteFrame(obj,del) {
 	wait(del);
 	Obj_FadeDelete(obj);
 }
-task Obj_SetRGBFadeDeleteFrame(obj,del) {
-	wait(del);
-	Obj_FadeDeleteRGB(obj);
-}
+// task Obj_SetRGBFadeDeleteFrame(obj,del) {
+	// wait(del);
+	// Obj_FadeDelete(obj);
+// }
 
 
 //Scale a shot over time
@@ -1309,8 +1336,8 @@ function DebugWarnShot2(pos) {
 
 
 //set a shot's color according to its delay color
-function TintShot(shot,brightness){
-	let color = ObjShot_GetDelayColor(shot);
+function OS_TintShot(shot,brightness){
+	let color = OS_GetDelayColor(shot);
 	color = [brightness+color[0],brightness+color[1],brightness+color[2]];
 	setcolor(shot,color);
 }
@@ -1343,7 +1370,7 @@ task Drain(cx,cy,r,time){
 
 //Make a shot appear to "tremble" without moving its hitbox
 //Done by creating a non-colliding shot with the same sprite/color/alpha/scale
-function Tremble(shot,xmag,ymag,dur){
+function OS_Tremble(shot,xmag,ymag,dur){
 	if(isnull(shot)){return;}
 	let mx; let my; let rx; let ry;
 	mx = ObjMove_GetX(shot);
@@ -2738,7 +2765,7 @@ task TFeathersA1(minscl,maxscl,minspd,maxspd,maxdriftspd,alpha1,del, controller)
 	if(!Obj_IsDeleted(boss)){
 		ascent(i in 0..length(feathers)) {
 			Obj_SetValue(feathers[i],"FadeTime",30);
-			Obj_FadeDeleteRGB(feathers[i]);
+			Obj_FadeDelete(feathers[i]);
 		}
 	}else{
 		ascent(i in 0..length(feathers)) {

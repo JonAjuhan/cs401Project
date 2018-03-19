@@ -1,3 +1,59 @@
+
+
+
+
+
+function ParseExpression(expr){
+	let coeffs = [];
+	let expons = [];
+	
+	let tokens = [];
+	let operands = [];
+	let operators = [];
+	operands = SplitString(expr,"+-*/%^()<>[]$");
+	operators = SplitString(expr,"1234567890.abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_\\\"'");
+	//use $foo$ for GetCommonData("foo",NULL)
+	
+	ascent(i in 0..length(operands)){
+		
+	}
+	
+}
+
+//Set an object's speed, acceleration, and jerk from an equation
+function ObjMove_SetSpeedAtExpression(obj,expr){
+	expr = TrimString(expr);
+	let terms = SplitString(expr,"+"); //todo: "-"?
+	
+	ascent(i in 0..length(terms)){
+		let term = terms[i];
+		term = SplitString(term,"*t");
+
+		//Find coefficient
+		let coeff = ator(term[0]);
+		
+		//Find exponent
+		let expon;
+		if(length(term)==1){ expon=0; }
+		else{ 
+			let tmp = SplitString(term[1],"^");
+			if(length(tmp)==1){ expon = "1"; }
+			else{ expon = tmp[length(tmp)-1]; }
+		}
+		
+		alternative(ator(expon))
+		case(0){ ObjMove_SetSpeed(obj,coeff); }
+	
+	}
+	
+}
+
+
+
+
+
+
+
 /////////////////////////////////////////////////////////////
 //Andi - functions to predict the path of a shot
 /////////////////////////////////////////////////////////////

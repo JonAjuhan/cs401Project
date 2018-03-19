@@ -104,6 +104,33 @@ task TShoot{
 	
 	while(!Obj_IsDeleted(boss) && !finishing){
 		
+		
+		
+		// DropItemsNonspellEnd;
+		// DropItemsSpellEnd;
+		// DeleteShotAll(TYPE_ALL,TYPE_ITEM);
+		
+		// loop{
+			// loop(5){
+				// // SetCommonData("CurrentSC","Test Sign \"Ultimat e Final Danmaku [r]Stormr Festival Fianl Blizazrd F\"");
+				// count++;
+				// if(count>3){ObjCutin_Remove(randint(0,2)); wait(30);}
+				// yield;
+				// SetCommonData("CurrentSC","TeStSign \"Final timat DanmakuS tormr Festivla "~tost(count)~"\"");
+				// // SetSpellCardA2(NAZRIN,dirlib~"Cutin/Cutin_Mystia.png");
+				// SetSpellCardA2(AYA,dirlib~"Cutin/Cutin_Mystia.png");
+				// // SetSpellCardA2(MOKOU,dirlib~"Cutin/Cutin_Mystia.png");
+				// ObjEnemyBossScene_StartSpell(objScene);
+				
+				// wait(rand(30,120));
+				// // wait(120);
+			// }
+			// wait(300);
+		// }
+		
+		
+		
+		
 		ascent(k in 0..2){
 			ObjMove_SetDestAtWeight(boss,cx+randSign*rand(0,cx*0.75),rand(60,cy*0.9), gap*0.66,20);
 			wait(gap/2);
@@ -120,7 +147,7 @@ task TShoot{
 					// shot = CreateShotA2(ex,ey,5.5-0.5*trunc(j/2+altBin(i)/3),a, -0.15,0, BALL_O_GREEN,10);
 					shot = CreateShotA2(ex,ey,5.5-0.5*trunc(j/2+altBin(i)/3),a, -0.15,0, BALL_O_GREEN+isalt*(SCALE_RED-BALL_O_GREEN+5*tobin(altBin(trunc(j/2+i)))),10);
 					//          (obj, del,     speed,    angle, acc,      angv, mspd,    jerk,  macc,      anga,    mangv)
-					AddPatternA5(shot,  0, NO_CHANGE,NO_CHANGE,   0,         0,    0,   -0.005,   -1,         0,        0);
+					OM_AddPatternA5(shot,  0, NO_CHANGE,NO_CHANGE,   0,         0,    0,   -0.005,   -1,         0,        0);
 					// AddPatternA5(shot,  0, NO_CHANGE,NO_CHANGE,   6,         0,    0,   -0.05,   -1,         0,        0);
 					// AddPatternA5(shot,del, NO_CHANGE,NO_CHANGE,   0, -dir*1.55,    4,  0.0015, 0.15, dir*0.05, dir*0.01);
 					let spd = 0;
@@ -129,7 +156,7 @@ task TShoot{
 					let acc  = 0; //0.5
 					let jerk = 0.003; //-0.0015
 					let macc = 0.15; //0.15
-					AddPatternA5(shot,del, spd,NO_CHANGE,  acc, -dir*3.55,   mspd,  jerk, macc, dir*0.15, dir*1.25);
+					OM_AddPatternA5(shot,del, spd,NO_CHANGE,  acc, -dir*3.55,   mspd,  jerk, macc, dir*0.15, dir*1.25);
 					
 					if(altSign(j)==altSign(k)){
 						Manage(shot);
@@ -159,7 +186,7 @@ task TShoot{
 		ascent(i in 0..10){
 			let fam = SpawnFamiliarC1(ex,ey,"blue",150+50*diff);
 			// ObjMove_AddPatternA1(fam,0,3.5,a0-90+15+36*i);
-			AddPatternA5(fam,  0, 2,a0-90+15+36*i,   0,0,6,   0.001,0.1,   0.05,1);
+			OM_AddPatternA5(fam,  0, 2,a0-90+15+36*i,   0,0,6,   0.001,0.1,   0.05,1);
 			// ObjMove_AddPatternA2(fam,60,NO_CHANGE,NO_CHANGE, -0.15, 0.25/cos(((|i-4.5|))), 0.75);
 			SE_Play(se_fam,100);
 			TFamShoot(fam);
@@ -189,6 +216,7 @@ task TShoot{
 		
 		
 		wait(120);
+		
 		
 	}	
 	
