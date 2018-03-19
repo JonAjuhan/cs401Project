@@ -2,13 +2,14 @@
 #ScriptVersion[3]
 #Title["Pendulum \"Shining Prism Star\""]
 #Text["series 7: scales with difficulty"] 
-#BGM["./bgm/bgm - CC-CGR-loop.ogg"]
-#System["./system/Default_System.txt"]
-#Background["./system/Background_Sky.txt"]
-
+#BGM["./bgm/bgm - Kid's Festival ~ Innocent Treasures.ogg"] // CC-CGR-loop.ogg"]
+#System["./system/Andi_System.txt"]
+#Background["./system/background/Background_Sky.txt"]
 #include "./Index.txt"
 
 let timer = 42; //37
+let swdx; let swdy;
+task UpdateSwordTip{loop{swdx=GetSwordTipX;swdy=GetSwordTipY;yield;}}UpdateSwordTip;
 
 @Event
 {
@@ -20,7 +21,7 @@ let timer = 42; //37
 }
 @Initialize
 {
-	if(noPlural){SetCommonData("Difficulty","Hard");}
+	if(noPlural){SetDifficultyD(EXTRA);}
 	if(rank>2){SetCommonData("CurrentSC","Rainbow \"Spectra Pendulum\"");}
 	else{	   SetCommonData("CurrentSC","Pendulum \"Shining Prism Star\"");}
 	boss = spawnBoss();
@@ -172,7 +173,7 @@ task TSword{
 	
 	task UpdateLaser(las){
 		while(!Obj_IsDeleted(las)){
-			ObjMove_SetDestAtZeno(las,swdx,swdy,0.25);
+			ObjMove_SetDestAtZeno(las,GetSwordTipX,GetSwordTipY,0.25);
 			yield;
 		}
 	}

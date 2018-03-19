@@ -5,10 +5,9 @@
 #Image["./ExRumia(星符「ミッドナイトレヴァリエ」).jpg"]
 
 #include "./Index.txt"
-#System["./system/Default_System.txt"]
-#Background["./system/Background_Sky.txt"]
-
-#BGM["./bgm/bgm - CC-CGR-loop.ogg"]
+#BGM["./bgm/bgm - Kid's Festival ~ Innocent Treasures.ogg"] // CC-CGR-loop.ogg"]
+#System["./system/Andi_System.txt"]
+#Background["./system/background/Background_Sky.txt"]
 
 //Fairy library
 #include "./Library/Fairies.txt"
@@ -18,7 +17,6 @@
 let bossScript;
 
 @Loading{
-	InstallFont(GetCurrentScriptDirectory() ~ "img/Helvetica.otf"); //.otf for One True Font
 	//Preload the boss plural
 	bossScript = LoadScriptInThread(GetCurrentScriptDirectory~"./Plural-Test.dnh");
 }
@@ -26,7 +24,7 @@ let bossScript;
 @Initialize
 {
 	SetCommonData("IsStage",true);
-	SetCommonData("Difficulty",NORMAL);
+	if(noPackage){SetDifficultyD(EXTRA);}
 	TStage();
 }
 

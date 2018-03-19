@@ -3,8 +3,9 @@
 #Title["Torrent \"Sparkling Daydream\""]
 #Text["series 7: scales with difficulty"] 
 #BGM["./bgm/bgm - Kid's Festival ~ Innocent Treasures.ogg"] // CC-CGR-loop.ogg"]
-#System["./system/Default_System.txt"]
-#Background["./system/Background_Sky.txt"]
+#System["./system/Andi_System.txt"]
+#Background["./system/background/Background_Sky.txt"]
+
 
 #include "./Index.txt"
 
@@ -22,7 +23,7 @@ let mlife = 2000; //2000
 }
 @Initialize
 {
-	if(noPlural){	SetDifficulty(HARD); }
+	if(noPlural){	SetDifficultyD(EXTRA); }
 	alternative(rank)
 	case(NORMAL,EASY){	SetCommonData("CurrentSC","Torrent \"Sparkling Daydream\"");}
 	case(HARD,EXTRA) {	SetCommonData("CurrentSC","Magicannon \"Sparkling Torrent\"");}
@@ -120,7 +121,7 @@ task TSword{
 		while(!Obj_IsDeleted(boss)){
 			
 			SE_Play(se_charge2,100);
-			let dummy = CreateDummyShot(swdx,swdy); UpdateLaser(dummy);
+			let dummy = CreateDummyShot(GetSwordTipX,GetSwordTipY); UpdateLaser(dummy);
 			// ConcentrationA2(dummy,"FEATHER",90,3,100,[100,100,100]);
 			EffectBurstOutB2(dummy,2,90,2.5,"feather",255,255,255);
 			EffectBurstInB2 (dummy,2,90,2.5,"feather",128,128,128);
@@ -140,7 +141,7 @@ task TSword{
 			ObjEnemy_SetDamageRate(boss,drate,drate/3);
 	
 			
-			las = CreateStraightLaserA1(swdx,swdy,a,0,30,8999,LAS_C_WHITE,9999);
+			las = CreateStraightLaserA1(GetSwordTipX,GetSwordTipY,a,0,30,8999,LAS_C_WHITE,9999);
 			UpdateLaser(las);
 			loop(300){
 				scl = sqrt(diff/4);
@@ -149,8 +150,8 @@ task TSword{
 				da1 = 3*(r/150); //3*
 				a+=da*dir;
 				
-				x = swdx + r*cos(a);
-				y = swdy + r*sin(a);
+				x = GetSwordTipX + r*cos(a);
+				y = GetSwordTipY + r*sin(a);
 				
 				ObjStLaser_SetTipPosition(las,x,y);
 				
@@ -197,7 +198,7 @@ task TSword{
 	
 	task UpdateLaser(las){
 		while(!Obj_IsDeleted(las)){
-			ObjMove_SetDestAtZeno(las,swdx,swdy,0.25);
+			ObjMove_SetDestAtZeno(las,GetSwordTipX,GetSwordTipY,0.25);
 			yield;
 		}
 	}
@@ -283,17 +284,17 @@ task TestEffect{
 	let obj;
 	loop(90){
 		loop(10){
-			// obj = EffectParticleB1(swdx,swdy,rand(-5,5),rand(-3,3),"gravity",255,255,255);
-			obj = EffectParticleB2(swdx,swdy,rand(-5,5),rand(-3,3),"gravity",36,0,1, 255,255,255);
+			// obj = EffectParticleB1(GetSwordTipX,GetSwordTipY,rand(-5,5),rand(-3,3),"gravity",255,255,255);
+			obj = EffectParticleB2(GetSwordTipX,GetSwordTipY,rand(-5,5),rand(-3,3),"gravity",36,0,1, 255,255,255);
 			SetEffectSmall(obj);
 			ObjRender_SetBlendType(obj,BLEND_ADD_ARGB);
 			Obj_SetRenderPriorityI(obj,44);
 			
-			let sp = rand(3,5); let a=rand(-20,20); let a0 = getangle(swdx,swdy,px,py); let d = getdist(swdx,swdy,px,py); let dur = d/sp*(1-(|a|)/30);
-			// obj = EffectParticleA2(swdx,swdy,rand(3,5),a0+a,"light",dur,0,1, 255,128,150);
+			let sp = rand(3,5); let a=rand(-20,20); let a0 = getangle(GetSwordTipX,GetSwordTipY,px,py); let d = getdist(GetSwordTipX,GetSwordTipY,px,py); let dur = d/sp*(1-(|a|)/30);
+			// obj = EffectParticleA2(GetSwordTipX,GetSwordTipY,rand(3,5),a0+a,"light",dur,0,1, 255,128,150);
 			// SetEffectSmall(obj);
 	
-			obj = EffectParticleA2(swdx+sp*dur*cos(a0+a),swdy+sp*dur*sin(a0+a),sp,a0+a+180,"light",dur, 1,0, 128,64,75);
+			obj = EffectParticleA2(GetSwordTipX+sp*dur*cos(a0+a),GetSwordTipY+sp*dur*sin(a0+a),sp,a0+a+180,"light",dur, 1,0, 128,64,75);
 			SetEffectSmall(obj);
 		}
 		yield;
@@ -304,63 +305,63 @@ task TestEffect{
 task TSpark{
 	let shot;
 	SE_Play(se_spark,100);
-	ScreenShake(180,2*compSign(px,ex),2);
+	ScreenShake(180,2*sign(px-ex),2);
 	
 	let count = 0;
 	let sp; let a; let a0; let a1; let da; let d; let centr;
 	
 	
-	a0 = getangle(swdx,swdy,px,py);
+	a0 = getangle(GetSwordTipX,GetSwordTipY,px,py);
 	
 	let diff = rank;
 	
 	loop(180){
-		a1 = getangle(swdx,swdy,px,py);
+		a1 = getangle(GetSwordTipX,GetSwordTipY,px,py);
 		da = GetAngularDistance(a0,a1); //compSign(a0,a1)
 		if( (|da|)<=1.5 ){ a0=a1; }
 		else{
 			a0+=1.5*sign(da);
 		}
-		d = getdist(swdx,swdy,px,py);
+		d = getdist(GetSwordTipX,GetSwordTipY,px,py);
 		
 		
 		loop(5){
 			
 			//red balls - slightly faster in middle
 			sp = rand(3,5); a=rand(-20,20); centr = (1-(|a|)/30);
-			shot = CreateShotA1(swdx,swdy,sp*(centr+0.5),a0+a, BALL_RED+500, 10);
+			shot = CreateShotA1(GetSwordTipX,GetSwordTipY,sp*(centr+0.5),a0+a, BALL_RED+500, 10);
 			if(count%(2*diff)==0){MyBounce2(shot,240);}
 			//trans balls - slightly slower in middle
 			sp = rand(3,5); a=rand(-20,20); centr = (1-(|a|)/30);
-			shot = CreateShotA1(swdx,swdy,sp/(centr+0.5),a0+a, BALL_MAGENTA-randBin+500, 10);
+			shot = CreateShotA1(GetSwordTipX,GetSwordTipY,sp/(centr+0.5),a0+a, BALL_MAGENTA-randBin+500, 10);
 			if(count%(2*diff)==diff){MyBounce2(shot,240);}
 			
 			//light particles among spark shots
-			let obj = EffectParticleA2(swdx,swdy,rand(3,5),a0+a,"light",d/centr/sp,0,1, 255,128,150);
+			let obj = EffectParticleA2(GetSwordTipX,GetSwordTipY,rand(3,5),a0+a,"light",d/centr/sp,0,1, 255,128,150);
 			SetEffectSmall(obj);
-			// obj = EffectParticleA2(swdx+d*centr*cos(a0+a),swdy+d*centr*sin(a0+a),sp,a0+a+180,"light",d/centr, 1,0, 128,64,75);
+			// obj = EffectParticleA2(GetSwordTipX+d*centr*cos(a0+a),GetSwordTipY+d*centr*sin(a0+a),sp,a0+a+180,"light",d/centr, 1,0, 128,64,75);
 			// SetEffectSmall(obj);
 			
 			//sakura particles
-			EffectParticleA2(swdx,swdy,rand(3,5),a0+180+randSign*rand(0,rand(45,rand(90,rand(135,180))))*rand(1,1.5), "CHERRY",36, 0,0.25,  255,64,180);
+			EffectParticleA2(GetSwordTipX,GetSwordTipY,rand(3,5),a0+180+randSign*rand(0,rand(45,rand(90,rand(135,180))))*rand(1,1.5), "CHERRY",36, 0,0.25,  255,64,180);
 	
 		}
 		
 		if(count%20==0){
 			task TWave{
 				wait(15);
-				// let wave = EffectParticleA2(swdx,swdy,4,a0, "spark_wave",d/centr/4, 0,0.25,  255,64,180);
-				let wave = CreateSprite(swdx,swdy,direffect~"spark_wave.png",[0,0,127,255],75);			
+				// let wave = EffectParticleA2(GetSwordTipX,GetSwordTipY,4,a0, "spark_wave",d/centr/4, 0,0.25,  255,64,180);
+				let wave = CreateSprite(GetSwordTipX,GetSwordTipY,direffect~"spark_wave.png",[0,0,127,255],75);			
 				
 				ObjRender_SetAlpha(wave,128);
 				ObjRender_SetBlendType(wave,BLEND_ADD_ARGB);
 				ObjRender_SetColor(wave,255,64,180);
 				
-				Obj_AddPatternA2(wave,0,6,getangle(swdx,swdy,px,py), -0.1,3);
+				Obj_AddPatternA2(wave,0,6,getangle(GetSwordTipX,GetSwordTipY,px,py), -0.1,3);
 				ObjRender_SetScaleXYZ(wave,0,0,1);
 				
-				ObjRender_SetScaleAtFrame(wave,1.25,1.25,192);
-				ObjRender_SetAlphaAtFrame(wave,0,96);
+				OR_SetScaleAtFrame(wave,1.25,1.25,192);
+				OR_SetAlphaAtFrame(wave,0,96);
 				wait(96);
 				Obj_Delete(wave);
 			}

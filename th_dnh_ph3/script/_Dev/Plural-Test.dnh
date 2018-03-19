@@ -4,19 +4,15 @@
 #Text["A test plural."]
 
 #include "./Index.txt"
-#System["./system/Default_System.txt"]
-#Background["./system/Background_Sky.txt"]
+#BGM["./bgm/bgm - Kid's Festival ~ Innocent Treasures.ogg"] // CC-CGR-loop.ogg"]
+#System["./system/Andi_System.txt"]
+#Background["./system/background/Background_Sky.txt"]
 
-#BGM["./bgm/bgm - Hartmann's Youkai Girl.ogg"]	
-// let music = ObjSound_Create; //if we were doing it "properly"
 
 @Loading {
-	//InstallFont(GetCurrentScriptDirectory() ~ "img/Helvetica.otf"); //.otf for One True Font
-	//I think this is being done somewhere else now
 }
 
 @Event{
-	//can do stuff here
 }
 
 @Initialize{
@@ -33,13 +29,9 @@ task TPlural {
     let obj = ObjEnemyBossScene_Create();
 	
 	//params: boss scene object, lifebar number, filepath
-	ObjEnemyBossScene_Add(obj,0,dir~"Single-6-14.dnh");
-	ObjEnemyBossScene_Add(obj,1,dir~"Single-6-11.dnh");
-	ObjEnemyBossScene_Add(obj,1,dir~"Single-6-12.dnh");
-	ObjEnemyBossScene_Add(obj,2,dir~"Single-6-02.dnh");
-	ObjEnemyBossScene_Add(obj,3,dir~"Single-6-08.dnh");
-	// ObjEnemyBossScene_Add(obj,3,dir~"Single-6-05.dnh");
-	ObjEnemyBossScene_Add(obj,4,dir~"Single-6-13.dnh");
+	ObjEnemyBossScene_Add(obj,0,dir~"Single-7-01.dnh");
+	ObjEnemyBossScene_Add(obj,1,dir~"Single-7-02.dnh");
+	ObjEnemyBossScene_Add(obj,2,dir~"Single-7-03.dnh");
 	
 	
 	ObjEnemyBossScene_LoadInThread(obj);

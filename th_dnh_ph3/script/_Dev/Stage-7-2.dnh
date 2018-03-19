@@ -5,10 +5,9 @@
 #Image["./ExRumia(星符「ミッドナイトレヴァリエ」).jpg"]
 
 #include "./Index.txt"
-#System["./system/Default_System.txt"]
-#Background["./system/Background_Sky.txt"]
-
-#BGM["./bgm/bgm - CC-CGR-loop.ogg"]
+#BGM["./bgm/bgm - Kid's Festival ~ Innocent Treasures.ogg"] // CC-CGR-loop.ogg"]
+#System["./system/Andi_System.txt"]
+#Background["./system/background/Background_Sky.txt"]
 
 //Fairy library
 #include "./Library/Fairies.txt"
@@ -18,7 +17,6 @@
 let bossScript;
 
 @Loading{
-	InstallFont(GetCurrentScriptDirectory() ~ "img/Helvetica.otf"); //.otf for One True Font
 	//Preload the boss plural
 	bossScript = LoadScriptInThread(GetCurrentScriptDirectory~"./Plural-Test.dnh");
 }
@@ -26,7 +24,7 @@ let bossScript;
 @Initialize
 {
 	SetCommonData("IsStage",true);
-	SetCommonData("Difficulty",NORMAL);
+	if(noPackage){SetDifficultyD(EXTRA);}
 	TStage();
 }
 
@@ -403,9 +401,9 @@ function TYinYangTest1(x,y,s,a, N,M,ss,sd,da,type){
 //pretty versatile
 function TFam1(x,y,s,a, N,M,ss,sd,da,type){
 	let fam = SpawnFamiliarC1(x,y,"blue",150);
-	FFlashIn(x,y,s*0.75,a,"red");
-	FFlashIn(x,y,s*0.25,a+rand(-5,5),"red");
-	FFlashIn(x,y,s*1.00,a+rand(-15,15),"red");
+	// FFlashIn(x,y,s*0.75,a,"red");
+	// FFlashIn(x,y,s*0.25,a+rand(-5,5),"red");
+	// FFlashIn(x,y,s*1.00,a+rand(-15,15),"red");
 	// let fam = SpawnFairy(x,y,"red","PoFV",10,150);
 	DoTask;
 	// TFollow;

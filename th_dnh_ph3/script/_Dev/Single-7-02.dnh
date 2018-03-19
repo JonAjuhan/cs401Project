@@ -2,15 +2,18 @@
 #ScriptVersion[3]
 #Title["Prism Sword \"Rainbow Reverberation\""]
 #Text["series 7: scales with difficulty"] 
-#BGM["./bgm/bgm - CC-CGR-loop.ogg"]
-#System["./system/Default_System.txt"]
-#Background["./system/Background_Sky.txt"]
+#BGM["./bgm/bgm - Kid's Festival ~ Innocent Treasures.ogg"] // CC-CGR-loop.ogg"]
+#System["./system/Andi_System.txt"]
+#Background["./system/background/Background_Sky.txt"]
 
 #include "./Index.txt"
 
 let timer = 47; //37
 let drate = 24; //24
 let mlife = 2000; //2000
+
+let swdx; let swdy;
+task UpdateSwordTip{loop{swdx=GetSwordTipX;swdy=GetSwordTipY;yield;}}UpdateSwordTip;
 
 @Event
 {
@@ -22,7 +25,7 @@ let mlife = 2000; //2000
 }
 @Initialize
 {
-	if(noPlural){SetCommonData("Difficulty","Hard");}
+	if(noPlural){SetDifficultyD(EXTRA);}
 	if(rank>2){SetCommonData("CurrentSC","Spectrum \"Reverberating Prism\"");}
 	else{	   SetCommonData("CurrentSC","Prism Sword \"Rainbow Reverberation\"");}
 	

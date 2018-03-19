@@ -279,8 +279,9 @@ function GetHighestScriptType{
 	else if(GetCommonData("IsPlural" ,false)){return "Plural" ;}
 	else{ return "Single"; }
 }
-function noPlural{return GetHighestScriptType=="Single";}
-function noStage {return GetHighestScriptType=="Stage"; }
+function noPlural {return GetHighestScriptType=="Single";  }
+function noStage  {return GetHighestScriptType=="Stage";   }
+function noPackage{return GetHighestScriptType=="Package"; }
 
 
 

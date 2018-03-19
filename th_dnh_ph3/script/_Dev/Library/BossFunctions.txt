@@ -162,8 +162,9 @@ task TSpellImmune{
 		while(!IsPlayerSpellActive){yield;}
 		wasIntersection = Obj_GetValueD(boss,"IsIntersectionEnable",true);
 		SetBossBlur(true);
-		while(IsPlayerSpellActive){yield;}
+		while(IsPlayerSpellActive && !GetCommonData("PlayerSpellAttackEnd",false)){yield;}
 		SetBossBlur(!wasIntersection);
+		while(IsPlayerSpellActive){yield;}
 	}
 }
 

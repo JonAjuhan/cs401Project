@@ -784,6 +784,9 @@ task Combustion{		//bomb
 			yield;
 		}
 		ObjShot_FadeDelete(obj);
+		SetCommonData("PlayerSpellAttackEnd",true);
+		yield;
+		DeleteCommonData("PlayerSpellAttackEnd");
 	}
 }
 
