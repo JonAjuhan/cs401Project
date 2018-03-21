@@ -1,0 +1,72 @@
+#TouhouDanmakufu[Single]
+#ScriptVersion[3]
+#Title["(Mystia intro dialogue)"]
+#Text["series 7: scales with difficulty"] 
+// #BGM["./bgm/bgm - Deaf to All but the Song.ogg"]
+#System["./system/Andi_System.txt"]
+#Background["./system/Background/Mystia/BG_work.txt"]
+
+#include "./Index.txt"
+
+@Event
+{
+	alternative(GetEventType())
+	case(EV_REQUEST_LIFE){ SetScriptResult(1); }
+}
+@Initialize
+{
+
+	boss = spawnBossBlank("Mystia Lorelai");
+	renderMystiaIN(boss,1);
+	
+	MainTask;
+	
+
+}
+@MainLoop{
+	frame++;yield;
+}
+
+
+task MainTask {
+	
+	ObjMove_SetPosition(boss,cx+120,-120);
+	ObjMove_SetDestAtWeight(boss,cx,120,60,20);
+	
+	InitiateDialogueSequence();
+	SetPortraitNumber(1,1);
+	
+	SetNewPlayerPort(dirportrait~"Mokou_Normal.png",0);
+	
+	SetSpeaker(0);
+	SetDialogueTextA1("So, nice day we're having.",[255,128,128]);
+	
+	SetNewEnemyPort(dirportrait~"Mystia_Normal.png",0);
+	
+	SetSpeaker(1);
+	DisplayEnemyTitle("Mystia Lorelai","Terror that Chirps in the Night",dirimg~"butterflies.png",150);
+	SetDialogueTextA1("It's night, dumbass.",[128,128,255]);
+	
+	SetSpeaker(0);
+	SetPlayerPort(dirportrait~"Mokou_Smile.png",0);
+	SetDialogueTextA1("AWW SHIT, it is!",[255,128,128]);
+	
+	SetSpeaker(1);
+	SetEnemyPort(dirportrait~"Mystia_Vein.png",0);
+	SetDialogueTextA1("That's right jackass, whatcha gonna do[r]about it?",[255,128,255]);
+	
+	SetSpeaker(0);
+	SetPlayerPort(dirportrait~"Mokou_Smug.png",0);
+	SetEnemyPort(dirportrait~"Mystia_Pout.png",0);
+	DisplayPlayerTitle("Fujiwara no Mokou","Figure of the Person of Hourai",dirimg~"butterflies.png",90);
+	SetBGM("Deaf to All But the Song",70.7, 141.38);
+	SetDialogueTextA2("I'm gonna beat you the fuck up!",[255,128,128],90);
+	SetSpeaker(1);
+	SetDialogueTextA2("Shit!",[255,128,255], 60);
+	
+	EndDialogueSequence();
+	ObjEnemy_SetLife(boss,0);
+	Obj_Delete(boss);
+	CloseScript(GetOwnScriptID);
+}
+

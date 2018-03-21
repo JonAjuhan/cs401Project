@@ -1,0 +1,212 @@
+//Interpolation function and interpolated movement library by Dark Kitsune / Ran / Darkwalker
+
+function linear(a,b,x) {
+	return a + x * (b-a);
+}
+
+function smoothstep(a,b,x) {
+	return a + x * x * (3 - 2 * x) * (b - a);
+}
+
+function smootherstep(a,b,x) {
+	return a + x * x * x * (x * (x * 6 - 15) + 10) * (b - a);
+}
+
+function acceleration(a,b,x) {
+	let v = x * x;
+	return (b * v) + (a * (1 - v));
+}
+
+function deceleration(a,b,x) {
+	let v = 1 - (1 - x) * (1 - x);
+	return (b * v) + (a * (1 - v));
+}
+
+function overshoot(a,b,x,magnitude) {
+	x = deceleration(0,1,x);
+	return a + x * (b-a) * (1 + sin(x * 180) * magnitude);
+}
+
+task moveLinear(object,x,y,time,move) {
+	let px = ObjRender_GetX(object);
+	let py = ObjRender_GetY(object);
+	let hash = IntToString(px)~IntToString(py);
+	Obj_SetValue(object,"interhash",hash);
+	Obj_SetValue(object, "SimulateMovement", move); //creates artificial movement by notifying the animation library
+	let i = 0;
+
+	if(move){ObjMove_SetAngle(object, atan2(y - ObjMove_GetY(object), x - ObjMove_GetX(object)));}
+	while (!Obj_IsDeleted(object) && Obj_GetValue(object,"interhash") == hash && i < time) {
+		i++;
+		ObjRender_SetPosition(object,linear(px,x,i / time),linear(py,y,i / time), 0);
+		yield;
+	}
+	Obj_SetValue(object, "SimulateMovement", false);
+}
+
+task moveOvershoot(object,x,y,time,magnitude,move) {
+	let px = ObjRender_GetX(object);
+	let py = ObjRender_GetY(object);
+	let hash = IntToString(px)~IntToString(py);
+	Obj_SetValue(object,"interhash",hash);
+	Obj_SetValue(object, "SimulateMovement", move); //creates artificial movement by notifying the animation library
+	let i = 0;
+
+	if(move){ObjMove_SetAngle(object, atan2(y - ObjMove_GetY(object), x - ObjMove_GetX(object)));}
+	while (!Obj_IsDeleted(object) && Obj_GetValue(object,"interhash") == hash && i < time) {
+		i++;
+		ObjRender_SetPosition(object,overshoot(px,x,i / time,magnitude),overshoot(py,y,i / time,magnitude), 0);
+		yield;
+	}
+	Obj_SetValue(object, "SimulateMovement", false);
+}
+
+task moveSmooth(object,x,y,time,move) {
+	let px = ObjRender_GetX(object);
+	let py = ObjRender_GetY(object);
+	let hash = IntToString(px)~IntToString(py);
+	Obj_SetValue(object,"interhash",hash);
+	Obj_SetValue(object, "SimulateMovement", move); //creates artificial movement by notifying the animation library
+	let i = 0;
+
+	if(move){ObjMove_SetAngle(object, atan2(y - ObjMove_GetY(object), x - ObjMove_GetX(object)));}
+	while (!Obj_IsDeleted(object) && Obj_GetValue(object,"interhash") == hash && i < time) {
+		i++;
+		ObjRender_SetPosition(object,smoothstep(px,x,i / time),smoothstep(py,y,i / time), 0);
+		yield;
+	}
+	Obj_SetValue(object, "SimulateMovement", false);
+}
+
+task moveSmoother(object,x,y,time,move) {
+	let px = ObjRender_GetX(object);
+	let py = ObjRender_GetY(object);
+	let hash = IntToString(px)~IntToString(py);
+	Obj_SetValue(object,"interhash",hash);
+	Obj_SetValue(object, "SimulateMovement", move); //creates artificial movement by notifying the animation library
+	let i = 0;
+
+	if(move){ObjMove_SetAngle(object, atan2(y - ObjMove_GetY(object), x - ObjMove_GetX(object)));}
+	while (!Obj_IsDeleted(object) && Obj_GetValue(object,"interhash") == hash && i < time) {
+		i++;
+		ObjRender_SetPosition(object,smootherstep(px,x,i / time),smootherstep(py,y,i / time), 0);
+		yield;
+	}
+	Obj_SetValue(object, "SimulateMovement", false);
+}
+
+task moveAcceleration(object,x,y,time,move) {
+	let px = ObjRender_GetX(object);
+	let py = ObjRender_GetY(object);
+	let hash = IntToString(px)~IntToString(py);
+	Obj_SetValue(object,"interhash",hash);
+	Obj_SetValue(object, "SimulateMovement", move); //creates artificial movement by notifying the animation library
+	let i = 0;
+
+	if(move){ObjMove_SetAngle(object, atan2(y - ObjMove_GetY(object), x - ObjMove_GetX(object)));}
+	while (!Obj_IsDeleted(object) && Obj_GetValue(object,"interhash") == hash && i < time) {
+		i++;
+		ObjRender_SetPosition(object,acceleration(px,x,i / time),acceleration(py,y,i / time), 0);
+		yield;
+	}
+	Obj_SetValue(object, "SimulateMovement", false);
+}
+
+task moveDeceleration(object,x,y,time,move) {
+	let px = ObjRender_GetX(object);
+	let py = ObjRender_GetY(object);
+	let hash = IntToString(px)~IntToString(py);
+	Obj_SetValue(object,"interhash",hash);
+	Obj_SetValue(object, "SimulateMovement", move); //creates artificial movement by notifying the animation library
+	let i = 0;
+
+	if(move){ObjMove_SetAngle(object, atan2(y - ObjMove_GetY(object), x - ObjMove_GetX(object)));}
+	while (!Obj_IsDeleted(object) && Obj_GetValue(object,"interhash") == hash && i < time) {
+		i++;
+		ObjRender_SetPosition(object,deceleration(px,x,i / time),deceleration(py,y,i / time), 0);
+		yield;
+	}
+	Obj_SetValue(object, "SimulateMovement", false);
+}
+
+
+
+//the following code is made by Ultima
+
+//Uses Speed
+task ObjMove_SetDestAtHermiteS(obj,dest_x,dest_y,x_dir,x_angle,y_dir,y_angle,speed){
+        real t = 0;
+        real ini_x = ObjRender_GetX(obj);
+        real ini_y = ObjRender_GetY(obj);
+ 
+        while(t<1){
+                real scale = t/1;
+                real h1a = 2*scale^3 - 3*scale^2 + 1;
+                real h2a = -2*scale^3 + 3*scale^2;
+                real h3a = scale^3 - 2*scale^2 + scale;
+                real h4a = scale^3 - scale^2;
+                real fx = h1a*ini_x + h2a*dest_x + h3a*x_dir + h4a*x_angle;
+               
+                real h1b = 2*scale^3 - 3*scale^2 + 1;
+                real h2b = -2*scale^3 + 3*scale^2;
+                real h3b = scale^3 - 2*scale^2 + scale;
+                real h4b = scale^3 - scale^2;
+                real fy = h1b*ini_y + h2b*dest_y + h3b*y_dir + h4b*y_angle;
+               
+                ObjRender_SetPosition(obj,fx,fy,0);
+               
+                t+=speed/100;
+                yield;
+        }
+}
+ 
+//Uses Frames
+task ObjMove_SetDestAtHermiteF(obj,dest_x,dest_y,x_dir,x_angle,y_dir,y_angle,frames){
+        real t = 0;
+        real ini_x = ObjRender_GetX(obj);
+        real ini_y = ObjRender_GetY(obj);
+        real speed = (1-0)/frames;
+ 
+        loop(frames){
+                real scale = t/1;
+                real h1a = 2*scale^3 - 3*scale^2 + 1;
+                real h2a = -2*scale^3 + 3*scale^2;
+                real h3a = scale^3 - 2*scale^2 + scale;
+                real h4a = scale^3 - scale^2;
+                real fx = h1a*ini_x + h2a*dest_x + h3a*x_dir + h4a*x_angle;
+               
+                real h1b = 2*scale^3 - 3*scale^2 + 1;
+                real h2b = -2*scale^3 + 3*scale^2;
+                real h3b = scale^3 - 2*scale^2 + scale;
+                real h4b = scale^3 - scale^2;
+                real fy = h1b*ini_y + h2b*dest_y + h3b*y_dir + h4b*y_angle;
+               
+                ObjRender_SetPosition(obj,fx,fy,0);
+               
+                t+=speed;
+                yield;
+        }
+}
+
+//Easier function
+task ObjMove_MoveBezierCurve(obj,s,x1,y1,x2,y2){
+    let t = 0;
+    let p = [ObjRender_GetX(obj),(x1),x2];
+    let p2 = [ObjRender_GetY(obj),(y1),y2];
+    let x = 0;
+    let y = 0;
+    let speed = s/1000;
+    
+    ObjMove_SetSpeed(obj,0.01);
+    
+    while(t<=1){
+        x = (1 - t) * (1 - t) * p[0] + 2 * (1 - t) * t * p[1] + t * t * p[2];
+        y = (1 - t) * (1 - t) * p2[0] + 2 * (1 - t) * t * p2[1] + t * t * p2[2];
+        
+        t+=speed;
+        moveLinear(obj,x,y,2,true);
+        yield;
+    }
+    
+    ObjRender_SetPosition(obj,x2,y2,0);
+}

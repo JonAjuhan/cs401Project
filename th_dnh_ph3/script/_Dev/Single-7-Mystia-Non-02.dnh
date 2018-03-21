@@ -31,7 +31,6 @@ let mlife = 4000; //2000
 	
 	SetShotAutoDeleteClip(32,32,32,32);
 	
-	// boss = spawnBoss();
 	boss = spawnBossBlank("Mystia Lorelai");
 	renderMystiaIN(boss,1);
 	
@@ -46,7 +45,8 @@ let mlife = 4000; //2000
 	{
 		finishing = true;
 		DropItemsNonspellEnd;
-		TBreakNonspell([BREAK_DELAY,45,NULL]);
+		// TBreakNonspell([BREAK_DELAY,45,NULL]);
+		TBreakNonspell([]);
 	}
 	else {
 		SetBossHitbox(boss,ex,ey);
@@ -61,6 +61,8 @@ task MainTask {
 	ObjEnemy_SetDamageRate(boss,drate,drate/3);
 	ObjMove_SetDestAtFrame(boss, cx, cy-100, 60); //cy-120
 	
+	wait(45);
+	
 	// SetSpellCard;
 	// ObjEnemyBossScene_StartSpell(objScene);
 	// ObjEnemyBossScene_SetSpellTimer(objScene,timer*60); //5760
@@ -70,7 +72,7 @@ task MainTask {
 	// Aura(boss,255,255,255,64);
 	// SetMagicCircleAlpha(64,64);
 
-	wait(90);
+	// wait(90);
 		
 	// Tmovement(cx-120,cx+120, cy-90,cy-60, 60,240, [MOVE_PLAYERBIAS,2,0,MOVE_MAXSPEED,1.5] );
 	ObjEnemy_SetDamageRate(boss,drate,drate/3);
@@ -89,13 +91,13 @@ task TShoot{
 
 	let shot; 
 	
-	let gap; let N; let del; let famgap;
+	let gap; let N; let del; let famgap; let arc; let numfam;
 	let diff = rank();	
 	alternative(diff)
-	case(RANK_EASY){	N = 10; gap=90; del = 120; famgap = 15; }
-	case(RANK_NORM){	N = 15; gap=60; del = 120; famgap = 10; }
-	case(RANK_HARD){	N = 25; gap=45; del = 90;  famgap = 7; }
-	case(RANK_LUNA){	N = 40; gap=25; del = 90;  famgap = 5; }
+	case(RANK_EASY){	N = 10; arc = 300; gap=90; del = 120; famgap = 15; numfam =  1;  }
+	case(RANK_NORM){	N = 35; arc = 410; gap=60; del = 120; famgap = 10; numfam =  5;  }
+	case(RANK_HARD){	N = 45; arc = 410; gap=45; del = 90;  famgap = 7;  numfam = 10;  }
+	case(RANK_LUNA){	N = 90; arc = 720; gap=25; del = 90;  famgap = 5;  numfam = 15;  }
 	others{ N=100;gap=20;del=90;famgap = 1;}
 	let shootinterval = 30/N; //total of 30 frames, in N intervals
 
@@ -104,72 +106,16 @@ task TShoot{
 	
 	while(!Obj_IsDeleted(boss) && !finishing){
 		
-		
-		
-		// DropItemsNonspellEnd;
-		// DropItemsSpellEnd;
-		// DeleteShotAll(TYPE_ALL,TYPE_ITEM);
-		
-		// loop{
-			// loop(5){
-				// // SetCommonData("CurrentSC","Test Sign \"Ultimat e Final Danmaku [r]Stormr Festival Fianl Blizazrd F\"");
-				// count++;
-				// if(count>3){ObjCutin_Remove(randint(0,2)); wait(30);}
-				// yield;
-				// SetCommonData("CurrentSC","TeStSign \"Final timat DanmakuS tormr Festivla "~tost(count)~"\"");
-				// // SetSpellCardA2(NAZRIN,dirlib~"Cutin/Cutin_Mystia.png");
-				// SetSpellCardA2(AYA,dirlib~"Cutin/Cutin_Mystia.png");
-				// // SetSpellCardA2(MOKOU,dirlib~"Cutin/Cutin_Mystia.png");
-				// ObjEnemyBossScene_StartSpell(objScene);
-				
-				// wait(rand(30,120));
-				// // wait(120);
-			// }
-			// wait(300);
-		// }
-		
-		
-		
-		
 		ascent(k in 0..2){
 			ObjMove_SetDestAtWeight(boss,cx+randSign*rand(0,cx*0.75),rand(60,cy*0.9), gap*0.66,20);
 			wait(gap/2);
 			if(finishing){DeleteShotAll(TYPE_ALL,TYPE_ITEM);return;}
 			dir = -altSign(k);
 			ascent(i in 0..N){
-				ascent(j in 0..6){ //3
-					dir = -altSign(k);
-					a = 270+(90+15+300/N*i)*dir;
-					dir = -altSign(j);
-					let isalt = frombool(altSign(j)==altSign(k));
-					// shot = CreateShotA2(ex,ey,5.5-0.5*j,a, -0.15,0, SCALE_GREEN,10);
-					// shot = CreateShotA2(ex,ey,5.5-0.5*j,a, -0.15,0, SCALE_BLUE-5*altBin(j),10);
-					// shot = CreateShotA2(ex,ey,5.5-0.5*trunc(j/2+altBin(i)/3),a, -0.15,0, BALL_O_GREEN,10);
-					shot = CreateShotA2(ex,ey,5.5-0.5*trunc(j/2+altBin(i)/3),a, -0.15,0, BALL_O_GREEN+isalt*(SCALE_RED-BALL_O_GREEN+5*tobin(altBin(trunc(j/2+i)))),10);
-					//          (obj, del,     speed,    angle, acc,      angv, mspd,    jerk,  macc,      anga,    mangv)
-					OM_AddPatternA5(shot,  0, NO_CHANGE,NO_CHANGE,   0,         0,    0,   -0.005,   -1,         0,        0);
-					// AddPatternA5(shot,  0, NO_CHANGE,NO_CHANGE,   6,         0,    0,   -0.05,   -1,         0,        0);
-					// AddPatternA5(shot,del, NO_CHANGE,NO_CHANGE,   0, -dir*1.55,    4,  0.0015, 0.15, dir*0.05, dir*0.01);
-					let spd = 0;
-					let mspd= 5; //4
-					
-					let acc  = 0; //0.5
-					let jerk = 0.003; //-0.0015
-					let macc = 0.15; //0.15
-					OM_AddPatternA5(shot,del, spd,NO_CHANGE,  acc, -dir*3.55,   mspd,  jerk, macc, dir*0.15, dir*1.25);
-					
-					if(altSign(j)==altSign(k)){
-						Manage(shot);
-						task Manage(shot){
-							ObjRender_SetAlpha(shot,0);
-							wait(del);
-							ascent(i in 0..60){
-								ObjRender_SetAlpha(shot,255*(i/60)^2);
-								yield;
-							}
-						}
-					}
-					
+				ascent(j in 0..1+rank){
+					a = 270+(90+15+(5-j)*altSign(i)+arc/N*i)*dir;
+					shot = CreateShotA2(ex,ey,5.5-0.25*j,a, -0.15,0, BALL_O_GREEN,10);
+					ObjMove_AddPatternA2(shot,del, NO_CHANGE,NO_CHANGE, 0.15-0.03*j,   -dir*(0.25-0.05*j),   11);
 				}
 				SE_Play(se_shot,60);
 				DelayChime;
@@ -183,40 +129,38 @@ task TShoot{
 		wait(gap); //60
 		
 		let a0 = GetAngleToPlayer(boss);
-		ascent(i in 0..10){
+		ascent(i in 0..5){ //10
 			let fam = SpawnFamiliarC1(ex,ey,"blue",150+50*diff);
 			// ObjMove_AddPatternA1(fam,0,3.5,a0-90+15+36*i);
-			OM_AddPatternA5(fam,  0, 2,a0-90+15+36*i,   0,0,6,   0.001,0.1,   0.05,1);
+			ObjMove_AddPatternA1(fam,0,3.5,a0+(36*i)/10*altSign(i));
 			// ObjMove_AddPatternA2(fam,60,NO_CHANGE,NO_CHANGE, -0.15, 0.25/cos(((|i-4.5|))), 0.75);
 			SE_Play(se_fam,100);
 			TFamShoot(fam);
 			//Each familiar's shots
 			task TFamShoot(fam){
 				wait(30); let shot; let fx; let fy; let fa; let off=0;
-				if(finishing){Obj_Delete(fam);return;}
 				while(!Obj_IsDeleted(fam) && !isOffScreen(fam)){
 					fx = ObjMove_GetX(fam); fy = ObjMove_GetY(fam); fa = ObjMove_GetAngle(fam);
 					ascent(i in 0..2){
-						shot = CreateShotA2(fx+rand(-20,20),fy+rand(-20,20),0,fa+180+160*i+off, 0,0, LARGE_BLUE,15); //1.5
+						shot = CreateShotA2(fx+rand(-20,20),fy+rand(-20,20),0,fa+180+160*i+off, 0,0, LARGE_AQUA,15); //1.5
 						CheckShot(shot,50);
-						// ObjMove_AddPatternA3(shot,del,0,NO_CHANGE,0.05,0,2.25, LARGE_AQUA);
-						// ObjMove_AddPatternA4(shot,del,0,NO_CHANGE,0.05,0,2.25, GetPlayerObjectID, LARGE_AQUA);
-						ObjMove_AddPatternA4(shot,del,0,160*i+off*sin(off)*cos(off),0.05,0,2.25, GetPlayerObjectID, LARGE_AQUA);
+						ObjMove_AddPatternA3(shot,del,0,NO_CHANGE,0.05,0,2.25, LARGE_BLUE);
 					}
 					SE_Play(se_shot1,70);
 					DelayChime;
-					wait(famgap);
+					wait(2*famgap);
 					if(finishing){Obj_Delete(fam);return;}
 					off += 15*famgap;
 				}
 				Obj_Delete(fam);
 			}//end of familiars' shots
-			wait(3);
+			// wait(3);
+			// wait(8);
+			wait(sqrt(N-i)*0.5);
 		}
 		
 		
 		wait(120);
-		
 		
 	}	
 	

@@ -1,4 +1,5 @@
-let music = ObjSound_Create; SetCommonData("MusicObject",music);
+let music = GetCommonData("MusicObject",ObjSound_Create);
+SetCommonData("MusicObject",music);
 
 //TODO: Have system handle this? eh nah
 
@@ -54,6 +55,37 @@ task FadeBGM{
 	}
 	ObjSound_Stop(music);
 }
+
+
+
+
+
+
+task ShowBGMTitle(title){
+	let obj = makeText(sx-15,sy-20,16,[0,0,255],ALIGNMENT_RIGHT, 0, title);
+	// ObjText_SetFontColorTop(   obj, 180, 180, 255);
+	// ObjText_SetFontColorBottom(obj,  64,  64, 255);
+	ObjText_SetFontColorTop(   obj, 255, 255, 255);
+	ObjText_SetFontColorBottom(obj,  180,  180, 255);
+	ObjText_SetFontBorderColor(obj,   0,   0, 255);
+	ObjText_SetFontType(obj, "Cirno");
+	Obj_SetRenderPriorityI(obj,79.9999);
+	descent(i in 0..40){ //100
+		ObjRender_SetY(obj,sy-20+i);
+		ObjRender_SetAlpha(obj,200-2*i);
+		yield;
+	}
+	wait(180); //120
+	ascent(i in 0..120){ //120
+		// ObjRender_SetX(obj,-(15+sx/120*i) );
+		ObjRender_SetX(obj,qerp(-15,-15+(0.15*sx),-15-sx,i/120));
+		yield;
+	}
+	Obj_Delete(obj);
+}
+
+
+
 
 
 

@@ -7,7 +7,7 @@
 #System["./system/Andi_System.txt"]
 #Background["./system/Background/Mystia/BG_work.txt"]
 
-#BGM["./bgm/bgm - Deaf to All but the Song.ogg"]
+// #BGM["./bgm/bgm - Deaf to All but the Song.ogg"]
 
 @Loading {
 	//InstallFont(GetCurrentScriptDirectory() ~ "img/Helvetica.otf"); //.otf for One True Font
@@ -30,15 +30,17 @@ task TPlural {
 	let dir = GetCurrentScriptDirectory()~"./";
     let obj = ObjEnemyBossScene_Create();
 	
+	yield;
+	
 	//params: boss scene object, lifebar number, filepath
+	ObjEnemyBossScene_Add(obj,0,dir~"Single-7-Mystia-Dialogue.dnh");
 	ObjEnemyBossScene_Add(obj,0,dir~"Single-7-Mystia-Non-01.dnh");
 	ObjEnemyBossScene_Add(obj,0,dir~"Single-7-Mystia-01.dnh");
-	ObjEnemyBossScene_Add(obj,1,dir~"Single-7-Mystia-Non-01.dnh"); //<-
+	ObjEnemyBossScene_Add(obj,1,dir~"Single-7-Mystia-Non-01.dnh"); //<-todo
 	ObjEnemyBossScene_Add(obj,1,dir~"Single-7-Mystia-02.dnh");
-	ObjEnemyBossScene_Add(obj,2,dir~"Single-7-Mystia-Non-01.dnh");
+	ObjEnemyBossScene_Add(obj,2,dir~"Single-7-Mystia-Non-01.dnh"); //<-todo
 	ObjEnemyBossScene_Add(obj,2,dir~"Single-7-Mystia-03.dnh");
 	ObjEnemyBossScene_Add(obj,2,dir~"Single-7-Mystia-Explode.dnh");
-	
 	
 	ObjEnemyBossScene_LoadInThread(obj);
 	ObjEnemyBossScene_Regist(obj);

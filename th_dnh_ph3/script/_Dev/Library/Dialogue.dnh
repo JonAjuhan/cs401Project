@@ -1,4 +1,4 @@
-#include "./Interpolation.dnh"
+#include "./InterpolatedMovement.dnh"
 
 let portrait_player = [];
 let portrait_enemy = [];
@@ -18,11 +18,11 @@ let speakerenemy = 0;
 function SetPortraitNumber(numplayer, numenemy){
 	ascent(i in 0 .. numplayer){
 		let obj = CreatePortrait;
+		ObjRender_SetAngleY(obj, 180);
 		playerobjects = playerobjects ~ [obj];
 	}
 	ascent(i in 0 .. numenemy){
 		let obj = CreatePortrait;
-		ObjRender_SetAngleY(obj, 180);
 		enemyobjects = enemyobjects ~ [obj];
 	}
 
@@ -39,7 +39,9 @@ function SetPortraitNumber(numplayer, numenemy){
 sub InitiateDialogueSequence{
 	SetForbidPlayerShot(true);
 	SetForbidPlayerSpell(true);
+	
 	SetCommonData("IsDialogueSequenceActive", true);
+	ForceDisableShot;
 
 	dialogue_box = DialogueBox;
 	ObjRender_SetAngleX(dialogue_box, 90);
@@ -85,11 +87,20 @@ sub EndDialogueSequence{
 	SetForbidPlayerSpell(false);
 }
 
+task ForceDisableShot{
+	while(GetCommonData("IsDialogueSequenceActive",false)){
+		SetVirtualKeyState(VK_SHOT,KEY_FREE);
+		yield;
+	}
+}
+
 function DialogueBox{
 	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
 	ObjPrim_SetTexture(obj, GetCurrentScriptDirectory ~ "../System/img/diabox.png");
-	ObjSprite2D_SetSourceRect(obj, 0, 0, 384, 96);
+	// ObjSprite2D_SetSourceRect(obj, 0, 0, 384, 96);
+	ObjSprite2D_SetSourceRect(obj, 66, 16, 445, 111);
 	ObjSprite2D_SetDestCenter(obj);
+	ObjRender_SetAlpha(obj,128);
 	ObjRender_SetPosition(obj, GetStgFrameWidth/2, GetStgFrameHeight - 48, 0);
 	Obj_SetRenderPriorityI(obj, 76);
 	return obj;
@@ -107,38 +118,44 @@ function CreatePortrait{
 
 function SetSpeaker(value){
 	globalspeaker = value;
+	
+	let off_speaker = 96; //128
+	let off_other = 128;   //192
+	let off_behind = 32;   //64
+	let off_vert = 128; //160
+	
 	if(globalspeaker ==  0){
 		ascent(i in 0 .. length(playerobjects)){
 			if(i == speakerplayer){
-				moveDeceleration(playerobjects[i], GetStgFrameWidth/2 - 64, GetStgFrameHeight - 160, 30, false);
+				moveDeceleration(playerobjects[i], GetStgFrameWidth/2 - off_speaker, GetStgFrameHeight - off_vert, 30, false);
 				ObjRender_SetAlpha(playerobjects[i], 256);
 				Obj_SetRenderPriorityI(playerobjects[i], 75);
 			}else{
-				moveDeceleration(playerobjects[i], GetStgFrameWidth/2 - 192, GetStgFrameHeight - 64, 30, false);
+				moveDeceleration(playerobjects[i], GetStgFrameWidth/2 - (off_speaker+off_behind), GetStgFrameHeight - off_vert, 30, false);
 				ObjRender_SetAlpha(playerobjects[i], 160);
 				Obj_SetRenderPriorityI(playerobjects[i], 74);
 			}
 		}
 		ascent(i in 0 .. length(enemyobjects)){
-			moveDeceleration(enemyobjects[i], GetStgFrameWidth/2 + 192, GetStgFrameHeight - 64, 30, false);
+			moveDeceleration(enemyobjects[i], GetStgFrameWidth/2 + off_other, GetStgFrameHeight - off_vert, 30, false);
 			ObjRender_SetAlpha(enemyobjects[i], 160);
 			Obj_SetRenderPriorityI(enemyobjects[i], 74);
 		}
 	}else{
 		ascent(i in 0 .. length(enemyobjects)){
 			if(i == speakerenemy){
-				moveDeceleration(enemyobjects[i], GetStgFrameWidth/2 + 64, GetStgFrameHeight - 160, 30, false);
+				moveDeceleration(enemyobjects[i], GetStgFrameWidth/2 + off_speaker, GetStgFrameHeight - off_vert, 30, false);
 				ObjRender_SetAlpha(enemyobjects[i], 256);
 				Obj_SetRenderPriorityI(enemyobjects[i], 75);
 			}else{
-				moveDeceleration(enemyobjects[i], GetStgFrameWidth/2 + 192, GetStgFrameHeight - 64, 30, false);
+				moveDeceleration(enemyobjects[i], GetStgFrameWidth/2 + (off_speaker+off_behind), GetStgFrameHeight - off_vert, 30, false);
 				ObjRender_SetAlpha(enemyobjects[i], 160);
 				Obj_SetRenderPriorityI(enemyobjects[i], 74);
 			}
 		}
 
 		ascent(i in 0 .. length(playerobjects)){
-			moveDeceleration(playerobjects[i], GetStgFrameWidth/2 - 192, GetStgFrameHeight - 64, 30, false);
+			moveDeceleration(playerobjects[i], GetStgFrameWidth/2 - off_other, GetStgFrameHeight - off_vert, 30, false);
 			ObjRender_SetAlpha(playerobjects[i], 160);
 			Obj_SetRenderPriorityI(playerobjects[i], 74);
 		}
@@ -246,20 +263,69 @@ function RemoveEnemyPort(i){ //moves out the enemy portrait
 	moveDeceleration(enemyobjects[i], ObjRender_GetX(enemyobjects[i]), GetStgFrameHeight + 384, 20, false);
 }
 
-task DisplayEnemyTitle(img, time){
+//modified
+task DisplayEnemyTitle(namestr,titlestr, img, time){
+	
+	let pos_y = GetStgFrameHeight-96; //-160
+	let pos_x0 = GetStgFrameWidth/2 + 32;
+	let pos_x1 = GetStgFrameWidth;
+	
+	let off_x_img = -32;
+	let off_x_name = -GetStgFrameWidth/2;
+	let off_x_title = -GetStgFrameWidth/2;
+	
+	let off_y_img = -8;
+	let off_y_name = -16;
+	let off_y_title = -24;
+	
 	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
 	ObjPrim_SetTexture(obj, img);
 	ObjSprite2D_SetSourceRect(obj, 0, 0, GetTextureWidth(img), GetTextureHeight(img));
 	ObjSprite2D_SetDestCenter(obj);
-	ObjRender_SetPosition(obj, GetStgFrameWidth/2 + 32, GetStgFrameHeight - 160, 0);
 	ObjRender_SetAlpha(obj, 0);
-	ObjRender_SetScaleXYZ(obj, 0.75, 0.75, 0);
+	// ObjRender_SetScaleXYZ(obj, 0.75, 0.75, 0);
+	// ObjRender_SetScaleXYZ(obj, 1.25, 1.25, 0);
+	ObjRender_SetScaleXYZ(obj, 1.5, 1.5, 0);
 	Obj_SetRenderPriorityI(obj, 77);
-	moveSmoother(obj, GetStgFrameWidth, GetStgFrameHeight - 160, time*3, false);
+	ObjRender_SetPosition(obj, pos_x0+off_x_img, pos_y+off_y_img, 0);
+	moveSmoother(obj, pos_x1+off_x_img, pos_y+off_y_img, time*3, false);
 
+	
+	// let name = makeText(cx,cy-96,    32,[0,0,255],ALIGNMENT_CENTER, 0, titletext);
+	let name = ObjText_Create;
+	ObjText_SetMaxWidth(name,GetStgFrameWidth);
+	ObjText_SetHorizontalAlignment(name,ALIGNMENT_CENTER);
+	ObjText_SetFontColorTop(   name, 255, 255, 200);
+	ObjText_SetFontColorBottom(name, 255, 255, 128);
+	ObjText_SetFontBorderColor(name,  64,  64, 200);
+	ObjText_SetFontType(name, "Gyosho");
+	ObjText_SetFontSize(name,28);
+	// ObjText_SetFontBold(name,true);
+	ObjText_SetText(name,namestr);
+	Obj_SetRenderPriorityI(name, 78);
+	ObjRender_SetPosition(name, pos_x0+off_x_name, pos_y+off_y_name, 0);
+	moveSmoother(name,pos_x1+off_x_name, pos_y+off_y_name, time*3, false);
+
+	// let title = makeText(cx+60,cy-24,  16,[0,0,255],ALIGNMENT_CENTER, 0, subtitletext);
+	let title = ObjText_Create;
+	ObjText_SetMaxWidth(title,GetStgFrameWidth);
+	ObjText_SetHorizontalAlignment(title,ALIGNMENT_CENTER);
+	ObjText_SetFontColorTop(   title, 255, 255, 255);
+	ObjText_SetFontColorBottom(title, 180, 180, 255);
+	ObjText_SetFontBorderColor(title,   0,   0, 255);
+	ObjText_SetFontType(title, "Gyosho");
+	ObjText_SetFontSize(title,18);
+	ObjText_SetText(title,titlestr);
+	Obj_SetRenderPriorityI(title, 78);
+	ObjRender_SetPosition(title, pos_x0+off_x_title, pos_y+off_y_title, 0);
+	moveSmoother(title,pos_x1+off_x_title, pos_y+off_y_title, time*3, false);
+	
+	
 	let a = 0;
 	while(a < 256){
 		ObjRender_SetAlpha(obj, a);
+		ObjRender_SetAlpha(name, a);
+		ObjRender_SetAlpha(title, a);
 		a += 8;
 		yield;
 	}
@@ -269,11 +335,107 @@ task DisplayEnemyTitle(img, time){
 	}
 	while(a > 0){
 		ObjRender_SetAlpha(obj, a);
+		ObjRender_SetAlpha(name, a);
+		ObjRender_SetAlpha(title, a);
 		a -= 8;
 		yield;
 	}
 	Obj_Delete(obj);
+	Obj_Delete(name);
+	Obj_Delete(title);
 }
+
+
+
+
+
+
+
+task DisplayPlayerTitle(namestr,titlestr, img, time){
+	
+	let pos_y = GetStgFrameHeight-96; //-160
+	let pos_x0 = GetStgFrameWidth/2 - 32;
+	let pos_x1 = 0;
+	
+	let off_x_img = -32;
+	let off_x_name = -GetStgFrameWidth/2;
+	let off_x_title = -GetStgFrameWidth/2;
+	
+	let off_y_img = -8;
+	let off_y_name = -16;
+	let off_y_title = -24;
+	
+	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjPrim_SetTexture(obj, img);
+	ObjSprite2D_SetSourceRect(obj, 0, 0, GetTextureWidth(img), GetTextureHeight(img));
+	ObjSprite2D_SetDestCenter(obj);
+	ObjRender_SetAlpha(obj, 0);
+	// ObjRender_SetScaleXYZ(obj, 0.75, 0.75, 0);
+	// ObjRender_SetScaleXYZ(obj, 1.25, 1.25, 0);
+	ObjRender_SetScaleXYZ(obj, 1.5, 1.5, 0);
+	Obj_SetRenderPriorityI(obj, 77);
+	ObjRender_SetPosition(obj, pos_x0+off_x_img, pos_y+off_y_img, 0);
+	moveSmoother(obj, pos_x1+off_x_img, pos_y+off_y_img, time*3, false);
+
+	
+	// let name = makeText(cx,cy-96,    32,[0,0,255],ALIGNMENT_CENTER, 0, titletext);
+	let name = ObjText_Create;
+	ObjText_SetMaxWidth(name,GetStgFrameWidth);
+	ObjText_SetHorizontalAlignment(name,ALIGNMENT_CENTER);
+	ObjText_SetFontColorTop(   name, 255, 255, 200);
+	ObjText_SetFontColorBottom(name, 255, 255, 128);
+	ObjText_SetFontBorderColor(name,  64,  64, 200);
+	ObjText_SetFontType(name, "Gyosho");
+	ObjText_SetFontSize(name,28);
+	// ObjText_SetFontBold(name,true);
+	ObjText_SetText(name,namestr);
+	Obj_SetRenderPriorityI(name, 78);
+	ObjRender_SetPosition(name, pos_x0+off_x_name, pos_y+off_y_name, 0);
+	moveSmoother(name,pos_x1+off_x_name, pos_y+off_y_name, time*3, false);
+
+	// let title = makeText(cx+60,cy-24,  16,[0,0,255],ALIGNMENT_CENTER, 0, subtitletext);
+	let title = ObjText_Create;
+	ObjText_SetMaxWidth(title,GetStgFrameWidth);
+	ObjText_SetHorizontalAlignment(title,ALIGNMENT_CENTER);
+	ObjText_SetFontColorTop(   title, 255, 255, 255);
+	ObjText_SetFontColorBottom(title, 180, 180, 255);
+	ObjText_SetFontBorderColor(title,   0,   0, 255);
+	ObjText_SetFontType(title, "Gyosho");
+	ObjText_SetFontSize(title,18);
+	ObjText_SetText(title,titlestr);
+	Obj_SetRenderPriorityI(title, 78);
+	ObjRender_SetPosition(title, pos_x0+off_x_title, pos_y+off_y_title, 0);
+	moveSmoother(title,pos_x1+off_x_title, pos_y+off_y_title, time*3, false);
+	
+	
+	let a = 0;
+	while(a < 256){
+		ObjRender_SetAlpha(obj, a);
+		ObjRender_SetAlpha(name, a);
+		ObjRender_SetAlpha(title, a);
+		a += 8;
+		yield;
+	}
+	loop(time){
+		if(!GetCommonData("IsDialogueSequenceActive", false)){break;}
+		yield;
+	}
+	while(a > 0){
+		ObjRender_SetAlpha(obj, a);
+		ObjRender_SetAlpha(name, a);
+		ObjRender_SetAlpha(title, a);
+		a -= 8;
+		yield;
+	}
+	Obj_Delete(obj);
+	Obj_Delete(name);
+	Obj_Delete(title);
+}
+
+
+
+
+
 
 function RetrieveDistance(x1,y1,x2,y2) {
 	return ((x1-x2)^2+(y1-y2)^2)^(1/2);

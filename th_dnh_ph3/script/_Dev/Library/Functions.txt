@@ -301,33 +301,12 @@ function makeText(x,y,size,color,align,alpha,text) {
 
 
 
-task ShowBGMTitle(title){
-	let obj = makeText(sx-15,sy-20,16,[0,0,255],ALIGNMENT_RIGHT, 0, title);
-	ObjText_SetFontColorTop(   obj, 180, 180, 255);
-	ObjText_SetFontColorBottom(obj,  64,  64, 255);
-	ObjText_SetFontBorderColor(obj,   0,   0, 255);
-	// ObjText_SetFontBorderType(obj,BORDER_SHADOW);
-	ObjText_SetFontType(obj, "Cirno");
-	descent(i in 0..40){ //100
-		ObjRender_SetY(obj,sy-20+i);
-		ObjRender_SetAlpha(obj,200-2*i);
-		yield;
-	}
-	wait(180); //120
-	ascent(i in 0..120){ //120
-		// ObjRender_SetX(obj,-(15+sx/120*i) );
-		ObjRender_SetX(obj,qerp(-15,-15+(0.15*sx),-15-sx,i/120));
-		yield;
-	}
-	Obj_Delete(obj);
-}
 
 
 
 
 
-
-//image rect should be around 160 by 160		//"rose.png",[0,0,64,64]
+//image rect should be around 160 by 160, auto scaled if not	//e.g. "rose.png",[0,0,64,64]
 task StageIntro(stagetext,titletext,subtitletext,img,source){
 	// let img = dirimg~"StageIntro.png";
 	let pic = ObjPrim_Create(OBJ_SPRITE_2D);

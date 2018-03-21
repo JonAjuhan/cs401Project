@@ -9,6 +9,7 @@
 #include "./Library/DirPaths.txt"	//Constants for directories and function to get root script directory
 #include "./Library/Difficulty.txt"	//Difficulty system
 #include "./Library/Music.txt"	    //Easily control BGM
+#include "./Library/Dialogue.dnh" //Dialogue system
 //Enemy libraries
 #include "./Library/BossFunctions.txt"	//Functions spawning and controlling boss
 #include "./Gizmo's Touhou Boss Sprite Library/GizmoSpriteLibrary.txt"	//Premade functions to render bosses

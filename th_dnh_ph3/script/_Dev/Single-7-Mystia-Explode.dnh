@@ -3,8 +3,8 @@
 #Title["(Mystia end explosion)"]
 #Text["series 7: scales with difficulty"] 
 #BGM["./bgm/bgm - Deaf to All but the Song.ogg"]
-#System["./system/Default_System.txt"]
-#Background["./system/Background_Sky.txt"]
+#System["./system/Andi_System.txt"]
+#Background["./system/Background/Mystia/BG_work.txt"]
 
 #include "./Index.txt"
 

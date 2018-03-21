@@ -60,6 +60,8 @@ task MainTask {
 	ObjEnemy_SetDamageRate(boss,0,0);
 	ObjMove_SetDestAtFrame(boss, cx, cy-100, 60); //cy-120
 	
+	wait(45);
+	
 	// SetSpellCard;
 	SetSpellCardA2(NAZRIN,dirlib~"Cutin/Cutin_Mystia.png");
 	

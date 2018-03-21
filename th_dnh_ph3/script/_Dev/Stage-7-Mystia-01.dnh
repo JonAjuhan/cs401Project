@@ -176,7 +176,7 @@ task TStage {
 	}
 	//Start the boss plural
 	StartScript(bossScript);
-	SetBGM("Deaf to All But the Song",70.7, 141.38);
+	// SetBGM("Deaf to All But the Song",70.7, 141.38); //now done in dialogue single
 	while(!IsCloseScript(bossScript) && GetPlayerState() != STATE_END){
 		yield;
 	}
