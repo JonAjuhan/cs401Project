@@ -31,8 +31,12 @@ let bossBGM;
 @Initialize
 {
 	SetCommonData("IsStage",true);
-	StartScript(bossScript); //will wait for event before starting boss
+	InitPlural;
 	TStage();
+}
+task InitPlural{
+	wait(600); //give it time to compile
+	StartScript(bossScript); //will wait for event before starting boss
 }
 
 @MainLoop{
