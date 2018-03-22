@@ -9,12 +9,16 @@
 
 // #BGM["./bgm/bgm - Deaf to All but the Song.ogg"]
 
+let hold = true;
+
 @Loading {
-	//InstallFont(GetCurrentScriptDirectory() ~ "img/Helvetica.otf"); //.otf for One True Font
-	//I think this is being done somewhere else now?
 }
 
 @Event{
+	alternative(GetEventType())
+	case(EV_START_BOSS) {
+		hold = false;
+	}
 }
 
 @Initialize{
@@ -43,6 +47,10 @@ task TPlural {
 	ObjEnemyBossScene_Add(obj,2,dir~"Single-7-Mystia-Explode.dnh");
 	
 	ObjEnemyBossScene_LoadInThread(obj);
+	
+	if(noStage){hold=false;}
+	while(hold){yield;}
+	
 	ObjEnemyBossScene_Regist(obj);
 	
 	//wait for singles to end

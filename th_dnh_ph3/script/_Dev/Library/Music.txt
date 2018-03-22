@@ -3,6 +3,7 @@ SetCommonData("MusicObject",music);
 
 //TODO: Have system handle this? eh nah
 
+//TODO: set this up as separate script and interface through events
 
 
 
@@ -55,7 +56,6 @@ task FadeBGM{
 	}
 	ObjSound_Stop(music);
 }
-
 
 
 

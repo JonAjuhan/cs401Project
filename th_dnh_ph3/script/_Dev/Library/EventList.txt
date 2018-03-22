@@ -13,3 +13,6 @@ let EV_SET_SONG = EV_USER+7;
 
 // let EV_SET_DIFFICULTY = EV_USER+8; //unused, I do this with common data
 // let EV_FAM_DIE = EV_USER+3; //unused afaik
+
+
+let EV_START_BOSS = EV_USER_STAGE+1; //signal already-running plural to start boss
