@@ -519,6 +519,7 @@ function StageOutro(stagenum){
 	
 	WaitForConfirm();
 	
+	FadeBGM;
 	SetCommonData("SpellsCaptured",0);
 	Obj_FadeDelete(obj_stagenum);
 	Obj_FadeDelete(obj_stagebonus);
@@ -534,8 +535,9 @@ function StageOutro(stagenum){
 	Obj_FadeDelete(obj_next);
 
 	//afterwards,
-	//fade to black (using reserved render target?)
-	//wait(60)
+	//fade to black (todo: using reserved render target?)
+	FadeToBlack(60);
+	wait(60);
 	//CloseScript(GetOwnScriptID)
 	
 }
@@ -549,7 +551,26 @@ function WaitForConfirm{
 
 
 
+task FadeToBlack(i){
+	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjPrim_SetTexture(obj, dirimg~"black.png");
+	ObjSprite2D_SetSourceRect(obj, 0, 0, 100, 100);
+	ObjSprite2D_SetDestCenter(obj);
+	// Obj_SetRenderPriorityI(obj, 100);
+	Obj_SetRenderPriorityI(obj, 80);
+	ObjRender_SetAlpha(obj, 0);
 
+	ObjRender_SetPosition(obj, GetCenterX, GetCenterY, 0);
+	ObjRender_SetScaleXYZ(obj, 8, 8, 0);
+	let a = 0;
+	while(a < 255){
+		ObjRender_SetAlpha(obj, a);
+		a += 2;
+		yield;
+	}
+	wait(i);
+	Obj_Delete(obj);
+}
 
 
 
@@ -747,6 +768,12 @@ function bulletArc(x1, y1, x2, y2, n, dir0, ang, type, alpha, color, dur, durSca
 	return(shots);
 }
 */
+
+
+
+
+
+
 
 
 function AfterImageShot(shot,color,scale,scaleinc,time,blend,layer)  {
@@ -1551,7 +1578,7 @@ function smooth(obj,frames,smoothness) {
 
 
 
-
+//Makes a "drain" that deletes shots
 task Drain(cx,cy,r,time){
 	loop(time){
 		DeleteShotInCircle(TYPE_SHOT,TYPE_IMMEDIATE,cx,cy,r);
@@ -2106,6 +2133,142 @@ function InvertRipple(x,y,scl0,scl1,time){
 
 
 
+
+//AJS (modified by Andi)
+function PagodaLaserA1(x,y,a,maxlength,maxwidth,dur,color,delay) {
+	return PagodaLaser(x,y,a,maxlength,maxwidth,dur,color,delay,maxwidth/96,"PagodaLaser.png");
+}
+
+function PagodaLaserA2(x,y,a,maxlength,maxwidth,dur,color,delay,img) {
+	return PagodaLaser(x,y,a,maxlength,maxwidth,dur,color,delay,maxwidth/96,img);
+}
+
+function PagodaLaser(x,y,a,maxlength,maxwidth,dur,color,delay,scale,effimg) {
+	let objHitbox = CreateStraightLaserA1(x,y,a,maxlength,maxwidth*(5/4),dur+45,1,delay);
+	ObjLaser_SetInvalidLength(objHitbox, 0, 0);
+	PagodaBeam;
+	return objHitbox;
+	
+	task PagodaBeam {
+		let objLaser1 = ObjPrim_Create(OBJ_SPRITE_2D);
+		let objLaser2 = ObjPrim_Create(OBJ_SPRITE_2D);
+		let objDetail = ObjPrim_Create(OBJ_SPRITE_2D);
+		let objFire = ObjPrim_Create(OBJ_SPRITE_2D);
+		let objFire2 = ObjPrim_Create(OBJ_SPRITE_2D);
+				
+		let width = 2;
+		let length = maxlength;
+		if(scale<0){scale=maxwidth/96;}
+		let fire_scalex = 1.75*scale; //1.2
+		let fire_scaley = 2.5*scale; //1.2
+		let fire_scale2x = 1.5*scale; //0.8
+		let fire_scale2y = 2.25*scale; //0.8
+		let fire_count = 0;
+		let detail_count = 0;
+				
+		Obj_SetVisible(objHitbox,false);
+		
+		ObjRender_SetBlendType(objLaser1, BLEND_ALPHA);
+		Obj_SetRenderPriorityI(objLaser1, 28);
+		ObjPrim_SetTexture(objLaser1, dirshot~"img/"~effimg);
+		ObjSprite2D_SetSourceRect(objLaser1, 0, 37, 256, 69);
+		ObjSprite2D_SetDestRect(objLaser1, 0.5, -16, 256.5, 16);
+		ObjRender_SetColor(objLaser1,color[0],color[1],color[2]);
+		
+		ObjRender_SetBlendType(objLaser2, BLEND_ADD_RGB);
+		Obj_SetRenderPriorityI(objLaser2, 29);
+		ObjPrim_SetTexture(objLaser2, dirshot~"img/"~effimg);
+		ObjSprite2D_SetSourceRect(objLaser2, 0, 77, 256, 109);
+		ObjSprite2D_SetDestRect(objLaser2, 0.5, -16, 256.5, 16);
+		
+		ObjRender_SetBlendType(objDetail, BLEND_ALPHA);
+		Obj_SetRenderPriorityI(objDetail, 29);
+		ObjPrim_SetTexture(objDetail, dirshot~"img/"~effimg);
+		ObjSprite2D_SetSourceRect(objDetail, 0, 0, 256, 30);
+		ObjSprite2D_SetDestRect(objDetail, 0.5, -18, 256.5, 18);
+		
+		ObjRender_SetBlendType(objFire, BLEND_ALPHA);
+		Obj_SetRenderPriorityI(objFire, 27);
+		ObjPrim_SetTexture(objFire, dirshot~"img/PagodaLaser_Fire.png");
+		ObjRender_SetColor(objFire,color[0],color[1],color[2]);
+		ObjRender_SetScaleXYZ(objFire,fire_scalex,fire_scaley,1);
+		
+		ObjRender_SetBlendType(objFire2, BLEND_ADD_RGB);
+		Obj_SetRenderPriorityI(objFire2, 30);
+		ObjPrim_SetTexture(objFire2, dirshot~"img/PagodaLaser_Fire.png");
+		ObjRender_SetScaleXYZ(objFire2,fire_scale2x,fire_scale2y,1);
+		
+		UpdatePos;
+		task UpdatePos{
+			while(!Obj_IsDeleted(objHitbox)){
+				x = ObjMove_GetX(objHitbox);
+				y = ObjMove_GetY(objHitbox);
+				a = ObjStLaser_GetAngle(objHitbox);
+				
+				ObjRender_SetPosition(objLaser1,x,y,0);
+				ObjRender_SetAngleZ(objLaser1,a);
+				ObjRender_SetPosition(objLaser2,x,y,0);
+				ObjRender_SetAngleZ(objLaser2,a);
+				ObjRender_SetPosition(objDetail,x,y,0);
+				ObjRender_SetAngleZ(objDetail,a);
+				ObjRender_SetPosition(objFire,x,y,0);
+				ObjRender_SetAngleZ(objFire,a);
+				ObjRender_SetPosition(objFire2,x,y,0);
+				ObjRender_SetAngleZ(objFire2,a);
+				
+				
+				if(fire_count%2==0) { ObjSprite2D_SetSourceRect(objFire, 1, 1, 123, 127); }
+				else if(fire_count%2==1) { ObjSprite2D_SetSourceRect(objFire, 129, 1, 255, 127); }
+				ObjSprite2D_SetDestRect(objFire, 0.5, -61, 128.5, 61);
+				if(fire_count%2==0) { ObjSprite2D_SetSourceRect(objFire2, 1, 129, 123, 255); }
+				else if(fire_count%2==1) { ObjSprite2D_SetSourceRect(objFire2, 129, 129, 255, 255); }
+				ObjSprite2D_SetDestRect(objFire2, 0.5, -61, 128.5, 61);
+				
+				ObjSprite2D_SetSourceRect(objDetail, 0-detail_count, 0, 256-detail_count, 30);
+				ObjSprite2D_SetDestRect(objDetail, 0.5, -18, 256.5, 18);
+				
+				ObjRender_SetScaleXYZ(objLaser1,2*(length/800),width/25,1);
+				ObjRender_SetScaleXYZ(objLaser2,2*(length/800),width/32,0);
+				ObjRender_SetScaleXYZ(objDetail,2*(length/800),width/32,0);
+				
+				fire_count+=0.5;
+				detail_count+=12;
+				
+				yield;
+			}
+			Obj_Delete(objLaser1);
+			Obj_Delete(objLaser2);
+			Obj_Delete(objDetail);
+			Obj_Delete(objFire);
+			Obj_Delete(objFire2);
+		}
+		
+		//Delay
+		loop(delay){ yield; }
+		length = 0;
+		//Active
+		loop(dur) {
+			length = min(length+800/20, maxlength);
+			width  = min(width+(maxwidth-2)/20, maxwidth-2);
+			
+			yield;
+		}
+		//Remove
+		ObjShot_SetIntersectionEnable(objHitbox,false);
+		loop(30) {				
+			ObjRender_SetScaleY(objFire,fire_scaley*(width/32));
+			ObjRender_SetScaleY(objFire2,fire_scale2y*(width/32));
+			
+			width-=(maxwidth+2)/30;
+			yield;
+		}
+		
+		Obj_Delete(objHitbox);
+	}
+}
+
+
+
 //Extra-advanced sun function for all your crazy movement needs (heavily tweaked version of　an already heavily tweaked version of Frenticpony's)
 function CreateSunShotA1(x, y, speed, angle, type, initScale, sizePerFrame, endScale, texture2, texture, r, g, b){
     let loc_scale = initScale;
@@ -2119,17 +2282,9 @@ function CreateSunShotA1(x, y, speed, angle, type, initScale, sizePerFrame, endS
     ObjMove_SetSpeed(objShot, speed);
     ObjMove_SetAngle(objShot, angle);
 	
-    //I don't think there's anything like IsIntersectionEnable
-	//So use Obj_SetValue(objShot,"IntersectionEnable",false) to disable collision
-	//This way it can be changed from the calling script after creating the shot
-	//Similarly:
-	//Set "Alpha1" and "Alpha2" to set alpha of sun and glow, respectively
-	//Set "Delete" to "Fade","Expand", or others I add later to fade delete/etc
-		//"DeleteTime" and "ExpandRate" modify those
-	
 	//There'll be plenty of other frames to set the hitbox on
 	//So probably don't set it on the first frame to avoid it clipping the player before you can disable it
-	if(!(type=="GROW" || type == "SHRINK") && Obj_GetValueD(objShot,"IntersectionEnable",false)){ObjShot_SetIntersectionCircleA1(objShot, 92 * initScale);}
+	if(!(type=="GROW" || type == "SHRINK") && Obj_GetValueD(objShot,"IsIntersectionEnable",false)){ObjShot_SetIntersectionCircleA1(objShot, 92 * initScale);}
            
     let objRender = ObjPrim_Create(OBJ_SPRITE_2D);
 	let objRender2 = ObjPrim_Create(OBJ_SPRITE_2D);
@@ -2154,8 +2309,6 @@ function CreateSunShotA1(x, y, speed, angle, type, initScale, sizePerFrame, endS
 		ObjRender_SetAngleZ(objRender2, ObjMove_GetAngle(objShot));
 	}
 	
-	//holy shit this is so convenient 
-	//now I can grab a reference to the render shit from the calling script without just returning an array or some shit
 	Obj_SetValue(objShot,"SunRenderObject",objRender);
 	Obj_SetValue(objShot,"GlowRenderObject",objRender2);
 	
@@ -2166,12 +2319,6 @@ function CreateSunShotA1(x, y, speed, angle, type, initScale, sizePerFrame, endS
     task renderSunStuff{
     	let z = 0; let alpha1 = Obj_GetValueD(objShot,"Alpha1",255); let alpha2 = Obj_GetValueD(objShot,"Alpha2",64);
     	
-		//You would not BELIEVE how much unnecessary code duplication there was before I got here.
-		//ALLLL that rendering code was written out twice, in two separate while loops
-		//The ONLY difference was that one said    if(loc_scale<endScale){loc_scale += sizePerFrame;}
-		//                   and the other said    if(loc_scale>endScale){loc_scale -= sizePerFrame;}
-		//What the heck
-		//WHY would you do that instead of just doing this:
 		let dScaleSign = 0;
 		if(type=="GROW"){
 			dScaleSign=1;
@@ -2179,16 +2326,13 @@ function CreateSunShotA1(x, y, speed, angle, type, initScale, sizePerFrame, endS
 		else if(type=="SHRINK"){
 			dScaleSign=-1;
 		}
-		//if(loc_scale*dScaleSign < endScale*dScaleSign){loc_scale += sizePerFrame*dScaleSign;}
-		//WAS THAT SO HARD?
-		//I forget whose script I got this from but consider yourself complained to -_-
 		
 		//Render shot
 		while(!Obj_IsDeleted(objShot) && !(Obj_IsValueExists(objShot,"Delete") && growToInit>0 ) ){
 			if(growToInit < loc_scale){
 				growToInit += 0.2;
 
-				if(Obj_GetValueD(objShot,"IntersectionEnable",true)){
+				if(Obj_GetValueD(objShot,"IsIntersectionEnable",true)){
 					ObjShot_SetIntersectionCircleA1(objShot, 91 * growToInit);
 				}
 				ObjRender_SetScaleXYZ(objRender, growToInit, growToInit, 0);
@@ -2199,10 +2343,9 @@ function CreateSunShotA1(x, y, speed, angle, type, initScale, sizePerFrame, endS
 				ObjRender_SetPosition(objRender2, ObjMove_GetX(objShot), ObjMove_GetY(objShot), 0);
 				ObjRender_SetAngleZ(objRender2, z);
 
-				//So that the current scale can be used by the calling script
 				ObjRender_SetScaleXYZ(objShot, growToInit, growToInit, 0);
-				//So the calling script can set its alpha
-				alpha1 = Obj_GetValueD(objShot,"Alpha1",255); alpha2 = Obj_GetValueD(objShot,"Alpha2",64);
+				alpha1 = Obj_GetValueD(objShot,"Alpha1",Obj_GetValueD(objShot,"Alpha",255)); 
+				alpha1 = Obj_GetValueD(objShot,"Alpha2",alpha1/4); 
 				ObjRender_SetAlpha(objRender,alpha1); ObjRender_SetAlpha(objRender2,alpha2);
 				
 				z++;
@@ -2217,7 +2360,7 @@ function CreateSunShotA1(x, y, speed, angle, type, initScale, sizePerFrame, endS
 				Obj_Delete(objRender2);;
 			}
 
-			if(Obj_GetValueD(objShot,"IntersectionEnable",true)){
+			if(Obj_GetValueD(objShot,"IsIntersectionEnable",true)){
 				ObjShot_SetIntersectionCircleA1(objShot, 91 * loc_scale);
 			}
 			ObjRender_SetScaleXYZ(objRender, loc_scale, loc_scale, 0);
@@ -2228,10 +2371,9 @@ function CreateSunShotA1(x, y, speed, angle, type, initScale, sizePerFrame, endS
 			ObjRender_SetPosition(objRender2, ObjMove_GetX(objShot), ObjMove_GetY(objShot), 0);
 			ObjRender_SetAngleZ(objRender2, z);
 			
-			//So that the current scale can be used by the calling script
 			ObjRender_SetScaleXYZ(objShot, loc_scale, loc_scale, 0);
-			//So the calling script can set its alpha
-			alpha1 = Obj_GetValueD(objShot,"Alpha1",255); alpha2 = Obj_GetValueD(objShot,"Alpha2",64);
+			alpha1 = Obj_GetValueD(objShot,"Alpha1",Obj_GetValueD(objShot,"Alpha",255)); 
+			alpha1 = Obj_GetValueD(objShot,"Alpha2",alpha1/4);
 			ObjRender_SetAlpha(objRender,alpha1); ObjRender_SetAlpha(objRender2,alpha2);
 			
 			z++;
@@ -2240,7 +2382,6 @@ function CreateSunShotA1(x, y, speed, angle, type, initScale, sizePerFrame, endS
 			
 			yield;
 		}
-		
 		
 		//Delete shot	
 		if(Obj_IsDeleted(objShot)){

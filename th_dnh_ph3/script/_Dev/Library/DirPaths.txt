@@ -13,6 +13,7 @@ function rootdir {
 
 
 let root = rootdir;
+let dirroot = root~"./";
 let dirgizmo = root~"./Gizmo's Touhou Boss Sprite Library/spriteimg/";
 let dirimg = root~"./img/";
 let direffect = root~"./img/Effect/";
@@ -22,3 +23,4 @@ let dirse = root~"./se/";
 let dirsys = root~"./system/";
 let dirbgm = root~"./bgm/";
 let dirdat = root~"./data/";
+let dirshot = root~"./shot/";

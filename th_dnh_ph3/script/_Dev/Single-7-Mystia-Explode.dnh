@@ -74,11 +74,8 @@ task MainTask {
 	SetDialogueTextA1("It's still night, though...",[128,128,255]);
 	
 	EndDialogueSequence();
-	FadeBGM;
 		
-	StageOutro(3);
-	wait(60);
-	
+	StageOutro(3);	
 	CloseScript(GetOwnScriptID);
 	
 	

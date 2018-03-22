@@ -163,7 +163,8 @@ task TShoot{
 			// wait(3);
 			// wait(8);
 			// wait(sqrt(N-i)*0.5);
-			wait(sqrt(N-i)*3);
+			// wait(sqrt(N-i)*3);
+			wait(20);
 		}
 		
 		
