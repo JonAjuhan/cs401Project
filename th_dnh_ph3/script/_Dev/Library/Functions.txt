@@ -580,7 +580,7 @@ task FadeToBlack(delin,dur,delout){
 			yield;
 		}
 	}
-	// Obj_Delete(obj);
+	// Obj_Delete(obj); //todo - transitions
 }
 
 

@@ -45,7 +45,8 @@ task MainTask {
 	}
 	SE_Play(se_defeated,100);
 	ObjEnemy_SetLife(boss,0.001);
-	Obj_Delete(boss);
+	// Obj_Delete(boss);
+	Obj_SetVisible(boss,false);
 	ScreenShake(30,3,5);
 	loop(30){
 		loop(10){
@@ -75,7 +76,9 @@ task MainTask {
 	
 	EndDialogueSequence();
 		
-	StageOutro(3);	
+	StageOutro(3);
+	ObjEnemy_SetLife(boss,0);
+	Obj_Delete(boss);
 	CloseScript(GetOwnScriptID);
 	
 	
