@@ -236,76 +236,6 @@ task ShowPointOfCollection{
 
 
 
-
-
-
-function rainbow(i,N) {
-	i = i * (360/N) %360;	//convert to period of 0..360
-	let r = sin(i+0)  * 127 + 128;
-	let g = sin(i+120)* 127 + 128;
-	let b = sin(i+240)* 127 + 128;
-	return [r,g,b];
-}
-
-function rainbow2(i,N) {
-	let r; let g; let b;
-	i = i * (360/N) %360;	//convert to period of 0..360
-	if(i < 90) {
-		r = cos(i)+1;
-		g = i/360;
-		b = 0;
-	}else if(i < 120) {
-		r = cos(i)+1;
-		g = sin(i)+1;
-		b = 0;
-	}else if(i < 270) {
-		r = 0;
-		g = sin(i)+1;
-		b = cos(i)+1;
-	}else {
-		r = sin(i)+1;
-		g = 0;
-		b = cos(i)+1;
-	}
-	r*=255; g*=255; b*=255;
-	return [r,g,b];
-}
-
-function makeText(x,y,size,color,align,alpha,text) {
-	let sx = GetStgFrameWidth(); let sy = GetStgFrameHeight();
-	let width = 384; //default stage frame width (height is 448)
-	let tx;
-	if( align == ALIGNMENT_LEFT) { tx = x; }
-	else if( align == ALIGNMENT_RIGHT ) { tx = x - width; }
-	else if( align == ALIGNMENT_CENTER) { tx = x - width/2;	}
-	let objText = ObjText_Create();
-	ObjText_SetHorizontalAlignment(objText, align);
-	ObjText_SetMaxWidth(objText, width);
-	ObjRender_SetX(objText, tx);
-	ObjRender_SetY(objText, y);
-	ObjText_SetFontSize(objText, size);
-	// ObjText_SetFontType(objText, "Helvetica");
-	ObjText_SetFontType(objText, "Cirno");
-	ObjText_SetFontColorTop(objText, 255, 255, 255);
-	ObjText_SetFontColorBottom(objText, 255, 255, 255);
-	ObjText_SetFontBorderType(objText, BORDER_FULL);
-	ObjText_SetFontBorderColor(objText, color[0],color[1],color[2]); //224, 64, 192
-	ObjText_SetFontBorderWidth(objText, 1);
-	ObjRender_SetAlpha(objText,alpha);
-	ObjText_SetText(objText,text);
-	Obj_SetRenderPriorityI(objText,GetCameraFocusPermitPriorityI()+1);
-	return objText;
-}
-
-
-
-
-
-
-
-
-
-
 //image rect should be around 160 by 160, auto scaled if not	//e.g. "rose.png",[0,0,64,64]
 task StageIntro(stagetext,titletext,subtitletext,img,source){
 	// let img = dirimg~"StageIntro.png";
@@ -435,6 +365,272 @@ task StageIntro(stagetext,titletext,subtitletext,img,source){
 		Obj_Delete(stage);
 	}
 }
+
+//call in end single
+function StageOutro(stagenum){
+	let isExtra = (stagenum > 6);
+	let isFinal = (stagenum == 6);
+	let isAllClear = (isFinal || isExtra);
+	
+	
+	
+	let lcol = cx;
+	let rcol = cx+96;
+	
+	let y0 = 106;
+	let dy = 16;
+	
+	let fadeindel = 0;
+	let bonus = 0;
+	
+	function CreateLeftColumnText(row){
+		// let obj = ObjText_CreateA1(16,"THSpatial",[255,128,64]);
+		let obj = ObjText_CreateA1(16,"THSpatial",[255,128,64]);
+		ObjText_SetFontColorTop(obj,255,200,200);
+		ObjText_SetMaxWidth(obj,lcol);
+		ObjText_SetHorizontalAlignment(obj,ALIGNMENT_RIGHT);
+		ObjText_SetFontBold(obj,true);
+		ObjRender_SetX(obj,0);
+		ObjRender_SetY(obj,y0+row*dy);
+		FadeInText(obj,row);
+		return obj;
+	}
+	function CreateRightColumnText(row){
+		let obj = ObjText_CreateA1(16,"THSpatial",[255,128,64]);
+		ObjText_SetFontColorTop(obj,255,200,200);
+		ObjText_SetMaxWidth(obj,rcol);
+		ObjText_SetHorizontalAlignment(obj,ALIGNMENT_RIGHT);		
+		ObjText_SetFontBold(obj,true);
+		ObjRender_SetX(obj,0);
+		ObjRender_SetY(obj,y0+row*dy);
+		FadeInText(obj,row);
+		return obj;
+	}
+	task FadeInText(obj,row){
+		let del = 5*row;
+		let t = 45;
+		fadeindel = max(fadeindel,del+t);
+		ObjRender_SetAlpha(obj,0);
+		wait(del);
+		ascent(i in 0..t){
+			ObjRender_SetAlpha(obj,i*255/t); //235
+			yield;
+		}
+	}
+	task FadeInFlash(obj){
+		let i = 0;
+		while(!Obj_IsDeleted(obj)){
+			ObjRender_SetAlpha(obj,min(4*i,255)*( 0.6+0.4*(|cos(3*i)|)^0.5) );
+			yield; i++;
+		}
+	}
+	
+	let obj_stagenum = CreateLeftColumnText(1);
+	let obj_stagebonus = CreateRightColumnText(1);
+	let stagenumstr = "Stage "~tost(stagenum);
+	if(isExtra){ stagenumstr="Stage EX ";}
+	if(isFinal){ stagenumstr="All "; }
+	ObjText_SetText(obj_stagenum,stagenumstr~" Clear!");
+	// let stagebonusnum = 1000000*stagenum;
+	let stagebonusnum = 1000000*2^(stagenum-1);
+	let stagebonustext = ObjText_CreateA1(16,"THSpatial",[255,128,64]);	
+	ObjText_SetText(obj_stagebonus,tost(stagebonusnum));
+	bonus += stagebonusnum;
+	
+	let obj_playernum = CreateLeftColumnText(5);
+	let obj_spellnum = CreateLeftColumnText(6);
+	let obj_playerbonus = CreateRightColumnText(5);
+	let obj_spellbonus = CreateRightColumnText(6);
+	if(isAllClear){
+		
+		let lives = floor(GetPlayerLife());
+		ObjText_SetText(obj_playernum,"Player Bonus");
+		ObjText_SetText(obj_playerbonus,tost(lives)~" * 5000000");
+		bonus += 5000000*lives;
+		
+		let bombs = floor(GetPlayerSpell());
+		ObjText_SetText(obj_spellnum,"Spell Bonus");
+		ObjText_SetText(obj_spellbonus,tost(bombs)~" * 1000000");
+		bonus += 1000000*bombs;
+		
+	}
+	
+	let obj_capturenum = CreateLeftColumnText(3);
+	let obj_capturebonus = CreateRightColumnText(3);
+	
+	let captured = GetCommonData("SpellsCaptured",0);
+	let captureval = 1000000*stagenum;
+	SetCommonData("TotalSpellsCaptured",captured+GetCommonData("TotalSpellsCaptured",0));
+	ObjText_SetText(obj_capturenum,"Capture Bonus");
+	ObjText_SetText(obj_capturebonus,tost(captured)~" * "~tost(captureval));
+	bonus += captured*captureval;
+	
+	
+	
+	
+	let obj_diff = CreateLeftColumnText(8);
+	let diffstring = GetCommonData("Difficulty","Normal")~" Rank";
+	ObjText_SetText(obj_diff,diffstring);
+	
+	let obj_diffmod = CreateRightColumnText(8);
+	let diffmod=0;
+	alternative(rank)
+	case(RANK_EASY){ diffmod = 0.5; }
+	case(RANK_NORM){ diffmod = 1.0; }
+	case(RANK_HARD){ diffmod = 1.5; }
+	case(RANK_LUNA){ diffmod = 2.0; }
+	if(isExtra)    { diffmod = 2.0; }
+	let diffmodstr = "* "~vtos("1.01f",diffmod);
+	ObjText_SetText(obj_diffmod,diffmodstr);
+	
+	let obj_finalbonus = CreateRightColumnText(9);
+	bonus = bonus*diffmod;
+	let finalbonusstr = "= "~tost(bonus);
+	ObjText_SetText(obj_finalbonus,finalbonusstr);
+	ObjText_SetFontColorTop(obj_finalbonus,255,200,200);
+	ObjText_SetFontColorBottom(obj_finalbonus,255,64,64);
+	
+	
+	
+	
+	
+	wait(fadeindel);
+	
+	let time = 180; //120
+	let incr = trunc(bonus/time/10)*10;
+	let r = bonus - incr*time;
+	ascent(i in 0..time){
+		AddScore(incr);
+		if(i%3==0){SE_Play(se_graze,100);}
+		if(i%3==1){SE_Play(se_item,100);}
+		yield;
+	}
+	AddScore(r);
+	
+	let obj_next = ObjPrim_Create(OBJ_SPRITE_2D);
+	if(!isAllClear){
+		ObjPrim_SetTexture(obj_next, dirsys~"img/Default_SystemText.png");
+		ObjSprite2D_SetSourceRect(obj_next, 9, 128, 263, 159);
+		ObjSprite2D_SetDestCenter(obj_next);
+		ObjRender_SetPosition(obj_next,cx, 60,0);
+		Obj_SetRenderPriorityI(obj_next,75);
+		FadeInFlash(obj_next);
+	}
+	
+	WaitForConfirm();
+	
+	SetCommonData("SpellsCaptured",0);
+	Obj_FadeDelete(obj_stagenum);
+	Obj_FadeDelete(obj_stagebonus);
+	Obj_FadeDelete(obj_capturenum);
+	Obj_FadeDelete(obj_capturebonus);
+	Obj_FadeDelete(obj_playernum);
+	Obj_FadeDelete(obj_playerbonus);
+	Obj_FadeDelete(obj_spellnum);
+	Obj_FadeDelete(obj_spellbonus);
+	Obj_FadeDelete(obj_diff);
+	Obj_FadeDelete(obj_diffmod);
+	Obj_FadeDelete(obj_finalbonus);
+	Obj_FadeDelete(obj_next);
+
+	//afterwards,
+	//fade to black (using reserved render target?)
+	//wait(60)
+	//CloseScript(GetOwnScriptID)
+	
+}
+
+
+
+function WaitForConfirm{
+	while(GetVirtualKeyState(VK_OK)!=KEY_FREE){yield;}
+	while(GetVirtualKeyState(VK_OK)!=KEY_PUSH){yield;}
+}
+
+
+
+
+
+
+
+
+
+
+
+function rainbow(i,N) {
+	i = i * (360/N) %360;	//convert to period of 0..360
+	let r = sin(i+0)  * 127 + 128;
+	let g = sin(i+120)* 127 + 128;
+	let b = sin(i+240)* 127 + 128;
+	return [r,g,b];
+}
+
+function rainbow2(i,N) {
+	let r; let g; let b;
+	i = i * (360/N) %360;	//convert to period of 0..360
+	if(i < 90) {
+		r = cos(i)+1;
+		g = i/360;
+		b = 0;
+	}else if(i < 120) {
+		r = cos(i)+1;
+		g = sin(i)+1;
+		b = 0;
+	}else if(i < 270) {
+		r = 0;
+		g = sin(i)+1;
+		b = cos(i)+1;
+	}else {
+		r = sin(i)+1;
+		g = 0;
+		b = cos(i)+1;
+	}
+	r*=255; g*=255; b*=255;
+	return [r,g,b];
+}
+
+function makeText(x,y,size,color,align,alpha,text) {
+	let sx = GetStgFrameWidth(); let sy = GetStgFrameHeight();
+	let width = 384; //default stage frame width (height is 448)
+	let tx;
+	if( align == ALIGNMENT_LEFT) { tx = x; }
+	else if( align == ALIGNMENT_RIGHT ) { tx = x - width; }
+	else if( align == ALIGNMENT_CENTER) { tx = x - width/2;	}
+	let objText = ObjText_Create();
+	ObjText_SetHorizontalAlignment(objText, align);
+	ObjText_SetMaxWidth(objText, width);
+	ObjRender_SetX(objText, tx);
+	ObjRender_SetY(objText, y);
+	ObjText_SetFontSize(objText, size);
+	// ObjText_SetFontType(objText, "Helvetica");
+	ObjText_SetFontType(objText, "Cirno");
+	ObjText_SetFontColorTop(objText, color[0],color[1],color[2]); //224, 64, 192
+	// ObjText_SetFontColorTop(objText, 255, 255, 255);
+	ObjText_SetFontColorBottom(objText, 255, 255, 255);
+	// ObjText_SetFontBorderType(objText, BORDER_FULL);
+	// ObjText_SetFontBorderColor(objText, color[0],color[1],color[2]); //224, 64, 192
+	// ObjText_SetFontBorderWidth(objText, 1);
+	ObjRender_SetAlpha(objText,alpha);
+	ObjText_SetText(objText,text);
+	Obj_SetRenderPriorityI(objText,GetCameraFocusPermitPriorityI()+1);
+	return objText;
+}
+
+function ObjText_CreateA1(size,font,color){
+	let text = ObjText_Create;
+	ObjText_SetFontType(text,font);
+	ObjText_SetFontSize(text,size);
+	if(length(color)==0){color=[255,255,255];}
+	if(length(color)>3){ObjRender_SetAlpha(text,color[3]);}
+	ObjText_SetFontColorTop(text,255,255,255);
+	ObjText_SetFontColorBottom(text,color[0],color[1],color[2]);
+	ObjText_SetLinePitch(text,0);
+	ObjText_SetMaxWidth(text,GetStgFrameWidth);
+	Obj_SetRenderPriorityI(text, 70); //70
+	return text;
+}
+
+
 
 
 

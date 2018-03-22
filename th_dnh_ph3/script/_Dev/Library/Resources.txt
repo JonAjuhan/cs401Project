@@ -152,7 +152,24 @@ function reflect (angle, mirror)  {return 2*mirror-angle;}
 
 //Working with strings
 
-function tost(n){ if(n%1==0){return itoa(n);}else{return ToString(n);} } //smarter, easier-to-remember tostring
+//smarter, easier-to-remember tostring
+function tost(n){ if((|n|)%1==0){return itoa(n);}else{return rtos("0.00",n);} }
+//array to string
+function atost(n){
+	if(Obj_GetType(n) == Obj_GetType([0,0,0]) && length(n)!=0 ){
+		//recursively build string from array
+		let str = "[ ";
+		ascent(i in 0..length(n)){
+			str=str ~ tost(n[i]);
+			if(i+1<length(n)){ str=str ~ ","; }
+			str=str ~ " ";
+		}
+		str = str ~ "]";
+		return str;
+	}else{
+		return tost(n);
+	}
+} 
 
 
 //Aliases emulating other conventions
@@ -161,6 +178,9 @@ function abs(n){return (|n|);}
 //Ternary operator - does not short-circuit! for convenience only
 function tern(cond, iftrue, iffalse){ if(cond){return iftrue;}else{return iffalse;} }
 
+function sec(n) { return 1/cos(n); }
+function csc(n) { return 1/sin(n); }
+function cot(n) { return 1/tan(n); }
 
 function mean(arr){
 	let n=length(arr); let total=0;

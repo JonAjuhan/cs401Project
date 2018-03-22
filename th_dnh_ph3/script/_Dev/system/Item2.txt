@@ -1,0 +1,212 @@
+let LARGE_POWER = 1;
+let LIFE_PIECE = 2;
+let LIFE = 3;
+let BOMB_PIECE = 4;
+let BOMB = 5;
+let FULL_POWER = 6;
+let POWER = 7;
+let SCORE = 8;
+let SMALL_DELETE = 9;
+let DELETE = 10;
+let LARGE_DELETE = 11;
+let SPRING = 12;
+let SUMMER = 13;
+let FALL = 14;
+let WINTER = 15;
+let H = 16;
+let GCSD = GetCurrentScriptDirectory;
+
+@Initialize
+{
+	SetCommonData("ItemScript",GetOwnScriptID);
+	SetDefaultBonusItemEnable(false);
+	LoadItemData(GCSD~"./Item.txt");
+}
+
+@MainLoop
+{
+	let r = 64;
+	CollectItemsInCircle(GetPlayerX,GetPlayerY,r);
+	if(GetPlayerY<=100){CollectAllItems;}
+	yield;
+}
+
+@Event
+{
+	alternative(GetEventType())
+	case(EV_USER)
+	{
+		//[item type, position]
+		let type = GetEventArgument(0)[0];
+		let pos = [GetEventArgument(0)[1],GetEventArgument(0)[2],GetEventArgument(0)[3],GetEventArgument(0)[4]];
+		let score = 10;
+		let color = [255,255,255];
+		let obj	= CreateItemU2(type, pos[0], pos[1], pos[2], pos[3], score);
+		ObjItem_SetRenderScoreEnable(obj,false);
+	}
+	case(EV_DELETE_SHOT_TO_ITEM)
+	{
+		let obj = GetEventArgument(0);
+		let point = GetEventArgument(1);
+		if(Obj_GetValueD(obj,"Break",false)==false){BulletDeleteItem(point[0],point[1]);}
+		Break(obj,point[0],point[1]);
+	}
+	case(EV_GET_ITEM)
+	{
+		let itemtype = GetEventArgument(0);
+		TPlay(21,GetPlayerX);
+		if(itemtype==LIFE)
+		{
+			if(GetPlayerLife<8){ExtendText; SetPlayerLife(GetPlayerLife+1);}
+		}
+		if(itemtype==BOMB)
+		{
+			if(GetPlayerSpell<8){SetPlayerSpell(GetPlayerSpell+1);}
+		}
+		if(itemtype==LIFE_PIECE)
+		{
+			SetCommonData("LifePieces",GetCommonData("LifePieces",0)+1);
+		}
+		if(itemtype==BOMB_PIECE)
+		{
+			SetCommonData("SpellPieces",GetCommonData("SpellPieces",0)+1);
+		}
+		if(itemtype==SPRING)
+		{
+			SetCommonData("Spring",GetCommonData("Spring",0)+1);
+		}
+		if(itemtype==SUMMER)
+		{
+			SetCommonData("Summer",GetCommonData("Summer",0)+1);
+		}
+		if(itemtype==FALL)
+		{
+			SetCommonData("Fall",GetCommonData("Fall",0)+1);
+		}
+		if(itemtype==WINTER)
+		{
+			SetCommonData("Winter",GetCommonData("Winter",0)+1);
+		}
+		if(itemtype==H)
+		{
+			SetCommonData("Gauge",GetCommonData("Gauge",0)+2);
+			SetCommonData("Gauge",min(90,GetCommonData("Gauge",0)));
+		}
+	}
+}
+
+function GetX(obj){return ObjMove_GetX(obj);}
+function GetY(obj){return ObjMove_GetY(obj);}
+function GetCenterX{return GetStgFrameWidth/2;}
+function GetCenterY{return GetStgFrameHeight/2;}
+function GetClipMaxX{return GetStgFrameWidth;}
+function GetClipMaxY{return GetStgFrameHeight;}
+function wait(time){loop(time){yield;}}
+
+task BulletDeleteItem(x,y)
+{
+	let obj	= CreateItemU2(SMALL_DELETE,x,y,x+rand(-10,10),y-32,10);
+	ObjItem_SetRenderScoreEnable(obj,false);
+	ObjItem_SetAutoCollectEnable(obj,false);
+		
+	wait(60);
+	
+	ObjItem_SetDefinedMovePatternA1(obj, ITEM_MOVE_TOPLAYER);
+	
+	while(!Obj_IsDeleted(obj))
+	{
+		yield;
+	}
+	SetCommonData("Points",GetCommonData("Points",0)+2);
+}
+
+task Break(objS,x,y)
+{
+	let obj = CreateEffectObject(x,y,GetCurrentScriptDirectory~"./../img/etbreak.png","ARGB",0,0,64,64);
+	Obj_SetRenderPriority(obj,0.5);
+	let gra = ObjShot_GetImageID(objS);
+	let color = GetShotDataInfoA1(gra,TARGET_ENEMY,INFO_DELAY_COLOR);
+	let rect = GetShotDataInfoA1(gra,TARGET_ENEMY,INFO_RECT);
+	ObjRender_SetColor(obj,color[0],color[1],color[2]);
+	ObjRender_SetAngleZ(obj,rand(0,360));
+	let sc = (rect[2]-rect[0])/64;
+	ObjRender_SetScale(obj,sc*ObjRender_GetScaleX(objS));
+	let n = sc;
+	ascent(i in 0..4)
+	{
+		ObjSprite2D_SetSourceRect(obj,64*i,0,64*(i+1),64);
+		sc+=n/8;
+		ObjRender_SetScale(obj,sc);
+		wait(2);
+	}
+	ascent(i in 0..4)
+	{
+		ObjSprite2D_SetSourceRect(obj,64*i,64,64*(i+1),128);
+		sc+=n/8;
+		ObjRender_SetScale(obj,sc);
+		wait(2);
+	}
+	Obj_Delete(obj);
+}
+
+function CreateEffectObject(px,py,img,blendtype,left,top,right,bottom){
+	let obj=ObjPrim_Create(OBJ_SPRITE_2D);
+	LoadTexture(img);
+	ObjPrim_SetTexture(obj,img);
+	ObjSprite2D_SetSourceRect(obj,left,top,right,bottom);
+	ObjSprite2D_SetDestCenter(obj);
+	if(blendtype=="ALPHA"){
+	ObjRender_SetBlendType(obj,BLEND_ALPHA);
+	}
+	if(blendtype=="MULTIPLY"){
+	ObjRender_SetBlendType(obj,BLEND_MULTIPLY);
+	}
+	if(blendtype=="SUBTRACT"){
+	ObjRender_SetBlendType(obj,BLEND_SUBTRACT);
+	}
+	if(blendtype=="SHADOW"){
+	ObjRender_SetBlendType(obj,BLEND_SHADOW);
+	}
+	if(blendtype=="RGB"){
+	ObjRender_SetBlendType(obj,BLEND_ADD_RGB);
+	}
+	if(blendtype=="ARGB"){
+	ObjRender_SetBlendType(obj,BLEND_ADD_ARGB);
+	}
+	if(blendtype=="INVERT"){
+	ObjRender_SetBlendType(obj,BLEND_INV_DESTRGB);
+	}
+	ObjRender_SetPosition(obj,px,py,0);
+	ObjMove_SetPosition(obj,px,py,);
+	return obj;
+}
+
+function ObjRender_SetScale(obj,sc){return ObjRender_SetScaleXYZ(obj,sc,sc,sc);}
+
+task ExtendText
+{
+	TPlay(19,GetCenterX);
+	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjPrim_SetTexture(obj,GCSD~"./../img/system/frame2.png");
+	ObjSprite2D_SetSourceRect(obj,0,224,0+112,224+32);
+	ObjSprite2D_SetDestCenter(obj);
+	Obj_SetRenderPriority(obj,0.7);
+	ObjRender_SetPosition(obj,GetCenterX,GetCenterY/4,0);
+	ascent(i in 0..15)
+	{
+		ObjRender_SetScaleY(obj,1*i/15);
+		yield;
+	}
+	wait(90);
+	descent(i in 0..30)
+	{
+		ObjRender_SetAlpha(obj,255*i/30);
+		yield;
+	}
+	Obj_Delete(obj);
+}
+
+task TPlay(path,x)
+{
+	NotifyEvent(GetCommonData("SoundScript",GetOwnScriptID),EV_USER,[path,x]);
+}

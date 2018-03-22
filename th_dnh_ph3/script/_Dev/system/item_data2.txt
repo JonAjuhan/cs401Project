@@ -1,0 +1,51 @@
+#UserItemData
+
+item_image = "./item.png"
+
+//Large Power
+ItemData{ id = 1 rect = (0,0,32,32) out = (0,32,32,64) render = ALPHA }
+
+//Life Piece
+ItemData{ id = 2 rect = (32,0,64,32) out = (32,32,64,64) render = ALPHA }
+
+//Life
+ItemData{ id = 3 rect = (64,0,96,32) out = (64,32,96,64) render = ALPHA }
+
+//Spell Piece
+ItemData{ id = 4 rect = (96,0,128,32) out = (96,32,128,64) render = ALPHA }
+
+//Spell
+ItemData{ id = 5 rect = (128,0,160,32) out = (128,32,160,64) render = ALPHA }
+
+//Full Power
+ItemData{ id = 6 rect = (160,0,192,32) out = (160,32,192,64) render = ALPHA }
+
+//Small Power
+ItemData{ id = 7 rect = (192,0,208,16) out = (192,16,208,32) render = ALPHA }
+
+//Small Score
+ItemData{ id = 8 rect = (208,0,224,16) out = (208,16,224,32) render = ALPHA }
+
+//Small Deletion
+ItemData{ id = 9 rect = (192,32,208,48) out = (0,0,1,1) render = ADD_ARGB alpha=128}
+
+//Normal Deletion
+ItemData{ id = 10 rect = (208,32,224,48) out = (0,0,1,1) render = ADD_ARGB alpha=128}
+
+//Large Deletion
+ItemData{ id = 11 rect = (192,48,208,64) out = (0,0,1,1) render = ARGB }
+
+//Spring Item
+ItemData{ id = 12 rect = (224,0,240,16) out = (0,0,1,1) render = ALPHA  alpha=128}
+
+//Summer Item
+ItemData{ id = 13 rect = (240,0,256,16) out = (0,0,1,1) render = ALPHA  alpha=128}
+
+//Fall Item
+ItemData{ id = 14 rect = (224,16,240,32) out = (0,0,1,1) render = ALPHA  alpha=128}
+
+//Winter Item
+ItemData{ id = 15 rect = (240,16,256,32) out = (0,0,1,1) render = ALPHA  alpha=128}
+
+//H Item
+ItemData{ id = 16 rect = (208,48,224,64) out = (0,0,1,1) render = ALPHA  alpha=255}

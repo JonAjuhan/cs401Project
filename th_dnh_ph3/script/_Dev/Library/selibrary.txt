@@ -9,21 +9,25 @@ let se_chime = csd~"../se/chime.wav";
 let se_chime2 = csd~"../se/chime2.wav";
 let se_exshot = sed~"exattack.wav";
 
-let spellcard =  csd~"../se/spellcard.wav";
-let spellbreak = csd~"../se/spellbreak.wav";
+let se_spellcard =  csd~"../se/spellcard.wav"; let spellcard=se_spellcard;
+let se_spellbreak = csd~"../se/spellbreak.wav"; let spellbreak=se_spellbreak;
+let se_caution = csd~"../se/caution.wav";
+let se_defeated = csd~"../se/defeated.wav"; let defeated=se_defeated;
+
 let se_charge = csd~"../se/charge.wav";
 let se_charge2 = csd~"../se/charge2.wav";
 let se_charge3 = csd~"../se/charge3.wav";
 let se_charge3b = csd~"../se/charge3-2.wav";
 
-let se_caution = csd~"../se/caution.wav";
 
-let se_defeated = csd~"../se/defeated.wav"; let defeated=se_defeated;
 
 let time1 = csd~"../se/se_timeout1.wav";
 let time2 = csd~"../se/se_timeout2.wav";
+let se_graze = sed~"graze.wav";
 
 let se_extend = csd~"../se/extend.wav";
+let se_item = sed~"item.wav";
+let se_item2 = sed~"item2.wav";
 
 let se_laser  = csd~"../se/se_lazer00.wav";
 let se_laser1 = csd~"../se/laser1.wav";

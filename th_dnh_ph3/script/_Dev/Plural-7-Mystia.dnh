@@ -36,9 +36,9 @@ task TPlural {
 	ObjEnemyBossScene_Add(obj,0,dir~"Single-7-Mystia-Dialogue.dnh");
 	ObjEnemyBossScene_Add(obj,0,dir~"Single-7-Mystia-Non-01.dnh");
 	ObjEnemyBossScene_Add(obj,0,dir~"Single-7-Mystia-01.dnh");
-	ObjEnemyBossScene_Add(obj,1,dir~"Single-7-Mystia-Non-01.dnh"); //<-todo
+	ObjEnemyBossScene_Add(obj,1,dir~"Single-7-Mystia-Non-02.dnh");
 	ObjEnemyBossScene_Add(obj,1,dir~"Single-7-Mystia-02.dnh");
-	ObjEnemyBossScene_Add(obj,2,dir~"Single-7-Mystia-Non-01.dnh"); //<-todo
+	ObjEnemyBossScene_Add(obj,2,dir~"Single-7-Mystia-Non-03.dnh");
 	ObjEnemyBossScene_Add(obj,2,dir~"Single-7-Mystia-03.dnh");
 	ObjEnemyBossScene_Add(obj,2,dir~"Single-7-Mystia-Explode.dnh");
 	

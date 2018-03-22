@@ -29,6 +29,7 @@
 
 
 task MainTask {
+	if(noPlural){ObjMove_SetPosition(boss,cx,cy/2);}
 	SE_Play(se_defeated,100);
 	let x = ObjMove_GetX(boss); let y = ObjMove_GetY(boss);
 	loop(9){
@@ -43,6 +44,7 @@ task MainTask {
 		}
 	}
 	SE_Play(se_defeated,100);
+	ObjEnemy_SetLife(boss,0.001);
 	Obj_Delete(boss);
 	ScreenShake(30,3,5);
 	loop(30){
@@ -54,7 +56,31 @@ task MainTask {
 		yield;
 	}
 	
-	wait(90);
+	// wait(90);
+	// CloseScript(GetOwnScriptID);
+	
+	wait(45);
+	
+	InitiateDialogueSequence();
+	SetPortraitNumber(1,1);
+	
+	SetNewPlayerPort(dirportrait~"Mokou_Smug.png",0);
+	SetNewEnemyPort(dirportrait~"Mystia_Pout.png",0);
+	
+	SetSpeaker(0);
+	SetDialogueTextA1("Thou hast been rekt.",[255,128,128]);
+	
+	SetSpeaker(1);
+	SetDialogueTextA1("It's still night, though...",[128,128,255]);
+	
+	EndDialogueSequence();
+	FadeBGM;
+		
+	StageOutro(3);
+	wait(60);
+	
 	CloseScript(GetOwnScriptID);
+	
+	
 }
 

@@ -371,20 +371,81 @@ let ARROW_GRAY    = 371;
 
 //Reserved
 
-//----
+//Twin needle shots
+let TWIN_GRAY    = 387;
+let TWIN_RED     = 388;
+let TWIN_BLACK   = 389;
+let TWIN_YELLOW  = 390;
+let TWIN_GREEN   = 391;
+let TWIN_AQUA    = 392;
+let TWIN_BLUE    = 393;
+let TWIN_MAGENTA = 394;
+
+//RSS "suicide" bullets
+let STAR4_GRAY    = 420;
+let STAR4_RED     = 421;
+let STAR4_ORANGE  = 422;
+let STAR4_YELLOW  = 423;
+let STAR4_GREEN   = 424;
+let STAR4_AQUA    = 425;
+let STAR4_BLUE    = 426;
+let STAR4_MAGENTA = 427;
+
+
+//ZUN-like pellets
+let ZPEL_WHITE   = 428;
+let ZPEL_RED     = 429;
+let ZPEL_ORANGE  = 430;
+let ZPEL_YELLOW  = 431;
+let ZPEL_GREEN   = 432;
+let ZPEL_AQUA    = 433;
+let ZPEL_BLUE    = 434;
+let ZPEL_MAGENTA = 435;
+
+//SSS stars
+let SSS_GRAY    = 445;
+let SSS_RED     = 446;
+let SSS_ORANGE  = 447;
+let SSS_YELLOW  = 448;
+let SSS_GREEN   = 449;
+let SSS_AQUA    = 450;
+let SSS_BLUE    = 451;
+let SSS_MAGENTA = 452;
+
+let GALE = 444;
+
+//TODO: Default stars
+
+//TODO: Gale
+
+
+
+//----------------------------------------------------------
 
 //Add-rendered
+//(no constants)
 
-//----
+//----------------------------------------------------------
+
+//Extra
 
 
 //Mamizou animals
-let MAMI_HUMAN_RED  = 871;
-let MAMI_HUMAN_BLUE = 872;
-let MAMI_DOG_RIGHT  = 873;
-let MAMI_DOG_LEFT   = 874;
-let MAMI_BIRD       = 875;
-let MAMI_FROG       = 876;
+let MAMI_HUMAN_BLUE = 1058;
+let MAMI_HUMAN_RED  = 1059;
+let MAMI_BIRD       = 1060;
+let MAMI_DOG_RIGHT  = 1061;
+let MAMI_DOG_LEFT   = 1062;
+let MAMI_FROG       = 1063;
+let MAMI_BEE		= 1064;
+let MAMI_BAT		= 1065;
+
+//Unzan fist
+let FIST = 1101;
+//Murasa anchor
+let ANCHOR = 1102;
+//Kogasa parasol
+let PARASOL = 1103;
 
 //PoFV EX shots
 let EX_TEWI    = 877;
@@ -398,6 +459,8 @@ let EX_YUUKA_WHITE = 883;
 let FLOWER_WHITE = 883;			let FLW_WHITE = 883;
 let FLOWER_COUNTER_WHITE = 884;	let FLW_CNT_WHITE = 884;
 let FLOWER_STILL_WHITE = 885;	let FLW_STILL_WHITE = 885;
+
+//----------------------------------------------------------
 
 //Lasers
 

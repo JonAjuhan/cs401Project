@@ -145,7 +145,12 @@ task TShoot{
 					// shot = CreateShotA2(ex,ey,5.5-0.5*j,a, -0.15,0, SCALE_GREEN,10);
 					// shot = CreateShotA2(ex,ey,5.5-0.5*j,a, -0.15,0, SCALE_BLUE-5*altBin(j),10);
 					// shot = CreateShotA2(ex,ey,5.5-0.5*trunc(j/2+altBin(i)/3),a, -0.15,0, BALL_O_GREEN,10);
-					shot = CreateShotA2(ex,ey,5.5-0.5*trunc(j/2+altBin(i)/3),a, -0.15,0, BALL_O_GREEN+isalt*(SCALE_RED-BALL_O_GREEN+5*tobin(altBin(trunc(j/2+i)))),10);
+					// shot = CreateShotA2(ex,ey,5.5-0.5*trunc(j/2+altBin(i)/3),a, -0.15,0, BALL_O_GREEN+isalt*(SCALE_RED-BALL_O_GREEN+5*tobin(altBin(trunc(j/2+i)))),10);
+					
+					shot = CreateShotA2(ex,ey,5.5-0.5*trunc(j/2+altBin(i)/3),a, -0.15,0, BALL_O_GREEN+isalt*(SCALE_MAGENTA-BALL_O_GREEN-2*tobin(altBin(trunc(j/2+i)))),10);
+					
+					// shot = CreateShotA2(ex,ey,5.5-0.5*trunc(j/2+altBin(i)/3),a, -0.15,0, SSS_GREEN+round(3*sin(10*(6*i+j))),10);
+					// if(isalt==1){ObjShot_SetGraphic(shot,SCALE_RED+5*tobin(altBin(trunc(j/2+i)))); }
 					//          (obj, del,     speed,    angle, acc,      angv, mspd,    jerk,  macc,      anga,    mangv)
 					OM_AddPatternA5(shot,  0, NO_CHANGE,NO_CHANGE,   0,         0,    0,   -0.005,   -1,         0,        0);
 					// AddPatternA5(shot,  0, NO_CHANGE,NO_CHANGE,   6,         0,    0,   -0.05,   -1,         0,        0);
@@ -197,11 +202,11 @@ task TShoot{
 				while(!Obj_IsDeleted(fam) && !isOffScreen(fam)){
 					fx = ObjMove_GetX(fam); fy = ObjMove_GetY(fam); fa = ObjMove_GetAngle(fam);
 					ascent(i in 0..2){
-						shot = CreateShotA2(fx+rand(-20,20),fy+rand(-20,20),0,fa+180+160*i+off, 0,0, LARGE_BLUE,15); //1.5
+						shot = CreateShotA2(fx+rand(-20,20),fy+rand(-20,20),0,fa+180+160*i+off, 0,0, LARGE_AQUA,15); //1.5
 						CheckShot(shot,50);
 						// ObjMove_AddPatternA3(shot,del,0,NO_CHANGE,0.05,0,2.25, LARGE_AQUA);
 						// ObjMove_AddPatternA4(shot,del,0,NO_CHANGE,0.05,0,2.25, GetPlayerObjectID, LARGE_AQUA);
-						ObjMove_AddPatternA4(shot,del,0,160*i+off*sin(off)*cos(off),0.05,0,2.25, GetPlayerObjectID, LARGE_AQUA);
+						ObjMove_AddPatternA4(shot,del,0,160*i+off*sin(off)*cos(off),0.05,0,2.25, GetPlayerObjectID, LARGE_BLUE);
 					}
 					SE_Play(se_shot1,70);
 					DelayChime;
