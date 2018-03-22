@@ -324,7 +324,7 @@ function TLittleINFairy1(x,y,s,a,shootdel){
 							famx = fx+famr*cos(fama); famy = fy+famr*sin(fama);
 							ObjMove_SetPosition(fam,famx,famy);
 							ObjMove_SetAngle(fam,fama+90*famdir);
-							if((count+shotoff)%gap==0){CreateShotA1(famx,famy,2,fama+90*famdir,PEL_RED+5*j,5);}
+							if((count+shotoff)%gap==0){CreateShotA1(famx,famy,2,fama+90*famdir,ZPEL_RED+5*j,5);}
 							yield;
 						}
 						FamCount--;

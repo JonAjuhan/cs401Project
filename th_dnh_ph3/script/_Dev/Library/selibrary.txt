@@ -13,6 +13,7 @@ let se_spellcard =  csd~"../se/spellcard.wav"; let spellcard=se_spellcard;
 let se_spellbreak = csd~"../se/spellbreak.wav"; let spellbreak=se_spellbreak;
 let se_caution = csd~"../se/caution.wav";
 let se_defeated = csd~"../se/defeated.wav"; let defeated=se_defeated;
+let se_pause = sed~"Touhou Pause.wav";
 
 let se_charge = csd~"../se/charge.wav";
 let se_charge2 = csd~"../se/charge2.wav";

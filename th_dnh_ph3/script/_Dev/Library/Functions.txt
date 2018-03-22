@@ -171,7 +171,7 @@ function DropItemsNonspellEnd{
 
 function CheckGameOver{
 	if(GetPlayerLife < 0){
-		PauseBGM;
+		FadeBGM;
 		CloseStgScene;
 		// let EndMenuScript = LoadScriptInThread(dirsys~"EndScene.txt");
 		// StartScript(EndMenuScript);
@@ -284,9 +284,9 @@ task StageIntro(stagetext,titletext,subtitletext,img,source){
 	ObjRender_SetAlpha(title, 0);
 	ObjRender_SetAlpha(desc, 0);
 
-	Obj_SetRenderPriority(pic, 0.3);
-	Obj_SetRenderPriority(title, 0.31);
-	Obj_SetRenderPriority(desc, 0.31);
+	Obj_SetRenderPriority(pic, 0.73);
+	Obj_SetRenderPriority(title, 0.731);
+	Obj_SetRenderPriority(desc, 0.731);
 
 	renderpic;
 	wait(90);
@@ -585,41 +585,26 @@ task FadeToBlack(delin,dur,delout){
 
 
 
+function SetBGM(title,loopstart,loopend){
+	// NotifyEvent(GetCommonData("SystemScriptID",NULL),EV_SET_SONG,[title,loopstart,loopend]);
+	NotifyEventAll(EV_SET_SONG,[title,rtoa(loopstart),rtoa(loopend)]);
+}
+function FadeBGM(){
+	// NotifyEvent(GetCommonData("SystemScriptID",NULL),EV_FADE_SONG,[]);
+	NotifyEventAll(EV_FADE_SONG,[]);
+}
 
 
 
 
-function rainbow(i,N) {
-	i = i * (360/N) %360;	//convert to period of 0..360
+function rainbow(i) {
+	i = (i*360) %360;	//convert from ratio 0..1 to period of 0..360
 	let r = sin(i+0)  * 127 + 128;
 	let g = sin(i+120)* 127 + 128;
 	let b = sin(i+240)* 127 + 128;
 	return [r,g,b];
 }
 
-function rainbow2(i,N) {
-	let r; let g; let b;
-	i = i * (360/N) %360;	//convert to period of 0..360
-	if(i < 90) {
-		r = cos(i)+1;
-		g = i/360;
-		b = 0;
-	}else if(i < 120) {
-		r = cos(i)+1;
-		g = sin(i)+1;
-		b = 0;
-	}else if(i < 270) {
-		r = 0;
-		g = sin(i)+1;
-		b = cos(i)+1;
-	}else {
-		r = sin(i)+1;
-		g = 0;
-		b = cos(i)+1;
-	}
-	r*=255; g*=255; b*=255;
-	return [r,g,b];
-}
 
 function makeText(x,y,size,color,align,alpha,text) {
 	let sx = GetStgFrameWidth(); let sy = GetStgFrameHeight();

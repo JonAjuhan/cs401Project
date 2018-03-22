@@ -189,7 +189,7 @@ task ObjMove_SetDestAtHermiteF(obj,dest_x,dest_y,x_dir,x_angle,y_dir,y_angle,fra
 }
 
 //Easier function
-task ObjMove_MoveBezierCurve(obj,s,x1,y1,x2,y2){
+task ObjMove_SetDestAtBezierS(obj,x2,y2,x1,y1,s){
     let t = 0;
     let p = [ObjRender_GetX(obj),(x1),x2];
     let p2 = [ObjRender_GetY(obj),(y1),y2];
@@ -209,4 +209,29 @@ task ObjMove_MoveBezierCurve(obj,s,x1,y1,x2,y2){
     }
     
     ObjRender_SetPosition(obj,x2,y2,0);
+    ObjMove_SetSpeed(obj,0);
+}
+
+
+task ObjMove_SetDestAtBezierF(obj,x2,y2,x1,y1,f){
+    let t = 0;
+    let p = [ObjRender_GetX(obj),(x1),x2];
+    let p2 = [ObjRender_GetY(obj),(y1),y2];
+    let x = 0;
+    let y = 0;
+    let speed = 1/f;
+    
+    ObjMove_SetSpeed(obj,0.01);
+    
+    while(t<=1){
+        x = (1 - t) * (1 - t) * p[0] + 2 * (1 - t) * t * p[1] + t * t * p[2];
+        y = (1 - t) * (1 - t) * p2[0] + 2 * (1 - t) * t * p2[1] + t * t * p2[2];
+        
+        t+=speed;
+        moveLinear(obj,x,y,2,true);
+        yield;
+    }
+    
+    ObjRender_SetPosition(obj,x2,y2,0);
+	ObjMove_SetSpeed(obj,0);
 }

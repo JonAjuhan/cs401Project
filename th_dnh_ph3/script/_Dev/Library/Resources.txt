@@ -132,6 +132,7 @@ function GetAngularDistance(angle1, angle2){
 function rotate(x,y,a) { return [x*cos(a)-y*sin(a), x*sin(a)+y*cos(a)]; }
 function rotateC(x,y,cx,cy,theta) { return [cx+(x-cx)*cos(theta)-(y-cy)*sin(theta), cy+(x-cx)*sin(theta)+(y-cy)*cos(theta)]; }
 
+//Interpolation
 //Lerp blerp derp - (bi)linear interpolation by Andi
 function lerp(start,end,t){return (1-t)*start+t*end;}
 function blerp(x0,y0,x1,y1,t){return [lerp(x0,x1,t),lerp(y0,y1,t)];}
@@ -141,6 +142,15 @@ function bqerp(x0,y0,x1,y1,x2,y2,t){return [qerp(x0,x1,x2,t),qerp(y0,y1,y2,t)];}
 //Lerp between two angles, taking the shortest path
 function lerpa(starta,enda,t){return starta+t*getadist(starta,enda);}
 
+//
+function hermite(start,end,distance,angle,t){
+	real scale = t / 1;
+	real h1 = 2 * scale ^ 3 - 3 * scale ^ 2 + 1;
+	real h2 = -2 * scale ^ 3 + 3 * scale ^ 2;
+	real h3 = scale ^ 3 - 2 * scale ^ 2 + scale;
+	real h4 = scale ^ 3 - scale ^ 2;
+	return h1 * start + h2 * end + h3 * distance + h4 * angle;
+}
 
 
 

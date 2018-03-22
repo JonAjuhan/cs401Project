@@ -1,9 +1,11 @@
+//Used by system script - 
+//others interface with functions in Functions.txt
+//with same names/parameters as these
+//that notify system script to actually call these ones.
+
 let music = GetCommonData("MusicObject",ObjSound_Create);
 SetCommonData("MusicObject",music);
 
-//TODO: Have system handle this? eh nah
-
-//TODO: set this up as separate script and interface through events
 
 
 
@@ -29,6 +31,14 @@ function SetBGM(title,loopstart,loopend){
 }
 
 
+task FadeBGM{
+	descent(i in 0..60){
+		ObjSound_SetVolumeRate(music,100*i/60);
+		yield;
+	}
+	ObjSound_Stop(music);
+}
+
 
 
 
@@ -48,26 +58,32 @@ function ResumeBGM{
 }
 
 
-task FadeBGM{
-	// ObjSound_SetFade(music,-100/60);
-	descent(i in 0..60){
-		ObjSound_SetVolumeRate(music,100*i/60);
-		yield;
-	}
-	ObjSound_Stop(music);
-}
-
 
 
 
 
 task ShowBGMTitle(title){
-	let obj = makeText(sx-15,sy-20,16,[0,0,255],ALIGNMENT_RIGHT, 0, title);
-	// ObjText_SetFontColorTop(   obj, 180, 180, 255);
-	// ObjText_SetFontColorBottom(obj,  64,  64, 255);
-	ObjText_SetFontColorTop(   obj, 255, 255, 255);
-	ObjText_SetFontColorBottom(obj,  180,  180, 255);
+	//let obj = makeText(sx-15,sy-20,16,[0,0,255],ALIGNMENT_RIGHT, 0, title);
+	let obj = GetCommonData("BGMTitleObject",ObjText_Create);
+	SetCommonData("BGMTitleObject",obj);
+	Obj_SetVisible(obj,true);
+	ObjRender_SetPosition(obj,-15,sy-16,0);
+	ObjText_SetMaxWidth(obj,sx);
+	ObjText_SetHorizontalAlignment(obj,ALIGNMENT_RIGHT);
+	ObjText_SetText(obj,title);
+	
+	//Less intrusive
+	ObjText_SetFontColorTop(   obj, 180, 180, 255);
+	ObjText_SetFontColorBottom(obj,  64,  64, 255);
+	//More intrusive
+	// ObjText_SetFontColorTop(   obj, 255, 255, 255);
+	// ObjText_SetFontColorBottom(obj,  180,  180, 255);
+
 	ObjText_SetFontBorderColor(obj,   0,   0, 255);
+	ObjText_SetFontBorderType(obj, BORDER_FULL);
+	ObjText_SetFontBorderWidth(obj, 1);
+	
+	
 	ObjText_SetFontType(obj, "Cirno");
 	Obj_SetRenderPriorityI(obj,79.9999);
 	descent(i in 0..40){ //100
@@ -81,65 +97,10 @@ task ShowBGMTitle(title){
 		ObjRender_SetX(obj,qerp(-15,-15+(0.15*sx),-15-sx,i/120));
 		yield;
 	}
-	Obj_Delete(obj);
+	// Obj_Delete(obj);
+	Obj_SetVisible(obj,false);
 }
 
 
 
 
-
-
-
-
-// function StartBGM(title,loopstart,loopend){
-	// SetCommonData("CurrentBGM",title); SetCommonData("MusicObject",music);
-	// if(ObjSound_IsPlaying(music)){ObjSound_Stop(music);}
-	// ObjSound_Load(music,dirbgm~"bgm - "~title~".ogg");
-	// ObjSound_SetSoundDivision(music, SOUND_BGM);
-	// ObjSound_SetLoopEnable(music,true);
-	// ObjSound_SetRestartEnable(music,true);	
-	// ObjSound_SetLoopTime(music,loopstart,loopend);
-	// ObjSound_SetVolumeRate(music,100);
-	// ObjSound_Play(music);
-	
-	// ShowBGMTitle(title);
-// }
-
-
-
-// task ChangeBGM(title,loopstart,loopend){
-	// ShowBGMTitle(title);
-	// FadeBGM;
-	// wait(61);
-	// // StartBGM(title,loopstart,loopend);
-	// SetCommonData("CurrentBGM",title); SetCommonData("MusicObject",music);
-	// ObjSound_Load(music,dirbgm~"bgm - "~title~".ogg");
-	// ObjSound_SetSoundDivision(music, SOUND_BGM);
-	// ObjSound_SetLoopEnable(music,true);
-	// ObjSound_SetRestartEnable(music,true);	
-	// ObjSound_SetLoopTime(music,loopstart,loopend);
-	// ObjSound_SetVolumeRate(music,100);
-	// ObjSound_Play(music);
-// }
-
-
-
-
-
-
-
-// task PlayMusic(title,start,end){
-	// // LoadCommonDataAreaA2("CONFIG",GetCurrentScriptDirectory ~ "./data/CONFIG");
-	// musicObj = ObjSound_Create;
-	// ObjSound_Load(musicObj,dirbgm~"bgm - "~title~".ogg");	
-	// ObjSound_SetSoundDivision(musicObj, SOUND_BGM);
-	// ObjSound_SetLoopEnable(musicObj,true);
-	// ObjSound_SetRestartEnable(musicObj,true);	
-	// ObjSound_SetLoopTime(musicObj,start,end);
-	// // ObjSound_SetVolumeRate(musicObj,GetAreaCommonData("CONFIG","MUSIC_VOLUME",1)*100);
-	// ObjSound_Play(musicObj);
-	
-	// while(ObjSound_IsPlaying(musicObj) == true){yield;} 
-	// StopSound(path);
-	// RemoveSound(path);
-// }
