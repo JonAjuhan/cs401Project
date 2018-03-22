@@ -35,7 +35,7 @@ let bossBGM;
 	TStage();
 }
 task InitPlural{
-	wait(600); //give it time to compile
+	wait(1200); //give it time to compile
 	StartScript(bossScript); //will wait for event before starting boss
 }
 
