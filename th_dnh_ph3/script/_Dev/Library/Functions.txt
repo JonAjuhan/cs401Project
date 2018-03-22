@@ -490,10 +490,7 @@ function StageOutro(stagenum){
 	ObjText_SetFontColorTop(obj_finalbonus,255,200,200);
 	ObjText_SetFontColorBottom(obj_finalbonus,255,64,64);
 	
-	
-	
-	
-	
+
 	wait(fadeindel);
 	
 	let time = 180; //120
@@ -536,7 +533,7 @@ function StageOutro(stagenum){
 
 	//afterwards,
 	//fade to black (todo: using reserved render target?)
-	FadeToBlack(60);
+	FadeToBlack(60,180,60);
 	wait(60);
 	//CloseScript(GetOwnScriptID)
 	
@@ -551,25 +548,39 @@ function WaitForConfirm{
 
 
 
-task FadeToBlack(i){
-	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+task FadeToBlack(delin,dur,delout){
+	let obj = GetCommonData("ScreenFadeObject",ObjPrim_Create(OBJ_SPRITE_2D));
+	SetCommonData("ScreenFadeObject",obj);
 	ObjPrim_SetTexture(obj, dirimg~"black.png");
 	ObjSprite2D_SetSourceRect(obj, 0, 0, 100, 100);
 	ObjSprite2D_SetDestCenter(obj);
 	// Obj_SetRenderPriorityI(obj, 100);
-	Obj_SetRenderPriorityI(obj, 80);
+	Obj_SetRenderPriorityI(obj, 79);
 	ObjRender_SetAlpha(obj, 0);
+	
+	// RenderToTextureB1(GetReservedRenderTargetName(2),obj,true);
 
 	ObjRender_SetPosition(obj, GetCenterX, GetCenterY, 0);
 	ObjRender_SetScaleXYZ(obj, 8, 8, 0);
 	let a = 0;
-	while(a < 255){
-		ObjRender_SetAlpha(obj, a);
-		a += 2;
-		yield;
+	if(delin<1){a=255;ObjRender_SetAlpha(obj,a);}
+	else{
+		while(a < 255){
+			ObjRender_SetAlpha(obj, a);
+			a += 255/delin;
+			yield;
+		}
 	}
-	wait(i);
-	Obj_Delete(obj);
+	wait(dur);
+	if(delout<1){a=0;ObjRender_SetAlpha(obj,a);}
+	else{
+		while(a > 0){
+			ObjRender_SetAlpha(obj, a);
+			a -= 255/delout;
+			yield;
+		}
+	}
+	// Obj_Delete(obj);
 }
 
 

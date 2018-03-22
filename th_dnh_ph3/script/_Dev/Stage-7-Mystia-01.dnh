@@ -53,6 +53,8 @@ task TStage {
 	SetBGM("Song of the Night Sparrow ~ Night Bird",145.8,292.4);
 	ShowPointOfCollection;
 	
+	FadeToBlack(0,0,60);
+	
 	loop(60){yield;}//1秒くらいあれば、コンパイル完了すると思われる。
 	
 	
