@@ -1,0 +1,257 @@
+@Initialize
+{
+	SetAutoDeleteObject(true);
+
+	TBackground();
+	TReplaySelectScene();
+
+	SetScriptResult("");
+}
+
+
+@MainLoop
+{
+
+	yield;
+}
+
+@Finalize
+{
+}
+
+task TBackground()
+{
+	//背景
+	let dir = GetCurrentScriptDirectory();
+	let pathTitle = dir ~ "./img/Title.png";
+
+	let objImage = ObjPrim_Create(OBJ_SPRITE_2D); //2Dスプライトオブジェクト生成
+	Obj_SetRenderPriorityI(objImage, 20); //描画優先度を設定
+	ObjPrim_SetTexture(objImage, pathTitle); //テクスチャを設定
+	ObjSprite2D_SetSourceRect(objImage, 0, 0, 640, 480);
+	ObjSprite2D_SetDestRect(objImage, 0, 0, 640, 480);
+	ObjRender_SetAlpha(objImage, 64);
+
+	//タイトル文字列
+	let objText = ObjText_Create();
+	ObjText_SetText(objText, "Replay Selection");
+	ObjText_SetFontType(objText, "Gyosho");
+	ObjText_SetFontSize(objText, 24);
+	ObjText_SetFontBold(objText, true);
+	ObjText_SetFontColorTop(objText, 255, 255, 255);
+	ObjText_SetFontColorBottom(objText, 255, 255, 255);
+	ObjText_SetFontBorderType(objText, BORDER_NONE);
+	Obj_SetRenderPriorityI(objText, 30);
+	ObjRender_SetX(objText, 16);
+	ObjRender_SetY(objText, 16);
+}
+
+
+//----------------------------------------------------
+// リプレイ選択
+//----------------------------------------------------
+task TReplaySelectScene
+{
+	LoadReplayList();
+	let listValidReplayIndex = GetValidReplayIndices();
+
+	let cursorY = 0;
+	let page = 0;
+	let countMaxItem = length(listValidReplayIndex);
+	let countItemPerPage = 20;
+	let pageMax = trunc((countMaxItem - 1) / countItemPerPage);
+	pageMax = max(pageMax, 0);
+	let lastPageMaxCursorY = trunc(countMaxItem % countItemPerPage);
+	if(countMaxItem % countItemPerPage == 0)
+	{
+		lastPageMaxCursorY = countItemPerPage;
+	}
+
+	task TMenuItem(let itemY)
+	{
+		let objText = CreateTextObject(32, 64 + 16 * itemY, 14, "");
+		ObjText_SetFontBorderWidth(objText, 1);
+		let objSelect = CreateTextObject(32, 64 + 16 * itemY, 14, "");
+		ObjText_SetFontBorderWidth(objSelect, 1);
+		ObjRender_SetBlendType(objSelect, BLEND_ADD_RGB);
+
+		let oldPage = -1;
+		loop
+		{
+			if(page != oldPage)
+			{
+				let text = "";
+				let indexList = page * countItemPerPage + itemY;
+				if(indexList < countMaxItem)
+				{
+					let indexReplay = listValidReplayIndex[indexList];
+					if(IsValidReplayIndex(indexReplay))
+					{
+						text = rtos("00", indexReplay) ~ " ";
+						text = text ~ vtos("-8s", GetReplayInfo(indexReplay, REPLAY_USER_NAME)) ~ " ";
+						text = text ~ rtos("000000000000", GetReplayInfo(indexReplay, REPLAY_TOTAL_SCORE)) ~ " ";
+						text = text ~ vtos("-8s", GetReplayInfo(indexReplay, REPLAY_PLAYER_NAME)) ~ " ";
+						text = text ~ vtos("03.2f", GetReplayInfo(indexReplay, REPLAY_FPS_AVERAGE)) ~ "fps ";
+						text = text ~ GetReplayInfo(indexReplay, REPLAY_DATE_TIME) ~ " ";
+						
+					}
+				}
+
+				ObjText_SetText(objText, text);
+				ObjText_SetText(objSelect, text);
+				oldPage = page;
+			}
+			
+			if(page == pageMax && itemY >= lastPageMaxCursorY)
+			{
+				Obj_SetVisible(objText, false);
+				Obj_SetVisible(objSelect, false);
+			}
+			else
+			{
+				Obj_SetVisible(objText, true);
+				Obj_SetVisible(objSelect, itemY == cursorY);
+			}
+
+			yield;
+		}
+		Obj_Delete(objText);
+		Obj_Delete(objSelect);
+	}
+
+	ascent(let iItem in 0 .. countItemPerPage)
+	{
+		TMenuItem(iItem);
+	}
+
+	//キー状態がリセットされるまで待機
+	while(GetVirtualKeyState(VK_OK) != KEY_FREE){yield;}
+
+	//キー処理
+	let frameKeyHold = 0;//キー押しっぱなしフレーム数
+	loop
+	{
+		//決定
+		if(GetVirtualKeyState(VK_OK) == KEY_PULL)
+		{
+			let indexList = page * countItemPerPage + cursorY;
+			if(indexList < countMaxItem) 
+			{
+				let indexReplay = listValidReplayIndex[indexList];
+				let pathReplay = GetReplayInfo(indexReplay, REPLAY_FILE_PATH);
+				SetScriptResult(pathReplay);
+				CloseScript(GetOwnScriptID());
+				break;
+			}
+		}
+
+		if(GetVirtualKeyState(VK_CANCEL) == KEY_PULL)
+		{
+			//キャンセル
+			CloseScript(GetOwnScriptID());
+			break;
+		}
+
+		//カーソル移動
+		if(GetVirtualKeyState(VK_UP) == KEY_PUSH || GetVirtualKeyState(VK_UP) == KEY_HOLD)
+		{
+			frameKeyHold++;
+			if(GetVirtualKeyState(VK_UP) == KEY_PUSH ||
+				frameKeyHold == 20 ||
+				 (frameKeyHold > 20 && (frameKeyHold % 5 == 0)))
+			{
+				cursorY--;
+			}
+		}
+		else if(GetVirtualKeyState(VK_DOWN) == KEY_PUSH || GetVirtualKeyState(VK_DOWN) == KEY_HOLD)
+		{
+			frameKeyHold++;
+			if(GetVirtualKeyState(VK_DOWN) == KEY_PUSH ||
+				frameKeyHold == 20 ||
+				 (frameKeyHold > 20 && (frameKeyHold % 5 == 0)))
+			{
+				cursorY++;
+			}
+		}
+		else if(GetVirtualKeyState(VK_LEFT) == KEY_PUSH || GetVirtualKeyState(VK_LEFT) == KEY_HOLD)
+		{
+			frameKeyHold++;
+			if(GetVirtualKeyState(VK_LEFT) == KEY_PUSH ||
+				frameKeyHold == 20 ||
+				 (frameKeyHold > 20 && (frameKeyHold % 5 == 0)))
+			{
+				page--;
+			}
+		}
+		else if(GetVirtualKeyState(VK_RIGHT) == KEY_PUSH || GetVirtualKeyState(VK_RIGHT) == KEY_HOLD)
+		{
+			frameKeyHold++;
+			if(GetVirtualKeyState(VK_RIGHT) == KEY_PUSH ||
+				frameKeyHold == 20 ||
+				 (frameKeyHold > 20 && (frameKeyHold % 5 == 0)))
+			{
+				page++;
+			}
+		}
+		else
+		{
+			frameKeyHold = 0;
+		}
+
+		if(page < 0)
+		{
+			page = pageMax;
+		}
+		else if(page > pageMax)
+		{
+			page = 0;
+		}
+
+		if(page != pageMax)
+		{
+			if(cursorY < 0)
+			{
+				cursorY = countItemPerPage - 1;
+			}
+			else if(cursorY >= countItemPerPage)
+			{
+				cursorY = 0;
+			}
+		}
+		else
+		{
+			if(cursorY < 0)
+			{
+				cursorY = lastPageMaxCursorY - 1;
+			}
+			else if(cursorY >= lastPageMaxCursorY)
+			{
+				cursorY = 0;
+			}
+		}
+
+		yield;
+	}
+}
+
+
+//----------------------------------------------------
+// ユーティリティ
+//----------------------------------------------------
+function CreateTextObject(let mx, let my, let size, let text)
+{
+	let obj = ObjText_Create();
+	ObjText_SetText(obj, text);
+	ObjText_SetFontSize(obj, size);
+	ObjText_SetFontBold(obj, true);
+	ObjText_SetFontColorBottom(obj, 255, 255, 255);
+	ObjText_SetFontColorBottom(obj, 128, 128, 128);
+	ObjText_SetFontBorderType(obj, BORDER_FULL);
+	ObjText_SetFontBorderColor(obj, 0, 0, 0);
+	ObjText_SetFontBorderWidth(obj, 1);
+	Obj_SetRenderPriorityI(obj, 40);
+	ObjRender_SetX(obj, mx);
+	ObjRender_SetY(obj, my);
+	return obj;
+}
+

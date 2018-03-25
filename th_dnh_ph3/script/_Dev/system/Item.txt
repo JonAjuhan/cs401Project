@@ -61,6 +61,17 @@ let r = 48; //64
 		case(I_POWER_L){ SetPlayerPower(min(GetPlayerPower + 40, 400)); }
 		case(I_POWER_F){ SetPlayerPower(400); }
 		
+		case(I_CANCEL){ 
+			// SetCommonData("PointValue",GetCommonData("PointValue",10000+10*GetGraze)+10); //too much!
+			let gauge = GetCommonData("ThirdEyeGauge",0);
+			// gauge = gauge+0.0025*(1-(min(gauge,1))^0.5);
+			gauge = gauge+0.0025*5*(1-(min(gauge,1))^0.5);
+			SetCommonData("ThirdEyeGauge",min(gauge, GetCommonData("ThirdEyeMax",1.1)));
+			if(gauge>=1){
+				SetCommonData("PointValue",GetCommonData("PointValue",10000+10*GetGraze)+10); //too much!
+			}
+		}
+		
 		SE_Play(se_item,volume);
 		
 	}
