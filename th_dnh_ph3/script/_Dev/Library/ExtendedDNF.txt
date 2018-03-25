@@ -5,8 +5,35 @@
 
 function ObjEnemy_GetLife(enemy){return ObjEnemy_GetInfo(enemy,INFO_LIFE);}
 
-
-
+let TYPE_ENEMY = 9000; let TYPE_FAM = 9001; let TYPE_DIE = 8000;
+function DeleteEnemyAll(enetype,deletetype){
+	let enems = GetAllEnemyID;
+	ascent(i in 0..length(enems)){
+		let ene = enems[i];
+		if(Obj_GetType(ene)!=OBJ_ENEMY_BOSS || enetype==TYPE_ALL){
+			if(enetype!=TYPE_FAM || Obj_GetValueD(ene,"IsFam",false)){
+				alternative(deletetype)
+				case(TYPE_IMMEDIATE){ Obj_Delete(ene); }
+				case(TYPE_DIE){ ObjEnemy_SetLife(ene,0); }
+				case(TYPE_FADE){ Obj_FadeDelete(ene); }
+				case(TYPE_ITEM){
+					// ItemExplode(ObjMove_GetX(ene),ObjMove_GetY(ene),trunc(ObjEnemy_GetLife(ene)/50));
+					let x = ObjMove_GetX(ene); let y = ObjMove_GetY(ene);
+					let n = trunc(ObjEnemy_GetLife(ene)/50);
+					let r = max(48, 48*(360/n)/120);
+					loop(n){
+						let a = rand(0,360);
+						let d = rand(r/2,r);
+						NotifyEvent(GetCommonData("ItemScriptID",NULL),EV_SPAWN_ITEM,
+						  [I_CANCEL,x,y,x+d*cos(a),y+d*sin(a),0]);
+					}
+					
+					ObjEnemy_SetLife(ene,0);
+				}
+			}
+		}
+	}
+}
 
 
 //////////////////////////////////////////////////////////////////

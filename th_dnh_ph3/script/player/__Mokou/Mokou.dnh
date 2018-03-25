@@ -22,6 +22,7 @@ let snowflake = current ~ "Focus.png";
 let Option = current ~ "Option.png";
 let imgaura = current ~ "Aura.png";
 let imgshot = current ~ "Shot.png";
+let imggraze = current ~ "graze_eff.png";
 
 let currPower = -1;
 let currLife = -1;
@@ -30,7 +31,6 @@ let isinitialize = true;
 
 @Initialize{
 	LoadPlayerShotData(current ~ "Shotdata.dnh");
-	// SetPlayerAutoItemCollectLine(GetStgFrameHeight/2-110); //130
 	
 	SetPlayerAutoItemCollectLine(GetCommonData("PointOfCollection",GetStgFrameHeight*0.25)); //130
 	
@@ -79,6 +79,14 @@ task InitializePowerAndOptions{
 		}
 		case(EV_GRAZE){
 			PlaySE(current~"se_graze.wav");
+			let number = GetEventArgument(0);
+			ascent(i in 0..number){
+				let shot = GetEventArgument(1)[i];
+				let pos = GetEventArgument(2)[i];
+				let a = atan2(pos[1]-GetPlayerY,pos[0]-GetPlayerX);
+				let c = GetShotDataInfoA1(ObjShot_GetImageID(shot),TARGET_ENEMY,INFO_DELAY_COLOR);
+				GrazePiece(a,c[0],c[1],c[2]);
+			}
 		}
 		case(EV_HIT)
 		{
@@ -170,9 +178,8 @@ task InitializePowerAndOptions{
 	LoadSound(current~"se_pldead00.wav");
 	LoadSound(current~"se_graze.wav");
 	LoadSound(current~"se_item00.wav");
-	LoadSound(current~"se_extend.wav");
-	LoadSound(current~"se_invalid.wav");
-	LoadSound(current~"se_extend.wav");
+	// LoadSound(current~"se_invalid.wav");
+	// LoadSound(current~"se_extend.wav");
 	// LoadSound(current~"hypershot.ogg");
 	LoadSound(current~"se_charge00.wav");
 	LoadSound(current~"se_chargeup.wav");
@@ -183,6 +190,7 @@ task InitializePowerAndOptions{
 	LoadTexture(Option);
 	LoadTexture(imgaura);
 	LoadTexture(imgshot);
+	LoadTexture(imggraze);
 }
 
 @MainLoop{
@@ -611,8 +619,6 @@ task RenderPlayerImage(ObjectRender, offset){
 	}
 }
 
-//Doesn't actually get called?
-//Now it does
 task Spawn{
 	let obj = GetPlayerObjectID;
 	let y = 0; let cnt = 0;
@@ -665,11 +671,6 @@ task PlayerRebirthWindow{
 	if(GetPlayerSpell < 1){return;}
 	neitoCharge(GetPlayerX, GetPlayerY, bolad, 255, 128, 64+64*GetPlayerSpell);
 }
-
-
-
-
-
 
 
 
@@ -792,15 +793,22 @@ task Combustion{		//bomb
 		ObjShot_SetDamage(obj, 15);
 		ObjShot_SetPenetration(obj, 1000000);
 		ObjShot_SetEraseShot(obj, true);
+		ObjShot_SetSpellFactor(obj,true);
+
+		let obj2 = ObjSpell_Create;
+		ObjSpell_Regist(obj2);
+		ObjSpell_SetDamage(obj2, 15);
+		ObjSpell_SetEraseShot(obj2,false);
 
 		ObjRender_SetScaleXYZ(obj, 0, 0, 0);
 		ObjShot_SetIntersectionEnable(obj, false);
 		let s = 0; let alpha = 255;
-		while(s < 6){ //6
+		while(s < 6 && !Obj_IsDeleted(manage)){ //6
 			ObjRender_SetScaleXYZ(obj, s, s, 0);
 			if(s >= 1 && alpha > 55){
-				ObjShot_SetIntersectionEnable(obj, true);
-				ObjShot_SetIntersectionCircleA1(obj,64*s);
+				// ObjShot_SetIntersectionCircleA1(obj,64*s);
+				ObjSpell_SetIntersectionCircle(obj2,GetPlayerX,GetPlayerY,64*s);
+				DeleteShotInCircle(TYPE_SHOT,TYPE_ITEM,GetPlayerX,GetPlayerY,64*s);
 			}
 			if(s<3){
 				s += 0.1;
@@ -813,11 +821,41 @@ task Combustion{		//bomb
 			yield;
 		}
 		ObjShot_FadeDelete(obj);
+		Obj_Delete(obj2);
 		SetCommonData("PlayerSpellAttackEnd",true); //when the ATTACK part is done
 		yield;
 		DeleteCommonData("PlayerSpellAttackEnd");
 	}
 }
+
+
+
+task GrazePiece(a, r, g, b){
+	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjPrim_SetTexture(obj, imggraze);
+	ObjSprite2D_SetSourceRect(obj, 0, 0, 32, 32);
+	ObjSprite2D_SetDestCenter(obj);
+	ObjRender_SetBlendType(obj, BLEND_ADD_ARGB);
+	ObjRender_SetColor(obj, r, g, b);
+
+	let s = 0.3;
+	// let a = rand(0, 360);
+	// loop(5){ a += rand(-15, 15); }
+	loop(3){ a += rand(-90, 90); }
+	let x = GetPlayerX;
+	let y = GetPlayerY;
+	while(s > 0){
+		ObjRender_SetScaleXYZ(obj, s, s, s);
+		ObjRender_SetPosition(obj, x, y, 0);
+		s -= 0.01;
+		x += 5*cos(a);
+		y += 5*sin(a);
+		yield;
+	}
+	Obj_Delete(obj);
+}
+
+
 
 ///////////////////////////////////////////////////////////////////////////
 //Stuff I don't need to mess with

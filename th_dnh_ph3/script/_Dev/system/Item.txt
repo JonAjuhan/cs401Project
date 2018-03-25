@@ -82,8 +82,12 @@ function TItem(type, x, y, x1, y1){
 	Obj_SetRenderPriorityI(obj, 39);
 	ObjItem_SetRenderScoreEnable(obj,false);
 	
-	if(type==I_CANCEL){
+	alternative(type)
+	case(I_CANCEL){
 		DelCollectItem(obj,30);
+	}
+	case(I_POINT,I_POINT_S){
+		KeepFullValue(obj);
 	}
 	
 	return obj;
@@ -99,6 +103,17 @@ task DelCollectItem(item,del){
 			return;
 		}
 		others{ yield; }
+	}
+}
+
+task KeepFullValue(item){
+	Obj_SetValue(item,"KeepFullValue",true);
+	let PoC = GetCommonData("PointOfCollection",GetStgFrameHeight/4);
+	while(ObjMove_GetY(item) < PoC && GetPlayerY > PoC){
+		yield;
+	}
+	if(ObjMove_GetY(item) >= PoC){
+		Obj_SetValue(item,"KeepFullValue",false);
 	}
 }
 
@@ -120,17 +135,17 @@ task ItemScore(type,item){
 		display = true;
 		score = 10*trunc(GetCommonData("PointValue",10000+10*GetGraze)/10);
 		let PoC = GetCommonData("PointOfCollection",GetStgFrameHeight/4);
-		if(y > PoC){
+		if(y > PoC && !Obj_GetValueD(item,"KeepFullValue",false)){
 			let sy = GetStgFrameHeight-PoC;
 			let coef = 1-0.5*(sy-y)/sy;
 			score = 10*trunc(score/10*coef);
 		}else{ highlight=true; }
 	}
 	case(I_POINT_S){
-		display = true;
+		// display = true;
 		score = 10*trunc(GetCommonData("PointValue",10000+10*GetGraze)/160);
 		let PoC = GetCommonData("PointOfCollection",GetStgFrameHeight/4);
-		if(y > PoC){
+		if(y > PoC && !Obj_GetValueD(item,"KeepFullValue",false)){
 			let sy = GetStgFrameHeight-PoC;
 			let coef = 1-0.5*(sy-y)/sy;
 			score = 10*trunc(score/10*coef);

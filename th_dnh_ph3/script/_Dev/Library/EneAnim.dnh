@@ -28,7 +28,7 @@ task LoadAllImg{
 	LoadTexture("./enemy/enemy.png"); //used by other functions
 	LoadTexture("./enemy/hitodama.png");
 }
-LoadAllImg; //todo: put this somewhere better
+// LoadAllImg; //todo: put this somewhere better
 
 ////////////////////////////////////////////////////////
 //This is the part that figures out what sprite to use//

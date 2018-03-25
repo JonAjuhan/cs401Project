@@ -10,8 +10,10 @@
 function SetSpellCard() {
 	ObjCutin_SetSpellcardS3(GetCommonData("CurrentSC",""), 255, 128, 128);
 	let diff = GetCommonData("Difficulty","Normal");
-	ObjCutin_LaunchS3("AYA", "", diff);
-	TMagicCircle();
+	if(length(Obj_GetValueD(GetEnemyBossObjectID[0], "Spellcards", [])) < 2){
+		ObjCutin_LaunchS3("AYA", "", diff);
+		TMagicCircle();
+	}
 	NotifyEventAll(EV_REQUEST_SPELL_SCORE,"");
 }
 
@@ -26,30 +28,24 @@ function SetSpellCardA2(style,img) {
 	NotifyEventAll(EV_REQUEST_SPELL_SCORE,"");
 }
 
-
-function DeclareSpellCardA2(style,img) {
-	ObjCutin_SetSpellcardS4(GetCommonData("CurrentSC",""),img,style, 255, 128, 128);
-	let diff = GetCommonData("Difficulty","Normal");
-	// ObjCutin_LaunchS3(style, img, diff);
-	// TMagicCircle();
-	NotifyEventAll(EV_REQUEST_SPELL_SCORE,"");
-}
-
-
 //
 function SetSurvivalCard() {
 	ObjCutin_SetSpellcardS5(GetCommonData("CurrentSC",""),"","", 255, 128, 128, true);
 	let diff = GetCommonData("Difficulty","Normal");
-	ObjCutin_LaunchS3("AYA", "", diff);
+	if(length(Obj_GetValueD(GetEnemyBossObjectID[0], "Spellcards", [])) < 2){
+		ObjCutin_LaunchS3("AYA", "", diff);
+		TMagicCircle();
+	}
 	NotifyEventAll(EV_REQUEST_SPELL_SCORE,"");
-	TMagicCircle();
 }
 //
 function SetSurvivalCardA2(style,img) {
 	ObjCutin_SetSpellcardS5(GetCommonData("CurrentSC",""),img,style, 255, 128, 128, true);
 	let diff = GetCommonData("Difficulty","Normal");
-	ObjCutin_LaunchS3(style, img, diff);
-	TMagicCircle();
+	if(length(Obj_GetValueD(GetEnemyBossObjectID[0], "Spellcards", [])) < 2){
+		ObjCutin_LaunchS3(style, img, diff);
+		TMagicCircle();
+	}
 	NotifyEventAll(EV_REQUEST_SPELL_SCORE,"");
 }
 //

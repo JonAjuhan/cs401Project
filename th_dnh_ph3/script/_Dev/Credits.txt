@@ -3,7 +3,7 @@ Uh. Lots of people. I've tried to put people's names by any functions of theirs 
 
 Enemy library (base):
 	Python
-Dialogue library (may change):
+Dialogue library:
 	Python?
 Difficulty display: 
 	Python

@@ -1,0 +1,38 @@
+#include "./DirPaths.txt"
+
+//Loads various things at the start
+//Run as a script to hopefully reduce delay
+
+@Initialize{
+	LoadEverything;
+}
+
+// @Initialize{
+	// CloseScript(GetOwnScriptID);
+// }
+
+
+task LoadEverything{
+	yield;
+	
+	WriteLog("Loading textures");
+	
+	LoadTexture(dirlib~"enemy/INenemy1.png");
+	LoadTexture(dirlib~"enemy/INenemy2.png");
+	LoadTexture(dirlib~"enemy/INenemy.png");
+	LoadTexture(dirlib~"enemy/fairy.png");
+	LoadTexture(dirlib~"enemy/fairy2.png");
+	LoadTexture(dirlib~"enemy/FairyB.png");
+	LoadTexture(dirlib~"enemy/fairy3.png");
+	LoadTexture(dirlib~"enemy/fairy4.png");
+	LoadTexture(dirlib~"enemy/fairy5.png");
+	LoadTexture(dirlib~"enemy/enemy.png");
+	LoadTexture(dirlib~"enemy/hitodama.png");
+	LoadTexture(dirlib~"enemy/effect.png");
+	LoadTexture(dirlib~"enemy/effect2.png");
+	LoadTexture(dirlib~"enemy/effect3.png");
+
+	WriteLog("Doen loading textures");
+	
+	CloseScript(GetOwnScriptID);
+}

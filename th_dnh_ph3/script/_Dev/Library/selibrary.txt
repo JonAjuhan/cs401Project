@@ -140,6 +140,6 @@ task SE_PlayA2(let path, let vl, let seobj, dur) {
 
 
 task SE_Play_Del(let path, let vl, let del) {
-	wait(del);
+	loop(del){yield;}
 	SE_Play(path,vl);
 }

@@ -1,0 +1,73 @@
+//Python
+
+// #include "./../Library/DirPaths.txt"
+// #include "./../Library/selibrary.txt"
+
+let CSD = GetCurrentScriptDirectory;
+let img_break = CSD~"img/etbreak_ddc.png";
+
+@Loading{
+	LoadTexture(CSD~"img/etbreak_td.png");
+	LoadTexture(CSD~"img/etbreak_ddc.png");
+	LoadTexture(CSD~"img/etbreak_rss.png");
+	LoadTexture(CSD~"img/etbreak_swr.png");
+}
+
+@Initialize{
+	SetShotDeleteEventEnable(EV_DELETE_SHOT_IMMEDIATE, true);
+	// SetShotDeleteEventEnable(EV_DELETE_SHOT_FADE, true);
+	SetShotDeleteEventEnable(EV_DELETE_SHOT_TO_ITEM, true);
+}
+
+@MainLoop{
+	yield;
+}
+
+@Event{
+	alternative(GetEventType)
+	case(EV_DELETE_SHOT_IMMEDIATE){
+		BulletDelete(GetEventArgument(0), GetEventArgument(1), 8, 255);
+	}
+	case(EV_DELETE_SHOT_FADE){
+		// BulletDelete(GetEventArgument(0), GetEventArgument(1), 8);
+	}
+	case(EV_DELETE_SHOT_TO_ITEM){
+		BulletDelete(GetEventArgument(0), GetEventArgument(1), 8, 128);
+	}
+}
+
+//I included several types of deletion effects which are all named "etbreak_xxx.png", where xxx is the original source.
+//e. g. "etbreak_td.png" would be Ten Desires's deletion effect whereas "etbreak_ddc.png" would be Double Dealing Character's
+//Frame numbers:
+
+//TD - 8
+//DDC - 8
+//RSS - 8
+//SWR - 11
+task BulletDelete(bullet, pos, frame, alpha){
+	if(ObjShot_GetImageID(bullet) == 0){return;} //prevents errors from "dummy bullets"
+	// NotifyEvent(GetCommonData("SoundScript", GetOwnScriptID), EV_USER, [31, 100]); //Life extend sound effect
+	let c = GetShotDataInfoA1(ObjShot_GetImageID(bullet), TARGET_ENEMY, INFO_DELAY_COLOR); //deletion effect color should match the delay effect's
+
+	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	// ObjPrim_SetTexture(obj, CSD~"img/etbreak_"~CommonData("BulletKillType","td")~".png");
+	ObjPrim_SetTexture(obj, CSD~"img/etbreak_ddc.png");
+	ObjPrim_SetTexture(obj, img_break);
+	ObjSprite2D_SetSourceRect(obj, 0, 0, 32, 32);
+	ObjSprite2D_SetDestCenter(obj);
+	ObjRender_SetScaleXYZ(obj, 1.5, 1.5, 1.5);
+	ObjRender_SetColor(obj, c[0], c[1], c[2]);
+	ObjRender_SetPosition(obj, pos[0], pos[1], 0);
+	ObjRender_SetAngleZ(obj, rand(0, 360));
+	ObjRender_SetBlendType(obj, BLEND_ADD_ARGB);
+	
+	if(c == [0, 0, 0]){ObjRender_SetBlendType(obj, BLEND_ALPHA);}
+
+	ObjRender_SetAlpha(obj,alpha);
+
+	ascent(i in 0 .. frame){ //animation (number of frames defined by parameter "frame")
+		ObjSprite2D_SetSourceRect(obj, 32*i, 0, 32*(i+1), 32);
+		loop(2){yield;}
+	}
+	Obj_Delete(obj);
+}
