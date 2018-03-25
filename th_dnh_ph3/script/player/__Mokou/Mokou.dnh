@@ -81,10 +81,16 @@ task InitializePowerAndOptions{
 			PlaySE(current~"se_graze.wav");
 			let number = GetEventArgument(0);
 			ascent(i in 0..number){
-				let shot = GetEventArgument(1)[i];
-				let pos = GetEventArgument(2)[i];
-				let a = atan2(pos[1]-GetPlayerY,pos[0]-GetPlayerX);
-				let c = GetShotDataInfoA1(ObjShot_GetImageID(shot),TARGET_ENEMY,INFO_DELAY_COLOR);
+				let c;
+				if(length(GetEventArgument(1)) > i){
+					let shot = GetEventArgument(1)[i];
+					c = GetShotDataInfoA1(ObjShot_GetImageID(shot),TARGET_ENEMY,INFO_DELAY_COLOR);
+				}else{ c = [255,128,255]; }
+				let a;
+				if(length(GetEventArgument(2)) > i){
+					let pos = GetEventArgument(2)[i];
+					a = atan2(pos[1]-GetPlayerY,pos[0]-GetPlayerX);
+				}else{ a = rand(0,360); }
 				GrazePiece(a,c[0],c[1],c[2]);
 			}
 		}
