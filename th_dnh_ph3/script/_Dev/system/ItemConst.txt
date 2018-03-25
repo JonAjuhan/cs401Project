@@ -1,0 +1,14 @@
+
+
+let I_CANCEL = 1001;
+
+let I_POINT = 1010;
+let I_POINT_S = 1011;
+let I_POWER = 1020;
+let I_POWER_L = 1021;
+let I_POWER_F = 1022;
+
+let I_EXTEND = 1030;
+let I_EXTEND_S = 1031;
+let I_SPELL = 1040;
+let I_SPELL_S = 1041;

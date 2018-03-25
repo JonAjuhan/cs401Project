@@ -74,12 +74,8 @@ function isnull(obj){
 
 
 //Rand, alt, and sign functions
-
-//TODO! fix undefined behavior for 0/0
-//divide by the absolute value - fast
 function sign(n){ return floor(n/((|n|)+1)) - floor(-n/((|-n|)+1)); }
-// function sign(n){ return trunc(n/((|n|)+0.0001^2)); } 
-// function sign(n){ return n/(|n|); } //undefined behavior for n=0
+// function sign(n){ return n/(|n|); } //undefined for n=0
 
 function altSign(i) { return 2*(i%2-0.5); }  //Alternates between 1 and -1
 function randSign() { return (round(rand(0,1)))*2-1; }  //Returns 1 or -1
@@ -88,7 +84,8 @@ function randint(min,max){ return trunc(rand(min,max+1)); }  //Random integer fr
 function randarr(arr){ return arr[randint(0,length(arr)-1)]; }  //random value from an array
 
 //For when zero messes things up
-function tononzero(num,def){if(num==0){return def;}else{return num;}}
+function tononzero(num){if(num==0){return 1;}else{return num;}}
+function tononzeroD(num,def){if(num==0){return def;}else{return num;}}
 function signNZ(n){ alternative(n)   //guaranteed nonzero
 	case(0){ return (round(rand(0,1)))*2-1; }
 	others { return n/(|n|); }

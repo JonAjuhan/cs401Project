@@ -1,10 +1,12 @@
 #UserItemData
 
+#include "./ItemConst.txt"
+
 item_image = "./img/Item.png"
 
 //Normal delete item (gray box with star)
 ItemData{
-	id = 2
+	id = 1000
 	rect = (97,  3, 108, 14)
 	render = ALPHA
 	alpha = 64
@@ -12,37 +14,97 @@ ItemData{
 
 //IN time item 
 ItemData{
-	id = 3
+	id = 1001
+	// id = I_CANCEL
 	rect = (113, 3, 124, 14)
-	render = ALPHA
+	// render = ALPHA
+	render = ADD_ARGB
 	alpha = 128
 }
 
 
 
-//Point item (small)
+//Normal Point Item
 ItemData{
-	id = 10
-	rect = ( 1, 19, 12, 30)
-	// out  = (15, 34, 30, 49)
-	render = ALPHA
-	alpha = 255
-}
-
-//Point item (normal)
-ItemData{
-	id = 11
+	id = 1010
 	rect = ( 17,  3, 28, 14)
 	// out  = ( 96, 19,109, 32)
 	render = ALPHA
 	alpha = 255
 }
 
-//Power item (normal)
+//Small Point Item
 ItemData{
-	id = 20
+	id = 1011
+	rect = ( 1, 19, 12, 30)
+	// out  = (15, 34, 30, 49)
+	render = ALPHA
+	alpha = 255
+}
+
+//Normal Power Item
+ItemData{
+	id = 1020
 	rect = ( 1,  3, 12, 14)
 	// out  = (96, 19,109, 32)
 	render = ALPHA
 	alpha = 255
 }
+
+//Large Power Item
+ItemData{
+	id = 1021
+	rect = ( 31,  1, 46, 16)
+	out  = (160,  0,173, 13)
+	render = ALPHA
+	alpha = 255
+}
+
+//Full Power Item
+ItemData{
+	id = 1022
+	rect = ( 63,  1, 77, 16)
+	out  = (192,  0,205, 13)
+	render = ALPHA
+	alpha = 255
+}
+
+
+
+
+//Extend
+ItemData{
+	id = 1030
+	rect = ( 79,  1, 94, 16)
+	out  = (208,  0,221, 13)
+	render = ALPHA
+	alpha = 255
+}
+//Life piece
+ItemData{
+	id = 1031
+	rect = (  1, 57, 18, 74)
+	out  = (  3, 76, 16, 89)
+	render = ALPHA
+	alpha = 255
+}
+
+
+
+//Spell
+ItemData{
+	id = 1040
+	rect = ( 47,  1, 62, 16)
+	out  = (176,  0,189, 13)
+	render = ALPHA
+	alpha = 255
+}
+//Spell piece
+ItemData{
+	id = 1041
+	rect = ( 22, 54, 43, 75)
+	out  = ( 26, 76, 39, 89)
+	render = ALPHA
+	alpha = 255
+}
+

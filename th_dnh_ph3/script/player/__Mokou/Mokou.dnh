@@ -23,9 +23,16 @@ let Option = current ~ "Option.png";
 let imgaura = current ~ "Aura.png";
 let imgshot = current ~ "Shot.png";
 
+let currPower = -1;
+let currLife = -1;
+
+let isinitialize = true;
+
 @Initialize{
 	LoadPlayerShotData(current ~ "Shotdata.dnh");
-	SetPlayerAutoItemCollectLine(GetStgFrameHeight/2-110); //130
+	// SetPlayerAutoItemCollectLine(GetStgFrameHeight/2-110); //130
+	
+	SetPlayerAutoItemCollectLine(GetCommonData("PointOfCollection",GetStgFrameHeight*0.25)); //130
 	
 	ObjPlayer_AddIntersectionCircleA1(objPlayer, 0, 0, 2, 20); 
 	SetCommonData("PlayerHitboxRadius",[2,20]);
@@ -33,7 +40,18 @@ let imgshot = current ~ "Shot.png";
 	SetPlayerSpeed(4, 1.75); SetCommonData("PlayerSpeed",[4,1.75]);
 	SetPlayerClip(11,11,GetStgFrameWidth-11,GetStgFrameHeight-18);
 	RenderPlayerImage(renderPlayerObject, 0);
-
+	
+	//6:  0.1s (standard)
+	//18: 0.3s (PCB Reimu)
+	
+	SetCommonData("BorderOfLifeAndDeathNormal",      15); //12
+	SetCommonData("BorderOfLifeAndDeathExtended",    24); //18
+	SetCommonData("BorderOfLifeAndDeathVeryExtended",60); //60
+	
+	let bolad = GetCommonData("BorderOfLifeAndDeathNormal",6);
+	SetCommonData("BorderOfLifeAndDeath",bolad);
+	SetPlayerRebirthFrame(bolad);
+	
 	Shoot;
 	TMagicCircle;
 	InitializePowerAndOptions;
@@ -42,13 +60,14 @@ task InitializePowerAndOptions{
 	yield;
 	SetPlayerPower(GetCommonData("InitialPlayerPower",400));
 	Options;
+	yield;
+	isinitialize = false;
 }
 
 
 @Event{
 	alternative(GetEventType())
-		case(EV_REQUEST_SPELL)
-		{	
+		case(EV_REQUEST_SPELL){	
 			let spell = GetPlayerSpell();
 			if(spell >= 1 && IsPermitPlayerSpell()){
 				SetScriptResult(true);
@@ -74,8 +93,7 @@ task InitializePowerAndOptions{
 			Spawn;
 			// DropPower(); //now done in system script
 		}
-		case(EV_PLAYER_REBIRTH)
-		{
+		case(EV_PLAYER_REBIRTH){
 			SetPlayerSpell(3);
 			playerdead = false;
 			optionAlive = true;
@@ -88,8 +106,7 @@ task InitializePowerAndOptions{
 			// yield;
 			// Obj_Delete(smo);
 		// }
-		case(EV_GET_ITEM)
-		{
+		case(EV_GET_ITEM){ //the ones I actually use are handled in item script
 			let itemType = GetEventArgument(0);
 			alternative(itemType)
 				case(ITEM_1UP){
@@ -142,7 +159,7 @@ task InitializePowerAndOptions{
 					// AddScore(1000+10*floor(GetGraze/10));
 					// WriteLog("ITEM_POINT_S");
 				}
-				others { PlaySE(current~"se_item00.wav"); }
+				// others { PlaySE(current~"se_item00.wav"); }
 		}
 }
 
@@ -155,9 +172,11 @@ task InitializePowerAndOptions{
 	LoadSound(current~"se_item00.wav");
 	LoadSound(current~"se_extend.wav");
 	LoadSound(current~"se_invalid.wav");
-	LoadSound(current~"hypershot.ogg");
+	LoadSound(current~"se_extend.wav");
+	// LoadSound(current~"hypershot.ogg");
 	LoadSound(current~"se_charge00.wav");
 	LoadSound(current~"se_chargeup.wav");
+	LoadSound(current~"se_powerup1.wav");
 	
 	LoadTexture(imgfuto);
 	LoadTexture(snowflake);
@@ -171,7 +190,6 @@ task InitializePowerAndOptions{
 	//if(GetPlayerState==STATE_NORMAL){CanShoot = true;}
 	//if(IsPermitPlayerShot==false){CanShoot = false;}
 	//if(IsPermitPlayerShot==true){CanShoot = true;}
-	CanShoot = IsPermitPlayerShot;
 //
 //	if(GetVirtualKeyState(VK_USER1) == KEY_PUSH && GetPlayerSpell >= 3){Hyper;}
 //	else if(GetVirtualKeyState(VK_USER1) == KEY_PUSH && GetPlayerSpell < 3){PlaySE(current~"se_invalid.wav");}
@@ -180,6 +198,26 @@ task InitializePowerAndOptions{
 	else if(GetPlayerState==STATE_DOWN || GetPlayerState==STATE_END){SetForbidPlayerShot(true); SetForbidPlayerSpell(true);}
 	SetPlayerClip(11,11,GetStgFrameWidth-11,GetStgFrameHeight-18);
 	if(GetVirtualKeyState(VK_SLOWMOVE)==KEY_HOLD&&!IsHitboxActive&&GetPlayerState==STATE_NORMAL){RenderHitboxImage(objPlayer, 0, 1);}
+
+	CanShoot = IsPermitPlayerShot;
+	
+	if(trunc(GetPlayerPower/100)!=currPower){
+		ResetOptions(floor(GetPlayerPower/100) >= currPower && currPower!=-1);
+	}
+	currPower = trunc(GetPlayerPower/100);
+	
+	if(trunc(GetPlayerLife)!=currLife){
+		currLife = trunc(GetPlayerLife);
+		if(currLife > 0){
+			SetCommonData("BorderOfLifeAndDeath",GetCommonData("BorderOfLifeAndDeathNormal",6));
+			SetPlayerRebirthFrame(GetCommonData("BorderOfLifeAndDeath",6));
+		}else{
+			SetCommonData("BorderOfLifeAndDeath",GetCommonData("BorderOfLifeAndDeathExtended",20));
+			SetPlayerRebirthFrame(GetCommonData("BorderOfLifeAndDeath",6));
+		}
+	}
+	
+	
 	yield;
 }
 
@@ -197,8 +235,8 @@ task Shoot{
 		if(GetVirtualKeyState(VK_SHOT)!=KEY_FREE && count % 6 == 0 && isvisible){
 			if(IsPermitPlayerShot()){
 				PlaySE(current~"se_plst00.wav");
-				Follow(CreatePlayerShotA1(GetPlayerX - 8, GetPlayerY - 16, 15, 270, 3.25, 1.5, 1));
-				Follow(CreatePlayerShotA1(GetPlayerX + 8, GetPlayerY - 16, 15, 270, 3.25, 1.5, 1));
+				ManageShot(CreatePlayerShotA1(GetPlayerX - 8, GetPlayerY - 16, 15, 270, 3.25, 1.5, 1));
+				ManageShot(CreatePlayerShotA1(GetPlayerX + 8, GetPlayerY - 16, 15, 270, 3.25, 1.5, 1));
 			}
 		}
 		count++;
@@ -214,7 +252,7 @@ task Options{
 		ascent(i in 1..N){ Fam(  48*cos(180+da2*i),48*sin(180+da2*i)-8*sin(i*da2)^6,32*cos(180+da2*i),32*sin(180+da2*i)-8*sin(i*da2)^6,270, 0.5*(2*(i%2-0.5))); }
 		return;
 	}
-	
+		
 	alternative(floor(GetPlayerPower/100))
 	case(4,5){
 		//Inner familiars
@@ -242,12 +280,16 @@ task Options{
 }
 
 task ResetOptions(isPowerUp){
-	if(isPowerUp){
-		PlaySE(current~"./se_powerup1.wav");
+	if(isPowerUp && !isinitialize){
+		PlaySE(current~"se_powerup1.wav");
 	}
-	optionAlive=false;
-	yield;
-	optionAlive=true;
+	if(optionAlive){
+		optionAlive=false;
+		yield;
+		optionAlive=true;
+	}else{
+		while(!optionAlive){yield;}
+	}
 	Options;
 }
 
@@ -300,11 +342,11 @@ task Fam(x1, y1, x2, y2, dir0, dDir){
 		if(GetVirtualKeyState(VK_SHOT)!=KEY_FREE && count % 6 == 0 && isvisible){
 			if(IsPermitPlayerShot()){
 				if(GetVirtualKeyState(VK_SLOWMOVE)==KEY_HOLD || GetVirtualKeyState(VK_SLOWMOVE)==KEY_PUSH){
-					Follow(CreatePlayerShotA1(ObjRender_GetX(obj), ObjRender_GetY(obj), 10, dir + 5, 2, 3, 2));
-					Follow(CreatePlayerShotA1(ObjRender_GetX(obj), ObjRender_GetY(obj), 10, dir - 5, 2, 3, 2));
+					ManageShot(CreatePlayerShotA1(ObjRender_GetX(obj), ObjRender_GetY(obj), 10, dir + 5, 2, 3, 2));
+					ManageShot(CreatePlayerShotA1(ObjRender_GetX(obj), ObjRender_GetY(obj), 10, dir - 5, 2, 3, 2));
 				}else{
-					Follow(CreatePlayerShotA1(ObjRender_GetX(obj), ObjRender_GetY(obj), 7, dir + 5, 2.5, 3, 2));
-					Follow(CreatePlayerShotA1(ObjRender_GetX(obj), ObjRender_GetY(obj), 7, dir - 5, 2.5, 3, 2));
+					ManageShot(CreatePlayerShotA1(ObjRender_GetX(obj), ObjRender_GetY(obj), 7, dir + 5, 2.5, 3, 2));
+					ManageShot(CreatePlayerShotA1(ObjRender_GetX(obj), ObjRender_GetY(obj), 7, dir - 5, 2.5, 3, 2));
 				}
 			}
 			//else if(GetPlayerState==STATE_END) { PlaySE(current~"se_invalid.wav"); }
@@ -326,39 +368,38 @@ task Fam(x1, y1, x2, y2, dir0, dDir){
 
 
 
-task Follow(shot){
-	let x; let y; let a; let graphic;
-	a = ObjMove_GetAngle(shot);
-	graphic = ObjShot_GetImageID(shot);
-	while(!Obj_IsDeleted(shot)){
-		x = ObjMove_GetX(shot);
-		y = ObjMove_GetY(shot);
-		yield;
+task ManageShot(shot){
+	// let x; let y;
+	// let a = ObjMove_GetAngle(shot);
+	let graphic = ObjShot_GetImageID(shot);	
+	while(!Obj_IsDeleted(shot) && !ObjCol_IsIntersected(shot)){ yield; }
+	if(!Obj_IsDeleted(shot)){
+		TFadeNeedle(ObjMove_GetX(shot),ObjMove_GetY(shot),ObjMove_GetAngle(shot),graphic+10);
 	}
-	if(y>0){
-		TFadeNeedle(x,y,a,graphic+10);
+
+	
+	//shot hit something or was deleted early
+	task TFadeNeedle(x,y,angle,graphic){
+		let fadeAlpha = 255;
+		let fadeAngle = rand(-10,10);
+		let objFadeNeedle = ObjShot_Create(OBJ_SHOT);
+		ObjMove_SetPosition(objFadeNeedle,x,y);
+		ObjMove_SetSpeed(objFadeNeedle,2);
+		ObjMove_SetAngle(objFadeNeedle,angle);
+		ObjRender_SetAngleZ(objFadeNeedle,fadeAngle);
+		ObjShot_SetGraphic(objFadeNeedle,graphic);
+		ObjShot_SetDamage(objFadeNeedle,0);
+		ObjShot_SetPenetration(objFadeNeedle,9999);
+		ObjShot_Regist(objFadeNeedle);
+		loop(10){
+			ObjRender_SetAlpha(objFadeNeedle,fadeAlpha);
+			fadeAlpha -= 25.5;
+			yield;
+		}
+		Obj_Delete(objFadeNeedle);
 	}
 }
-//shot hit enemy..?
-task TFadeNeedle(x,y,angle,graphic){
-	let fadeAlpha = 255;
-	let fadeAngle = rand(-10,10);
-	let objFadeNeedle = ObjShot_Create(OBJ_SHOT);
-	ObjMove_SetPosition(objFadeNeedle,x,y);
-	ObjMove_SetSpeed(objFadeNeedle,2);
-	ObjMove_SetAngle(objFadeNeedle,angle);
-	ObjRender_SetAngleZ(objFadeNeedle,fadeAngle);
-	ObjShot_SetGraphic(objFadeNeedle,graphic);
-	ObjShot_SetDamage(objFadeNeedle,0);
-	ObjShot_SetPenetration(objFadeNeedle,9999);
-	ObjShot_Regist(objFadeNeedle);
-	loop(10){
-		ObjRender_SetAlpha(objFadeNeedle,fadeAlpha);
-		fadeAlpha -= 25.5;
-		yield;
-	}
-	Obj_Delete(objFadeNeedle);
-}
+
 
 
 ////////////////////////////////////////////////////
@@ -476,7 +517,7 @@ task RenderPlayerImage(ObjectRender, offset){
 		
 		ObjRender_SetPosition(ObjectRender, GetPlayerX, GetPlayerY, 0);
 		if(!IsPlayerSpawning){		//animations
-			if(GetPlayerState!=STATE_HIT){
+			if(GetPlayerState!=STATE_HIT || GetPlayerInvincibilityFrame > 0){
 				Blink;
 				if(GetVirtualKeyState(VK_RIGHT) == KEY_FREE && GetVirtualKeyState(VK_LEFT) == KEY_FREE){
 					if(anim_type != 0){
@@ -635,9 +676,7 @@ task PlayerRebirthWindow{
 task TMagicCircle{
 		let countVertex = 64;
 		let listRadius = [];
-		loop(countVertex){
-			listRadius = listRadius ~ [0];
-		}
+		loop(countVertex){listRadius=listRadius ~ [0];}
 
 		let path = current ~ "Default_Player_MagicCircle.png";
 		let obj = ObjPrim_Create(OBJ_PRIMITIVE_2D);
@@ -653,16 +692,13 @@ task TMagicCircle{
 			ObjPrim_SetVertexUVT(obj, indexVert + 1, left, 64);		
 		}
 
-		let cx = 0;
-		let cy = 0;
+		let cx = 0; let cy = 0;
 		let maxRadius = 128;
-		let alpha = 0;
-		let frame = 0;
-		let angleRender = 0;
-		let frameInvOld = 0;
+		let alpha = 0; let frame = 0; let angleRender = 0;
+		let frameInv; let frameInvOld = 0;
 
-		while(true){
-			let frameInv = GetPlayerInvincibilityFrame();
+		loop{
+			frameInv = GetPlayerInvincibilityFrame();
 
 			if(frameInv <= 0){
 				Obj_SetVisible(obj, false);
@@ -673,13 +709,10 @@ task TMagicCircle{
 					ascent(iVert in 0..countVertex){
 						listRadius[iVert] = 0;
 					}
-					alpha = 0;
-					frame = 0;
+					alpha = 0; frame = 0;
 				}
 				frameInvOld = frameInv;
-
-				let px = GetPlayerX();
-				let py = GetPlayerY();
+				let px = GetPlayerX(); let py = GetPlayerY();
 
 				alpha += 1 / 120;
 				alpha = min(alpha, 1);
@@ -711,16 +744,12 @@ task TMagicCircle{
 						let dr= (maxRadius * rRateIn - listRadius[indexVert + 1]) / 16;
 						listRadius[indexVert + 1] = listRadius[indexVert + 1] + dr;
 					}
-
 				}
-
 				ObjRender_SetColor(obj, 192 * alpha, 192 * alpha, 255 * alpha);
 				ObjRender_SetPosition(obj, px, py, 0);
 				ObjRender_SetAngleZ(obj, angleRender);
-
 				frame++;
 			}
-
 			yield;
 		}
 	}
@@ -784,11 +813,15 @@ task Combustion{		//bomb
 			yield;
 		}
 		ObjShot_FadeDelete(obj);
-		SetCommonData("PlayerSpellAttackEnd",true);
+		SetCommonData("PlayerSpellAttackEnd",true); //when the ATTACK part is done
 		yield;
 		DeleteCommonData("PlayerSpellAttackEnd");
 	}
 }
+
+///////////////////////////////////////////////////////////////////////////
+//Stuff I don't need to mess with
+///////////////////////////////////////////////////////////////////////////
 
 task Hyper{
 	SetPlayerSpell(GetPlayerSpell - 3);
@@ -841,7 +874,7 @@ task Aura(i, scale){
 	ObjRender_SetBlendType(obj, BLEND_ADD_RGB);
 	ObjRender_SetScaleXYZ(obj, 0, 0, 0);
 	Obj_SetRenderPriority(obj, 0.29);
-
+	
 	let s = 0;
 	while(s < scale){
 		ObjRender_SetScaleXYZ(obj, s, s, 0);
@@ -863,8 +896,7 @@ task Aura(i, scale){
 }
 
 task ScreenShakeA1(shaketime, intensity){
-	let x = Get2DCameraX;
-	let y = Get2DCameraY;
+	// let x = Get2DCameraX; let y = Get2DCameraY;
 	while(shaketime>0){
 		Set2DCameraFocusX(GetStgFrameWidth/2 + rand(-intensity, intensity));
 		Set2DCameraFocusY(GetStgFrameHeight/2 + rand(-intensity, intensity));
@@ -877,8 +909,7 @@ task ScreenShakeA1(shaketime, intensity){
 }
 
 //Function by neito
-task neitoCharge(x,y,flame,r1,g1,b1)
-{
+task neitoCharge(x,y,flame,r1,g1,b1){
 	ascent(i in 0..5){
 		lotemasLite(x+rand(-5,5),y+rand(-15,15),1*i,flame,r1,g1,b1,(1*i)/1); //Creates the Color Charge effect
 		lotemas(x+rand(-5,5),y+rand(-15,15),1*i,flame,250,250,250,(1*i)); //Creates the Black charge effect
@@ -891,8 +922,7 @@ task neitoCharge(x,y,flame,r1,g1,b1)
 	}
 }
 
-task lotemas(x,y,Edscale,flame,r1,g1,b1,fractal)
-{
+task lotemas(x,y,Edscale,flame,r1,g1,b1,fractal){
 	let imgEff = GetCurrentScriptDirectory~"eltmas1.png";
 	let scale = Edscale;
 	let alpha = 0;
@@ -919,8 +949,7 @@ task lotemas(x,y,Edscale,flame,r1,g1,b1,fractal)
 	}
 	Obj_Delete(obj);
 }
-task lotemasLite(x,y,Edscale,flame,r1,g1,b1,fractal)
-{
+task lotemasLite(x,y,Edscale,flame,r1,g1,b1,fractal){
 	let imgEff = GetCurrentScriptDirectory~"eltmas1.png";
 	let scale = Edscale;
 	let alpha = 0;
@@ -947,8 +976,7 @@ task lotemasLite(x,y,Edscale,flame,r1,g1,b1,fractal)
 	}
 	Obj_Delete(obj);
 }
-task oltahmas(x,y,flame,r1,g1,b1)
-{
+task oltahmas(x,y,flame,r1,g1,b1){
 	let imgEff = GetCurrentScriptDirectory~"dot.png";
 	let scaleStandard = rand(0.25,1);
 	let scale = scaleStandard;

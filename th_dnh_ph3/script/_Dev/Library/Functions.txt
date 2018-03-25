@@ -104,68 +104,6 @@ task TBreakNonspell(args) {
 }
 
 
-//TODO: Maybe stick this in a file called SystemInterface or something?
-
-//Format:
-// DropItems(x,y, [ITEM_TYPE,number,radius,angle] );
-// DropItems(x,y, [ITEM_TYPE,(n,r,a),ITEM_TYPE,(n,r,a),ITEM_TYPE,(n,r,a),...] );
-function DropItems(x,y,args){
-	if(x==0 && y==0){ return []; }
-	function IsItemType(v){ 
-		alternative(v)
-		case(ITEM_1UP,ITEM_1UP_S,ITEM_SPELL,ITEM_SPELL_S,ITEM_POINT,ITEM_POINT_S,ITEM_POWER,ITEM_POWER_S){ return true; }
-		// case(ITEM_USER,ITEM_USER+1,ITEM_USER+2){ return true; } //in case I end up defining some - but this may conflict since ITEM_USER=0
-		others{ return false; }
-	}
-	
-	let type=NULL; let number=1; let radius=20; let angle=90;
-	let items = [];
-	let i = 0;
-	while(i < length(args)){
-		if(IsItemType(args[i])){
-			type = args[i]; i++;
-			//Get whichever extra arguments are
-			//between this and the next item type
-			if(i<length(args) && !IsItemType(args[i])){   number = args[i]; i++;
-			 if(i<length(args) && !IsItemType(args[i])){  radius = args[i]; i++;
-			  if(i<length(args) && !IsItemType(args[i])){ angle  = args[i]; i++;
-			}}}
-			//Get score of the item type
-			let score;
-			alternative(type)
-			case(ITEM_POINT){   score = 10*trunc(GetCommonData("PointValue",10000+100*GetGraze)/10 ); }
-			case(ITEM_POINT_S){ score = 10*trunc(GetCommonData("PointValue",10000+100*GetGraze)/160); }
-			case(ITEM_POWER){   score = 10*trunc(800*GetPlayerPower/400); }
-			case(ITEM_POWER_S){ score = 10*trunc(100*GetPlayerPower/400); }
-			case(ITEM_SPELL){   score = 10*trunc(10000*GetPlayerSpell/GetCommonData("MaxBombCount",9)); }
-			case(ITEM_SPELL_S){ score = 10*trunc(10000*GetPlayerSpell/GetCommonData("MaxBombCount",9)/GetCommonData("SpellPiecesPerBomb",8)); }
-			case(ITEM_1UP){     score = 10*trunc(10000*GetPlayerSpell/GetCommonData("MaxLifeCount",9)); }
-			case(ITEM_1UP_S){   score = 10*trunc(10000*GetPlayerSpell/GetCommonData("MaxLifeCount",9)/GetCommonData("LifePiecesPerExtend",8)); }
-			others{             score = GetCommonData("PointValueOf"~itoa(type),0); }
-			//Notify system script to create the item
-			let da = 360/number;
-			ascent(j in 0..number){
-				// NotifyEvent(GetCommonData("SystemScriptID",NULL),EV_SPAWN_ITEM,[type,x,y,x+radius*cos(angle+j*da),y+radius*sin(angle+j*da),score]);
-				NotifyEventAll(EV_SPAWN_ITEM,[type,x,y,x+radius*cos(angle+j*da),y+radius*sin(angle+j*da),score]);
-				// items = items ~ [GetScriptResult(GetCommonData("SystemScriptID",NULL))]; //Crashed here
-			}
-		}
-		else{ //if the args didn't start with an item type for some reason
-			i++;
-			// return items;
-		}
-	}
-	return items;	
-}
-
-
-function DropItemsSpellEnd{
-	DropItems(ex,ey,[ITEM_POINT,16,35, ITEM_POWER_S,8,20, ITEM_1UP_S,1,0]);
-}
-function DropItemsNonspellEnd{
-	DropItems(ex,ey,[ITEM_POINT,16,35, ITEM_POWER_S,8,20, ITEM_SPELL_S,1,0]);
-}
-
 
 
 
@@ -192,7 +130,7 @@ function CheckGameOver{
 //Display "Item Get Border Line" - TresserT
 task ShowPointOfCollection{
 	// loop(30){yield;}
-	let height = GetCommonData("PointOfCollection",GetStgFrameHeight/2-110);
+	let height = GetCommonData("PointOfCollection",GetStgFrameHeight*0.25);
 	let text = ObjPrim_Create(OBJ_SPRITE_2D);
 	ObjPrim_SetTexture(text,dirsys~"img/Default_System.png");
 	ObjSprite2D_SetSourceRect(text,18,130,174,152);
@@ -1491,7 +1429,7 @@ task GrowShot(shot,scale0,scale1,dur){
 	let dScale = (scale1-scale0)/dur;
 	let i=0; let flipx=1; let flipy=1;
 	while(i<dur && !Obj_IsDeleted(shot)){
-		flipx=tononzero(sign(ObjRender_GetScaleX(shot)),1); flipy=tononzero(sign(ObjRender_GetScaleY(shot)),1);
+		flipx=tononzero(sign(ObjRender_GetScaleX(shot))); flipy=tononzero(sign(ObjRender_GetScaleY(shot)));
 		ObjRender_SetScaleXYZ(shot,(scale0+i*dScale)*flipx,(scale0+i*dScale)*flipy,1);
 		yield; i++;
 	}
