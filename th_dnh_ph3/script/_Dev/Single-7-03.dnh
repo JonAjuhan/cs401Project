@@ -2,7 +2,7 @@
 #ScriptVersion[3]
 #Title["Torrent \"Sparkling Daydream\""]
 #Text["series 7: scales with difficulty"] 
-#BGM["./bgm/bgm - Kid's Festival ~ Innocent Treasures.ogg"] // CC-CGR-loop.ogg"]
+#BGM["./bgm/bgm - Kid's Festival ~ Innocent Treasures.ogg"]
 #System["./system/Andi_System.txt"]
 #Background["./system/background/Background_Sky.txt"]
 
@@ -25,9 +25,10 @@ let mlife = 2000; //2000
 {
 	if(noPlural){	SetDifficultyD(EXTRA); }
 	alternative(rank)
-	case(NORMAL,EASY){	SetCommonData("CurrentSC","Torrent \"Sparkling Daydream\"");}
-	case(HARD,EXTRA) {	SetCommonData("CurrentSC","Magicannon \"Sparkling Torrent\"");}
-	others			 {	SetCommonData("CurrentSC","Identity \"Torrential Magicannon -Isshokenmei-\"");}
+	case(RANK_EASY){	SetCommonData("CurrentSC","Torrent \"Sparkling Daydream\"");}
+	case(RANK_NORM){	SetCommonData("CurrentSC","Torrent \"Sparkling Daydream\"");}
+	case(RANK_HARD){	SetCommonData("CurrentSC","Magicannon \"Sparkling Daydream\"");}
+	others         {	SetCommonData("CurrentSC","Identity \"Torrential Dream -Isshokenmei-\"");}
 
 	
 	SetShotAutoDeleteClip(8,8,8,8);
@@ -157,7 +158,7 @@ task TSword{
 				
 				if(count%gap==0){
 					WarnShotA1(x,y,0,8);
-					shot = CreateShotA2(x,y, 0,a+(5)*count, 0.015,2.5, 406, 30);
+					shot = CreateShotA2(x,y, 0,a+(5)*count, 0.015,2.5, ZPEL_WHITE+500, 30);
 
 					ascent(i in 0..diff){
 						SE_Play(se_shot2,60);
@@ -176,9 +177,9 @@ task TSword{
 						
 						//ascent(i in 0..3){
 						// shot = CreateShotA2(x1,y1, 0,a+(5)*count, 0.015,2.5, SCALE_WHITE+501+(count/gap)%7, 5);
-						shot = CreateShotA2(x1,y1, 0,a+(5)*count, 0.015,2.5, PEL_AQUA+altBin(i)*altSign(i/3), 16); //del 8
+						shot = CreateShotA2(x1,y1, 0,a+(5)*count, 0.015,2.5, ZPEL_AQUA+altBin(i)*altSign(i/3), 16); //del 8
 						//ObjRender_SetScaleXYZ(shot,1.1,1.1,1);
-	//					MyBounce(shot);
+					//	MyBounce(shot);
 						// shot = CreateShotA2(x1,y1, 0,a1, 0.015,2.5, SCALE_WHITE+501+(count/gap)%7, 5);
 						//}
 						a1 += ga; //180*sin(count*dir*-1)
@@ -236,7 +237,6 @@ task MyBounce2(shot,del){
 	ObjShot_SetGraphic(shot,STARDOT_BLUE-randBin+randBin);
 	ObjRender_SetBlendType(shot,BLEND_ALPHA);
 	
-//	ObjShot_SetFadeDeleteFrame(shot,d/s);
 	
 	WarnShot(shot);
 	SE_Play(se_chime,75); //60
@@ -330,11 +330,11 @@ task TSpark{
 			//red balls - slightly faster in middle
 			sp = rand(3,5); a=rand(-20,20); centr = (1-(|a|)/30);
 			shot = CreateShotA1(GetSwordTipX,GetSwordTipY,sp*(centr+0.5),a0+a, BALL_RED+500, 10);
-			if(count%(2*diff)==0){MyBounce2(shot,240);}
+			if(count%(2*(5-diff))==0){MyBounce2(shot,240);}
 			//trans balls - slightly slower in middle
 			sp = rand(3,5); a=rand(-20,20); centr = (1-(|a|)/30);
 			shot = CreateShotA1(GetSwordTipX,GetSwordTipY,sp/(centr+0.5),a0+a, BALL_MAGENTA-randBin+500, 10);
-			if(count%(2*diff)==diff){MyBounce2(shot,240);}
+			if(count%(2*(5-diff))==diff){MyBounce2(shot,240);}
 			
 			//light particles among spark shots
 			let obj = EffectParticleA2(GetSwordTipX,GetSwordTipY,rand(3,5),a0+a,"light",d/centr/sp,0,1, 255,128,150);

@@ -20,7 +20,11 @@ let se_charge2 = csd~"../se/charge2.wav";
 let se_charge3 = csd~"../se/charge3.wav";
 let se_charge3b = csd~"../se/charge3-2.wav";
 
-
+//Menu
+let se_select = sed~"select.wav";
+let se_confirm = sed~"selectok.wav";
+let se_cancel = sed~"selectcancel.wav";
+let se_invalid = sed~"selectinvalid.wav";
 
 let time1 = csd~"../se/se_timeout1.wav";
 let time2 = csd~"../se/se_timeout2.wav";
@@ -118,12 +122,13 @@ let se_playershot = csd~"../se/playershot.wav";
 
 
 task SE_Play(let path, let vl){
+	vl*=GetAreaCommonData("CONFIG","SE Volume",0.80);
 	let seobj = ObjSound_Create;
 	ObjSound_Load(seobj,path);
 	ObjSound_Play(seobj);
 	ObjSound_SetVolumeRate(seobj,vl);
 	loop(120){yield;}
-	RemoveSound(path);
+	// RemoveSound(path);
 }
 
 
@@ -131,6 +136,7 @@ function SE_PlayA1(let path, let vl){ SE_Play(path,vl); }
 
 //specify se obj and duration
 task SE_PlayA2(let path, let vl, let seobj, dur) {
+	vl*=GetAreaCommonData("CONFIG","SE Volume",0.80);
 	ObjSound_Load(seobj,path);
 	ObjSound_Play(seobj);
 	ObjSound_SetVolumeRate(seobj,vl);

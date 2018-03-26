@@ -1,0 +1,193 @@
+//ハイスコア最大保存数
+let MaxSaveScore = 10;
+
+//----------------------------------------------------
+//ハイスコア読み込み
+//----------------------------------------------------
+function LoadHighScore(tmpDifficulty, tmpPlayer, tmpInfinity, tmpStage, playMode)
+{
+	let hi_scores = LoadHighScores(tmpDifficulty, tmpPlayer, tmpInfinity, tmpStage, playMode);
+	let tmp = "";
+	if (length(hi_scores) > 0) { tmp = hi_scores[0]; }
+	let carea = GetHighScoreString(tmp);
+	let score = GetAreaCommonData(carea, "S", 0);
+	return (score);
+}
+
+function LoadHighScores(tmpDifficulty, tmpPlayer, tmpInfinity, tmpStage, playMode)
+{
+	let save_name = GetHighScoreSaveName(tmpDifficulty, tmpPlayer, tmpInfinity, tmpStage, playMode);
+//	LoadCommonDataAreaA1(CAREA_HIGHSCORE);
+	let hi_scores = GetAreaCommonData(CAREA_HIGHSCORE, save_name, []);
+	//空きを埋める
+	ascent(i in length(hi_scores) .. MaxSaveScore) { hi_scores = hi_scores ~ [""]; }
+	//あとしまつ
+//	ClearAreaCommonData(area_name);
+	return (hi_scores);
+}
+
+//----------------------------------------------------
+//ハイスコア保存
+//----------------------------------------------------
+function AddHighScore(tmpDifficulty, tmpPlayer, tmpInfinity, tmpStage, playMode, newScore, newComment)
+{
+	if (IsReplay) { return(-1); }	//リプレイ中！
+
+	let save_name = GetHighScoreSaveName(tmpDifficulty, tmpPlayer, tmpInfinity, tmpStage, playMode);
+//	LoadCommonDataAreaA1(CAREA_HIGHSCORE);
+	//共有データ空間がないなら作成
+	if (!IsCommonDataAreaExists(CAREA_HIGHSCORE)) { CreateCommonDataArea(CAREA_HIGHSCORE); }
+
+	//一旦読み込み
+	let tmp_new = SetHighScoreString(newScore, GetHighScoreDate(), newComment);
+	let hi_scores = GetAreaCommonData(CAREA_HIGHSCORE, save_name, []);
+	//数値を取り出す
+	let hi_scores_num = [];
+	ascent(i in 0 .. length(hi_scores))
+	{
+		let carea = GetHighScoreString(hi_scores[i]);
+		hi_scores_num = hi_scores_num ~ [GetAreaCommonData(carea, "S", 0)];
+	}
+	//末尾に追加
+	hi_scores = hi_scores ~ [tmp_new];
+	hi_scores_num = hi_scores_num ~ [newScore];
+	let newScoreRank = length(hi_scores)-1;
+	
+	//ソート
+	let lh = length(hi_scores);
+	ascent(i in 0 .. lh-1)
+	{
+		descent(j in i+1 .. lh)
+		{
+			if (hi_scores_num[j] > hi_scores_num[j-1] || (j == newScoreRank && hi_scores_num[j] == hi_scores_num[j-1]))
+			{
+				let tmp1 = hi_scores[j];
+				hi_scores[j] = hi_scores[j-1];
+				hi_scores[j-1] = tmp1;
+				let tmp2 = hi_scores_num[j];
+				hi_scores_num[j] = hi_scores_num[j-1];
+				hi_scores_num[j-1] = tmp2;
+				if (j == newScoreRank) { newScoreRank = j-1; }
+			}
+		}
+	}
+	if (length(hi_scores) > MaxSaveScore)
+	{
+		hi_scores = hi_scores[0 .. MaxSaveScore];
+	}
+	
+	//コモンデータに保存
+	SetAreaCommonData(CAREA_HIGHSCORE, save_name, hi_scores);
+	//ファイルに保存
+	let save_success = SaveCommonDataAreaA2(CAREA_HIGHSCORE, saveCommonSCORE);
+	
+	return(newScoreRank);
+}
+
+//----------------------------------------------------
+//ハイスコアの保存名
+//----------------------------------------------------
+function GetHighScoreSaveName(tmpDifficulty, tmpPlayer, tmpInfinity, tmpStage, playMode)
+{
+	if (playMode == GAME_MAIN) { return("ALL_" ~ IntToString(tmpPlayer) ~ "_" ~ IntToString(tmpDifficulty) ~ "_" ~ IntToString(tmpInfinity)); }
+	else { return("STG_" ~ IntToString(tmpPlayer) ~ "_" ~ IntToString(tmpDifficulty) ~ "_" ~ IntToString(tmpInfinity) ~ "_" ~ IntToString(tmpStage)); }
+}
+
+//----------------------------------------------------
+//保存時のデータ
+//----------------------------------------------------
+function SetHighScoreString(h_score, h_date, h_comment)
+{
+	let text = ToString(h_score) ~ "*" ~ h_date ~ "*" ~ h_comment ~ "*"
+		~ GetAreaCommonData(CAREA_CONFIG, "Version", "");
+	return(text);
+}
+function GetHighScoreString(text)
+{
+	let tmp = SplitString(text, "*");
+	let h_score = 0;
+	if (length(tmp) > 0) { h_score = ator(tmp[0]); }
+	let h_date = "";
+	if (length(tmp) > 1) { h_date = tmp[1]; }
+	let h_comment = "";
+	if (length(tmp) > 2) { h_comment = tmp[2]; }
+	let h_version = "old";
+	if (length(tmp) > 3) { h_version = tmp[3]; }
+	else if (length(tmp) <= 0) { h_version = ""; }
+	
+	let carea = "HString";
+	if (!IsCommonDataAreaExists(carea)) { CreateCommonDataArea(carea); }
+	SetAreaCommonData(carea, "S", h_score);
+	SetAreaCommonData(carea, "D", h_date);
+	SetAreaCommonData(carea, "C", h_comment);
+	SetAreaCommonData(carea, "V", h_version);
+	return(carea)
+}
+function GetHighScoreDate()
+{
+	let tmp = GetCurrentDateTimeS();
+	return((tmp[4..6]) ~"/"~ (tmp[6..8]) ~" "~ (tmp[8..10]) ~":"~ (tmp[10..12]));
+}
+
+
+//----------------------------------------------------
+//ハイスコアリセット
+//----------------------------------------------------
+function ResetAllHighScore()
+{
+	if (IsReplay) { return(-1); }	//リプレイ中！
+
+	//おーるでりーと
+	if (IsCommonDataAreaExists(CAREA_HIGHSCORE)) { ClearAreaCommonData(CAREA_HIGHSCORE); }
+	CreateCommonDataArea(CAREA_HIGHSCORE);
+	
+	//ファイルに保存
+	let save_success = SaveCommonDataAreaA2(CAREA_HIGHSCORE, saveCommonSCORE);
+	
+	return(1);
+}
+
+//----------------------------------------------------
+//ハイスコアの初期値セット
+//----------------------------------------------------
+function InitHighScore()
+{
+	let PLAYERS = [PLAYER_REIMU_A, PLAYER_REIMU_B, PLAYER_REIMU_C,
+			PLAYER_MARISA_A, PLAYER_MARISA_B, PLAYER_MARISA_C,
+			PLAYER_SANAE_A, PLAYER_SANAE_B, PLAYER_SANAE_C];
+	let DIFF = [D_EASY, D_NORM, D_HARD, D_LUNA, D_EXTRA];
+	
+	ascent(i in 0 .. length(DIFF))
+	{
+		ascent(j in 0 .. 2)
+		{
+			ascent(k in 0 .. length(PLAYERS))
+			{
+				let save_name = GetHighScoreSaveName(DIFF[i], PLAYERS[k], j, 0, GAME_MAIN);
+				_InitHighScore(save_name);
+			}
+		}
+	}
+}
+function _InitHighScore(save_name)
+{
+	//一旦読み込み
+	let hi_scores = GetAreaCommonData(CAREA_HIGHSCORE, save_name, []);
+	//ハイスコアを埋める
+	ascent(i in length(hi_scores) .. MaxSaveScore)
+	{
+		let tmpDat = SetHighScoreString(100000*(MaxSaveScore-i), " ", " ");
+		
+		//末尾に追加
+		hi_scores = hi_scores ~ [tmpDat];
+	}
+	if (length(hi_scores) > MaxSaveScore)
+	{
+		hi_scores = hi_scores[0 .. MaxSaveScore];
+	}
+	
+	//コモンデータに保存
+	SetAreaCommonData(CAREA_HIGHSCORE, save_name, hi_scores);
+	//ファイルに保存
+	let save_success = SaveCommonDataAreaA2(CAREA_HIGHSCORE, saveCommonSCORE);
+}

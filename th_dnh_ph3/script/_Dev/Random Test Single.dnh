@@ -1,12 +1,13 @@
 #TouhouDanmakufu[Single]
 #ScriptVersion[3]
-#Title["(Mystia intro dialogue)"]
-#Text["series 7: scales with difficulty"] 
+#Title["shit for testing random functions"]
+#Text["blup"] 
 // #BGM["./bgm/bgm - Deaf to All but the Song.ogg"]
 #System["./system/Andi_System.txt"]
 #Background["./system/Background/Mystia/BG_work.txt"]
 
 #include "./Index.txt"
+#include "./Package/PackageFunctions.txt"
 
 @Event
 {
@@ -29,10 +30,17 @@
 
 
 task MainTask {
-	if(noStage){SetBGM("Song of the Night Sparrow ~ Night Bird",145.8,292.4);}
+	// if(noStage){SetBGM("Song of the Night Sparrow ~ Night Bird",145.8,292.4);}
 	
 	ObjMove_SetPosition(boss,cx+120,-120);
 	ObjMove_SetDestAtWeight(boss,cx,120,60,20);
+	
+	loop{
+	
+		let foo = MakeChoiceWindow(32, cy, ["banan","butts","snoof","plurt"], 75);
+		WriteLog(foo);
+		
+	}
 	
 	InitiateDialogueSequence();
 	SetPortraitNumber(1,1);

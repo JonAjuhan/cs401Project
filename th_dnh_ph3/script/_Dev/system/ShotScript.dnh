@@ -5,12 +5,14 @@
 
 let CSD = GetCurrentScriptDirectory;
 let img_break = CSD~"img/etbreak_ddc.png";
+let break_frames = 8;
 
 @Loading{
-	LoadTexture(CSD~"img/etbreak_td.png");
-	LoadTexture(CSD~"img/etbreak_ddc.png");
-	LoadTexture(CSD~"img/etbreak_rss.png");
-	LoadTexture(CSD~"img/etbreak_swr.png");
+	LoadTexture(CSD~"img/etbreak_td.png");  //8
+	LoadTexture(CSD~"img/etbreak_ddc.png"); //8
+	LoadTexture(CSD~"img/etbreak_rss.png"); //8
+	LoadTexture(CSD~"img/etbreak_swr.png"); //11
+	LoadTexture(CSD~"img/etbreak_bsm.png"); //16
 }
 
 @Initialize{
@@ -26,13 +28,13 @@ let img_break = CSD~"img/etbreak_ddc.png";
 @Event{
 	alternative(GetEventType)
 	case(EV_DELETE_SHOT_IMMEDIATE){
-		BulletDelete(GetEventArgument(0), GetEventArgument(1), 8, 255);
+		BulletDelete(GetEventArgument(0), GetEventArgument(1), break_frames, 255);
 	}
 	case(EV_DELETE_SHOT_FADE){
-		// BulletDelete(GetEventArgument(0), GetEventArgument(1), 8);
+		// BulletDelete(GetEventArgument(0), GetEventArgument(1), break_frames);
 	}
 	case(EV_DELETE_SHOT_TO_ITEM){
-		BulletDelete(GetEventArgument(0), GetEventArgument(1), 8, 128);
+		BulletDelete(GetEventArgument(0), GetEventArgument(1), break_frames, 128);
 	}
 }
 
@@ -44,14 +46,17 @@ let img_break = CSD~"img/etbreak_ddc.png";
 //DDC - 8
 //RSS - 8
 //SWR - 11
+//BSM - 16
 task BulletDelete(bullet, pos, frame, alpha){
-	if(ObjShot_GetImageID(bullet) == 0){return;} //prevents errors from "dummy bullets"
-	// NotifyEvent(GetCommonData("SoundScript", GetOwnScriptID), EV_USER, [31, 100]); //Life extend sound effect
-	let c = GetShotDataInfoA1(ObjShot_GetImageID(bullet), TARGET_ENEMY, INFO_DELAY_COLOR); //deletion effect color should match the delay effect's
+	let id = ObjShot_GetImageID(bullet);
+	if(id==0){return;} //prevents errors from "dummy bullets"
+	// if(id > 1000 && id < 1058){return;} //lasers
+	// if(Obj_IsDeleted(bullet) || !Obj_IsVisible(bullet) || (pos[0]==0&&pos[1]==0)){return;}
+	let c = GetShotDataInfoA1(id, TARGET_ENEMY, INFO_DELAY_COLOR); //deletion effect color should match the delay effect's
 
 	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
 	// ObjPrim_SetTexture(obj, CSD~"img/etbreak_"~CommonData("BulletKillType","td")~".png");
-	ObjPrim_SetTexture(obj, CSD~"img/etbreak_ddc.png");
+	// ObjPrim_SetTexture(obj, CSD~"img/etbreak_ddc.png");
 	ObjPrim_SetTexture(obj, img_break);
 	ObjSprite2D_SetSourceRect(obj, 0, 0, 32, 32);
 	ObjSprite2D_SetDestCenter(obj);
@@ -61,11 +66,11 @@ task BulletDelete(bullet, pos, frame, alpha){
 	ObjRender_SetAngleZ(obj, rand(0, 360));
 	ObjRender_SetBlendType(obj, BLEND_ADD_ARGB);
 	
-	if(c == [0, 0, 0]){ObjRender_SetBlendType(obj, BLEND_ALPHA);}
+	// if(c == [0, 0, 0]){ObjRender_SetBlendType(obj, BLEND_ALPHA);}
 
 	ObjRender_SetAlpha(obj,alpha);
 
-	ascent(i in 0 .. frame){ //animation (number of frames defined by parameter "frame")
+	ascent(i in 0..frame){ //animation (number of frames defined by parameter "frame")
 		ObjSprite2D_SetSourceRect(obj, 32*i, 0, 32*(i+1), 32);
 		loop(2){yield;}
 	}

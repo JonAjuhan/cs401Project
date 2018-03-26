@@ -183,7 +183,7 @@ function SetDifficulty(diff){
 }
 //Sets difficulty from saved config, using argument as default if no config exists
 function SetDifficultyD(diff){
-	SetDifficulty(GetAreaCommonData("Config","Difficulty",diff));
+	SetDifficulty(GetAreaCommonData("CONFIG","Difficulty",diff));
 }
 
 
@@ -206,7 +206,7 @@ task DifficultyDisplay(){
 	// ObjRender_SetScaleXYZ(objText, 0.75, 0.75, 0);
 	ObjRender_SetScaleXYZ(objText, 0.65, 0.65, 0);
 	Obj_SetRenderPriority(objText, 0.95);
-	ObjRender_SetX(objText, sx + 150); //todo: this should be a literal
+	ObjRender_SetX(objText, GetStgFrameWidth + 150); //todo: this should be a literal
 	ObjRender_SetY(objText, 24);
 	SetCommonData("DifficultyDisplayObject",objText);
 	ascent(i in 0..51){
