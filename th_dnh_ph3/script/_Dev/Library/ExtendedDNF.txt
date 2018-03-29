@@ -48,18 +48,18 @@ function O_GetPropertyD(obj,info,def){
 	alternative(info)
 	case(FLAG_INTERSECTION){ Obj_GetValueD(obj,FLAG_INTERSECTION,def); }
 	case(FLAG_SPELLRESIST){ Obj_SetValue(obj,FLAG_INTERSECTION,def); }
-	case(MOVE_SPEED){ OM_GetSpeed(obj,def); }
-	case(MOVE_ACCEL){ OM_SetAcceleration(obj,def); }
-	case(MOVE_MAXSPEED){ OM_SetMaxSpeed(obj,def); }
-	case(MOVE_JERK){ OM_SetJerk(obj,def); }
-	case(MOVE_MAXACCEL){ OM_SetMaxAcceleration(obj,def); }
-	case(MOVE_ANGLE){ OM_SetAngle(obj,def); }
-	case(MOVE_ANGV){ OM_SetAngularVelocity(obj,def); }
-	case(MOVE_ANGACCEL){ OM_SetAngularAcceleration(obj,def); }
-	case(MOVE_MAXANGV){ OM_SetMaxAngularVelocity(obj,def); }
-	case(RENDER_ALPHA){ OR_SetAlpha(obj,def); }
-	case(RENDER_COLOR){ OR_SetColor(obj,def); }
-	case(RENDER_SCALE){ OR_SetScale(obj,def); }
+	case(MOVE_SPEED){ OM_GetSpeed(obj); }
+	case(MOVE_ACCEL){ OM_GetAcceleration(obj); }
+	case(MOVE_MAXSPEED){ OM_GetMaxSpeed(obj); }
+	case(MOVE_JERK){ OM_GetJerk(obj); }
+	case(MOVE_MAXACCEL){ OM_GetMaxAcceleration(obj); }
+	case(MOVE_ANGLE){ OM_GetAngle(obj); }
+	case(MOVE_ANGV){ OM_GetAngularVelocity(obj); }
+	case(MOVE_ANGACCEL){ OM_GetAngularAcceleration(obj); }
+	case(MOVE_MAXANGV){ OM_GetMaxAngularVelocity(obj); }
+	case(RENDER_ALPHA){ OR_GetAlpha(obj); }
+	case(RENDER_COLOR){ OR_GetColor(obj); }
+	case(RENDER_SCALE){ OR_GetScale(obj); }
 	
 }
 
@@ -237,6 +237,9 @@ function OR_SetScale(obj,scale){
 	ObjRender_SetScaleXYZ(obj,scale*ratio,scale/ratio,ObjRender_GetScaleZ);
 	Obj_SetValue(RENDER_SCALE,scale);
 	return scale;
+}
+function OR_GetScale(obj){
+	
 }
 
 
