@@ -85,12 +85,24 @@ task TStage {
 			SetTurnAtFrame(kd,60, -180*dir,5);
 			SetTurnAtFrame(kd,110, 180*dir,5);
 			SetTurnAtFrame(kd,160,-180*dir,5);
+			wait(15);
+		}
+	}
+
+	ascent(k in 0..5){
+		dir = altSign(k);
+		ascent(i in 0..5){
+			// dir = altSign(i);
+			let kd2 = TKedama2(cx+dir*(cx+32),cy-120,3.5,90+90*dir,typearr[i%2],50);
+			SetTurnAtFrame(kd2,75, -180*dir,5);
+			SetTurnAtFrame(kd2,100, 180*dir,5);
+			SetTurnAtFrame(kd2,175,-180*dir,5);
 			wait(10);
 		}
 		wait(90);
 	}
 
-	wait(300);
+	wait(120);
 
 	//Add more stuff before and stick a midboss in around here?
 
@@ -103,37 +115,28 @@ task TStage {
 			ascent(k in 0..3){
 				dir = altSign(k);
 				ascent(i in 0..3){
-					let kd = TKedama1(cx+dir*(cx+32),cy-120,3.5,90+90*dir,typearr[i%2],50);
-					SetTurnAtFrame(kd,60, -180*dir,5);
-					SetTurnAtFrame(kd,110, 180*dir,5);
-					SetTurnAtFrame(kd,160,-180*dir,5);
+					let kd2 = TKedama2(cx+dir*(cx+32),cy-120,3.5,90+90*dir,typearr[i%2],50);
+					SetTurnAtFrame(kd2,75, -180*dir,5);
+					SetTurnAtFrame(kd2,100, 180*dir,5);
+					SetTurnAtFrame(kd2,175,-180*dir,5);
 					wait(10);
 				}
-				wait(60);
+				wait(90);
 			}
 		}
 	}DelKedamas;
 	//smol tewi guys
-	ascent(i in 0..20){
+	ascent(i in 0..10){
 		side = altSign(i);
 		dir = -side;
-		x = cx+(cx+30)*side;
-		y = 30+5*i;
+		x = cx+(cx+25)*side;
+		y = 25+5*i;
 		let fairy = TLittleINFairy1(x,y,1.5,90-55*dir,60);
 		ObjMove_AddPatternB2(fairy, 60,NO_CHANGE,NO_CHANGE, 0       ,-0.05,  1.5*dir,-1.5);
 		ObjMove_AddPatternB2(fairy,120,NO_CHANGE,NO_CHANGE,-0.05*dir, 0.15, -1.5*dir,-1.5);
 		wait(30);
 	}
-	wait(300);
-
-	//3 big guys (4 u)
-	ascent(i in -1..2){
-		x = cx+cx/2*i;
-		let fairy = TBigINFairy1(x,-30,1.5,90,60);
-		ObjMove_SetDestAtWeight(fairy,x,cy*2/3,120,10);
-		ObjMove_AddPatternA2(fairy,300,0,270,0.05,0,1.5);
-	}
-	wait(480);
+	wait(450);
 
 	//fams->cards guys
 	ascent(i in 0..2){
@@ -144,7 +147,7 @@ task TStage {
 	}
 	wait(300);
 	//little Tewi shot guys
-	ascent(i in 0..6){
+	ascent(i in 0..4){
 		side = altSign(i);
 		dir = -side;
 		x = cx+(cx+30)*side;
@@ -154,9 +157,10 @@ task TStage {
 		ObjMove_AddPatternB2(fairy,120,NO_CHANGE,NO_CHANGE,-0.05*dir, 0.15, -1.5*dir,-1.5);
 		wait(30);
 	}
+
 	//fast aimed shot guys - maybe too hard
 	wait(240);
-	ascent(i in 0..4){
+	ascent(i in 0..3){
 		side = altSign(i); dir = -side;
 		x = cx+(cx+30)*side;
 		y = cy/(ceil((i+0.01)/2)); //cy/2
@@ -221,11 +225,11 @@ function TBigINFairy1(x,y,s,a,shootdel){
 			case(RANK_HARD){ gap = 10;  joff = 0;  segap = 10; }
 			case(RANK_LUNA){ gap = 5;  joff = 5;  segap =  5; } //10,5,5
 			others{ gap =  1; joff = 0; segap = 1; }
-		let FamCount = 10;
+		let FamCount = 5;
 		MakeFam;
 		//Create and manage familiars
 		task MakeFam{
-			ascent(i in 0..5){
+			ascent(i in 0..4){
 				ascent(j in 0..2){
 					if(Obj_IsDeleted(fairy)){return;}
 					ManageFam;
@@ -245,7 +249,7 @@ function TBigINFairy1(x,y,s,a,shootdel){
 							famx = fx+famr*cos(fama); famy = fy+famr*sin(fama);
 							ObjMove_SetPosition(fam,famx,famy);
 							ObjMove_SetAngle(fam,fama+90*famdir);
-							if((count+shotoff)%gap==0){CreateShotA1(famx,famy,2,fama+90*famdir,BALL_O_RED+5*j,5);}
+							if((count+shotoff)%gap==0){CreateShotA1(famx,famy,2,fama+45*famdir,BALL_O_RED+5*j,5);}
 							yield;
 						}
 						FamCount--;
@@ -300,7 +304,7 @@ function TLittleINFairy1(x,y,s,a,shootdel){
 			case(RANK_HARD){ gap = 10;  joff = 0;  segap = 10; }
 			case(RANK_LUNA){ gap = 10;  joff = 5;  segap =  5; }
 			others{ gap =  1; joff = 0; segap = 1; }
-		let FamCount = 4;
+		let FamCount = 2;
 		MakeFam;
 		//Create and manage familiars
 		task MakeFam{
@@ -382,7 +386,7 @@ function TAimINFairy1(x,y,s,a,shootdel){
 			case(RANK_LUNA){ gap = gap0/2*N;	joff = gap0/2*dG;  	segap = gap0/2; }
 			others{ gap =  1; joff = 0; segap = 1; }
 		let sspd = 0.75*(1+0.75*rank); //3.5		//1.75, 2.5, 3.25, 4
-		let FamCount = 4;
+		let FamCount = 3;
 		MakeFam;
 		//Create and manage familiars
 		task MakeFam{
@@ -462,8 +466,8 @@ function TAimINFairy2(x,y,s,a,shootdel){
 			case(RANK_HARD){ gap = gap0*N;		joff = 0;			segap = gap0; }
 			case(RANK_LUNA){ gap = gap0/2*N;	joff = gap0/2*dG;  	segap = gap0/2; }
 			others{ gap =  1; joff = 0; segap = 1; }
-		let sspd = 1+0.75*rank; //3.5		//1.75, 2.5, 3.25, 4
-		let FamCount = 4;
+		let sspd = 1+0.50*rank; //3.5		//1.5, 2.0, 2.5, 3
+		let FamCount = 3;
 		MakeFam;
 		//Create and manage familiars
 		task MakeFam{
@@ -656,17 +660,17 @@ function TKedama1(x,y,s,a,color,life){
 	task Manage{
 		let del;
 		alternative(rank)
-		case(RANK_EASY){ del = 90; s = 2;    }
-		case(RANK_NORM){ del = 45; s = 2.75; }
-		case(RANK_HARD){ del = 30; s = 3.5;  }
+		case(RANK_EASY){ del = 70; s = 2;    }
+		case(RANK_NORM){ del = 40; s = 2.75; }
+		case(RANK_HARD){ del = 20; s = 3.5;  }
 		case(RANK_LUNA){ del = 10; s = 4.25; }
 		others{ del = 1; }
 
 		wait(2*del); //lengthy delay before it actually shoots anything
 		while(!Obj_IsDeleted(kd) && ObjEnemy_GetLife(kd)>0){
 			x = ObjMove_GetX(kd); y = ObjMove_GetY(kd);
-			ascent(i in 0..3){
-				CreateShotA1(x,y,s*(1-0.15*i),GetAngleToPlayer(kd), KUNAI_RED,10);
+			ascent(i in 0..2){
+				CreateShotA1(x,y,s*(1-0.20*i),GetAngleToPlayer(kd), KUNAI_RED,15);
 			}
 			SE_Play(se_shot,60);
 			loop(del){yield; if(ObjEnemy_GetLife(kd)==0){break;}}
@@ -686,6 +690,66 @@ function TKedama1(x,y,s,a,color,life){
 			case("blue"){ DropItemsSmallest(x,y, I_POINT); }
 			others{ DropItemsSmallest(x,y, tern(rand(0,1)<0.5,I_POINT,I_POWER)); }
 			Obj_Delete(kd);
+		}
+	}
+
+}
+
+function TKedama2(x,y,s,a,color,life){
+	let kd2 = SpawnKedama(x,y,color,life);
+	ObjMove_AddPatternA1(kd2,0,s,a);
+	Manage;
+	ManageFinalize;
+	return kd2;
+
+	task Manage{
+		let del;
+		let N = 2;
+		alternative(rank)
+		case(RANK_EASY){ del = 90; s = 2;    }
+		case(RANK_NORM){ del = 45; s = 2.75; }
+		case(RANK_HARD){ del = 30; s = 3.5;  }
+		case(RANK_LUNA){ del = 10; s = 4.25; }
+		others{ del = 1; }
+
+		wait(1.5*del); //lengthy delay before it actually shoots anything
+		while(!Obj_IsDeleted(kd2) && ObjEnemy_GetLife(kd2)>0){
+			x = ObjMove_GetX(kd2); y = ObjMove_GetY(kd2);
+			ascent(i in 0..N)
+			{
+				CreateShotA1(x,y,s*(1-0.05*i), 90,SUPP_RED+500, 15);
+				CreateShotA1(x,y,s*(1-0.05*i), 80,SUPP_RED+500, 15);
+				CreateShotA1(x,y,s*(1-0.05*i), 100,SUPP_RED+500, 15);
+			}
+			SE_Play(se_shot,60);
+			loop(del){yield; if(ObjEnemy_GetLife(kd2)==0){break;}}
+		}
+
+
+	}
+	task ManageFinalize{
+		let N=s*3;
+		let a0 =0;
+		let a=0;
+		let shot;
+		while(!Obj_IsDeleted(kd2) && ObjEnemy_GetLife(kd2)>0){yield;}
+		if(!Obj_IsDeleted(kd2)){ //if it was shot down rather than leaving screen
+			x = ObjMove_GetX(kd2); y = ObjMove_GetY(kd2);
+			ascent(i in 0..N)
+			{
+				a=a0+i*(360/N);
+				ascent(j in -1..2)
+				{
+					shot = CreateShotA1(x+25*cos(a),y+25*sin(a),s*(1-0.05*i), a0+i*(360/N),SUPP_RED+500, 15);
+					ObjMove_SetAngularVelocity(shot,0.025*j);
+				}
+				a0+=15;
+			}
+			alternative(color)
+			case("red"){  DropItems(x,y, [ITEM_POWER_S,1,0] ); }
+			case("blue"){ DropItems(x,y, [ITEM_POINT_S,1,0] ); }
+			others{ DropItems(x,y, [ tern(rand(0,1)<0.5,ITEM_POWER_S,ITEM_POINT_S),1,0] ); }
+			Obj_Delete(kd2);
 		}
 	}
 
