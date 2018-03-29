@@ -2,7 +2,8 @@
 
 let FLAG_CHECKINFO = "Check";
 let FLAG_DUMMY = "IsDummy";
-
+let FLAG_XYMOVE = "UseXYSystem";
+let FLAG_INTERSECTION = "IsIntersectionEnable";
 
 let MOVE_SPEED = "Speed"; //for consistency
 let MOVE_ACCEL = "Acceleration";
@@ -12,7 +13,9 @@ let MOVE_MAXACCEL = "MaxAcceleration";
 
 let MOVE_ANGLE = "Angle"; //for consistency
 let MOVE_ANGV = "AngularVelocity";
+
 let MOVE_ANGACCEL = "AngularAcceleration";
+let MOVE_MAXANGV = "MaxAngularVelocity";
 
 let RENDER_ALPHA = "Alpha";
 let RENDER_COLOR = "Color";
@@ -37,7 +40,7 @@ function O_SetInfo(obj,info,val){
 	Obj_SetValue(obj,info,val);
 }
 
-function O_SetProperty(obj,info,val)
+// function O_SetProperty(obj,info,val)
 
 	// alternative(info)
 	// case(INFO_SPEED){ return ObjMove_GetSpeed(obj); } //todo
@@ -57,7 +60,7 @@ function O_SetProperty(obj,info,val)
 
 
 
-function ObjEnemy_GetLife(enemy){return ObjEnemy_GetInfo(enemy,INFO_LIFE);}
+function ObjEnemy_GetLife(enemy){ return ObjEnemy_GetInfo(enemy,INFO_LIFE); }
 
 let TYPE_ENEMY = 9000; let TYPE_FAM = 9001; let TYPE_DIE = 8000;
 function DeleteEnemyAll(enetype,deletetype){
@@ -210,6 +213,11 @@ task Obj_FadeDelete(obj) {
 
 
 
+// task OR_AddPatternA1(del,fadespd,
+
+
+
+
 /////////////////////////////////////////////////////////////////
 // Shot Functions
 /////////////////////////////////////////////////////////////////
@@ -265,12 +273,12 @@ function CopyShot(shot){
 	let ang = ObjMove_GetAngle(shot);
 	let graph = ObjShot_GetImageID(shot);
 	
-	let acc  = Obj_GetValueD(shot,"Acceleration",0);
-	let angv = Obj_GetValueD(shot,"AngularVelocity",0);
-	let mspd = Obj_GetValueD(shot,"MaxSpeed",9999);
+	let acc  = Obj_GetValueD(shot,MOVE_ACCEL,0);
+	let angv = Obj_GetValueD(shot,MOVE_ANGV,0);
+	let mspd = Obj_GetValueD(shot,MOVE_MAXSPEED,9999);
 	
 	let spellresist = ObjShot_IsSpellResist(shot);
-	let intersect = Obj_GetValueD(shot,"IsIntersectionEnable",true);
+	let intersect = Obj_GetValueD(shot,FLAG_INTERSECTION,true);
 	let scalexyz = [ObjRender_GetScaleX(shot),ObjRender_GetScaleY(shot),ObjRender_GetScaleZ(shot)];
 	let blendtype = ObjRender_GetBlendType(shot);
 	// let color = Obj_GetValueD(shot,"Color",[255,255,255]);
@@ -314,7 +322,7 @@ function CopyShot(shot){
 	// Obj_SetValue(cpy,"MaxSpeed",mspd);
 	// Obj_SetValue(cpy,"Alpha",alpha);
 	// Obj_SetValue(cpy,"Color",color); 
-	Obj_SetValue(cpy,"IsIntersectionEnable",intersect);
+	Obj_SetValue(cpy,FLAG_INTERSECTION,intersect);
 	
 	return cpy;
 }
@@ -341,7 +349,7 @@ function OS_GetCollisionRadius(shot) {
 
 
 //for moving shit what don't do ObjMove
-task ObjRender_AddPatternA1(obj,fr,s,a){
+task Obj_AddPatternA1(obj,fr,s,a){
 	wait(fr);
 	Obj_SetValue(obj,"Speed",s);
 	Obj_SetValue(obj,"Angle",a);
@@ -353,7 +361,7 @@ task ObjRender_AddPatternA1(obj,fr,s,a){
 		yield;
 	}
 }
-task ObjRender_AddPatternA2(obj,fr,s,a,acc,mspd){
+task Obj_AddPatternA2(obj,fr,s,a,acc,mspd){
 	wait(fr);
 	Obj_SetValue(obj,"Speed",s);
 	Obj_SetValue(obj,"Angle",a);
@@ -378,35 +386,37 @@ task ObjRender_AddPatternA2(obj,fr,s,a,acc,mspd){
 //for stuff like alpha, color, and scale
 
 
+
+
 task OM_SetAngularAcceleration(obj,anga){
-	Obj_SetValue(obj,"AngularAcceleration",anga);
-	let angv = Obj_GetValueD(obj,"AngularVelocity",0);
-	let mangv = Obj_GetValueD(obj,"MaxAngularVelocity",0);
-	while(!Obj_IsDeleted(obj) && Obj_GetValueD(obj,"AngularAcceleration",0)==anga ){
-		angv = Obj_GetValueD(obj,"AngularVelocity",0);
-		mangv = Obj_GetValueD(obj,"MaxAngularVelocity",0);
+	Obj_SetValue(obj,MOVE_ANGACCEL,anga);
+	let angv = Obj_GetValueD(obj,MOVE_ANGV,0);
+	let mangv = Obj_GetValueD(obj,MOVE_MAXANGV,0);
+	while(!Obj_IsDeleted(obj) && Obj_GetValueD(obj,MOVE_ANGACCEL,0)==anga ){
+		angv = Obj_GetValueD(obj,MOVE_ANGV,0);
+		mangv = Obj_GetValueD(obj,MOVE_MAXANGV,0);
 		if( (|angv|) < (|mangv|) || sign(mangv-angv) == sign(anga) ){
 			angv += anga;
 			ObjMove_SetAngularVelocity(obj,angv);
-			Obj_SetValue(obj,"AngularVelocity",angv);
+			Obj_SetValue(obj,MOVE_MAXANGV,angv);
 		}else{
 			ObjMove_SetAngularVelocity(obj,mangv);
-			Obj_SetValue(obj,"AngularVelocity",mangv);
+			Obj_SetValue(obj,MOVE_ANGV,mangv);
 			return;
 		}
 		yield;
 	}
 }
-function OM_SetMaxAngularVelocity(obj,mangv){ Obj_SetValue(obj,"MaxAngularVelocity",mangv); }
+function OM_SetMaxAngularVelocity(obj,mangv){ Obj_SetValue(obj,MOVE_MAXANGV,mangv); }
 
 
 task OM_SetJerk(obj,jerk){
-	Obj_SetValue(obj,"Jerk",jerk);
-	let acc = Obj_GetValueD(obj,"Acceleration",0);
-	let macc = Obj_GetValueD(obj,"MaxAcceleration",0);
-	while(!Obj_IsDeleted(obj) && Obj_GetValueD(obj,"Acceleration",0)==acc ){
-		acc = Obj_GetValueD(obj,"Acceleration",0);
-		macc = Obj_GetValueD(obj,"MaxAcceleration",0);
+	Obj_SetValue(obj,MOVE_JERK,jerk);
+	let acc = Obj_GetValueD(obj,MOVE_ACCEL,0);
+	let macc = Obj_GetValueD(obj,MOVE_MAXACCEL,0);
+	while(!Obj_IsDeleted(obj) && Obj_GetValueD(obj,MOVE_ACCEL,0)==acc ){
+		acc = Obj_GetValueD(obj,MOVE_ACCEL,0);
+		macc = Obj_GetValueD(obj,MOVE_MAXACCEL,0);
 		// if( (|acc|) < (|macc|) || sign(macc-acc) == sign(jerk) ){
 		// if( inrange(acc,0,(|macc|)*sign(jerk)) ){
 		// if( inrange(acc,99-99*sign(jerk),(|macc|)*sign(jerk)) ){
@@ -414,19 +424,19 @@ task OM_SetJerk(obj,jerk){
 		if( isapproaching(acc,jerk,macc) ){
 			acc += jerk;
 			ObjMove_SetAcceleration(obj,acc);
-			Obj_SetValue(obj,"Acceleration",acc);
+			Obj_SetValue(obj,MOVE_ACCEL,acc);
 		}else{
 			ObjMove_SetAcceleration(obj,macc);
-			Obj_SetValue(obj,"Acceleration",macc);
+			Obj_SetValue(obj,MOVE_ACCEL,macc);
 			return;
 		}
 		yield;
 	}
 }
-function OM_SetMaxAcceleration(obj,macc){ Obj_SetValue(obj,"MaxAcceleration",macc); }
+function OM_SetMaxAcceleration(obj,macc){ Obj_SetValue(obj,MOVE_MAXACCEL,macc); }
 
-function OM_GetJerk(obj){ return Obj_GetValueD(obj,"Jerk",0); }
-function OM_GetMaxAcceleration(obj){ return Obj_GetValueD(obj,"MaxAcceleration",9999); }
+function OM_GetJerk(obj){ return Obj_GetValueD(obj,MOVE_JERK,0); }
+function OM_GetMaxAcceleration(obj){ return Obj_GetValueD(obj,MOVE_MAXACCEL,9999); }
 
 
 
