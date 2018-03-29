@@ -19,10 +19,7 @@ let MOVE_MAXANGV = "MaxAngularVelocity";
 
 let RENDER_ALPHA = "Alpha";
 let RENDER_COLOR = "Color";
-
 let RENDER_SCALE = "Scale"; //"overall" scale
-
-
 
 
 
@@ -40,7 +37,10 @@ function O_SetInfo(obj,info,val){
 	Obj_SetValue(obj,info,val);
 }
 
-// function O_SetProperty(obj,info,val)
+function O_SetProperty(obj,info,val){
+	alternative(info)
+	case(MOVE_SPEED){ OM_SetSpeed(obj,val); }
+}
 
 	// alternative(info)
 	// case(INFO_SPEED){ return ObjMove_GetSpeed(obj); } //todo
