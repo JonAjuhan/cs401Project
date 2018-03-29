@@ -7,6 +7,8 @@ let FLAG_INTERSECTION = "IsIntersectionEnable";
 let FLAG_SPELLRESIST = "IsSpellResist";
 let SHOT_GRAPHIC = "Graphic";
 
+// let 
+
 let MOVE_SPEED = "Speed"; //for consistency
 let MOVE_ACCEL = "Acceleration";
 let MOVE_MAXSPEED = "MaxSpeed";
@@ -75,14 +77,20 @@ task Obj_AddValuePatternA1(obj,del,key,s){
 	}
 }
 
-task Obj_AddValuePatternA2(obj,del,key,s,a,m){
+task Obj_AddValuePatternA2(obj,del,key,s,a,ms){
 	let v = Obj_GetValue(obj,key);
 	while(Obj_GetValue(obj,key)==v){
 		s+=a;
+		if(s*a > ms*a){ s=ms; }
 		v+=s;
 		Obj_SetValue(obj,key,v);
 		yield;
 	}
+}
+
+
+function GetRelatedKey(key,relation){
+	
 }
 	
 
@@ -239,7 +247,13 @@ function OR_SetScale(obj,scale){
 	return scale;
 }
 function OR_GetScale(obj){
-	
+	let scale = Obj_GetValueD(obj,RENDER_SCALE,NULL);
+	if(scale==NULL){
+		let sclx = ObjRender_GetScaleX(obj);
+		let scly = ObjRender_GetScaleY(obj);
+		scale = (sclx+scly)/2;
+	}
+	return scale;
 }
 
 
@@ -453,6 +467,8 @@ task OM_SetAngularAcceleration(obj,anga){
 	}
 }
 function OM_SetMaxAngularVelocity(obj,mangv){ Obj_SetValue(obj,MOVE_MAXANGV,mangv); }
+function OM_GetAngularAcceleration(obj){ Obj_GetValueD(obj,MOVE_ANGACCEL,0); }
+function OM_GetMaxAngularVelocity(obj){ Obj_GetValueD(obj,MOVE_MAXANGV,0); }
 
 
 task OM_SetJerk(obj,jerk){
