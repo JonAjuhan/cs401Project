@@ -106,8 +106,6 @@ task TShoot{
 		
 		O_SetInfo(boss,MOVE_ACCEL,0.05);
 		let a = O_GetInfo(boss,MOVE_ACCEL);
-		WriteLog(INFO_ACCEL);
-		WriteLog(a);
 		
 		// DropItemsNonspellEnd;
 		// DropItemsSpellEnd;

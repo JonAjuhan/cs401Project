@@ -205,8 +205,8 @@ let MOVE_PLAYERBIAS	= 999902;	//	[MOVE_PLAYERBIAS,xbias,ybias]
 let MOVE_NEAR		= 999910;	//  [MOVE_NEAR,maxrad]
 let MOVE_FAR		= 999911;	//	[MOVE_FAR, minrad]
 let MOVE_PNLSPACE	= 999912;	//	[MOVE_PNLSPACE, personalspace]
-let MOVE_SPEED		= 999913;	//	[MOVE_SPEED,   spd] 			(*incompatible with MOVE_MAXSPEED)
-let MOVE_MAXSPEED	= 999914;	//	[MOVE_MAXSPEED,spd] 			(*incompatible with MOVE_SPEED)
+// let MOVE_SPEED		= 999913;	//	[MOVE_SPEED,   spd] 			(*incompatible with MOVE_MAXSPEED)
+// let MOVE_MAXSPEED	= 999914;	//	[MOVE_MAXSPEED,spd] 			(*incompatible with MOVE_SPEED)
 let MOVE_SMOOTH		= 999915;	//	[MOVE_SMOOTH,smoothness]
 let MOVE_WEIGHT		= 999916;	//TODO
 
