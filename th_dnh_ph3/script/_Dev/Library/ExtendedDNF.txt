@@ -46,7 +46,8 @@ function O_SetProperty(obj,info,val){
 	
 }
 
-function O_GetPropertyD(obj,info,def){
+function O_GetProperty(obj,info){
+	let def = NULL;
 	alternative(info)
 	case(FLAG_INTERSECTION){ Obj_GetValueD(obj,FLAG_INTERSECTION,def); }
 	case(FLAG_SPELLRESIST){ Obj_SetValue(obj,FLAG_INTERSECTION,def); }
@@ -243,7 +244,7 @@ function OR_SetScale(obj,scale){
 	let scly = ObjRender_GetScaleY(obj);
 	let ratio = sclx/scly;
 	ObjRender_SetScaleXYZ(obj,scale*ratio,scale/ratio,ObjRender_GetScaleZ(obj));
-	Obj_SetValue(RENDER_SCALE,scale);
+	Obj_SetValue(obj,RENDER_SCALE,scale);
 	return scale;
 }
 function OR_GetScale(obj){
