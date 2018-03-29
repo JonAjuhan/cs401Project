@@ -384,7 +384,7 @@ function CreateDummyShot(x,y){
 	let shot = CreateShotA1(x,y,0,0,0,0);
 	ObjShot_SetSpellResist(shot,true);
 	ObjShot_SetAutoDelete(shot,false);
-	Obj_SetValue(shot,"IsDummy",true);
+	Obj_SetValue(shot,FLAG_DUMMY,true);
 	Obj_SetValue(shot,"NoInfluence",true);
 	return shot;
 }
