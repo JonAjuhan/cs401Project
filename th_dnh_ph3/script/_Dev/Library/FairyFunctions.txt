@@ -1,10 +1,10 @@
 let MainSTG2 = GetMainStgScriptDirectory;
 let GCSD = GetCurrentScriptDirectory;
-let img_fairy = GCSD~"./enemy/enemy.png"; // Fairy Sheet
-let img_effect = GCSD~"./enemy/effect.png"; // Effect Sheet
-let img_effect2 = GCSD~"./enemy/effect2.png"; // Effect 2 Sheet
-let img_effect3 = GCSD~"./enemy/effect3.png"; // Effect 3 Sheet
-let img_fam = GCSD~"./enemy/INenemy.png"; // Fam Sheet
+let img_fairy = GCSD~"enemy/enemy.png"; // Fairy Sheet
+let img_effect = GCSD~"enemy/effect.png"; // Effect Sheet
+let img_effect2 = GCSD~"enemy/effect2.png"; // Effect 2 Sheet
+let img_effect3 = GCSD~"enemy/effect3.png"; // Effect 3 Sheet
+let img_fam = GCSD~"enemy/INenemy.png"; // Fam Sheet
 let quality = GetCommonData("quality", 2); //2
 let TotalEffectMax = 24*quality;
 let TotalEffect = 0;

@@ -1,12 +1,130 @@
 
+
+let FLAG_CHECKINFO = "Check";
+let FLAG_DUMMY = "IsDummy";
+let FLAG_XYMOVE = "UseXYSystem";
+let FLAG_INTERSECTION = "IsIntersectionEnable";
+let FLAG_SPELLRESIST = "IsSpellResist";
+let SHOT_GRAPHIC = "Graphic";
+
+let MOVE_SPEED = "Speed"; //for consistency
+let MOVE_ACCEL = "Acceleration";
+let MOVE_MAXSPEED = "MaxSpeed";
+let MOVE_JERK = "Jerk";
+let MOVE_MAXACCEL = "MaxAcceleration";
+
+let MOVE_ANGLE = "Angle"; //for consistency
+let MOVE_ANGV = "AngularVelocity";
+
+let MOVE_ANGACCEL = "AngularAcceleration";
+let MOVE_MAXANGV = "MaxAngularVelocity";
+
+let RENDER_ALPHA = "Alpha";
+let RENDER_COLOR = "Color";
+let RENDER_SCALE = "Scale"; //"overall" scale
+
+
+function O_SetProperty(obj,info,val){
+	if(val==NO_CHANGE){return;} //todo: set to current value if it can be determined
+	alternative(info)
+	case(FLAG_INTERSECTION){ Obj_SetValue(obj,FLAG_INTERSECTION,val); }
+	case(FLAG_SPELLRESIST){ Obj_SetValue(obj,FLAG_INTERSECTION,val); }
+	case(MOVE_SPEED){ OM_SetSpeed(obj,val); }
+	case(MOVE_ACCEL){ OM_SetAcceleration(obj,val); }
+	case(MOVE_MAXSPEED){ OM_SetMaxSpeed(obj,val); }
+	case(MOVE_JERK){ OM_SetJerk(obj,val); }
+	case(MOVE_MAXACCEL){ OM_SetMaxAcceleration(obj,val); }
+	case(MOVE_ANGLE){ OM_SetAngle(obj,val); }
+	case(MOVE_ANGV){ OM_SetAngularVelocity(obj,val); }
+	case(MOVE_ANGACCEL){ OM_SetAngularAcceleration(obj,val); }
+	case(MOVE_MAXANGV){ OM_SetMaxAngularVelocity(obj,val); }
+	case(RENDER_ALPHA){ OR_SetAlpha(obj,val); }
+	case(RENDER_COLOR){ OR_SetColor(obj,val[0],val[1],val[2]); }
+	case(RENDER_SCALE){ OR_SetScale(obj,val); }
+	
+}
+
+function O_GetPropertyD(obj,info,def){
+	alternative(info)
+	case(FLAG_INTERSECTION){ Obj_GetValueD(obj,FLAG_INTERSECTION,def); }
+	case(FLAG_SPELLRESIST){ Obj_SetValue(obj,FLAG_INTERSECTION,def); }
+	case(MOVE_SPEED){ OM_GetSpeed(obj,def); }
+	case(MOVE_ACCEL){ OM_SetAcceleration(obj,def); }
+	case(MOVE_MAXSPEED){ OM_SetMaxSpeed(obj,def); }
+	case(MOVE_JERK){ OM_SetJerk(obj,def); }
+	case(MOVE_MAXACCEL){ OM_SetMaxAcceleration(obj,def); }
+	case(MOVE_ANGLE){ OM_SetAngle(obj,def); }
+	case(MOVE_ANGV){ OM_SetAngularVelocity(obj,def); }
+	case(MOVE_ANGACCEL){ OM_SetAngularAcceleration(obj,def); }
+	case(MOVE_MAXANGV){ OM_SetMaxAngularVelocity(obj,def); }
+	case(RENDER_ALPHA){ OR_SetAlpha(obj,def); }
+	case(RENDER_COLOR){ OR_SetColor(obj,def); }
+	case(RENDER_SCALE){ OR_SetScale(obj,def); }
+	
+}
+
+
+
+
+task Obj_AddValuePatternA1(obj,del,key,s){
+	let v = Obj_GetValue(obj,key);
+	while(Obj_GetValue(obj,key)==v){
+		v+=s;
+		Obj_SetValue(obj,key,v);
+		yield;
+	}
+}
+
+task Obj_AddValuePatternA2(obj,del,key,s,a,m){
+	let v = Obj_GetValue(obj,key);
+	while(Obj_GetValue(obj,key)==v){
+		s+=a;
+		v+=s;
+		Obj_SetValue(obj,key,v);
+		yield;
+	}
+}
+	
+
+
+
+
+
 //MISC
 
 
 
-function ObjEnemy_GetLife(enemy){return ObjEnemy_GetInfo(enemy,INFO_LIFE);}
+function ObjEnemy_GetLife(enemy){ return ObjEnemy_GetInfo(enemy,INFO_LIFE); }
 
-
-
+let TYPE_ENEMY = 9000; let TYPE_FAM = 9001; let TYPE_DIE = 8000;
+function DeleteEnemyAll(enetype,deletetype){
+	let enems = GetAllEnemyID;
+	ascent(i in 0..length(enems)){
+		let ene = enems[i];
+		if(Obj_GetType(ene)!=OBJ_ENEMY_BOSS || enetype==TYPE_ALL){
+			if(enetype!=TYPE_FAM || Obj_GetValueD(ene,"IsFam",false)){
+				alternative(deletetype)
+				case(TYPE_IMMEDIATE){ Obj_Delete(ene); }
+				case(TYPE_DIE){ ObjEnemy_SetLife(ene,0); }
+				case(TYPE_FADE){ Obj_FadeDelete(ene); }
+				case(TYPE_ITEM){
+					// ItemExplode(ObjMove_GetX(ene),ObjMove_GetY(ene),trunc(ObjEnemy_GetLife(ene)/50));
+					let x = ObjMove_GetX(ene); let y = ObjMove_GetY(ene);
+					let n = trunc(ObjEnemy_GetLife(ene)/50);
+					let r = max(48, 48*(360/n)/120);
+					loop(n){
+						let a = rand(0,360);
+						let d = rand(r/2,r);
+						NotifyEvent(GetCommonData("ItemScriptID",NULL),EV_SPAWN_ITEM,
+						  [I_CANCEL,x,y,x+d*cos(a),y+d*sin(a),0]);
+					}
+					
+					ObjEnemy_SetLife(ene,0);
+				}
+			}
+		}
+	}
+}
 
 
 //////////////////////////////////////////////////////////////////
@@ -22,16 +140,16 @@ function ObjEnemy_GetLife(enemy){return ObjEnemy_GetInfo(enemy,INFO_LIFE);}
 //Set an object's alpha or RGB, depending on blend type.
 //Efficient. Always use this to ensure alpha is accessible by other functions.
 function OR_SetAlpha(obj, alpha){
-	Obj_SetValue(obj, "Alpha", alpha); Obj_SetValue(obj, "A", alpha);
+	Obj_SetValue(obj, RENDER_ALPHA, alpha);
 	let C; let R; let G; let B; let A;
 	alternative(ObjRender_GetBlendType(obj))
 	case(BLEND_ADD_RGB,BLEND_SUBTRACT,BLEND_MULTIPLY,BLEND_SHADOW){
-		C = Obj_GetValueD(obj,"Color",[255,255,255]);
+		C = Obj_GetValueD(obj,RENDER_COLOR,[255,255,255]);
 		R = Obj_GetValueD(obj,"R",C[0]);
 		G = Obj_GetValueD(obj,"G",C[1]);
 		B = Obj_GetValueD(obj,"B",C[2]);
 		A = alpha/255;
-		Obj_SetValue(obj,"Color",[R,G,B,alpha]);
+		Obj_SetValue(obj,RENDER_COLOR,[R,G,B,alpha]);
 	}
 	alternative(ObjRender_GetBlendType(obj))
 	case(BLEND_ALPHA)   {ObjRender_SetAlpha(obj, alpha);}
@@ -50,38 +168,38 @@ function OR_SetColor(obj,r,g,b){
 	Obj_SetValue(obj,"R",r);
 	Obj_SetValue(obj,"G",g);
 	Obj_SetValue(obj,"B",b);
-	Obj_SetValue(obj,"Color",[r,g,b]);
+	Obj_SetValue(obj,RENDER_COLOR,[r,g,b]);
 }
 function OR_SetColorRGB(obj,r,g,b){ OR_SetColor(obj,r,g,b); }
 function OR_SetColorRGBA(obj,r,g,b,a){
 	OR_SetColor(obj,r,g,b);
 	OR_SetAlpha(obj,a);
-	Obj_SetValue(obj,"Color",[r,g,b,a]);
+	Obj_SetValue(obj,RENDER_COLOR,[r,g,b,a]);
 }
 function ObjRender_SetTrueColor(obj,r,g,b){ OR_SetColor(obj,r,g,b); }
 
 //Attempt to compensate for the lack of such functions.
 //Efficient as long as value was properly stored, or after the first time.
 function OR_GetAlpha(obj){
-	if(Obj_IsValueExists(obj,"Alpha")){return Obj_GetValue(obj,"Alpha");}
+	if(Obj_IsValueExists(obj,RENDER_ALPHA)){return Obj_GetValue(obj,RENDER_ALPHA);}
 	else{
-		let C = Obj_GetValueD(obj,"Color",[255,255,255]);
-		if(length(C) > 3){ Obj_SetValue(obj,"Alpha",C[3]); return C[3]; }
-		let A = Obj_GetValueD(obj,"A",0);
-		if(A>0){ Obj_SetValue(obj,"Alpha",A); return A;}
+		let C = Obj_GetValueD(obj,RENDER_COLOR,[255,255,255]);
+		if(length(C) > 3){ Obj_SetValue(obj,RENDER_ALPHA,C[3]); return C[3]; }
+		let A = Obj_GetValueD(obj,RENDER_ALPHA,-1);
+		if(A!=-1){ return A;}
 		let R = Obj_GetValueD(obj,"R",C[0]); 
 		let G = Obj_GetValueD(obj,"G",C[1]); 
 		let B = Obj_GetValueD(obj,"B",C[2]);
 		A = max(R,max(G,B)); //Use the largest RGB value
-		Obj_SetValue(obj,"Alpha",A); Obj_SetValue(obj,"A",A);
-		Obj_SetValue(obj,"Color",[R,G,B,A]);
+		Obj_SetValue(obj,RENDER_ALPHA,A); Obj_SetValue(obj,"A",A);
+		Obj_SetValue(obj,RENDER_COLOR,[R,G,B,A]);
 		return A;
 	}
 }
-function OR_GetColor(obj){ return Obj_GetValueD(obj,"Color",[Obj_GetValueD(obj,"R",255),Obj_GetValueD(obj,"G",255),Obj_GetValueD(obj,"B",255)]); }
-function OR_GetColorRGB(obj){return Obj_GetValueD(obj,"Color",[Obj_GetValueD(obj,"R",255),Obj_GetValueD(obj,"G",255),Obj_GetValueD(obj,"B",255)]);}
+function OR_GetColor(obj){ return Obj_GetValueD(obj,RENDER_COLOR,[Obj_GetValueD(obj,"R",255),Obj_GetValueD(obj,"G",255),Obj_GetValueD(obj,"B",255)]); }
+function OR_GetColorRGB(obj){return Obj_GetValueD(obj,RENDER_COLOR,[Obj_GetValueD(obj,"R",255),Obj_GetValueD(obj,"G",255),Obj_GetValueD(obj,"B",255)]);}
 function OR_GetColorRGBA(obj){
-	let C = Obj_GetValueD(obj,"Color",[Obj_GetValueD(obj,"R",255),Obj_GetValueD(obj,"G",255),Obj_GetValueD(obj,"B",255)]);
+	let C = Obj_GetValueD(obj,RENDER_COLOR,[Obj_GetValueD(obj,"R",255),Obj_GetValueD(obj,"G",255),Obj_GetValueD(obj,"B",255)]);
 	let A = OR_GetAlpha(obj);
 	return C ~ [A];
 }
@@ -111,12 +229,20 @@ task OR_SetScaleAtFrame(obj,sx1,sy1,time){
 	}
 }
 
-
+//set "overall" scale - needs testing
+function OR_SetScale(obj,scale){
+	let sclx = ObjRender_GetScaleX(obj);
+	let scly = ObjRender_GetScaleY(obj);
+	let ratio = sclx/scly;
+	ObjRender_SetScaleXYZ(obj,scale*ratio,scale/ratio,ObjRender_GetScaleZ);
+	Obj_SetValue(RENDER_SCALE,scale);
+	return scale;
+}
 
 
 
 task Obj_FadeDelete(obj) {
-	let a0   = Obj_GetValueD(obj,"Alpha",255);
+	let a0   = Obj_GetValueD(obj,RENDER_ALPHA,255);
 	let time = Obj_GetValueD(obj,"FadeTime",60);
 	let dA   = a0/time;
 	descent(i in 0..time){
@@ -125,17 +251,12 @@ task Obj_FadeDelete(obj) {
 	}
 	Obj_Delete(obj);
 }
-// task Obj_FadeDeleteRGB(obj) {
-	// let c0 = Obj_GetValueD(obj,"Color",[255,255,255]);
-	// let time = Obj_GetValueD(obj,"FadeTime",60);
-	// let r0=c0[0]; let g0=c0[1]; let b0=c0[2];
-	// let dR = r0/time; let dG = g0/time; let dB = b0/time;
-	// descent(i in 0..time){
-		// ObjRender_SetColor(obj,dR*i,dG*i,dB*i);
-		// yield;
-	// }
-	// Obj_Delete(obj);
-// }
+
+
+
+
+// task OR_AddPatternA1(del,fadespd,
+
 
 
 
@@ -194,12 +315,12 @@ function CopyShot(shot){
 	let ang = ObjMove_GetAngle(shot);
 	let graph = ObjShot_GetImageID(shot);
 	
-	let acc  = Obj_GetValueD(shot,"Acceleration",0);
-	let angv = Obj_GetValueD(shot,"AngularVelocity",0);
-	let mspd = Obj_GetValueD(shot,"MaxSpeed",9999);
+	let acc  = Obj_GetValueD(shot,MOVE_ACCEL,0);
+	let angv = Obj_GetValueD(shot,MOVE_ANGV,0);
+	let mspd = Obj_GetValueD(shot,MOVE_MAXSPEED,9999);
 	
 	let spellresist = ObjShot_IsSpellResist(shot);
-	let intersect = Obj_GetValueD(shot,"IsIntersectionEnable",true);
+	let intersect = Obj_GetValueD(shot,FLAG_INTERSECTION,true);
 	let scalexyz = [ObjRender_GetScaleX(shot),ObjRender_GetScaleY(shot),ObjRender_GetScaleZ(shot)];
 	let blendtype = ObjRender_GetBlendType(shot);
 	// let color = Obj_GetValueD(shot,"Color",[255,255,255]);
@@ -243,7 +364,7 @@ function CopyShot(shot){
 	// Obj_SetValue(cpy,"MaxSpeed",mspd);
 	// Obj_SetValue(cpy,"Alpha",alpha);
 	// Obj_SetValue(cpy,"Color",color); 
-	Obj_SetValue(cpy,"IsIntersectionEnable",intersect);
+	Obj_SetValue(cpy,FLAG_INTERSECTION,intersect);
 	
 	return cpy;
 }
@@ -303,38 +424,41 @@ task Obj_AddPatternA2(obj,fr,s,a,acc,mspd){
 		dx = s*cos(a); dy = s*sin(a);
 	}
 }
+//hmm I should do some proper ObjRender_AddPattern functions
+//for stuff like alpha, color, and scale
+
 
 
 
 task OM_SetAngularAcceleration(obj,anga){
-	Obj_SetValue(obj,"AngularAcceleration",anga);
-	let angv = Obj_GetValueD(obj,"AngularVelocity",0);
-	let mangv = Obj_GetValueD(obj,"MaxAngularVelocity",0);
-	while(!Obj_IsDeleted(obj) && Obj_GetValueD(obj,"AngularAcceleration",0)==anga ){
-		angv = Obj_GetValueD(obj,"AngularVelocity",0);
-		mangv = Obj_GetValueD(obj,"MaxAngularVelocity",0);
+	Obj_SetValue(obj,MOVE_ANGACCEL,anga);
+	let angv = Obj_GetValueD(obj,MOVE_ANGV,0);
+	let mangv = Obj_GetValueD(obj,MOVE_MAXANGV,0);
+	while(!Obj_IsDeleted(obj) && Obj_GetValueD(obj,MOVE_ANGACCEL,0)==anga ){
+		angv = Obj_GetValueD(obj,MOVE_ANGV,0);
+		mangv = Obj_GetValueD(obj,MOVE_MAXANGV,0);
 		if( (|angv|) < (|mangv|) || sign(mangv-angv) == sign(anga) ){
 			angv += anga;
 			ObjMove_SetAngularVelocity(obj,angv);
-			Obj_SetValue(obj,"AngularVelocity",angv);
+			Obj_SetValue(obj,MOVE_MAXANGV,angv);
 		}else{
 			ObjMove_SetAngularVelocity(obj,mangv);
-			Obj_SetValue(obj,"AngularVelocity",mangv);
+			Obj_SetValue(obj,MOVE_ANGV,mangv);
 			return;
 		}
 		yield;
 	}
 }
-function OM_SetMaxAngularVelocity(obj,mangv){ Obj_SetValue(obj,"MaxAngularVelocity",mangv); }
+function OM_SetMaxAngularVelocity(obj,mangv){ Obj_SetValue(obj,MOVE_MAXANGV,mangv); }
 
 
 task OM_SetJerk(obj,jerk){
-	Obj_SetValue(obj,"Jerk",jerk);
-	let acc = Obj_GetValueD(obj,"Acceleration",0);
-	let macc = Obj_GetValueD(obj,"MaxAcceleration",0);
-	while(!Obj_IsDeleted(obj) && Obj_GetValueD(obj,"Acceleration",0)==acc ){
-		acc = Obj_GetValueD(obj,"Acceleration",0);
-		macc = Obj_GetValueD(obj,"MaxAcceleration",0);
+	Obj_SetValue(obj,MOVE_JERK,jerk);
+	let acc = Obj_GetValueD(obj,MOVE_ACCEL,0);
+	let macc = Obj_GetValueD(obj,MOVE_MAXACCEL,0);
+	while(!Obj_IsDeleted(obj) && Obj_GetValueD(obj,MOVE_ACCEL,0)==acc ){
+		acc = Obj_GetValueD(obj,MOVE_ACCEL,0);
+		macc = Obj_GetValueD(obj,MOVE_MAXACCEL,0);
 		// if( (|acc|) < (|macc|) || sign(macc-acc) == sign(jerk) ){
 		// if( inrange(acc,0,(|macc|)*sign(jerk)) ){
 		// if( inrange(acc,99-99*sign(jerk),(|macc|)*sign(jerk)) ){
@@ -342,18 +466,19 @@ task OM_SetJerk(obj,jerk){
 		if( isapproaching(acc,jerk,macc) ){
 			acc += jerk;
 			ObjMove_SetAcceleration(obj,acc);
-			Obj_SetValue(obj,"Acceleration",acc);
+			Obj_SetValue(obj,MOVE_ACCEL,acc);
 		}else{
 			ObjMove_SetAcceleration(obj,macc);
-			Obj_SetValue(obj,"Acceleration",macc);
+			Obj_SetValue(obj,MOVE_ACCEL,macc);
 			return;
 		}
 		yield;
 	}
 }
-function OM_SetMaxAcceleration(obj,macc){ Obj_SetValue(obj,"MaxAcceleration",macc); }
+function OM_SetMaxAcceleration(obj,macc){ Obj_SetValue(obj,MOVE_MAXACCEL,macc); }
 
-
+function OM_GetJerk(obj){ return Obj_GetValueD(obj,MOVE_JERK,0); }
+function OM_GetMaxAcceleration(obj){ return Obj_GetValueD(obj,MOVE_MAXACCEL,9999); }
 
 
 
@@ -383,29 +508,29 @@ task OR_SetAngularVelocityXYZ(obj,dxa,dya,dza){
 
 function OM_SetSpeed(obj,val){
 	ObjMove_SetSpeed(obj,val);
-	Obj_SetValue(obj,"Speed",val);
+	Obj_SetValue(obj,MOVE_SPEED,val);
 }
 function OM_GetSpeed(obj){return ObjMove_GetSpeed(obj);}
 function OM_SetAngle(obj,val){
 	ObjMove_SetAngle(obj,val);
-	Obj_SetValue(obj,"Angle",val);
+	Obj_SetValue(obj,MOVE_ANGLE,val);
 }
 function OM_GetAngle(obj){return ObjMove_GetAngle(obj);}
 function OM_SetAcceleration(obj,val){
 	ObjMove_SetAcceleration(obj,val);
-	Obj_SetValue(obj,"Acceleration",val);
+	Obj_SetValue(obj,MOVE_ACCEL,val);
 }
-function OM_GetAcceleration(obj){return Obj_GetValueD(obj,"Acceleration",0);}
+function OM_GetAcceleration(obj){return Obj_GetValueD(obj,MOVE_ACCEL,0);}
 function OM_SetMaxSpeed(obj,val){
 	ObjMove_SetMaxSpeed(obj,val);
-	Obj_SetValue(obj,"MaxSpeed",val);
+	Obj_SetValue(obj,MOVE_MAXSPEED,val);
 }
-function OM_GetMaxSpeed(obj){return Obj_GetValueD(obj,"MaxSpeed",99);}
+function OM_GetMaxSpeed(obj){return Obj_GetValueD(obj,MOVE_MAXSPEED,99);}
 function OM_SetAngularVelocity(obj,val){
 	ObjMove_SetAngularVelocity(obj,val);
-	Obj_SetValue(obj,"AngularVelocity",val);
+	Obj_SetValue(obj,MOVE_ANGV,val);
 }
-function OM_GetAngularVelocity(obj){return Obj_GetValueD(obj,"AngularVelocity",0);}
+function OM_GetAngularVelocity(obj){return Obj_GetValueD(obj,MOVE_ANGV,0);}
 
 
 
@@ -420,8 +545,8 @@ function OM_AddPatternA1(obj,del,spd,ang){
 	Manage;
 	task Manage{
 		wait(del);
-		Obj_SetValue(obj,"Speed",spd);
-		Obj_SetValue(obj,"Angle",ang);
+		Obj_SetValue(obj,MOVE_SPEED,spd);
+		Obj_SetValue(obj,MOVE_ANGLE,ang);
 	}
 }
 
@@ -436,11 +561,11 @@ function OM_AddPatternA2(obj,del,spd,ang,acc,angv,mspd){
 	Manage;
 	task Manage{
 		wait(del);
-		Obj_SetValue(obj,"Speed",spd);
-		Obj_SetValue(obj,"Angle",ang);
-		Obj_SetValue(obj,"Acceleration",acc);
-		Obj_SetValue(obj,"AngularVelocity",angv);
-		Obj_SetValue(obj,"MaxSpeed",mspd);
+		Obj_SetValue(obj,MOVE_SPEED,spd);
+		Obj_SetValue(obj,MOVE_ANGLE,ang);
+		Obj_SetValue(obj,MOVE_ACCEL,acc);
+		Obj_SetValue(obj,MOVE_ANGV,angv);
+		Obj_SetValue(obj,MOVE_MAXSPEED,mspd);
 	}
 }
 
@@ -456,12 +581,12 @@ function OM_AddPatternA3(obj,del,spd,ang,acc,angv,mspd,graph){
 	Manage;
 	task Manage{
 		wait(del);
-		Obj_SetValue(obj,"Speed",spd);
-		Obj_SetValue(obj,"Angle",ang);
-		Obj_SetValue(obj,"Acceleration",acc);
-		Obj_SetValue(obj,"AngularVelocity",angv);
-		Obj_SetValue(obj,"MaxSpeed",mspd);
-		Obj_SetValue(obj,"Graphic",graph);
+		Obj_SetValue(obj,MOVE_SPEED,spd);
+		Obj_SetValue(obj,MOVE_ANGLE,ang);
+		Obj_SetValue(obj,MOVE_ACCEL,acc);
+		Obj_SetValue(obj,MOVE_ANGV,angv);
+		Obj_SetValue(obj,MOVE_MAXSPEED,mspd);
+		Obj_SetValue(obj,SHOT_GRAPHIC,graph);
 	}
 }
 
@@ -485,15 +610,15 @@ function OM_AddPatternA5(obj,del,spd,ang,acc,angv,mspd,jerk,macc,anga,mangv){
 	Manage;
 	task Manage{
 		wait(del);
-		Obj_SetValue(obj,"Speed",spd);
-		Obj_SetValue(obj,"Angle",ang);
-		Obj_SetValue(obj,"Acceleration",acc);
-		Obj_SetValue(obj,"AngularVelocity",angv);
-		Obj_SetValue(obj,"MaxSpeed",mspd);
-		Obj_SetValue(obj,"Jerk",jerk);
-		Obj_SetValue(obj,"MaxAcceleration",macc);
-		Obj_SetValue(obj,"AngularAcceleration",anga);
-		Obj_SetValue(obj,"MaxAngularVelocity",mangv);
+		Obj_SetValue(obj,MOVE_SPEED,spd);
+		Obj_SetValue(obj,MOVE_ANGLE,ang);
+		Obj_SetValue(obj,MOVE_ACCEL,acc);
+		Obj_SetValue(obj,MOVE_ANGV,angv);
+		Obj_SetValue(obj,MOVE_MAXSPEED,mspd);
+		Obj_SetValue(obj,MOVE_JERK,jerk);
+		Obj_SetValue(obj,MOVE_MAXACCEL,macc);
+		Obj_SetValue(obj,MOVE_ANGACCEL,anga);
+		Obj_SetValue(obj,MOVE_MAXANGV,mangv);
 		OM_SetJerk(obj,jerk);
 		OM_SetAngularAcceleration(obj,anga);
 	}

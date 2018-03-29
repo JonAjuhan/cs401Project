@@ -1,0 +1,184 @@
+#TouhouDanmakufu[Single]
+#ScriptVersion[3]
+#Title["DilerSingle-1"]
+#Text["..."]
+#BGM["./bgm/bgm - A Maiden's Illusionary Funeral ~ Necro-Fantasy.ogg"]						//"./bgm/bgm - Bhava-Agra As Seen Through a Child's Mind.mp3"]
+#System["./system/Default_System.txt"]
+#Background["./system/Background_Sky.txt"]
+
+#include "./Index.txt"
+#include "./Library/AndiGapFunctions.txt"
+
+
+let fog; let ingap; let outgap;
+
+let timer = 37; //30
+
+@Event
+{
+	alternative(GetEventType())
+	case(EV_REQUEST_LIFE)
+	{
+		SetScriptResult(2000);
+	}
+	case(EV_REQUEST_SPELL_SCORE){
+        SetScriptResult(5000000);
+    }
+//	case(EV_REQUEST_IS_DURABLE_SPELL) {
+//		SetScriptResult(true);
+//	}
+//	case(EV_REQUEST_IS_LAST_SPELL){
+//		SetScriptResult(true);
+//	}
+
+	case(EV_REQUEST_TIMER) { SetScriptResult(timer*60); } //4500
+}
+@Initialize
+{
+	SetCommonData("CurrentSC","Boundary \"Geas of Near and Far\"");
+	SetCommonData("Difficulty","Phantasm");
+
+	boss = spawnBoss();
+	ObjEnemy_SetDamageRate(boss,0,0);
+	SetShotAutoDeleteClip(64,96,64,64);
+
+	//EnemyName(boss, "Andi's OC", 255, 180, 255);
+
+	MainTask;
+
+
+}
+@MainLoop
+{
+
+	if(ObjEnemy_GetInfo(boss, INFO_LIFE) <= 0 && !finishing)
+	{
+		finishing = true;
+		TBreakSpell([]);
+	}
+	else {
+		SetBossHitbox(boss,ex,ey);
+	}
+	frame++;
+	yield;
+}
+
+
+task MainTask {
+
+	ObjEnemy_SetDamageRate(boss,0,0);
+	ObjMove_SetDestAtFrame(boss, cx, cy-120, 60);
+
+	SetSpellCard;
+//	MCircNextAlpha = 80;
+//	Obj_SetValue(objSpellCircle,"MaxAlpha",64);
+
+	ObjEnemyBossScene_StartSpell(objScene);
+	ObjEnemyBossScene_SetSpellTimer(objScene,timer*60); //5760
+
+//	SetCaution;
+//	SetBossBlur(true);
+	AuraRainbow(boss,255,255,255);
+	TSpellImmune;
+
+	wait(90);
+	Tmovement(cx-120,cx+120, cy-90,cy-60, 60,240, [MOVE_PLAYERBIAS,2,0,MOVE_MAXSPEED,1.5] );
+	ObjEnemy_SetDamageRate(boss,24,8);
+	frame = 0;
+
+	TShoot;
+  //TBigShots;
+	//TFog;
+	TSafespotTrain;
+}
+
+
+
+
+task TShoot {
+
+	let shot;
+	let N = 30;
+	let a = 360;
+	let count = 0;
+  while(!Obj_IsDeleted(boss)) {
+
+		//loop(10){
+				shot = CreateShotA1(10,10,2,180,BALL_RED,10);
+			//shot = CreateShotA1(swdx+20*cos(a)    ,swdy+20*sin(a)    ,rand(1,3), a+0  , SUPP_RED+500   , 10);
+	//		shot = CreateShotA1(swdx+20*cos(a+180),swdy+20*sin(a+180),rand(1,2), a+180, ICE_MAGENTA+500, 10);
+	//		Obj_SetValue(shot,"GapConvert",false);
+	//		Obj_SetValue(shot,"ConvertAngle",180);
+	//		Obj_SetValue(shot,"MirrorWarpPosition",true);
+
+
+
+			//count++;
+			//a = 90+70*sin(count);
+		//}
+		SE_Play(se_hornshort,60);
+
+		count++;
+		wait(20);
+    ObjMove_AddPatternA1(shot,85,15,a);
+		ObjMove_SetAcceleration(shot,0.015);
+		ObjMove_SetAngle(shot,60);
+		let a0 = rand(0,360);
+		ascent(i in 0..N){ CreateShotA1(ex,ey,2, a0+i*(360/N), PEL_WHITE,10); }
+	}
+}
+
+
+
+
+
+
+
+
+
+task TFog {
+
+	let targ = CreateDummyShot(cx,cy);
+
+	//"Clouds"
+	fog = NightBlindA1(300,300,0,  0,255,120);
+	ObjRender_SetColor(fog,255,128,255);
+	ObjRender_SetBlendType(fog,BLEND_ADD_ARGB);
+	Obj_SetValue(fog,"Target",targ);
+	Obj_SetValue(fog,"RotSpeed",5); //3
+	Obj_SetValue(fog,"Check",false);
+
+	// while(!Obj_IsDeleted(boss)){
+		// ObjMove_SetDestAtFrame(targ,ex,ey,240);
+		// yield;
+	// }
+
+
+
+}
+
+
+
+
+//if the player tries to hide above her, they get train'd
+task TSafespotTrain {
+
+
+
+	while(!Obj_IsDeleted(boss)){
+		if(py<ey){wait(60);if(py<ey){
+			//Get train'd on
+			let dir = boolSign(px>cx); let y = (90+py)/2;
+			CreateGapA1(cx+cx*dir,y,200,50,90+90*dir,90,0,  GAP_OUT,TARGET_ENEMY, 0, []);
+			SetBossBlur(true);
+			wait(30);
+			CreateTrainA2(cx+(cx+250)*dir,y,0,90+90*dir,0.15,15,-0.05*dir,0);
+			SE_Play(se_train,200); SE_Play(se_tracks,200);
+			wait(50);
+			CreateGapA1(cx-cx*dir,y+30,200,50,90-90*dir,40,0,  GAP_VOID,TARGET_ENEMY, 0, []);
+			wait(120);
+			SetBossBlur(false);
+		}}
+		yield;
+	}
+}

@@ -29,6 +29,7 @@
 
 
 task MainTask {
+	if(noStage){SetBGM("Song of the Night Sparrow ~ Night Bird",145.8,292.4);}
 	
 	ObjMove_SetPosition(boss,cx+120,-120);
 	ObjMove_SetDestAtWeight(boss,cx,120,60,20);
@@ -55,11 +56,11 @@ task MainTask {
 	SetEnemyPort(dirportrait~"Mystia_Vein.png",0);
 	SetDialogueTextA1("That's right jackass, whatcha gonna do[r]about it?",[255,128,255]);
 	
+	SetBGM("Deaf to All But the Song",70.7, 141.38);
 	SetSpeaker(0);
 	SetPlayerPort(dirportrait~"Mokou_Smug.png",0);
 	SetEnemyPort(dirportrait~"Mystia_Pout.png",0);
 	DisplayPlayerTitle("Fujiwara no Mokou","Figure of the Person of Hourai",dirimg~"butterflies.png",90);
-	SetBGM("Deaf to All But the Song",70.7, 141.38);
 	SetDialogueTextA2("I'm gonna beat you the fuck up!",[255,128,128],90);
 	SetSpeaker(1);
 	SetDialogueTextA2("Shit!",[255,128,255], 60);

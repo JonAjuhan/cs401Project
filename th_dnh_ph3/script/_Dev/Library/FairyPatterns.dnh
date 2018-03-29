@@ -3,6 +3,7 @@ task TBigFairy1(x,y,s,a){
 	//ObjMove_SetDestAtFrame(fa,cx,cy,300);
 	ObjMove_SetSpeed(fa,s);
 	ObjMove_SetAngle(fa,a);
+	ManageFinalize;
 	wait(60);
 	let shot; let fx; let fy; let count=0;
 	while(!(ObjEnemy_GetLife(fa)==0)){
@@ -15,6 +16,17 @@ task TBigFairy1(x,y,s,a){
 		}
 		wait(3); count+=13;
 	}
+	
+	task ManageFinalize{
+		while(!Obj_IsDeleted(fa) && ObjEnemy_GetLife(fa)>0){yield;}
+		if(!Obj_IsDeleted(fa)){
+			x = ObjMove_GetX(fa); y = ObjMove_GetY(fa);
+			DropItemsA1(x,y,I_POINT,8,20,a);
+			DropItemsA1(x,y,I_POWER,3,8,a);
+			ItemExplode(x,y,5);
+			Obj_Delete(fa);
+		}
+	}
 }
 
 task TBunnyFairy1(x,y,s,a){
@@ -22,10 +34,11 @@ task TBunnyFairy1(x,y,s,a){
 	ObjMove_SetSpeed(fa,s);
 	ObjMove_SetAngle(fa,a);
 	ObjMove_SetAcceleration(fa,-0.05);
+	ManageFinalize;
 	wait(60);
 	let shot; let fx; let fy; let count=0;
 	task TShoot{
-		while(!(ObjEnemy_GetLife(fa)==0)){
+		while(!Obj_IsDeleted(fa)&&!(ObjEnemy_GetLife(fa)==0)){
 			fx=ObjMove_GetX(fa); fy=ObjMove_GetY(fa);
 			
 			SE_Play(se_shot,60);
@@ -40,6 +53,17 @@ task TBunnyFairy1(x,y,s,a){
 	ObjMove_SetMaxSpeed(fa,2);
 	ObjMove_SetAngle(fa,avg(180,ObjMove_GetAngle(fa))); //go sort of left-ish, I guess
 	// ObjMove_SetAngle(fa,270+GetAngularDistance(270,ObjMove_GetAngle(fa))/2);
+	
+	task ManageFinalize{
+		while(!Obj_IsDeleted(fa) && ObjEnemy_GetLife(fa)>0){yield;}
+		if(!Obj_IsDeleted(fa)){
+			x = ObjMove_GetX(fa); y = ObjMove_GetY(fa);
+			DropItemsA1(x,y,I_POINT,8,20,a);
+			DropItemsA1(x,y,I_POWER,3,8,a);
+			ItemExplode(x,y,5);
+			Obj_Delete(fa);
+		}
+	}
 }
 
 
@@ -49,7 +73,7 @@ task TYinYang1(x,y,s,a){
 	ObjMove_SetAngle(yy,a);
 	
 	let shot; let bx; let by; let count=0;
-	while(!(ObjEnemy_GetLife(yy)==0)){
+	while(!Obj_IsDeleted(yy) && ObjEnemy_GetLife(yy)>0){
 		bx=ObjMove_GetX(yy); by=ObjMove_GetY(yy);
 		
 		SE_Play(se_shot2,60);
@@ -64,8 +88,15 @@ task TYinYang1(x,y,s,a){
 			if(ObjEnemy_GetLife(yy)==0){break;}
 		}
 	}
-	ascent(i in 0..30){
-		shot = CreateShotA1(bx,by,3.5*rand(0.15,1),atan2(GetPlayerY-by,GetPlayerX-bx)+rand(-15,15),BALL_O_BLUE+500,10);
+	if(!Obj_IsDeleted(yy)){
+		bx=ObjMove_GetX(yy); by=ObjMove_GetY(yy);
+		ascent(i in 0..30){
+			shot = CreateShotA1(bx,by,3.5*rand(0.15,1),atan2(GetPlayerY-by,GetPlayerX-bx)+rand(-15,15),BALL_O_BLUE+500,10);
+		}
+		DropItemsA1(bx,by,I_POINT,8,20,a);
+		DropItemsA1(bx,by,I_POWER,3,8,a);
+		ItemExplode(bx,by,5);
+		Obj_Delete(yy);
 	}
 }
 
@@ -76,7 +107,7 @@ task TSpirit1(x,y,s,a){
 	ObjMove_SetAngle(hd,a);
 	
 	let shot; let hx; let hy; let count=0;
-	while(!(ObjEnemy_GetLife(hd)==0)){
+	while(!Obj_IsDeleted(hd) && ObjEnemy_GetLife(hd)>0){
 		hx=ObjMove_GetX(hd); hy=ObjMove_GetY(hd);
 		
 		ascent(i in 0..2){
@@ -85,6 +116,13 @@ task TSpirit1(x,y,s,a){
 		SE_Play(se_chime,60);
 	
 		wait(3);
+	}
+	if(!Obj_IsDeleted(hd)){
+		hx=ObjMove_GetX(hd); hy=ObjMove_GetY(hd);
+		DropItemsA1(hx,hy,I_POINT,8,20,a);
+		DropItemsA1(hx,hy,I_POWER,3,8,a);
+		ItemExplode(hx,hy,5);
+		Obj_Delete(hd);
 	}
 }
 

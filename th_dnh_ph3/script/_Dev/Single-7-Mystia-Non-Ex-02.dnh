@@ -104,7 +104,8 @@ task TShoot{
 	
 	while(!Obj_IsDeleted(boss) && !finishing){
 		
-		
+		O_SetInfo(boss,MOVE_ACCEL,0.05);
+		let a = O_GetInfo(boss,MOVE_ACCEL);
 		
 		// DropItemsNonspellEnd;
 		// DropItemsSpellEnd;
@@ -129,10 +130,19 @@ task TShoot{
 		// }
 		
 		
-		
+		let x; let y;
 		
 		ascent(k in 0..2){
-			ObjMove_SetDestAtWeight(boss,cx+randSign*rand(0,cx*0.75),rand(60,cy*0.9), gap*0.66,20);
+			// ObjMove_SetDestAtWeight(boss,cx+randSign*rand(0,cx*0.75),rand(60,cy*0.9), gap*0.66,20);
+			
+			x = cx+randSign*rand(0,cx*0.75);
+			y = rand(60,cy*0.9);
+			a = getangle(ex,y,x,y+100);
+			
+			// ObjMove_SetDestAtHermiteF(boss,x,y,100*cos(a),a,100*sin(a),a,gap*0.66);
+			// ObjMove_SetDestAtHermiteF(boss,x,y,100,a,100,a,60);
+			ObjMove_SetDestAtBezierF(boss,x,y, (ex+x)/2,y, gap*0.66);
+			
 			wait(gap/2);
 			if(finishing){DeleteShotAll(TYPE_ALL,TYPE_ITEM);return;}
 			dir = -altSign(k);
@@ -191,7 +201,7 @@ task TShoot{
 		ascent(i in 0..10){
 			// PagodaLaser(x,y,a,maxlength,maxwidth,del,color,delay)
 			// let las = PagodaLaserA1(ex,ey,a0-90+15+36*i,800,40,300,[196,64,255],60);
-			let las = PagodaLaserA2(ex,ey,a0-90+15+36*i,800,100,300,[196,64,255],60,"PagodaLaser2.png");
+			let las = PagodaLaserA2(ex,ey,a0-90+15+36*i,800,100,180,[196,64,255],60,"PagodaLaser2.png");
 			SE_Play(se_laser,100);
 			SE_Play(se_swrlaser,100);
 			

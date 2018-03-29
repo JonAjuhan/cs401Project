@@ -1,0 +1,49 @@
+#TouhouDanmakufu[Plural]
+#ScriptVersion[3]
+#Title["DilerPlural-1"]
+#Text["A test plural."]
+
+#include "./Index.txt"
+#System["./system/Default_System.txt"]
+#Background["./system/Background_Sky.txt"]
+
+#BGM["./bgm/bgm - Hartmann's Youkai Girl.ogg"]
+// let music = ObjSound_Create; //if we were doing it "properly"
+
+@Loading {
+	//InstallFont(GetCurrentScriptDirectory() ~ "img/Helvetica.otf"); //.otf for One True Font
+	//I think this is being done somewhere else now
+}
+
+@Event{
+	//can do stuff here
+}
+
+@Initialize{
+	SetCommonData("IsPlural",true); //to figure out what was selected from the menu, when needed
+	TPlural;
+}
+@MainLoop{
+	yield;
+}
+
+
+task TPlural {
+	let dir = GetCurrentScriptDirectory()~"./";
+    let obj = ObjEnemyBossScene_Create();
+
+	//params: boss scene object, lifebar number, filepath
+	ObjEnemyBossScene_Add(obj,0,dir~"dilersingle1.dnh");
+	ObjEnemyBossScene_Add(obj,1,dir~"dilersingle2.dnh");
+	ObjEnemyBossScene_Add(obj,2,dir~"dilersingle3.dnh");
+
+
+
+	ObjEnemyBossScene_LoadInThread(obj);
+	ObjEnemyBossScene_Regist(obj);
+
+	//wait for plural to end
+	while(!Obj_IsDeleted(obj)){yield;}
+	CloseScript(GetOwnScriptID());
+
+}

@@ -1,0 +1,446 @@
+// スクリプト全体の共通変数等
+#include "./lib_CommonDataManager.dnh"
+
+let GAME_VERSION = "1.10";	//バージョン
+let DEBUG_MODE = false;
+let DEBUG_FILMING_MODE = false;	// 動画撮影用セッティング
+
+// システムフォント
+// let sysBaseFont = "Verdana";
+// let sysBaseFontJP = "Meiryo";	//日本語
+// ドットフォント
+// let sysDotFontFile = GetCurrentScriptDirectory() ~ "../img/BSMDotFont.ttf";
+// let sysDotFont = "BSMDotFont";
+
+// ------ イベント番号 ------ //
+//自機
+let ev_ShootdownPlayer	= EV_USER_PLAYER + 101;	// 被弾イベント
+
+//ステージ
+let ev_NextStageScene	= EV_USER_STAGE + 1;	// 汎用的なステージイベント
+let ev_ResistBoss	= EV_USER_STAGE + 2;	// ボス登場イベント
+let ev_CloseScript	= EV_USER_STAGE + 3;	// スクリプト強制終了
+let ev_PluralClosed	= EV_USER_STAGE + 4;	// 連続再生終了イベント
+let ev_SetScriptValue	= EV_USER_STAGE + 5;	// 値を送る
+let ev_ResistBoss2	= EV_USER_STAGE + 6;	// ボス登場イベント（予備用）
+
+//システム
+let ev_CallSound	= EV_USER_SYSTEM + 1;	// 効果音通知
+let ev_CallItem		= EV_USER_SYSTEM + 2;	// アイテム配置
+let ev_CallItemEx	= EV_USER_SYSTEM + 3;	// アイテム配置
+let ev_BulletEffect	= EV_USER_SYSTEM + 4;	// 弾消しエフェクト
+let ev_CallSoundEx	= EV_USER_SYSTEM + 5;	// 効果音通知（ボリューム設定付き）
+let ev_ChapterStart	= EV_USER_SYSTEM + 6;	// チャプター開始（＆リセット）通知
+let ev_ChapterFinish	= EV_USER_SYSTEM + 7;	// チャプター終了通知
+let ev_EnemyKilled	= EV_USER_SYSTEM + 8;	// 敵撃破通知
+let ev_GetItem		= EV_USER_SYSTEM + 9;	// アイテム取得
+
+//パッケージ用
+let ev_Title_CallSound		= EV_USER_PACKAGE + 1;	// 効果音通知
+let ev_Title_ResetVolume	= EV_USER_PACKAGE + 2;	// 音量リセット
+let ev_Title_GetAchievement	= EV_USER_PACKAGE + 3;	// 実績取得通知
+
+// ------ 定数 ------ //
+// ボスアニメ等のキャラクター判別用定数
+let BOSS_ID_FABRITIS	= "Fabritis";
+let BOSS_ID_IPHONEA	= "Iphonea";
+let BOSS_ID_TOBIKO	= "Tobiko";
+let BOSS_ID_TOBIKO_H	= "Tobiko_Hidden";
+let BOSS_ID_SHELIA	= "Shelia";
+let BOSS_ID_MOKOU	= "Mokou";
+let BOSS_ID_ICHIYOU	= "Ichiyou";
+let BOSS_ID_ICHIYOU_H	= "Ichiyou_Hidden";
+let BOSS_ID_NEZU	= "Nezu";
+let BOSS_ID_NEZU_R	= "Nezu_Reimu";
+let BOSS_ID_NEZU_M	= "Nezu_Marisa";
+let BOSS_ID_NEZU_S	= "Nezu_Sanae";
+let BOSS_ID_MISHANDRA	= "Mishandra";
+let BOSS_ID_SANADA	= "Sanada";
+let BOSS_ID_SANADA_S	= "Sanada_Shadow";
+// こちらは主に会話用
+let BOSS_ID_REIMU	= "Reimu";
+let BOSS_ID_MARISA	= "Marisa";
+let BOSS_ID_SANAE	= "Sanae";
+let BOSS_ID_DUMMY	= "Dummy";
+
+//プレイヤー
+let PLAYER_REIMU_A	= 0;
+let PLAYER_REIMU_B	= 1;
+let PLAYER_REIMU_C	= 2;
+let PLAYER_MARISA_A	= 3;
+let PLAYER_MARISA_B	= 4;
+let PLAYER_MARISA_C	= 5;
+let PLAYER_SANAE_A	= 6;
+let PLAYER_SANAE_B	= 7;
+let PLAYER_SANAE_C	= 8;
+
+//難易度
+let D_EASY	= 0;
+let D_NORM	= 1;
+let D_HARD	= 2;
+let D_LUNA	= 3;
+let D_DRIVE	= 5;
+let D_LAST	= 6;
+let D_EXTRA	= 10;
+
+//特殊ステージ
+let STAGE_EXTRA = 10;
+
+//プレイ状態
+let GAME_NONE	= 0;	//パッケージを介さずに直接起動
+let GAME_MAIN	= 1;	//通しプレイ
+let GAME_PRACTICE = 2;	//ステージプラクティス
+let GAME_SPELL	= 3;	//スペルプラクティス
+let GAME_DEBUG	= 4;
+
+//システムスクリプト用
+let MY_RESULT_CONTINUE = 777;
+
+//待機
+function wait(n) { loop(n) { yield; } }
+// システム汎用関数
+function GetMusicVolume() { return(GetAreaCommonData(CAREA_CONFIG, "BGM_Volume", 100)); }
+function GetSoundVolume() { return(GetAreaCommonData(CAREA_CONFIG, "SE_Volume", 100)); }
+function GetPlayerSoundVolume() { return(GetAreaCommonData(CAREA_CONFIG, "Player_Volume", 100)); }
+//外壁取っ払いチェック
+function IsStgWorldBreak() { return(GetAreaCommonData(CAREA_SYSTEM, "StgWorldBreak", false)); }
+//プレイモード取得
+function GetPlayMode() { return(GetAreaCommonData(CAREA_STAGE, "PlayMode", GAME_NONE)); }
+function IsInfinityMode() { return(GetAreaCommonData(CAREA_STAGE, "InfinityMode", 0)); }
+function GetRebirthFlag() { return(GetAreaCommonData(CAREA_STAGE, "Rebirth", 0)); }
+//エフェクトカット設定
+function IsDrawBackground() { return(GetAreaCommonData(CAREA_CONFIG, "Background", 2)); }
+function IsDrawEffect() { return(GetAreaCommonData(CAREA_CONFIG, "Effect", 4)); }
+//コンティニュー
+function GetContinueCount() { return(GetAreaCommonData(CAREA_SYSTEM, "CONTINUE", 0 )); }
+//難易度取得
+function Difficult() { return(GetAreaCommonData(CAREA_STAGE, "Difficult", 3)); }
+//最大得点
+function GetMaxScore() { return(trunc(GetAreaCommonData(CAREA_SYSTEM, "MAX_SCORE", 10000 )/10)*10); }
+function GetMaxScoreEx() { return(trunc(GetAreaCommonData(CAREA_SYSTEM, "MAX_SCORE", 10000 )*GetMagnitudeScoreRate()/10)*10); }
+function AddMaxScore(num) { return(SetAreaCommonData(CAREA_SYSTEM, "MAX_SCORE", GetAreaCommonData(CAREA_SYSTEM, "MAX_SCORE",10000) + num )); }
+//アイテム数取得
+function AddWishItemCount(num)
+{
+	SetAreaCommonData(CAREA_STAGE, "WishItem", GetWishItemCount()+num);
+	if (num > 0) { SetAreaCommonData(CAREA_STAGE, "StageWishItem", GetAreaCommonData(CAREA_STAGE, "StageWishItem", 0)+num); }
+}
+function GetWishItemCount() { return(GetAreaCommonData(CAREA_STAGE, "WishItem", 0)); }
+function GetWishItemMax() { return(GetAreaCommonData(CAREA_STAGE, "WishItemMax", 0)); }
+//★ランク
+function GetMagnitude() { return(GetAreaCommonData(CAREA_SYSTEM, "StarMagnitude", 6)); }
+function SetMagnitude(num)
+{
+	let res = max(1, min(6, trunc(num)));
+	SetAreaCommonData(CAREA_SYSTEM, "StarMagnitude", res);
+}
+function AddMagnitude(num)
+{
+	let flg = false;
+	if (num < 0 && GetMagnitude() <= 1) { flg = true; }
+	// 加算
+	SetMagnitude(GetMagnitude() + num);
+	// 得点倍率も連動
+	if (flg) {
+		SetAreaCommonData(CAREA_SYSTEM, "MagnitudeScoreRate", GetMagnitudeScoreRate()+0.050001);
+	} else {
+		SetAreaCommonData(CAREA_SYSTEM, "MagnitudeScoreRate", 1 + (6-GetMagnitude())/5 * 3);
+	}
+}
+function GetMagnitudeScoreRate()
+{
+	return(GetAreaCommonData(CAREA_SYSTEM, "MagnitudeScoreRate", 1));
+}
+// ラスワ可否
+function GetLastWordBorder()
+{
+	let border = GetAreaCommonData(CAREA_STAGE, "LWWishItem", -1);
+	if (border < 0) { return(0); }
+	else
+	{
+		return(min(1, (GetAreaCommonData(CAREA_STAGE, "StageWishItem", 0)+GetAreaCommonData(CAREA_STAGE, "FieldWishItemEX", 0)) / border));
+	}
+}
+function SetLastWordBorder(num) { SetAreaCommonData(CAREA_STAGE, "LWWishItem", num); }
+// ステージindex取得
+function GetStageIndex() { return(GetAreaCommonData(CAREA_STAGE, "StageIndex", 1 )); }
+// 道中の時間経過
+function SetRoadTimerFlag(flg) { SetAreaCommonData(CAREA_STAGE, "RoadTimerFlag", flg ); }
+function GetRoadTimerFlag() { return(GetAreaCommonData(CAREA_STAGE, "RoadTimerFlag", true )); }
+// クリアフラグ取得
+function IsGameClear() { return(GetAreaCommonData(CAREA_STAGE, "GAME_CLEAR", 0 )); }
+// プレイヤー情報
+function flgItemAutoCollect() { return(GetAreaCommonData(CAREA_SYSTEM, "COLLECT_FLG", false )); }
+function GetPlayerAutoItemCollectLine() { return(GetAreaCommonData(CAREA_SYSTEM, "PLAYER_COLLECT_L", 100 )); }
+function GetPlayerItemCollectRange() { return(GetAreaCommonData(CAREA_SYSTEM, "PLAYER_COLLECT_R", 48 )); }
+// 被弾数
+function GetAllDeathCount() { return(GetAreaCommonData(CAREA_SYSTEM, "AllDeathCount", 0)); }
+//最初のステージかな？
+function IsFirstStage() { return(GetAreaCommonData(CAREA_SYSTEM, "FirstStage", true)); }
+//プレイヤーは誰？
+function GetPlayerType()
+{
+	alternative(GetPlayerReplayName())
+	case("ReimuA",  "ReimuB")  { return(PLAYER_REIMU_A); }
+	case("MarisaA", "MarisaB") { return(PLAYER_MARISA_A); }
+	case("SanaeA",  "SanaeB")  { return(PLAYER_SANAE_A); }
+	others { return(-1); }
+}
+// 機体タイプも知りたい場合はこっち
+function GetPlayerTypeEx()
+{
+	alternative(GetPlayerReplayName())
+	case("ReimuA") { return(PLAYER_REIMU_A); }
+	case("ReimuB") { return(PLAYER_REIMU_B); }
+	case("MarisaA") { return(PLAYER_MARISA_A); }
+	case("MarisaB") { return(PLAYER_MARISA_B); }
+	case("SanaeA") { return(PLAYER_SANAE_A); }
+	case("SanaeB") { return(PLAYER_SANAE_B); }
+	others { return(-1); }
+}
+//えへくと用乱数　リプレイずれ防止の為、ONOFFできる部分の乱数にはコレを使うこと！
+function randEffect(min, max)
+{
+	let tmp = GetAreaCommonData(CAREA_SYSTEM, "R_EFF", 1);
+	tmp = (tmp*214013+2531011)%4294967296;
+	SetAreaCommonData(CAREA_SYSTEM, "R_EFF", tmp);
+	if (max==min) { return(min); }
+	else { return(min+trunc(tmp/256)/16777216*(max-min)); }
+}
+
+
+
+
+// ------ 効果音関連 ------ //
+// 効果音ID
+let sndTtSelect = 0;
+let sndTtCancel = 1;
+let sndTtDecide = 2;
+let sndTtBoonUp = 3;
+let sndTtBoonDown = 4;
+let sndTtPause = 5;
+let sndTtExtend2 = 6;
+let sndTtTaiko01 = 7;
+let sndTtTaiko02 = 8;
+let sndTtScore = 9;
+// 外部から効果音呼び出し
+function CallSoundPackage(sndID)
+{
+	NotifyEventAll(ev_Title_CallSound, sndID);
+}
+function GetSoundScriptID()
+{
+	return(GetAreaCommonData(CAREA_TITLE, "SCRIPT_SOUND", -1));
+}
+
+// ------ 楽曲音関連 ------ //
+task PlayMusic( int_play_num, int_fade_out, int_delay )
+{
+	SetAreaCommonData(CAREA_TITLE, "Music_ID", int_play_num);
+	SetAreaCommonData(CAREA_TITLE, "Music_Fadeout", int_fade_out);
+	SetAreaCommonData(CAREA_TITLE, "Music_Delay", int_delay);
+	loop(3) { yield; }
+	SetAreaCommonData(CAREA_TITLE, "Music_Stop", false);
+}
+task StopMusic()
+{
+	SetAreaCommonData(CAREA_TITLE, "Music_Stop", true);
+}
+task RestartMusic()
+{
+	SetAreaCommonData(CAREA_TITLE, "Music_Stop", false);
+}
+task DeleteMusic()
+{
+	SetAreaCommonData(CAREA_TITLE, "Music_ID", -1);
+}
+
+
+// ------ キーチェック関連 ------ //
+//キーリセットまで待機
+function WaitForResetKey(value)
+{
+	while(GetVirtualKeyState(value) != KEY_FREE) { yield; }
+	SetAreaCommonData(CAREA_TITLE, "MenuKey", -1);
+	SetAreaCommonData(CAREA_TITLE, "MenuHold", 0); 
+}
+function WaitForResetKeyEx(values)
+{
+	loop
+	{
+		let flg = false;
+		ascent(i in 0 .. length(values))
+		{
+			if (GetVirtualKeyState(values[i]) != KEY_FREE) { flg = true; break; }
+		}
+		if (!flg) { break; }
+		yield;
+	}
+	SetAreaCommonData(CAREA_TITLE, "MenuKey", -1);
+	SetAreaCommonData(CAREA_TITLE, "MenuHold", 0); 
+}
+//キーチェック  押しっぱなし時のみディレイ付き
+//check_keys=感知キーを配列で
+function CheckKey_Menu(key_delay, check_keys)
+{
+//	let tmp_flag = Menu_ReDrawFlag; //強制再描画フラグ
+	let key_count = length(check_keys);
+	let key_value = -1;
+	let t = 0;
+	while(key_value == -1)
+	{
+	//	if (Menu_ReDrawFlag != tmp_flag) { break; }
+		if (t >= key_delay)
+		{
+			ascent(i in 0 .. key_count)
+			{
+				if (GetVirtualKeyState(check_keys[i]) == KEY_HOLD) { key_value = check_keys[i]; break; }
+			}
+		}
+		ascent(i in 0 .. key_count)
+		{
+			if (GetVirtualKeyState(check_keys[i]) == KEY_PUSH) { key_value = check_keys[i]; break; }
+		}
+		t++;
+		yield;
+	}
+	SetAreaCommonData(CAREA_TITLE, "MenuKey", -1);
+	SetAreaCommonData(CAREA_TITLE, "MenuHold", 0); 
+	return(key_value);
+}
+// 押しっぱなしで加速するタイプ
+function CheckKey_MenuEx(key_delay, key_delay_short, check_keys)
+{
+	let key_count = length(check_keys);
+
+//	let tmp_flag = Menu_ReDrawFlag; //強制再描画フラグ
+	let before_key = GetAreaCommonData(CAREA_TITLE, "MenuKey", -1);
+	let before_hold = GetAreaCommonData(CAREA_TITLE, "MenuHold", 0);
+	let check_same = false;
+	// 選択中に前回押したキーが含まれているか？
+	ascent(i in 0 .. key_count)
+	{
+		if (check_keys[i] == before_key) { check_same = true; break; }
+	}
+	// 2回目以降は加速
+	if (before_hold < 1) { key_delay_short = key_delay; }
+	
+	let key_value = -1;
+	let t = 0;
+	while(key_value == -1)
+	{
+	//	if (Menu_ReDrawFlag != tmp_flag) { break; }
+		if (t >= key_delay)
+		{
+			ascent(i in 0 .. key_count)
+			{
+				if (GetVirtualKeyState(check_keys[i]) == KEY_HOLD) { key_value = check_keys[i]; break; }
+			}
+		}
+		if (check_same)
+		{
+			if (t >= key_delay_short)
+			{
+				if (GetVirtualKeyState(before_key) == KEY_HOLD) { key_value = before_key; break; }
+			}
+			else if (GetVirtualKeyState(before_key) != KEY_HOLD)
+			{
+				// 離したらリセット
+				check_same = false;
+			}
+		}
+		ascent(i in 0 .. key_count)
+		{
+			if (GetVirtualKeyState(check_keys[i]) == KEY_PUSH) { key_value = check_keys[i]; break; }
+		}
+		t++;
+		yield;
+	}
+	SetAreaCommonData(CAREA_TITLE, "MenuKey", key_value);
+	if (check_same && key_value == before_key) { SetAreaCommonData(CAREA_TITLE, "MenuHold", before_hold+1); }
+	else { SetAreaCommonData(CAREA_TITLE, "MenuHold", 0); }
+	return(key_value);
+}
+
+//6頂点の座標を追加
+function AddImg_Triangle01(obj, base_vc,
+		x1, y1, x2, y2,		//切り取り範囲
+		to_x1, to_y1, to_x2, to_y2	//貼り付け範囲
+	)
+{
+//	let base_vc = ObjPrim_GetVertexCount(obj);
+//	ObjPrim_SetVertexCount(obj, base_vc+6);		//頂点を追加
+	
+	ObjPrim_SetVertexUVT(obj, base_vc+0, x1, y1);
+	ObjPrim_SetVertexUVT(obj, base_vc+1, x1, y2);
+	ObjPrim_SetVertexUVT(obj, base_vc+2, x2, y1);
+	ObjPrim_SetVertexUVT(obj, base_vc+3, x2, y1);
+	ObjPrim_SetVertexUVT(obj, base_vc+4, x1, y2);
+	ObjPrim_SetVertexUVT(obj, base_vc+5, x2, y2);
+
+	ObjPrim_SetVertexPosition(obj, base_vc+0, to_x1, to_y1, 0);
+	ObjPrim_SetVertexPosition(obj, base_vc+1, to_x1, to_y2, 0);
+	ObjPrim_SetVertexPosition(obj, base_vc+2, to_x2, to_y1, 0);
+	ObjPrim_SetVertexPosition(obj, base_vc+3, to_x2, to_y1, 0);
+	ObjPrim_SetVertexPosition(obj, base_vc+4, to_x1, to_y2, 0);
+	ObjPrim_SetVertexPosition(obj, base_vc+5, to_x2, to_y2, 0);
+}
+
+//01の、貼り付け範囲の4点指定版
+function AddImg_Triangle02(obj, base_vc,
+		x1, y1, x2, y2,		//切り取り範囲
+		to_x1, to_y1, to_x2, to_y2, to_x3, to_y3, to_x4, to_y4	//貼り付け範囲
+	)
+{
+//	let base_vc = ObjPrim_GetVertexCount(obj);
+//	ObjPrim_SetVertexCount(obj, base_vc+6);		//頂点を追加
+	
+	ObjPrim_SetVertexUVT(obj, base_vc+0, x1, y1);
+	ObjPrim_SetVertexUVT(obj, base_vc+1, x1, y2);
+	ObjPrim_SetVertexUVT(obj, base_vc+2, x2, y1);
+	ObjPrim_SetVertexUVT(obj, base_vc+3, x2, y1);
+	ObjPrim_SetVertexUVT(obj, base_vc+4, x1, y2);
+	ObjPrim_SetVertexUVT(obj, base_vc+5, x2, y2);
+
+	ObjPrim_SetVertexPosition(obj, base_vc+0, to_x1, to_y1, 0);
+	ObjPrim_SetVertexPosition(obj, base_vc+1, to_x2, to_y2, 0);
+	ObjPrim_SetVertexPosition(obj, base_vc+2, to_x3, to_y3, 0);
+	ObjPrim_SetVertexPosition(obj, base_vc+3, to_x3, to_y3, 0);
+	ObjPrim_SetVertexPosition(obj, base_vc+4, to_x2, to_y2, 0);
+	ObjPrim_SetVertexPosition(obj, base_vc+5, to_x4, to_y4, 0);
+}
+
+//　2点間の距離を取得
+function GetDistance( pos1, pos2 ){
+	return ( (pos2[1]-pos1[1])^2 + (pos2[0]-pos1[0])^2 ) ^ 0.5;
+}
+
+//　pos1 から見た pos2 への角度を取得
+function GetGapAngle( pos1, pos2 ){
+	return atan2( pos2[1]-pos1[1], pos2[0]-pos1[0] );
+}
+
+// 2D座標の回転
+function Rotate2D_X(x, y, angle)
+	{ return( x*cos(angle) - y*sin(angle) ); }
+function Rotate2D_Y(x, y, angle)
+	{ return( x*sin(angle) + y*cos(angle) ); }
+function Rotate2D_XY(x, y, angle)
+{
+	let s = sin(angle);
+	let c = cos(angle);
+	return( [x*c-y*s, x*s+y*c] );
+}
+
+// ------ 実績関連 ------ //
+let ARANK_NONE = 0;
+let ARANK_BRONZE = 1;
+let ARANK_SILVER = 2;
+let ARANK_GOLD = 3;
+let ARANK_RAINBOW = 4;
+let ARANK_BLOOD = 5;
+
+function GetAchievement(id, rank)
+{
+	NotifyEventAll(ev_Title_GetAchievement, [id, rank]);
+}

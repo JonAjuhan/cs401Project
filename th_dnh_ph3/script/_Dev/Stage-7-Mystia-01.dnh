@@ -190,9 +190,6 @@ task TStage {
 	while(!IsCloseScript(bossScript) && GetPlayerState() != STATE_END){
 		yield;
 	}
-	// FadeToBlack(1);
-	// yield;
-	// loop(240){yield;}
 	CloseStgScene();
 	CloseScript(GetOwnScriptID); //
 }
@@ -324,7 +321,7 @@ function TLittleINFairy1(x,y,s,a,shootdel){
 							famx = fx+famr*cos(fama); famy = fy+famr*sin(fama);
 							ObjMove_SetPosition(fam,famx,famy);
 							ObjMove_SetAngle(fam,fama+90*famdir);
-							if((count+shotoff)%gap==0){CreateShotA1(famx,famy,2,fama+90*famdir,PEL_RED+5*j,5);}
+							if((count+shotoff)%gap==0){CreateShotA1(famx,famy,2,fama+90*famdir,ZPEL_RED+5*j,5);}
 							yield;
 						}
 						FamCount--;
@@ -353,7 +350,8 @@ function TLittleINFairy1(x,y,s,a,shootdel){
 		if(!Obj_IsDeleted(fairy)){ //if it was shot down rather than leaving screen
 			DeleteShotInCircle(TYPE_SHOT,TYPE_ITEM,fx,fy,50);
 			// DropItemsSmall(fx,fy);
-			DropItems(fx,fy,[ITEM_POINT,3,15,rand(0,360), ITEM_POWER_S,1,0]);
+			// DropItems(fx,fy,[ITEM_POINT,3,15,rand(0,360), ITEM_POWER_S,1,0]);
+			DropItemsSmaller(fx,fy);
 			Obj_Delete(fairy);
 		}
 	}
@@ -682,10 +680,13 @@ function TKedama1(x,y,s,a,color,life){
 			ascent(i in 0..3){
 				CreateShotA1(x,y,s*(1-0.15*i),rand(0,360), BALL_BLUE,0);
 			}
+
 			alternative(color)
-			case("red"){  DropItems(x,y, [ITEM_POWER_S,1,0] ); }
-			case("blue"){ DropItems(x,y, [ITEM_POINT_S,1,0] ); }
-			others{ DropItems(x,y, [ tern(rand(0,1)<0.5,ITEM_POWER_S,ITEM_POINT_S),1,0] ); }
+			case("red"){  DropItemsSmallest(x,y, I_POWER); }
+			case("blue"){ DropItemsSmallest(x,y, I_POINT); }
+			others{ DropItemsSmallest(x,y, tern(rand(0,1)<0.5,I_POINT,I_POWER)); }
+			
+			
 			Obj_Delete(kd);
 		}
 	}
@@ -693,21 +694,37 @@ function TKedama1(x,y,s,a,color,life){
 }
 
 
+function DropItemsSmallest(x,y,type){
+	DropItemsA1(x,y, type,1,0,0);
+	ItemExplode(x,y,randint(1,2));
+}
+
+function DropItemsSmaller(x,y){
+	let a = rand(0,360);
+	DropItemsA1(x,y,I_POINT,3,15,a);
+	DropItemsA1(x,y,I_POWER,1,0,a);
+	ItemExplode(x,y,3);
+}
+
 function DropItemsSmall(x,y){
 	let a = rand(0,360);
-	DropItems(x,y, [ITEM_POINT,8,20,a,  ITEM_POWER_S,3,8,a] );	
+	DropItemsA1(x,y,I_POINT,8,20,a);
+	DropItemsA1(x,y,I_POWER,3,8,a);
+	ItemExplode(x,y,5);
 }
 function DropItemsLarge(x,y){
 	let a = rand(0,360);
-	DropItems(x,y, [ITEM_POINT  ,8 ,20,a,
-	                ITEM_POINT_S,16,28,a+360/16,
-					ITEM_POWER  ,1 , 0,a ] );
+	DropItemsA1(x,y,I_POINT,8,20,a);
+	DropItemsA1(x,y,I_POINT_S,16,28,a+360/16);
+	DropItemsA1(x,y,I_POWER_L,1,0,a);
+	ItemExplode(x,y,10);
 }
 function DropItemsLifePiece(x,y){
 	let a = rand(0,360);
-	DropItems(x,y, [ITEM_POINT  ,8 ,20,a,
-	                ITEM_POINT_S,16,25,a+360/16,
-					ITEM_1UP_S  ,1 , 0,a ] );
+	DropItemsA1(x,y,I_POINT,8,20,a);
+	DropItemsA1(x,y,I_POINT_S,16,28,a+360/16);
+	DropItemsA1(x,y,I_EXTEND_S,1,0,a);
+	ItemExplode(x,y,10);
 }
 
 

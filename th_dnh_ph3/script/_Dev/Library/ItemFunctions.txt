@@ -1,0 +1,45 @@
+//Functions to interface with item script
+
+
+function CreateItem(type,x,y,x1,y1){
+	NotifyEvent(GetCommonData("ItemScriptID",NULL),EV_SPAWN_ITEM,[type,x,y,x1,y1,0]);
+}
+
+function DropItemsA1(x,y,type,number,radius,angle){
+	let da = 360/number;
+	ascent(i in 0..number){
+		CreateItem(type,x,y,x+radius*cos(angle+i*da),y+radius*sin(angle+i*da));
+	}
+}
+
+
+
+function DropItemsSpellEnd{
+	// DropItems(ex,ey,[ITEM_POINT,16,35, ITEM_POWER_S,8,20, ITEM_1UP_S,1,0]);
+	DropItemsA1(ex,ey,I_POINT,16,35,0);
+	DropItemsA1(ex,ey,I_POWER, 8,20,0);
+	DropItemsA1(ex,ey,I_EXTEND_S, 1,0,0);
+}
+function DropItemsNonspellEnd{
+	// DropItems(ex,ey,[ITEM_POINT,16,35, ITEM_POWER_S,8,20, ITEM_SPELL_S,1,0]);
+	DropItemsA1(ex,ey,I_POINT,16,35,0);
+	DropItemsA1(ex,ey,I_POWER, 8,20,0);
+	DropItemsA1(ex,ey,I_SPELL_S, 1,0,0);
+}
+
+
+function ItemExplode(x,y,n){
+	// let r = max(48, (6.28*n)/360
+	let r = max(48, 48*(360/n)/120);
+	
+	// da = 360/n
+	// r = 48*(da/120)
+	// c = 6.28*r
+	// c/n = k
+	
+	loop(n){
+		let a = rand(0,360);
+		let d = rand(r/2,r);
+		CreateItem(I_CANCEL,x,y,x+d*cos(a),y+d*sin(a));
+	}
+}

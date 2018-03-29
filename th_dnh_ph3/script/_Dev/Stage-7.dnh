@@ -5,7 +5,7 @@
 #Image["./ExRumia(星符「ミッドナイトレヴァリエ」).jpg"]
 
 #include "./Index.txt"
-#BGM["./bgm/bgm - Kid's Festival ~ Innocent Treasures.ogg"] // CC-CGR-loop.ogg"]
+// #BGM["./bgm/bgm - Kid's Festival ~ Innocent Treasures.ogg"] // CC-CGR-loop.ogg"]
 #System["./system/Andi_System.txt"]
 #Background["./system/background/Background_Sky.txt"]
 
@@ -52,9 +52,11 @@ let bossScript;
 
 
 
-task TStage
-{
+task TStage{
 	let dir = GetCurrentScriptDirectory();
+	
+	// SetBGM("Kid's Festival ~ Innocent Treasures",130.969,274);
+	SetBGM("Kid's Festival ~ Innocent Treasures",0,300.5);
 
 	loop(60){yield;}//1秒くらいあれば、コンパイル完了すると思われる。
 	
@@ -204,10 +206,11 @@ function TSampleFairy1(x,y,s,a){
 	ObjMove_SetSpeed(fairy,s);
 	ObjMove_SetAngle(fairy,a);
 	//By doing it this way, you can use ObjMove_Foo on created fairies if you want
-	TDoFairy;
+	Manage;
+	ManageFinalize;
 	return fairy;
 	
-	task TDoFairy{
+	task Manage{
 		wait(30); //delay before starting to shoot
 		let shot; let fx; let fy; let count=0;
 		while(!(ObjEnemy_GetLife(fairy)==0)){
@@ -224,6 +227,15 @@ function TSampleFairy1(x,y,s,a){
 			wait(15); count++; //delay before doing more shots
 		}
 	}
+	
+	task ManageFinalize{
+		while(!Obj_IsDeleted(fairy) && ObjEnemy_GetLife(fairy)>0){yield;}
+		if(!Obj_IsDeleted(fairy)){
+			x = ObjMove_GetX(fairy); y = ObjMove_GetY(fairy);
+			DropItemsSmaller(x,y);
+			Obj_Delete(fairy);
+		}
+	}
 }
 
 
@@ -236,6 +248,7 @@ task TFairy1(x,y,s,a){
 	let col = randint(0,7); //slapdash measure to make it easier to see what they're doing - make each one fire a random color of shots
 	ObjMove_SetSpeed(fairy,s);
 	ObjMove_SetAngle(fairy,a);
+	ManageFinalize;
 	wait(60);
 	let shot; let fx; let fy; let count=0; let off=0; let da=13;
 	while(!(ObjEnemy_GetLife(fairy)==0)){
@@ -250,6 +263,15 @@ task TFairy1(x,y,s,a){
 		}
 		wait(10); off+=da; count++;
 	}
+	
+	task ManageFinalize{
+		while(!Obj_IsDeleted(fairy) && ObjEnemy_GetLife(fairy)>0){yield;}
+		if(!Obj_IsDeleted(fairy)){
+			x = ObjMove_GetX(fairy); y = ObjMove_GetY(fairy);
+			DropItemsSmallest(x,y,I_POWER);
+			Obj_Delete(fairy);
+		}
+	}
 }
 
 
@@ -257,6 +279,7 @@ task TFairy1(x,y,s,a){
 task TFairy2(x,y,s,a,del,pause,s2,a2){
 	let fairy = SpawnFairy(x,y,"blue","PoFV",10,200);
 	Move;
+	ManageFinalize;
 	wait(60);
 	let shot; let fx; let fy; let count=0; let off=0; let da=13;
 	while(!(ObjEnemy_GetLife(fairy)==0)){
@@ -278,6 +301,15 @@ task TFairy2(x,y,s,a,del,pause,s2,a2){
 		ObjMove_SetSpeed(fairy,s2);
 		ObjMove_SetAngle(fairy,a2);
 	}
+	
+	task ManageFinalize{
+		while(!Obj_IsDeleted(fairy) && ObjEnemy_GetLife(fairy)>0){yield;}
+		if(!Obj_IsDeleted(fairy)){
+			x = ObjMove_GetX(fairy); y = ObjMove_GetY(fairy);
+			DropItemsSmall(x,y);
+			Obj_Delete(fairy);
+		}
+	}
 }
 
 
@@ -286,6 +318,7 @@ task TFairy2(x,y,s,a,del,pause,s2,a2){
 task TFairy3(x,y,x1,y1,del,pause,s2,a2){
 	let fairy = SpawnFairy(x,y,"big","PoFV",10,300);
 	Move;
+	ManageFinalize;
 	let shot; let fx; let fy; let count=0; let a;
 
 	wait(del);
@@ -309,6 +342,49 @@ task TFairy3(x,y,x1,y1,del,pause,s2,a2){
 		ObjMove_SetSpeed(fairy,s2);
 		ObjMove_SetAngle(fairy,a2);
 	}
+	
+	task ManageFinalize{
+		while(!Obj_IsDeleted(fairy) && ObjEnemy_GetLife(fairy)>0){yield;}
+		if(!Obj_IsDeleted(fairy)){
+			x = ObjMove_GetX(fairy); y = ObjMove_GetY(fairy);
+			DropItemsLarge(x,y);
+			Obj_Delete(fairy);
+		}
+	}
 }
 
 
+
+
+function DropItemsSmallest(x,y,type){
+	DropItemsA1(x,y, type,1,0,0);
+	ItemExplode(x,y,randint(1,2));
+}
+
+function DropItemsSmaller(x,y){
+	let a = rand(0,360);
+	DropItemsA1(x,y,I_POINT,3,15,a);
+	DropItemsA1(x,y,I_POWER,1,0,a);
+	ItemExplode(x,y,3);
+}
+
+function DropItemsSmall(x,y){
+	let a = rand(0,360);
+	DropItemsA1(x,y,I_POINT,8,20,a);
+	DropItemsA1(x,y,I_POWER,3,8,a);
+	ItemExplode(x,y,5);
+}
+function DropItemsLarge(x,y){
+	let a = rand(0,360);
+	DropItemsA1(x,y,I_POINT,8,20,a);
+	DropItemsA1(x,y,I_POINT_S,16,28,a+360/16);
+	DropItemsA1(x,y,I_POWER_L,1,0,a);
+	ItemExplode(x,y,10);
+}
+function DropItemsLifePiece(x,y){
+	let a = rand(0,360);
+	DropItemsA1(x,y,I_POINT,8,20,a);
+	DropItemsA1(x,y,I_POINT_S,16,28,a+360/16);
+	DropItemsA1(x,y,I_EXTEND_S,1,0,a);
+	ItemExplode(x,y,10);
+}

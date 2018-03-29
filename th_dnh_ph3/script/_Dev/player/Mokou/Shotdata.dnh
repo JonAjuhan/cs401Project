@@ -1,0 +1,77 @@
+shot_image  = "./Shot.png"
+
+ShotData{
+	id = 1 //Standard fire amulet
+	rect = (0, 0, 16, 32)
+	render = ALPHA
+	alpha=205
+	collision = 16
+}
+
+ShotData{
+	id = 2 //Green knife
+	rect = (16, 0, 32, 32)
+	render = ALPHA
+	alpha=205
+	collision = 16
+}
+
+ShotData{
+	id = 3 //Red light shot
+	rect = (32, 0, 64, 32)
+	render = ALPHA
+	alpha=205
+	collision = 16
+}
+
+ShotData{
+	id = 4 //Red oval
+	rect = (64, 0, 80, 32)
+	render = ALPHA
+	alpha=205
+	collision = 16
+}
+
+ShotData{
+	id = 5 //Sun
+	rect = (128, 128, 256, 256)
+	render = ADD_RGB
+	angular_velocity = 10
+	collision = 128					//384
+}
+
+ShotData{
+	id = 6 //Red amulet
+	rect = (0, 32, 16, 48)
+	render = ALPHA
+	alpha=205
+	collision = 16
+}
+
+ShotData{
+	id = 7 //Purple amulet
+	rect = (16, 32, 32, 48)
+	render = ALPHA
+	alpha=205
+	collision = 16
+}
+
+
+
+
+//Glow/fade shots
+ShotData{
+	id = 11 //Standard fire amulet
+	rect = (0, 64, 16, 96)
+	render = ALPHA
+	alpha=205
+	// collision = 16
+}
+
+ShotData{
+	id = 12 //Green knife
+	rect = (16, 64, 32, 96)
+	render = ALPHA
+	alpha=205
+	// collision = 16
+}

@@ -1,0 +1,242 @@
+#include "./../Library/selibrary.txt"
+
+let CANCEL_CLOSE = 0;
+let CANCEL_SELECTLAST = 1;
+let CANCEL_CONFIRMLAST = 2;
+let CANCEL_DISABLE = 3;
+let CANCEL_SELECTFIRST = 4;
+
+//from Book of Star Mythology
+function MakeChoiceWindow(bx, by, select_texts, startindex, canceltype, t_priority){
+	let baseWidth = GetStgFrameWidth;
+	let baseHeight = 96;
+	let baseX = GetStgFrameLeft;
+	let baseY = GetStgFrameTop + GetStgFrameHeight - baseHeight;
+	let baseTextX = baseX+16;
+	let baseTextY = baseY+10;
+	
+	let select_count = length(select_texts);
+	let selectValue = startindex;
+	SetCommonData("SelectIndex",selectValue);
+	
+	let objSelects = [];
+	ascent(i in 0..select_count){
+		let obj = MakeMenuText(bx+2*i,by,i,select_texts[i],t_priority);		
+		objSelects = objSelects ~ [obj];
+	}
+	SetCommonData("obj",objSelects);
+	
+	ascent(i in 0..8){
+		let tmp = (i+1)/8;
+		ascent(i in 0..length(objSelects)){
+			ObjRender_SetAlpha(objSelects[i], tmp*255);
+		}
+		yield;
+	}
+	loop{
+		if(IsKey(VK_UP)) { 
+			SE_Play(se_select,100);
+			selectValue = (selectValue+select_count-1)%select_count;
+			SetCommonData("SelectIndex",selectValue);
+		}
+		else if(IsKey(VK_DOWN)) { 
+			SE_Play(se_select,100);
+			selectValue = (selectValue+1)%select_count; 
+			SetCommonData("SelectIndex",selectValue);
+		}
+		else if(IsKeyPush(VK_OK)) { 
+			// SE_Play(se_confirm,100); //do this in each option so some can be disabled
+			break; 
+		}
+		else if(IsKeyPush(VK_CANCEL)) {
+			SetCommonData("CancelIndex",selectValue);
+			if(canceltype!=3){ SE_Play(se_cancel,100); }
+			else{ SE_Play(se_invalid,100); }
+			alternative(canceltype)
+			case(CANCEL_CLOSE){ selectValue = -1; break; } //close menu
+			case(CANCEL_SELECTFIRST){ selectValue = 0; }
+			case(CANCEL_SELECTLAST){ selectValue = select_count-1; } //select last option
+			case(CANCEL_CONFIRMLAST){ //select last option, then confirm it
+				if(selectValue != select_count-1){ selectValue = select_count-1; }
+				else{ break; }
+			}
+			case(3){ } //disable cancel
+		}
+		
+		if(startindex!=-1){
+			ascent(i in 0..length(objSelects)){
+				if (selectValue == i) { ObjRender_SetColor(objSelects[i], 255, 255, 255); }
+				else { ObjRender_SetColor(objSelects[i], 128, 128, 128); }
+			}
+		}
+		yield;
+	}
+	
+	FadeOut;
+	task FadeOut{
+		descent(i in 0..8){
+			let tmp = (i+1)/8;
+			ascent(j in 0..length(objSelects)){
+				ObjRender_SetAlpha(objSelects[j], tmp*255);
+			}
+			yield;
+		}
+		ascent(i in 0..length(objSelects)){Obj_Delete(objSelects[i]);}
+	}
+	
+	return( selectValue );
+}
+
+//for text alongside choice window
+function MakeTextWindow(bx, by, select_texts, startindex, canceltype, t_priority){
+	task Manage{
+		MakeChoiceWindow(bx, by, select_texts, startindex, canceltype, t_priority);
+	}
+	Manage;
+	return GetCommonData("obj",NULL);
+}
+
+
+
+
+
+function MakeNumSelectWindow(bx, by, parentindex, lower,upper,incr,def, t_priority){
+	let baseWidth = GetStgFrameWidth;
+	let baseHeight = 96;
+	let baseX = GetStgFrameLeft;
+	let baseY = GetStgFrameTop + GetStgFrameHeight - baseHeight;
+	let baseTextX = baseX+16;
+	let baseTextY = baseY+10;
+	
+	let selectValue = def;	
+	let i = parentindex;
+	
+	let obj = MakeMenuText(bx,by,parentindex,itoa(def),t_priority);
+	ObjRender_SetColor(obj, 255, 255, 255);
+		
+	ascent(i in 0 .. 8){
+		let tmp = (i+1)/8;
+		ObjRender_SetAlpha(obj, tmp*255);
+		yield;
+	}
+	loop{
+		if(IsKey(VK_LEFT)) { 
+			selectValue = max(lower,min((selectValue-incr),upper));
+			ObjText_SetText(obj,itoa(selectValue));
+			if(GetCommonData("HOLDTIME_"~itoa(VK_LEFT), 0)==0 || (lower<selectValue&&selectValue<upper)){
+				SE_Play(se_select,80);
+			}
+		}
+		else if(IsKey(VK_RIGHT)) { 
+			selectValue = max(lower,min((selectValue+incr),upper)); 
+			ObjText_SetText(obj,itoa(selectValue));
+			if(GetCommonData("HOLDTIME_"~itoa(VK_RIGHT), 0)==0 || (lower<selectValue&&selectValue<upper)){
+				SE_Play(se_select,80);
+			}
+		}
+		else if (IsKeyPush(VK_OK)){ 
+			SE_Play(se_confirm,100);
+			break; 
+		}		
+		else if (IsKeyPush(VK_CANCEL)){
+			SE_Play(se_cancel,100);
+			SetCommonData("CancelValue",selectValue);
+			selectValue = def;
+			break;
+		}
+		yield;
+	}
+	
+	FadeOut;
+	task FadeOut{
+		descent(i in 0 .. 8){
+			let tmp = (i+1)/8;
+			ObjRender_SetAlpha(obj, tmp*255);
+			yield;
+		}
+		Obj_Delete(obj);
+	}
+
+	return( selectValue );
+}
+
+function IsKey(vk){
+	alternative(GetVirtualKeyState(vk))
+	case(KEY_PUSH){return true;}
+	case(KEY_FREE,KEY_PULL){return false;}
+	case(KEY_HOLD){
+		let hold = GetCommonData("HOLDTIME_"~itoa(vk), 0);
+		if(hold==0){ KeyHoldListener(vk); }
+		return (hold > 15 && hold%3==0);
+	}
+	//Increment counter as long as key is held.
+	//Uses common data so same task keeps working
+	//for repeated calls of parent function
+	task KeyHoldListener(vk){
+		let hold = 0;
+		while(GetVirtualKeyState(vk)==KEY_HOLD){
+			hold++;
+			SetCommonData("HOLDTIME_"~itoa(vk), hold);
+			yield;
+		}
+		SetCommonData("HOLDTIME_"~itoa(vk), 0)
+	}
+}
+function IsKeyPush(vk){ return (GetVirtualKeyState(vk)==KEY_PUSH); }
+
+
+
+function MakeMenuText(bx, by, index, text, t_priority){
+	let baseWidth = GetStgFrameWidth;
+	let baseHeight = 96;
+	let baseX = GetStgFrameLeft;
+	let baseY = GetStgFrameTop + GetStgFrameHeight - baseHeight;
+	let baseTextX = baseX+16;
+	let baseTextY = baseY+10;
+	
+	let i = index;
+	
+	let obj = ObjText_Create();
+	ObjRender_SetPosition(obj, bx, by+i*24, 0);
+	Obj_SetRenderPriorityI(obj, t_priority+1);
+	ObjText_SetFontType(obj, "MS Gothic");
+	ObjText_SetFontSize(obj, 20);
+	ObjText_SetFontBold(obj, false);
+	ObjText_SetLinePitch(obj, 8);
+	ObjText_SetSidePitch(obj, -1);
+	ObjText_SetMaxWidth(obj, GetScreenWidth-32);
+	ObjText_SetFontBorderWidth(obj, 1);
+	ObjText_SetFontBorderColor(obj, 64, 64, 64);
+	ObjText_SetFontBorderType(obj, BORDER_SHADOW);
+	ObjText_SetText(obj, text);
+	
+	ObjText_SetAutoTransCenter(obj, false);
+	ObjText_SetTransCenter(obj, 0, 32);
+	// ObjRender_SetColor(obj, 255, 255, 255);
+	ObjRender_SetColor(obj, 128, 128, 128);
+	
+	return obj;
+}
+
+
+
+
+
+
+
+function ShowChoicesDisable(bx, by, disable_indexes, canceltype, t_priority){
+	let texts = [];
+	ascent(i in 0..length(disable_indexes)){
+		if(disable_indexes[i]){ texts=texts~["-DISABLE-"]; }
+		else{ texts=texts~[""]; }
+	}
+	let objSelects = MakeTextWindow(bx,by,texts,-1,canceltype,t_priority);
+	ascent(i in 0..length(objSelects)){
+		let obj = objSelects[i];
+		ObjRender_SetColor(obj, 128,0,0);
+		ObjText_SetSidePitch(obj, 4);
+		ObjText_SetFontBold(obj,true);
+		ObjText_SetFontSize(obj,14);
+		ObjRender_SetY(obj,ObjRender_GetY(obj)+5);
+	}
+}

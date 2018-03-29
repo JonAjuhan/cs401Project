@@ -1,7 +1,7 @@
 #include "./FairyFunctions.txt"
 #include "./EneAnim.dnh"
 //Modified from Kirbio+Lunarethic's Lethal Passageway
-
+//I think it's originally by Python? not sure
 
 
 
@@ -144,6 +144,7 @@ function SpawnFamiliarA1(x,y,color,life){
 	FFlash(x,y);
 	let fam = SpawnFairy(x,y,color,"INFam",13,life);
 	Obj_SetRenderPriorityI(fam,39);
+	Obj_SetValue(fam,"IsFam",true);
 	return fam;
 }
 function SpawnFamiliarB1(x,y,color,life){
@@ -154,6 +155,7 @@ function SpawnFamiliarB1(x,y,color,life){
 	Obj_SetValue(fam,"IsIntersectionEnable",false);
 	ObjRender_SetScaleXYZ(fam,0.75,0.75,1);
 	Obj_SetRenderPriorityI(fam,39);
+	Obj_SetValue(fam,"IsFam",true);
 	return fam;
 }
 
@@ -164,6 +166,7 @@ function SpawnFamiliarA2(x,y,color,life,collision){
 	let fam = SpawnFairy(x,y,color,"INFam",collision,life);
 	Obj_SetValue(fam,"FamColor",color);
 	Obj_SetRenderPriorityI(fam,39);
+	Obj_SetValue(fam,"IsFam",true);
 	return fam;
 }
 function SpawnFamiliarB2(x,y,color,life,collision){
@@ -175,6 +178,7 @@ function SpawnFamiliarB2(x,y,color,life,collision){
 	Obj_SetValue(fam,"FamColor",color);
 	ObjRender_SetScaleXYZ(fam,0.75,0.75,1);
 	Obj_SetRenderPriorityI(fam,39);
+	Obj_SetValue(fam,"IsFam",true);
 	return fam;
 }
 //IN-style, collision only when unfocused
@@ -187,6 +191,7 @@ function SpawnFamiliarC2(x,y,color,life,collision){
 	Obj_SetValue(fam,"FamColor",color);
 	ObjRender_SetScaleXYZ(fam,0.75,0.75,1);
 	Obj_SetRenderPriorityI(fam,39);
+	Obj_SetValue(fam,"IsFam",true);
 	Manage;
 	return fam;
 	task Manage{

@@ -1,26 +1,25 @@
-let ITEM_CANCEL = 3;
+#include "./ItemConst.txt"
+#include "./../Library/EventList.txt"
+#include "./../Library/selibrary.txt"
 
-let ITEM_SCORE_M = ITEM_POINT+500;
-let ITEM_SCORE_S = ITEM_POINT_S+500;
-
-let ITEM_POWER_M = ITEM_POWER_S+500;
-let ITEM_POWER_L = ITEM_POWER+500;
-
-let ITEM_EXTEND = ITEM_1UP+500;
-let ITEM_LIFEPIECE = ITEM_1UP_S+500;
-
-let ITEM_SPELLEXTEND = ITEM_SPELL+500;
-let ITEM_SPELLPIECE = ITEM_SPELL_S+500;
-
+let CSD = GetCurrentScriptDirectory();
 
 @Initialize{
+	SetCommonData("ItemScriptID",GetOwnScriptID);
 	SetDefaultBonusItemEnable(false);
-	SetItemRenderPriorityI(39); //below shots
-	let dir = GetCurrentScriptDirectory();
-	LoadItemData(dir~"item_data.txt");
+	SetItemRenderPriorityI(39); //just below shots
+	LoadItemData(CSD~"item_data.txt");
+	
+	let PoC = GetStgFrameHeight*0.25;
+	SetPlayerAutoItemCollectLine(PoC);
+	SetCommonData("PointOfCollection",PoC);
 }
 
-@MainLoop{}
+let r = 48; //64
+@MainLoop{
+	CollectItemsInCircle(GetPlayerX,GetPlayerY,r);
+	yield;
+}
 
 @Event{
 	alternative(GetEventType())
@@ -30,40 +29,216 @@ let ITEM_SPELLPIECE = ITEM_SPELL_S+500;
 			// TItem(ITEM_CANCEL, pos[0], pos[1]);
 		// }
 	// }
+	
+	case(EV_SPAWN_ITEM){
+		let args = GetEventArgument(0);
+		let type = args[0];
+		let x = args[1];
+		let y = args[2];
+		let x1 = x; let y1 = y;
+		if(length(args)>4){
+			x1 = args[3];
+			y1 = args[4];
+		}
+		let item = TItem(type,x,y,x1,y1);
+		SetScriptResult(item);
+	}
+	
 	case(EV_GET_ITEM){
 		let type = GetEventArgument(0);
 		let item = GetEventArgument(1);
+		ItemScore(type,item);
+		
+		let volume = 60;
+		
 		alternative(type)
-		case(ITEM_SCORE_M){
-			AddScore(10*trunc(GetCommonData("PointValue",10000+100*GetGraze)/10 ));
+		case(I_EXTEND){   SetPlayerLife(GetPlayerLife+1); }
+		case(I_EXTEND_S){ SetPlayerLife(GetPlayerLife+0.2); }
+		case(I_SPELL){    SetPlayerSpell(GetPlayerSpell+1); }
+		case(I_SPELL_S){  SetPlayerSpell(GetPlayerSpell+0.2); }
+		
+		case(I_POWER){   SetPlayerPower(min(GetPlayerPower +  5, 400)); }
+		case(I_POWER_L){ SetPlayerPower(min(GetPlayerPower + 40, 400)); }
+		case(I_POWER_F){ SetPlayerPower(400); }
+		
+		case(I_CANCEL){ 
+			// SetCommonData("PointValue",GetCommonData("PointValue",10000+10*GetGraze)+10); //too much!
+			let gauge = GetCommonData("ThirdEyeGauge",0);
+			// gauge = gauge+0.0025*(1-(min(gauge,1))^0.5);
+			gauge = gauge+0.0025*5*(1-(min(gauge,1))^0.5);
+			SetCommonData("ThirdEyeGauge",min(gauge, GetCommonData("ThirdEyeMax",1.1)));
+			if(gauge>=1){
+				SetCommonData("PointValue",GetCommonData("PointValue",10000+10*GetGraze)+10); //too much!
+			}
 		}
-		case(ITEM_SCORE_S){
-			AddScore(10*trunc(GetCommonData("PointValue",10000+100*GetGraze)/160 ));
-		}
-		case(ITEM_POWER_M){
-			
-		}
-		case(ITEM_CANCEL){
-			// SetPlayerSpell(GetPlayerSpell() + 1);
-			// PlaySE("./
-		}
+		
+		SE_Play(se_item,volume);
+		
 	}
 	case(EV_DELETE_SHOT_TO_ITEM){
 		let shot = GetEventArgument(0);
 		let pos = GetEventArgument(1);
-		if(!(pos[0]==0 && pos[1]==0)){
-			let item = TItem(ITEM_CANCEL, pos[0], pos[1]);
-			// CollectItemsByType(ITEM_CANCEL);
-			CollectItemsInCircle(pos[0],pos[1],1);
-		}
+		let x = pos[0]; let y = pos[1];
+		if(x==0 && y==0){ return; }
+		// let item = TItem(I_CANCEL,x,y,x,y);
+		// ObjItem_SetDefinedMovePatternA1(item, ITEM_MOVE_TOPLAYER);
+		let a = 270+rand(-45,45);
+		TItem(I_CANCEL,x,y,x+64*cos(a),y+64*sin(a));
 	}
 }
 
-function TItem(type, x, y){
+function TItem(type, x, y, x1, y1){
 	if(x==0 && y==0){return NULL;}
-	// return NULL;
-	let obj = CreateItemU2(type, x, y, x,y, 100);
-	// Obj_SetRenderPriorityI(obj, 60);
+	let obj = CreateItemU2(type, x, y, x1, y1, 0);
 	Obj_SetRenderPriorityI(obj, 39);
+	ObjItem_SetRenderScoreEnable(obj,false);
+	
+	alternative(type)
+	case(I_CANCEL){
+		DelCollectItem(obj,30);
+	}
+	case(I_POINT,I_POINT_S){
+		KeepFullValue(obj);
+	}
+	
 	return obj;
 }
+
+task DelCollectItem(item,del){
+	wait(del);
+	ObjItem_SetDefinedMovePatternA1(item, ITEM_MOVE_TOPLAYER);
+	while(!Obj_IsDeleted(item)){
+		alternative(GetPlayerState)
+		case(STATE_DOWN,STATE_END){
+			ObjItem_SetDefinedMovePatternA1(item, ITEM_MOVE_DOWN);
+			return;
+		}
+		others{ yield; }
+	}
+}
+
+task KeepFullValue(item){
+	Obj_SetValue(item,"KeepFullValue",true);
+	let PoC = GetCommonData("PointOfCollection",GetStgFrameHeight/4);
+	while(ObjMove_GetY(item) < PoC && GetPlayerY > PoC){
+		yield;
+	}
+	if(ObjMove_GetY(item) >= PoC){
+		Obj_SetValue(item,"KeepFullValue",false);
+	}
+}
+
+
+task ItemScore(type,item){
+	let x = ObjMove_GetX(item);
+	let y = ObjMove_GetY(item);
+	
+	let score = 0;
+	let display = false;
+	let highlight = false;
+	let r = 255; let g = 255; let b = 255;
+	
+	alternative(type)
+	//Point items - score varies with where collected,
+	//from 100% at PoC to 50% at bottom of screen
+	//Max value increases with graze
+	case(I_POINT){
+		display = true;
+		score = 10*trunc(GetCommonData("PointValue",10000+10*GetGraze)/10);
+		let PoC = GetCommonData("PointOfCollection",GetStgFrameHeight/4);
+		if(y > PoC && !Obj_GetValueD(item,"KeepFullValue",false)){
+			let sy = GetStgFrameHeight-PoC;
+			let coef = 1-0.5*(sy-y)/sy;
+			score = 10*trunc(score/10*coef);
+		}else{ highlight=true; }
+	}
+	case(I_POINT_S){
+		// display = true;
+		score = 10*trunc(GetCommonData("PointValue",10000+10*GetGraze)/160);
+		let PoC = GetCommonData("PointOfCollection",GetStgFrameHeight/4);
+		if(y > PoC && !Obj_GetValueD(item,"KeepFullValue",false)){
+			let sy = GetStgFrameHeight-PoC;
+			let coef = 1-0.5*(sy-y)/sy;
+			score = 10*trunc(score/10*coef);
+		}else{ highlight=true; }
+	}
+	//Power items - score increases if already at full power
+	case(I_POWER){
+		if(GetPlayerPower >= 400){
+			score = 500;
+		}else{
+			score = 100;
+		}
+	}
+	case(I_POWER_L){
+		if(GetPlayerPower >= 400){
+			score = 5000;
+		}else{
+			score = 1000;
+		}
+	}
+	case(I_POWER_F){
+		if(GetPlayerPower >= 400){
+			score = 5000;
+		}else{
+			score = 1000;
+		}
+	}
+	
+	//Shot cancel items - score increases with point value (experimental)
+	case(I_CANCEL){
+		// score = 100;
+		score = 10*trunc(GetCommonData("PointValue",10000+10*GetGraze)/1000);
+		display = false;
+	}
+	
+	//Other items - static value for now
+	case(I_EXTEND){   score = 10000; display=false; }
+	case(I_EXTEND_S){ score = 1000; display=false; }
+	case(I_SPELL){    score = 10000; display=false; }
+	case(I_SPELL_S){  score = 1000; display=false; }
+	others{ score=10; display=false; }
+	
+	
+	AddScore(score);
+	
+	if(display){
+		let obj = ObjText_Create;
+		ObjText_SetFontType(obj,"THSpatial");
+		ObjText_SetFontSize(obj,12); //8
+		ObjText_SetMaxWidth(obj,30);
+		ObjText_SetHorizontalAlignment(obj,ALIGNMENT_CENTER);
+		Obj_SetRenderPriorityI(obj,39.9);
+		
+		ObjText_SetFontColorBottom(obj,r,g,b);
+		if(highlight){
+			ObjText_SetFontColorTop(obj,255,255,64);
+		}else{
+			ObjText_SetFontColorTop(obj,255,255,255);			
+		}
+		
+		
+		ObjRender_SetPosition(obj,x-15,y,0);
+		ObjText_SetText(obj,itoa(score));
+
+		let alpha = 128;
+		let dalpha = alpha/20;
+		ObjRender_SetAlpha(obj,alpha);
+		
+		descent(i in 0..10){
+			ObjRender_SetAngleX(obj,9*i);
+			yield;
+		}
+		descent(i in 0..20){
+			ObjRender_SetAlpha(obj,dalpha*i);
+			yield;
+		}
+		Obj_Delete(obj);
+		
+		
+	}
+	
+}
+
+
+function wait(n){loop(n){yield;}}

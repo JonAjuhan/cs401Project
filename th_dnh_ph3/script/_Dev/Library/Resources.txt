@@ -74,12 +74,8 @@ function isnull(obj){
 
 
 //Rand, alt, and sign functions
-
-//TODO! fix undefined behavior for 0/0
-//divide by the absolute value - fast
 function sign(n){ return floor(n/((|n|)+1)) - floor(-n/((|-n|)+1)); }
-// function sign(n){ return trunc(n/((|n|)+0.0001^2)); } 
-// function sign(n){ return n/(|n|); } //undefined behavior for n=0
+// function sign(n){ return n/(|n|); } //undefined for n=0
 
 function altSign(i) { return 2*(i%2-0.5); }  //Alternates between 1 and -1
 function randSign() { return (round(rand(0,1)))*2-1; }  //Returns 1 or -1
@@ -88,7 +84,8 @@ function randint(min,max){ return trunc(rand(min,max+1)); }  //Random integer fr
 function randarr(arr){ return arr[randint(0,length(arr)-1)]; }  //random value from an array
 
 //For when zero messes things up
-function tononzero(num,def){if(num==0){return def;}else{return num;}}
+function tononzero(num){if(num==0){return 1;}else{return num;}}
+function tononzeroD(num,def){if(num==0){return def;}else{return num;}}
 function signNZ(n){ alternative(n)   //guaranteed nonzero
 	case(0){ return (round(rand(0,1)))*2-1; }
 	others { return n/(|n|); }
@@ -132,6 +129,7 @@ function GetAngularDistance(angle1, angle2){
 function rotate(x,y,a) { return [x*cos(a)-y*sin(a), x*sin(a)+y*cos(a)]; }
 function rotateC(x,y,cx,cy,theta) { return [cx+(x-cx)*cos(theta)-(y-cy)*sin(theta), cy+(x-cx)*sin(theta)+(y-cy)*cos(theta)]; }
 
+//Interpolation
 //Lerp blerp derp - (bi)linear interpolation by Andi
 function lerp(start,end,t){return (1-t)*start+t*end;}
 function blerp(x0,y0,x1,y1,t){return [lerp(x0,x1,t),lerp(y0,y1,t)];}
@@ -141,6 +139,15 @@ function bqerp(x0,y0,x1,y1,x2,y2,t){return [qerp(x0,x1,x2,t),qerp(y0,y1,y2,t)];}
 //Lerp between two angles, taking the shortest path
 function lerpa(starta,enda,t){return starta+t*getadist(starta,enda);}
 
+//
+function hermite(start,end,distance,angle,t){
+	real scale = t / 1;
+	real h1 = 2 * scale ^ 3 - 3 * scale ^ 2 + 1;
+	real h2 = -2 * scale ^ 3 + 3 * scale ^ 2;
+	real h3 = scale ^ 3 - 2 * scale ^ 2 + scale;
+	real h4 = scale ^ 3 - scale ^ 2;
+	return h1 * start + h2 * end + h3 * distance + h4 * angle;
+}
 
 
 
@@ -377,7 +384,7 @@ function CreateDummyShot(x,y){
 	let shot = CreateShotA1(x,y,0,0,0,0);
 	ObjShot_SetSpellResist(shot,true);
 	ObjShot_SetAutoDelete(shot,false);
-	Obj_SetValue(shot,"IsDummy",true);
+	Obj_SetValue(shot,FLAG_DUMMY,true);
 	Obj_SetValue(shot,"NoInfluence",true);
 	return shot;
 }

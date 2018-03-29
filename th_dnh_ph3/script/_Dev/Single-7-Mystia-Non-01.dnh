@@ -107,7 +107,11 @@ task TShoot{
 	while(!Obj_IsDeleted(boss) && !finishing){
 		
 		ascent(k in 0..2){
-			ObjMove_SetDestAtWeight(boss,cx+randSign*rand(0,cx*0.75),rand(60,cy*0.9), gap*0.66,20);
+			// ObjMove_SetDestAtWeight(boss,cx+randSign*rand(0,cx*0.75),rand(60,cy*0.9), gap*0.66,20);
+			let x = cx+randSign*rand(0,cx*0.75);
+			let y = rand(60,cy*0.9);
+			ObjMove_SetDestAtBezierF(boss,x,y, (ex+x)/2,y, gap*0.66);
+			
 			wait(gap/2);
 			if(finishing){DeleteShotAll(TYPE_ALL,TYPE_ITEM);return;}
 			dir = -altSign(k);

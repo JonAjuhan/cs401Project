@@ -13,14 +13,16 @@ function rootdir {
 
 
 let root = rootdir;
-let dirroot = root~"./";
-let dirgizmo = root~"./Gizmo's Touhou Boss Sprite Library/spriteimg/";
-let dirimg = root~"./img/";
-let direffect = root~"./img/Effect/";
-let dirportrait = root~"./img/Portrait/";
-let dirlib = root~"./Library/";
-let dirse = root~"./se/";
-let dirsys = root~"./system/";
-let dirbgm = root~"./bgm/";
-let dirdat = root~"./data/";
-let dirshot = root~"./shot/";
+let dirroot = root~"/";
+let dirstage = root~"/";
+let dirgizmo = root~"/Gizmo's Touhou Boss Sprite Library/spriteimg/";
+let dirimg = root~"/img/";
+let direffect = root~"/img/Effect/";
+let dirportrait = root~"/img/Portrait/";
+let dirlib = root~"/Library/";
+let dirse = root~"/se/";
+let dirsys = root~"/system/";
+let dirbgm = root~"/bgm/";
+let dirdat = root~"/data/";
+let dirshot = root~"/shot/";
+let dirplayer = root~"/player/";
