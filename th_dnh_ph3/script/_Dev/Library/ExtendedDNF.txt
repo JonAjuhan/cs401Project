@@ -242,7 +242,7 @@ function OR_SetScale(obj,scale){
 	let sclx = ObjRender_GetScaleX(obj);
 	let scly = ObjRender_GetScaleY(obj);
 	let ratio = sclx/scly;
-	ObjRender_SetScaleXYZ(obj,scale*ratio,scale/ratio,ObjRender_GetScaleZ);
+	ObjRender_SetScaleXYZ(obj,scale*ratio,scale/ratio,ObjRender_GetScaleZ(obj));
 	Obj_SetValue(RENDER_SCALE,scale);
 	return scale;
 }
