@@ -4,6 +4,8 @@ let FLAG_CHECKINFO = "Check";
 let FLAG_DUMMY = "IsDummy";
 let FLAG_XYMOVE = "UseXYSystem";
 let FLAG_INTERSECTION = "IsIntersectionEnable";
+let FLAG_SPELLRESIST = "IsSpellResist";
+let SHOT_GRAPHIC = "Graphic";
 
 let MOVE_SPEED = "Speed"; //for consistency
 let MOVE_ACCEL = "Acceleration";
@@ -22,34 +24,56 @@ let RENDER_COLOR = "Color";
 let RENDER_SCALE = "Scale"; //"overall" scale
 
 
-
-
-
-
-//todo: make everything use this
-function O_GetInfo(obj,info){
-	return Obj_GetValueD(obj,info,NULL);
-}
-function O_GetInfoD(obj,info,def){
-	return Obj_GetValueD(obj,info,def);
-}
-function O_SetInfo(obj,info,val){
-	Obj_SetValue(obj,info,val);
-}
-
 function O_SetProperty(obj,info,val){
+	if(val==NO_CHANGE){return;} //todo: set to current value if it can be determined
 	alternative(info)
+	case(FLAG_INTERSECTION){ Obj_SetValue(obj,FLAG_INTERSECTION,val); }
+	case(FLAG_SPELLRESIST){ Obj_SetValue(obj,FLAG_INTERSECTION,val); }
 	case(MOVE_SPEED){ OM_SetSpeed(obj,val); }
+	case(MOVE_ACCEL){ OM_SetAcceleration(obj,val); }
+	case(MOVE_MAXSPEED){ OM_SetMaxSpeed(obj,val); }
+	case(MOVE_JERK){ OM_SetJerk(obj,val); }
+	case(MOVE_MAXACCEL){ OM_SetMaxAcceleration(obj,val); }
+	case(MOVE_ANGLE){ OM_SetAngle(obj,val); }
+	case(MOVE_ANGV){ OM_SetAngularVelocity(obj,val); }
+	case(MOVE_ANGACCEL){ OM_SetAngularAcceleration(obj,val); }
+	case(MOVE_MAXANGV){ OM_SetMaxAngularVelocity(obj,val); }
+	case(RENDER_ALPHA){ OR_SetAlpha(obj,val); }
+	case(RENDER_COLOR){ OR_SetColor(obj,val); }
+	case(RENDER_SCALE){ OR_SetScale(obj,val); }
+	
 }
 
+// function O_GetPropertyD(obj,info,def){
 	// alternative(info)
-	// case(INFO_SPEED){ return ObjMove_GetSpeed(obj); } //todo
-	// case(INFO_ACCELERATION){ return OM_GetAcceleration(obj); }
-	// case(INFO_MAXSPEED){ return OM_GetMaxSpeed(obj); }
-	// case(INFO_JERK){ return OM_GetJerk(obj); }
-	// case(INFO_MAXSPEED){ return OM_GetMaxSpeed(obj); }
-	// case(INFO_ANGLE){ return ObjMove_GetAngle(obj); } //todo
-	// case(INFO_ANGV){ return OM_GetAngularVelocity(obj); }
+	// case(FLAG_INTERSECTION){ Obj_GetValueD(obj,FLAG_INTERSECTION,def); }
+	// case(FLAG_SPELLRESIST){ Obj_SetValue(obj,FLAG_INTERSECTION,def); }
+	// case(MOVE_SPEED){ OM_GetSpeed(obj,def); }
+	// case(MOVE_ACCEL){ OM_SetAcceleration(obj,def); }
+	// case(MOVE_MAXSPEED){ OM_SetMaxSpeed(obj,def); }
+	// case(MOVE_JERK){ OM_SetJerk(obj,def); }
+	// case(MOVE_MAXACCEL){ OM_SetMaxAcceleration(obj,def); }
+	// case(MOVE_ANGLE){ OM_SetAngle(obj,def); }
+	// case(MOVE_ANGV){ OM_SetAngularVelocity(obj,def); }
+	// case(MOVE_ANGACCEL){ OM_SetAngularAcceleration(obj,def); }
+	// case(MOVE_MAXANGV){ OM_SetMaxAngularVelocity(obj,def); }
+	// case(RENDER_ALPHA){ OR_SetAlpha(obj,def); }
+	// case(RENDER_COLOR){ OR_SetColor(obj,def); }
+	// case(RENDER_SCALE){ OR_SetScale(obj,def); }
+	
+// }
+
+
+
+
+task Obj_AddValuePatternA1(obj,del,key,s){
+	let v = Obj_GetValue(obj,key);
+	while(Obj_GetValue(obj,key)==v){
+		v+=s;
+		Obj_SetValue(obj,key,v);
+		yield;
+	}
+}
 	
 
 
@@ -195,12 +219,20 @@ task OR_SetScaleAtFrame(obj,sx1,sy1,time){
 	}
 }
 
-
+//set "overall" scale - needs testing
+function OR_SetScale(obj,scale){
+	let sclx = ObjRender_GetScaleX(obj);
+	let scly = ObjRender_GetScaleY(obj);
+	let ratio = sclx/scly;
+	ObjRender_SetScaleXYZ(obj,scale*ratio,scale/ratio,ObjRender_GetScaleZ);
+	Obj_SetValue(RENDER_SCALE,scale);
+	return scale;
+}
 
 
 
 task Obj_FadeDelete(obj) {
-	let a0   = Obj_GetValueD(obj,"Alpha",255);
+	let a0   = Obj_GetValueD(obj,RENDER_ALPHA,255);
 	let time = Obj_GetValueD(obj,"FadeTime",60);
 	let dA   = a0/time;
 	descent(i in 0..time){
@@ -466,29 +498,29 @@ task OR_SetAngularVelocityXYZ(obj,dxa,dya,dza){
 
 function OM_SetSpeed(obj,val){
 	ObjMove_SetSpeed(obj,val);
-	Obj_SetValue(obj,"Speed",val);
+	Obj_SetValue(obj,MOVE_SPEED,val);
 }
 function OM_GetSpeed(obj){return ObjMove_GetSpeed(obj);}
 function OM_SetAngle(obj,val){
 	ObjMove_SetAngle(obj,val);
-	Obj_SetValue(obj,"Angle",val);
+	Obj_SetValue(obj,MOVE_ANGLE,val);
 }
 function OM_GetAngle(obj){return ObjMove_GetAngle(obj);}
 function OM_SetAcceleration(obj,val){
 	ObjMove_SetAcceleration(obj,val);
-	Obj_SetValue(obj,"Acceleration",val);
+	Obj_SetValue(obj,MOVE_ACCEL,val);
 }
-function OM_GetAcceleration(obj){return Obj_GetValueD(obj,"Acceleration",0);}
+function OM_GetAcceleration(obj){return Obj_GetValueD(obj,MOVE_ACCEL,0);}
 function OM_SetMaxSpeed(obj,val){
 	ObjMove_SetMaxSpeed(obj,val);
-	Obj_SetValue(obj,"MaxSpeed",val);
+	Obj_SetValue(obj,MOVE_MAXSPEED,val);
 }
-function OM_GetMaxSpeed(obj){return Obj_GetValueD(obj,"MaxSpeed",99);}
+function OM_GetMaxSpeed(obj){return Obj_GetValueD(obj,MOVE_MAXSPEED,99);}
 function OM_SetAngularVelocity(obj,val){
 	ObjMove_SetAngularVelocity(obj,val);
-	Obj_SetValue(obj,"AngularVelocity",val);
+	Obj_SetValue(obj,MOVE_ANGV,val);
 }
-function OM_GetAngularVelocity(obj){return Obj_GetValueD(obj,"AngularVelocity",0);}
+function OM_GetAngularVelocity(obj){return Obj_GetValueD(obj,MOVE_ANGV,0);}
 
 
 
@@ -503,8 +535,8 @@ function OM_AddPatternA1(obj,del,spd,ang){
 	Manage;
 	task Manage{
 		wait(del);
-		Obj_SetValue(obj,"Speed",spd);
-		Obj_SetValue(obj,"Angle",ang);
+		Obj_SetValue(obj,MOVE_SPEED,spd);
+		Obj_SetValue(obj,MOVE_ANGLE,ang);
 	}
 }
 
@@ -519,11 +551,11 @@ function OM_AddPatternA2(obj,del,spd,ang,acc,angv,mspd){
 	Manage;
 	task Manage{
 		wait(del);
-		Obj_SetValue(obj,"Speed",spd);
-		Obj_SetValue(obj,"Angle",ang);
-		Obj_SetValue(obj,"Acceleration",acc);
-		Obj_SetValue(obj,"AngularVelocity",angv);
-		Obj_SetValue(obj,"MaxSpeed",mspd);
+		Obj_SetValue(obj,MOVE_SPEED,spd);
+		Obj_SetValue(obj,MOVE_ANGLE,ang);
+		Obj_SetValue(obj,MOVE_ACCEL,acc);
+		Obj_SetValue(obj,MOVE_ANGV,angv);
+		Obj_SetValue(obj,MOVE_MAXSPEED,mspd);
 	}
 }
 
@@ -539,12 +571,12 @@ function OM_AddPatternA3(obj,del,spd,ang,acc,angv,mspd,graph){
 	Manage;
 	task Manage{
 		wait(del);
-		Obj_SetValue(obj,"Speed",spd);
-		Obj_SetValue(obj,"Angle",ang);
-		Obj_SetValue(obj,"Acceleration",acc);
-		Obj_SetValue(obj,"AngularVelocity",angv);
-		Obj_SetValue(obj,"MaxSpeed",mspd);
-		Obj_SetValue(obj,"Graphic",graph);
+		Obj_SetValue(obj,MOVE_SPEED,spd);
+		Obj_SetValue(obj,MOVE_ANGLE,ang);
+		Obj_SetValue(obj,MOVE_ACCEL,acc);
+		Obj_SetValue(obj,MOVE_ANGV,angv);
+		Obj_SetValue(obj,MOVE_MAXSPEED,mspd);
+		Obj_SetValue(obj,SHOT_GRAPHIC,graph);
 	}
 }
 
@@ -568,15 +600,15 @@ function OM_AddPatternA5(obj,del,spd,ang,acc,angv,mspd,jerk,macc,anga,mangv){
 	Manage;
 	task Manage{
 		wait(del);
-		Obj_SetValue(obj,"Speed",spd);
-		Obj_SetValue(obj,"Angle",ang);
-		Obj_SetValue(obj,"Acceleration",acc);
-		Obj_SetValue(obj,"AngularVelocity",angv);
-		Obj_SetValue(obj,"MaxSpeed",mspd);
-		Obj_SetValue(obj,"Jerk",jerk);
-		Obj_SetValue(obj,"MaxAcceleration",macc);
-		Obj_SetValue(obj,"AngularAcceleration",anga);
-		Obj_SetValue(obj,"MaxAngularVelocity",mangv);
+		Obj_SetValue(obj,MOVE_SPEED,spd);
+		Obj_SetValue(obj,MOVE_ANGLE,ang);
+		Obj_SetValue(obj,MOVE_ACCEL,acc);
+		Obj_SetValue(obj,MOVE_ANGV,angv);
+		Obj_SetValue(obj,MOVE_MAXSPEED,mspd);
+		Obj_SetValue(obj,MOVE_JERK,jerk);
+		Obj_SetValue(obj,MOVE_MAXACCEL,macc);
+		Obj_SetValue(obj,MOVE_ANGACCEL,anga);
+		Obj_SetValue(obj,MOVE_MAXANGV,mangv);
 		OM_SetJerk(obj,jerk);
 		OM_SetAngularAcceleration(obj,anga);
 	}

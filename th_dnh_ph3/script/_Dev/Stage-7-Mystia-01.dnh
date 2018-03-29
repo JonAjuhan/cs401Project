@@ -190,9 +190,6 @@ task TStage {
 	while(!IsCloseScript(bossScript) && GetPlayerState() != STATE_END){
 		yield;
 	}
-	// FadeToBlack(1);
-	// yield;
-	// loop(240){yield;}
 	CloseStgScene();
 	CloseScript(GetOwnScriptID); //
 }

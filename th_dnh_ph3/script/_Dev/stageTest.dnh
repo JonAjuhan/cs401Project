@@ -30,7 +30,12 @@ let bossBGM;
 @Initialize
 {
 	SetCommonData("IsStage",true);
+	InitPlural;
 	TStage();
+}
+task InitPlural{
+	wait(1200); //give it time to compile
+	StartScript(bossScript); //will wait for event before starting boss
 }
 
 @MainLoop{
@@ -176,11 +181,14 @@ task TStage {
 		yield;
 	}
 	//Start the boss plural
-	StartScript(bossScript);
-	SetBGM("Deaf to All But the Song",70.7, 141.38);
+	// StartScript(bossScript);
+	NotifyEvent(bossScript,EV_START_BOSS,[]);	
+	// SetBGM("Deaf to All But the Song",70.7, 141.38); //now done in dialogue single
 	while(!IsCloseScript(bossScript) && GetPlayerState() != STATE_END){
 		yield;
 	}
+	CloseStgScene();
+	CloseScript(GetOwnScriptID); //
 	loop(240){yield;}
 	CloseStgScene();
 	CloseScript(GetOwnScriptID); //
