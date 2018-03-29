@@ -39,29 +39,29 @@ function O_SetProperty(obj,info,val){
 	case(MOVE_ANGACCEL){ OM_SetAngularAcceleration(obj,val); }
 	case(MOVE_MAXANGV){ OM_SetMaxAngularVelocity(obj,val); }
 	case(RENDER_ALPHA){ OR_SetAlpha(obj,val); }
-	case(RENDER_COLOR){ OR_SetColor(obj,val); }
+	case(RENDER_COLOR){ OR_SetColor(obj,val[0],val[1],val[2]); }
 	case(RENDER_SCALE){ OR_SetScale(obj,val); }
 	
 }
 
-// function O_GetPropertyD(obj,info,def){
-	// alternative(info)
-	// case(FLAG_INTERSECTION){ Obj_GetValueD(obj,FLAG_INTERSECTION,def); }
-	// case(FLAG_SPELLRESIST){ Obj_SetValue(obj,FLAG_INTERSECTION,def); }
-	// case(MOVE_SPEED){ OM_GetSpeed(obj,def); }
-	// case(MOVE_ACCEL){ OM_SetAcceleration(obj,def); }
-	// case(MOVE_MAXSPEED){ OM_SetMaxSpeed(obj,def); }
-	// case(MOVE_JERK){ OM_SetJerk(obj,def); }
-	// case(MOVE_MAXACCEL){ OM_SetMaxAcceleration(obj,def); }
-	// case(MOVE_ANGLE){ OM_SetAngle(obj,def); }
-	// case(MOVE_ANGV){ OM_SetAngularVelocity(obj,def); }
-	// case(MOVE_ANGACCEL){ OM_SetAngularAcceleration(obj,def); }
-	// case(MOVE_MAXANGV){ OM_SetMaxAngularVelocity(obj,def); }
-	// case(RENDER_ALPHA){ OR_SetAlpha(obj,def); }
-	// case(RENDER_COLOR){ OR_SetColor(obj,def); }
-	// case(RENDER_SCALE){ OR_SetScale(obj,def); }
+function O_GetPropertyD(obj,info,def){
+	alternative(info)
+	case(FLAG_INTERSECTION){ Obj_GetValueD(obj,FLAG_INTERSECTION,def); }
+	case(FLAG_SPELLRESIST){ Obj_SetValue(obj,FLAG_INTERSECTION,def); }
+	case(MOVE_SPEED){ OM_GetSpeed(obj,def); }
+	case(MOVE_ACCEL){ OM_SetAcceleration(obj,def); }
+	case(MOVE_MAXSPEED){ OM_SetMaxSpeed(obj,def); }
+	case(MOVE_JERK){ OM_SetJerk(obj,def); }
+	case(MOVE_MAXACCEL){ OM_SetMaxAcceleration(obj,def); }
+	case(MOVE_ANGLE){ OM_SetAngle(obj,def); }
+	case(MOVE_ANGV){ OM_SetAngularVelocity(obj,def); }
+	case(MOVE_ANGACCEL){ OM_SetAngularAcceleration(obj,def); }
+	case(MOVE_MAXANGV){ OM_SetMaxAngularVelocity(obj,def); }
+	case(RENDER_ALPHA){ OR_SetAlpha(obj,def); }
+	case(RENDER_COLOR){ OR_SetColor(obj,def); }
+	case(RENDER_SCALE){ OR_SetScale(obj,def); }
 	
-// }
+}
 
 
 
@@ -69,6 +69,16 @@ function O_SetProperty(obj,info,val){
 task Obj_AddValuePatternA1(obj,del,key,s){
 	let v = Obj_GetValue(obj,key);
 	while(Obj_GetValue(obj,key)==v){
+		v+=s;
+		Obj_SetValue(obj,key,v);
+		yield;
+	}
+}
+
+task Obj_AddValuePatternA2(obj,del,key,s,a,m){
+	let v = Obj_GetValue(obj,key);
+	while(Obj_GetValue(obj,key)==v){
+		s+=a;
 		v+=s;
 		Obj_SetValue(obj,key,v);
 		yield;
