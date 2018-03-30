@@ -10,6 +10,13 @@ let GetCenterX = GetStgFrameWidth/2;
 let GetCenterY = GetStgFrameHeight/2;
 
 
+let boss=NULL; let player = GetPlayerObjectID;
+let frame=0;
+let objScene = GetEnemyBossSceneObjectID();
+let finishing = false; 
+
+SetAutoDeleteObject(true); //everything should be set to this
+
 
 
 //(384, 448)
@@ -19,22 +26,46 @@ let ex=0; let ey=0; let px=0; let py=0;
 // let swdx=0; let swdy = 0;
 
 
-//Undocumented object types - more testing needed
-let OBJ_REAL = -1; let OBJ_ARRAY = -2;
+//Primitive types
+let OBJ_INT = 9;
+let OBJ_REAL = 2; let OBJ_NUMBER = 2;
+let OBJ_BOOL = 2+10;
+let OBJ_CHAR = -1;
+let OBJ_ARRAY = 10;
+let OBJ_STRING = 10+1;
+
+function O_GetType(obj){
+	alternative(Obj_GetType(obj))
+	case(OBJ_INT){return OBJ_NUMBER;}
+	case(OBJ_REAL){
+		if(ToString(obj)=="true"||ToString(obj)=="false"){return OBJ_BOOL;}
+		else{ return OBJ_NUMBER; }
+	}
+	case(OBJ_ARRAY){
+		if(length(obj) > 0){
+			let contents = O_GetType(obj[0]); //recursive
+			if(contents==OBJ_CHAR){return OBJ_STRING;}
+			else{return OBJ_ARRAY;}
+		}else{return OBJ_ARRAY;}
+	}
+	case(OBJ_CHAR){return OBJ_CHAR;}
+	case(OBJ_SHOT){return OBJ_SHOT;} //106
+	case(OBJ_ENEMY,OBJ_ENEMY_BOSS){return OBJ_ENEMY;}
+	others{return Obj_GetType(obj);}
+}
+
+//To detect when some other task has messed with the thing a task is using
+function SetHash(obj,k){
+	let h = itoa(ObjRender_GetX(obj))~itoa(ObjRender_GetY(obj))~itoa(frame%90+10); //~tost(Obj_GetValueD(obj,k,randint(10,99)));
+	Obj_SetValue(obj,k~"_hash",h);
+	return h;
+}
+function GetHash(obj,k){
+	return Obj_GetValueD(obj,k~"_hash",itoa(frame%90+10));
+}
 
 
 
-
-
-let boss=NULL; let player = GetPlayerObjectID;
-let frame=0;
-let objScene = GetEnemyBossSceneObjectID();
-let finishing = false; 
-
-
-
-//everything should be set to this
-SetAutoDeleteObject(true);
 
 
 
@@ -100,12 +131,6 @@ function inrange(num, bound0,bound1){
 
 function isapproaching(s,a,ms){
 	return ( s*a < ms*a );
-	// return ( s < (|ms|)*sign(a) );
-	// let dir = sign(a);
-	// let bound = ms;
-	// let side = -dir;
-	// let currside = sign(ms-s);
-	// return ( dir==currside || s==0&&ms!=0 );
 }
 
 
@@ -177,6 +202,16 @@ function atost(n){
 		return tost(n);
 	}
 } 
+
+//null value for unknown types - use O_GetType or provide type directly
+function GetNullValue(type){
+	alternative(type)
+	case(OBJ_NUMBER){return NULL;}
+	case(OBJ_ARRAY){return [];}
+	case(OBJ_STRING){return "";}
+	others{return NULL;}
+}
+
 
 
 //Aliases emulating other conventions

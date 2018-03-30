@@ -116,12 +116,12 @@ function SetBossBlur(blur){
 			}
 			Obj_SetValue(boss,"anim_"~type,frames);
 		}
-		Obj_SetValue(boss,"IsIntersectionEnable",!blur);
+		Obj_SetValue(boss,FLAG_INTERSECTION,!blur);
 		// IsBossIntersectionEnable = !blur;
 		return frames;
 	}
 	else{
-		Obj_SetValue(boss,"IsIntersectionEnable",!blur);
+		Obj_SetValue(boss,FLAG_INTERSECTION,!blur);	
 		// IsBossIntersectionEnable = !blur;
 		if(blur){
 			ObjRender_SetAlpha(boss,64);
@@ -131,7 +131,7 @@ function SetBossBlur(blur){
 			ObjRender_SetBlendType(obj, BLEND_ADD_ARGB);
 			task TFollow{
 				let i=0;
-				while(!Obj_GetValueD(boss,"IsIntersectionEnable",true) && !Obj_IsDeleted(obj)) {
+				while(!Obj_GetValueD(boss,FLAG_INTERSECTION,true) && !Obj_IsDeleted(obj)) {
 					ObjRender_SetPosition(obj, ex, ey, 0);
 					ObjRender_SetAngleZ(obj, i);
 					i++; yield;
@@ -148,11 +148,11 @@ function SetBossBlur(blur){
 	}
 }
 
-// let IsBossIntersectionEnable = true;
 function SetBossHitbox(boss,ex,ey){
-	if(Obj_GetValueD(boss,"IsIntersectionEnable",true)){
-		ObjEnemy_SetIntersectionCircleToShot(boss, ex, ey, 32);
-		ObjEnemy_SetIntersectionCircleToPlayer(boss, ex, ey, 24);
+	if(Obj_GetValueD(boss,FLAG_INTERSECTION,true)){
+		let s = OR_GetScale(boss);
+		ObjEnemy_SetIntersectionCircleToShot(  boss, ex, ey, 24*s); //32
+		ObjEnemy_SetIntersectionCircleToPlayer(boss, ex, ey, 16*s); //24
 	}
 }
 
@@ -160,7 +160,7 @@ task TSpellImmune{
 	let wasIntersection;
 	while(!Obj_IsDeleted(boss)){
 		while(!IsPlayerSpellActive){yield;}
-		wasIntersection = Obj_GetValueD(boss,"IsIntersectionEnable",true);
+		wasIntersection = Obj_GetValueD(boss,FLAG_INTERSECTION,true);
 		SetBossBlur(true);
 		while(IsPlayerSpellActive && !GetCommonData("PlayerSpellAttackEnd",false)){yield;}
 		SetBossBlur(!wasIntersection);
@@ -205,8 +205,8 @@ let MOVE_PLAYERBIAS	= 999902;	//	[MOVE_PLAYERBIAS,xbias,ybias]
 let MOVE_NEAR		= 999910;	//  [MOVE_NEAR,maxrad]
 let MOVE_FAR		= 999911;	//	[MOVE_FAR, minrad]
 let MOVE_PNLSPACE	= 999912;	//	[MOVE_PNLSPACE, personalspace]
-// let MOVE_SPEED		= 999913;	//	[MOVE_SPEED,   spd] 			(*incompatible with MOVE_MAXSPEED)
-// let MOVE_MAXSPEED	= 999914;	//	[MOVE_MAXSPEED,spd] 			(*incompatible with MOVE_SPEED)
+let MOVE_ATSPEED	= 999913;	//	[MOVE_SPEED,   spd] 			(*incompatible with MOVE_MAXSPEED)
+let MOVE_LIMITSPEED	= 999914;	//	[MOVE_MAXSPEED,spd] 			(*incompatible with MOVE_SPEED)
 let MOVE_SMOOTH		= 999915;	//	[MOVE_SMOOTH,smoothness]
 let MOVE_WEIGHT		= 999916;	//TODO
 

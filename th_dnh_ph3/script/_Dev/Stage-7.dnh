@@ -14,18 +14,30 @@
 //Some test fairy patterns
 #include "./Library/FairyPatterns.dnh"
 
-let bossScript;
+let bossScript; let stageBGM; let bossBGM;
 
 @Loading{
 	//Preload the boss plural
 	bossScript = LoadScriptInThread(GetCurrentScriptDirectory~"./Plural-Test.dnh");
+
+	stageBGM = "Kid's Festival ~ Innocent Treasures";
+	LoadSound(csd~"bgm/bgm -"~stageBGM~".ogg");
+
+	bossBGM = "Kid's Festival ~ Innocent Treasures";
+	LoadSound(csd~"bgm/bgm -"~bossBGM~".ogg");
+	
+	SetCommonData("InitialPlayerPower",200);
 }
 
 @Initialize
 {
 	SetCommonData("IsStage",true);
-	if(noPackage){SetDifficultyD(EXTRA);}
+	InitPlural;
 	TStage();
+}
+task InitPlural{
+	wait(1200); //give it time to compile
+	StartScript(bossScript); //will wait for event before starting boss
 }
 
 @MainLoop{
@@ -56,7 +68,7 @@ task TStage{
 	let dir = GetCurrentScriptDirectory();
 	
 	// SetBGM("Kid's Festival ~ Innocent Treasures",130.969,274);
-	SetBGM("Kid's Festival ~ Innocent Treasures",0,300.5);
+	SetBGM(stageBGM,0,300.5);
 
 	loop(60){yield;}//1秒くらいあれば、コンパイル完了すると思われる。
 	
@@ -163,7 +175,9 @@ task TStage{
 		yield;
 	}
 	//Start the boss plural
-	StartScript(bossScript);
+	SetBGM(stageBGM,0,300.5);
+	// StartScript(bossScript);
+	NotifyEvent(bossScript,EV_START_BOSS,[]);
 	while(!IsCloseScript(bossScript) && GetPlayerState() != STATE_END)
 	{
 		yield;

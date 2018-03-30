@@ -37,7 +37,7 @@ function ObjAnim_SetFacing(objID,dir){
 	ObjMove_SetAngle(objID,90+90*sign(dir));
 	if(dir<0){LastDirection="Left";}else{LastDirection="Right";}
 	if(dir>0){Obj_SetValue(objID,"FaceDir","left");}else{Obj_SetValue(objID,"FaceDir","right");}
-	ObjRender_SetScaleX(objID, sign(dir)*fl);
+	ObjRender_SetScaleX(objID, (|ObjRender_GetScaleX(objID)|)*sign(dir)*fl);
 	hardcorelolihentai((|dir|));
 	//ObjMove_SetSpeed(objID,ObjMove_GetSpeed(objID)+0.1);
 	task hardcorelolihentai(dur){
@@ -46,7 +46,7 @@ function ObjAnim_SetFacing(objID,dir){
 			ObjMove_SetAngle(objID,90+90*sign(dir));
 			if(dir<0){LastDirection="Left";}else{LastDirection="Right";}
 			if(dir>0){Obj_SetValue(objID,"FaceDir","left");}else{Obj_SetValue(objID,"FaceDir","right");}
-			ObjRender_SetScaleX(objID, sign(dir)*fl);			
+			ObjRender_SetScaleX(objID, (|ObjRender_GetScaleX(objID)|)*sign(dir)*fl);			
 		}
 		//ObjMove_SetSpeed(objID,ObjMove_GetSpeed(objID)-0.1);
 		Obj_DeleteValue(objID,"FaceDir");
@@ -142,8 +142,8 @@ task ObjAnim_StartAnimationA1(objID, bob, bobspeed){
 			}
 		}
 		
-		if(CheckDirectionAL1(objID, "right")){ObjRender_SetScaleXYZ(objID, 1-2*fl, 1, 1)}
-		if(CheckDirectionAL1(objID, "left")){ObjRender_SetScaleXYZ(objID, -1+2*fl, 1, 1)}
+		if(CheckDirectionAL1(objID, "right")){ObjRender_SetScaleXYZ(objID,( 1-2*fl)*OR_GetScale(objID), 1*OR_GetScale(objID), 1)}
+		if(CheckDirectionAL1(objID, "left")){ObjRender_SetScaleXYZ(objID, (-1+2*fl)*OR_GetScale(objID), 1*OR_GetScale(objID), 1)}
 		
 			
 		if(anim_type==1){ //Moving

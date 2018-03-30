@@ -53,7 +53,7 @@ task TPlural {
 	
 	ObjEnemyBossScene_Regist(obj);
 	
-	//wait for singles to end
+	//wait for boss scene to end
 	while(!Obj_IsDeleted(obj)){yield;}
 	CloseScript(GetOwnScriptID());
 	

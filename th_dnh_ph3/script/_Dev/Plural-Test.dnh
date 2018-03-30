@@ -8,11 +8,16 @@
 #System["./system/Andi_System.txt"]
 #Background["./system/background/Background_Sky.txt"]
 
+let hold = true;
 
 @Loading {
 }
 
 @Event{
+	alternative(GetEventType())
+	case(EV_START_BOSS) {
+		hold = false;
+	}
 }
 
 @Initialize{
@@ -32,9 +37,14 @@ task TPlural {
 	ObjEnemyBossScene_Add(obj,0,dir~"Single-7-01.dnh");
 	ObjEnemyBossScene_Add(obj,1,dir~"Single-7-02.dnh");
 	ObjEnemyBossScene_Add(obj,2,dir~"Single-7-03.dnh");
+	ObjEnemyBossScene_Add(obj,3,dir~"Single-7-04.dnh");
 	
 	
 	ObjEnemyBossScene_LoadInThread(obj);
+	
+	if(noStage){hold=false;}
+	while(hold){yield;}
+	
 	ObjEnemyBossScene_Regist(obj);
 	
 	//wait for plural to end
