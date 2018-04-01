@@ -52,15 +52,15 @@ let FIRE           = 331;    // |8:|~.~|	-Fireballs
 let NOTE_TSUKU     = 339;    // |8:|~.~|	-Tsukumo music notes
 let NOTE_REST      = 347;    // |8:|~.~|	-Tsukumo music rests
 let ORB            = 355;    // |8:|~.~|	-Large glowing orbs
-let ARROW          = 363;    // |8:|~~~|	-Arrow shots                   [!ORANGE]
+let ARROW          = 363;    // |8:|~~~|	-Arrow shots
 //------------------------------|==|---|  
 let ZPEL           = 371;    // |FP|~~$|	-ZUN pellets
-let TWIN           = 387;    // |8x|*.~|	-PC98-style twin needle shots  [BLACK<-!ORANGE]
+let TWIN           = 387;    // |8*|*.~|	-PC98-style twin needle shots  [BLACK<-!ORANGE]
 let RSS            = 420;    // |8.|~.?|	-RSS "suicide" bullets
 let DPEL           = 428;    // |8`|~~~|	-Default pellets
 let DSTAR          = 436;    // |8`|~~?|	-Default stars
 let SSS            = 445;    // |8.|~.~|	-Shining Shooting Star-like 4-pointed stars
-let FLOWDOT        = 453;    // |F*|*.~|	-Shining Shooting Star-like 4-pointed stars
+let FLOWDOT        = 453;    // |F*|*.~|	-Flower dots (inverted stardots)
 //------------------------------|==|---|  
 let LAS            = 1001;   // |FP|~~~|	-Straight lasers
 let LAS_C          = 1017;   // |FP|~~~|	-Curve lasers
