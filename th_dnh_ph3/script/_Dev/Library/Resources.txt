@@ -111,6 +111,9 @@ function sign(n){ return floor(n/((|n|)+1)) - floor(-n/((|-n|)+1)); }
 function altSign(i) { return 2*(i%2-0.5); }  //Alternates between 1 and -1
 function randSign() { return (round(rand(0,1)))*2-1; }  //Returns 1 or -1
 
+// function altRange(i,a,b){let r=b-a; i%=r; i+=a; return i;}
+function altRange(i,a,b){ return i%(round(b-a)+1)+a; }
+
 function randint(min,max){ return trunc(rand(min,max+1)); }  //Random integer from a..b inclusive
 function randarr(arr){ return arr[randint(0,length(arr)-1)]; }  //random value from an array
 
@@ -225,9 +228,7 @@ function csc(n) { return 1/sin(n); }
 function cot(n) { return 1/tan(n); }
 
 function mean(arr){
-	let n=length(arr); let total=0;
-	ascent(i in 0..n){total+=arr[i];}
-	return total/n;
+	let n=length(arr); let total=0; ascent(i in 0..n){total+=arr[i];} return total/n;
 }
 
 //Check if an array contains the value, and if so, return its index - linear search
@@ -266,6 +267,36 @@ function IsAngleInRange(ang, bound0,bound1){
 
 
 
+//Andi
+//Find the distance a shot will travel in a given number of frames
+function ProjectDist(s,acc,mspd,frames){
+	let t1=frames; let t2=0;
+	if(s+acc*frames > mspd){
+		let t1 = (mspd-s)/acc;  //time in which acceleration applies
+		let t2 = frames-t1;	    //time in which mspd has been reached
+	}
+	return s*t1+0.5*acc*(t1^2) + mspd*t2;
+}
+//Find the time it will take for a shot to travel a given distance
+function ProjectFrame(s,acc,mspd,dist){
+	// if(acc<0){acc*=-1; let tmp=mspd; mspd=s; s=tmp;} //INACCURATE if dist1>dist
+	let t1 = (|2*(mspd-s)/acc|)^0.5;  //time to accelerate to mspd
+	let dist1 = (| s*t1 + 0.5*acc*t1^2 |);  //total distance after accelerating to mspd
+	let dist2 = dist-dist1; //how far we over/undershot
+	if(dist1 < dist){   //undershot
+		let t2 = ( -s + (|s^2 - 4*(|acc|)*(-dist2)|)^0.5 )/(|2*acc|);
+		return t1+t2;
+	}
+	else{                   //overshot
+		let t2 = (|dist2/mspd|);
+		return t1-t2;
+	}
+}
+
+
+
+
+
 
 
 function isCoordOffScreen(x,y) {
@@ -298,10 +329,16 @@ function frombool(bl){if(bl){return 1;}else{return 0;}}
 
 
 
-function CatchInfiniteLoop{
+
+
+//When repeatedly attempting to do something, e.g. place a shot some distance away from the player,
+//and it might have no chance of success, e.g. everywhere in the radius is too close to the player,
+//call this in the loop to break out after a hundred tries
+//without needing to bother keeping track yourself.
+function CatchInfiniteLoop(maxtries){
 	let tries = GetCommonData("Tries",0);
 	if(tries==0){ TReset; }
-	tries++; if(tries>100){break;}
+	tries++; if(tries>maxtries){SetCommonData("Tries",0);break;}
 	task TReset{ yield; SetCommonData("Tries",0); }
 }
 
@@ -350,47 +387,76 @@ function noPackage{return GetHighestScriptType!="Package"; }
 
 /////////////////////////////////////////////////////////
 
+let LFT = 999900; let TOP = 999901; let RGT = 999902; let BTM = 999903; let NON = 999904; let CLIP = 999910;
 
-//Bounce a shot just once
+//Bounce a shot/something just once
 //Use this repeatedly if you want to do something when it bounces
-function bounce(shot) {
-	let x = ObjMove_GetX(shot); let y = ObjMove_GetY(shot);
+function bounce(obj) {
+	let x = ObjMove_GetX(obj); let y = ObjMove_GetY(obj);
 	if(y<sy && y>0 && x>0 && x<sx){return false;}
-	let a = ObjMove_GetAngle(shot);
+	let a = ObjMove_GetAngle(obj);
 	if(x<0||x>sx) { a=reflect(a,90); }
 	if(y<0||y>sy) { a=reflect(a,0 ); }
-	ObjMove_SetAngle(shot,a);
+	ObjMove_SetAngle(obj,a);
 	return true;
 }
 //Again, use this repeatedly to do something when it wraps
-function wrap(shot) {
-	let x = ObjMove_GetX(shot); let y = ObjMove_GetY(shot);
+function wrap(obj) {
+	let x = ObjMove_GetX(obj); let y = ObjMove_GetY(obj);
 	if(y<sy && y>0 && x>0 && x<sx){return false;}	
-	if(x<0||x>sx){ObjMove_SetX(shot,cx+(cx-x));}
-	if(y<0||y>sy){ObjMove_SetY(shot,cy+(cy-y));}
+	if(x<0||x>sx){ObjMove_SetX(obj,cx+(cx-x));}
+	if(y<0||y>sy){ObjMove_SetY(obj,cy+(cy-y));}
 	return true;
 }
 
+
+function wrappos(x,y){
+	while(x>sx){x-=sx;} while(x<0){x+=sx;}
+	while(y>sy){y-=sy;} while(y<0){y+=sy;}
+	return [x,y];
+}
+function wraprange(val,lower,upper){
+	if(upper<lower){let tmp=lower; lower=upper; upper=tmp;}
+	let dv = upper-lower;
+	while(val<lower){val+=dv;}
+	while(val>upper){val-=dv;}
+}
+
+
+
+
 //Same deal for if you only want it to bounce off certain walls
-function bounceW(shot,walls) {
-	let x = ObjMove_GetX(shot); let y = ObjMove_GetY(shot);
+function bounceW(obj,walls) {
+	let x = ObjMove_GetX(obj); let y = ObjMove_GetY(obj);
 	if(y<sy && y>0 && x>0 && x<sx){return false;}
-	let lft=checkarr(walls,0)!=-1; let top = checkarr(walls,1)!=-1; let rgt = checkarr(walls,2)!=-1; let btm = checkarr(walls,3)!=-1;
-	let angle = ObjMove_GetAngle(shot);
-	let speed = ObjMove_GetSpeed(shot);
-	let vx = cos(angle)*speed;
-	let vy = sin(angle)*speed;
-	if(x<=0 &&lft) { vx*=-1; }
-	if(y<=0 &&top) { vy*=-1; }
-	if(x>=sx&&rgt) { vx*=-1; }
-	if(y>=sy&&btm) { vy*=-1; }
-	ObjMove_AddPatternB1(shot,0,vx,vy);
+	
+	let lft=false; let top=false; let rgt=false; let btm=false;
+	ascent(i in 0..length(walls)){alternative(walls[i])case(LFT){lft=true;}case(TOP){top=true;}case(RGT){rgt=true;}case(BTM){btm=true;} }
+	
+	// let lft=checkarr(walls,0)!=-1; let top = checkarr(walls,1)!=-1; let rgt = checkarr(walls,2)!=-1; let btm = checkarr(walls,3)!=-1;
+	
+	let a = ObjMove_GetAngle(obj);
+	if((lft&&x<0)||(rgt&&x>sx)) { a=reflect(a,90); }
+	if((top&&y<0)||(btm&&y>sy)) { a=reflect(a,0 ); }
+	ObjMove_SetAngle(obj,a);
+	// let speed = ObjMove_GetSpeed(obj);
+	// let vx = cos(angle)*speed;
+	// let vy = sin(angle)*speed;
+	// if(x<=0 &&lft) { vx*=-1; }
+	// if(y<=0 &&top) { vy*=-1; }
+	// if(x>=sx&&rgt) { vx*=-1; }
+	// if(y>=sy&&btm) { vy*=-1; }
+	// ObjMove_AddPatternB1(obj,0,vx,vy);
 	return true;
 }
 function wrapW(shot,walls) {
 	let x = ObjMove_GetX(shot); let y = ObjMove_GetY(shot);
 	if(y<sy && y>0 && x>0 && x<sx){return false;}
-	let lft=checkarr(walls,0)!=-1; let top = checkarr(walls,1)!=-1; let rgt = checkarr(walls,2)!=-1; let btm = checkarr(walls,3)!=-1;
+	
+	let lft=false; let top=false; let rgt=false; let btm=false;
+	ascent(i in 0..length(walls)){alternative(walls[i])case(LFT){lft=true;}case(TOP){top=true;}case(RGT){rgt=true;}case(BTM){btm=true;} }
+	
+	// let lft=checkarr(walls,0)!=-1; let top = checkarr(walls,1)!=-1; let rgt = checkarr(walls,2)!=-1; let btm = checkarr(walls,3)!=-1;
 	if(x<=0 &&lft) { ObjMove_SetX(shot,sx); }
 	if(y<=0 &&top) { ObjMove_SetX(shot,sy); }
 	if(x>=sx&&rgt) { ObjMove_SetY(shot, 0); }
@@ -423,6 +489,8 @@ function CreateDummyShot(x,y){
 	Obj_SetValue(shot,"NoInfluence",true);
 	return shot;
 }
+
+
 
 //Darkness1/Blargel - Makes an object/shot/laser turn until it points at a given point
 //Doesn't loop by itself, keep calling it

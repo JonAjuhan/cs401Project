@@ -442,6 +442,14 @@ function OR_GetScale(obj){
 }
 
 
+function OR_GetX(obj){return ObjRender_GetX(obj);}
+function OR_GetY(obj){return ObjRender_GetY(obj);}
+function OR_SetX(obj,v){ObjRender_SetX(obj,v);}
+function OR_SetY(obj,v){ObjRender_SetY(obj,v);}
+
+
+
+
 
 task Obj_FadeDelete(obj) {
 	let a0   = Obj_GetValueD(obj,RENDER_ALPHA,255);
@@ -857,6 +865,12 @@ function OM_AddPatternB2(obj,del,xspd,yspd,xacc,yacc,xmspd,ymspd){
 }
 
 
+function OM_GetX(obj){return ObjMove_GetX(obj);}
+function OM_GetY(obj){return ObjMove_GetY(obj);}
+function OM_GetA(obj){return ObjMove_GetAngle(obj);}
+function OM_SetX(obj,v){ObjMove_SetX(obj,v);}
+function OM_SetY(obj,v){ObjMove_SetY(obj,v);}
+function OM_SetA(obj){return ObjMove_GetAngle(obj);}
 
 function OM_SetSpeedX(obj,s){
 	Obj_SetValue(obj,FLAG_XYMOVE,true);

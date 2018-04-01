@@ -11,11 +11,12 @@ SetCommonData("MusicObject",music);
 
 
 
-function SetBGM(title,loopstart,loopend){
+task SetBGM(title,loopstart,loopend){
 	SetCommonData("CurrentBGM",title); SetCommonData("MusicObject",music);
+	let vol = GetAreaCommonData("CONFIG","BGM Volume",1.00);
 	if(ObjSound_IsPlaying(music)){
 		descent(i in 0..60){
-			ObjSound_SetVolumeRate(music,100*i/60);
+			ObjSound_SetVolumeRate(music,100*vol*(i/60)^0.5);
 			yield;
 		}
 		ObjSound_Stop(music);
@@ -26,7 +27,7 @@ function SetBGM(title,loopstart,loopend){
 	ObjSound_SetLoopEnable(music,true);
 	ObjSound_SetRestartEnable(music,true);	
 	ObjSound_SetLoopTime(music,loopstart,loopend);
-	ObjSound_SetVolumeRate(music,100);
+	ObjSound_SetVolumeRate(music,100*vol);
 	ObjSound_Play(music);	
 }
 

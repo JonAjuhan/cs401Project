@@ -20,7 +20,8 @@ let bossScript; let stageBGM; let bossBGM;
 	//Preload the boss plural
 	bossScript = LoadScriptInThread(GetCurrentScriptDirectory~"./Plural-Test.dnh");
 
-	stageBGM = "Kid's Festival ~ Innocent Treasures";
+	// stageBGM = "Kid's Festival ~ Innocent Treasures";
+	stageBGM = "Bhava-Agra as Seen Through a Child's Mind";
 	LoadSound(csd~"bgm/bgm -"~stageBGM~".ogg");
 
 	bossBGM = "Kid's Festival ~ Innocent Treasures";
@@ -68,7 +69,8 @@ task TStage{
 	let dir = GetCurrentScriptDirectory();
 	
 	// SetBGM("Kid's Festival ~ Innocent Treasures",130.969,274);
-	SetBGM(stageBGM,0,300.5);
+	// SetBGM(stageBGM,0,300.5);
+	SetBGM(stageBGM,66.910,115.2525);
 
 	loop(60){yield;}//1秒くらいあれば、コンパイル完了すると思われる。
 	
@@ -175,11 +177,10 @@ task TStage{
 		yield;
 	}
 	//Start the boss plural
-	SetBGM(stageBGM,0,300.5);
+	SetBGM(bossBGM,0,300.5);
 	// StartScript(bossScript);
 	NotifyEvent(bossScript,EV_START_BOSS,[]);
-	while(!IsCloseScript(bossScript) && GetPlayerState() != STATE_END)
-	{
+	while(!IsCloseScript(bossScript) && GetPlayerState() != STATE_END){
 		yield;
 	}
 	loop(240){yield;}

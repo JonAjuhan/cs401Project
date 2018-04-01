@@ -128,11 +128,10 @@ function projecttime(s,acc,mspd,dist){
 		let t2 = ( -s + sqrt(s^2 - 4*acc*(-dist2)) )/(2*acc);
 		return t1-t2;
 	}
+}
 	//	?at2 + ut - s = 0
 	//Using quadratic formula
 	//	t = ( -s + sqrt(s^2 - 4*acc*(-dist)) )/(2*acc)
-	
-}
 
 //WIP - find position of shot after given number of frames, assuming no angv
 function projectpos(x0,y0,s,ang,acc,mspd,t){
@@ -231,7 +230,36 @@ function GetLineWallIntersection(px, py, tx, ty){ //Trickysticks is such a nice 
 
 
 
+//why do I even have this
+function GetFigureEightPoint(x0,y0, x1,y1, t){
+	let rad = getdist(x0,y0,x1,y1)/2;
+	let ang = getangle(x0,y0,x1,y1); let dir;
+	let cx; let cy; let x; let y;
+	t%=2;
+	if(t<1){
+		cx=x0; cy=y0; dir=1;
+		t--;
+	}else{
+		cx=x1; cy=y1;
+		ang+=180; dir=-1;
+	}
+	
+	x = cx+rad*cos(ang+360*t*dir); 
+	y = cy+rad*sin(ang+360*t*dir);
+	return [x,y];
+}
 
+
+
+//eh
+function Exarg(k,v){
+	let obj = ObjShot_Create(OBJ_SHOT);
+	ObjShot_SetDeleteFrame(obj,1);
+	Obj_SetValue(obj,"Argument",k);
+	Obj_SetValue(obj,"Value",v);
+	Obj_SetValue(obj,k,v);
+	return obj;
+}
 
 
 

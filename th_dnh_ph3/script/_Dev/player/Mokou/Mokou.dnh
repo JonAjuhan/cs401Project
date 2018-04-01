@@ -86,7 +86,8 @@ task InitializePowerAndOptions{
 					let shot = GetEventArgument(1)[i];
 					let graph = ObjShot_GetImageID(shot);
 					if(graph > 0){
-						c = GetShotDataInfoA1(ObjShot_GetImageID(shot),TARGET_ENEMY,INFO_DELAY_COLOR);
+						c = Obj_GetValueD(shot,"Color",GetShotDataInfoA1(ObjShot_GetImageID(shot), TARGET_ENEMY, INFO_DELAY_COLOR));
+						// c = GetShotDataInfoA1(ObjShot_GetImageID(shot),TARGET_ENEMY,INFO_DELAY_COLOR);
 					}else{ c = [255,128,255]; }
 				}else{ c = [255,128,255]; }
 				let a;

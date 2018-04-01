@@ -53,6 +53,9 @@ let mlife = 4000; //2000
 	else {
 		SetBossHitbox(boss,ex,ey);
 	}
+	
+	// wrap(boss);
+	
 	frame++;
 	yield;
 }
@@ -73,6 +76,7 @@ task MainTask {
 	// SetMagicCircleAlpha(64,64);
 
 	wait(90);
+	
 		
 	// Tmovement(cx-120,cx+120, cy-90,cy-60, 60,240, [MOVE_PLAYERBIAS,2,0,MOVE_MAXSPEED,1.5] );
 	ObjEnemy_SetDamageRate(boss,drate,drate/3);
@@ -103,8 +107,38 @@ task TShoot{
 
 	
 	let count=0; let a; let dir; let a0;
+	let x; let y;
 	
 	while(!Obj_IsDeleted(boss) && !finishing){
+		
+		loop{
+			// OM_SetDestAtWrapF(boss,px,py,[LFT,TOP,RGT,BTM,NON,2],90);
+			// OM_SetDestAtWrapF(boss,px,py,[LFT,TOP,RGT,BTM,3],90);
+			x=px; y=py;
+			OM_SetDestAtWrapF(boss,x,y,[LFT,TOP,RGT,BTM,5,0.1],90);
+			
+			let N = 5; let a0 = 180; let da = 45; //2,180,120
+			ascent(f in 0..90){
+				ascent(i in -(N-1)/2..(N-1)/2+1){
+					// let shot = CreateShotA2(ex,ey,0,ObjMove_GetAngle(boss)+a0+da*i, 0.05, 3, CARD_MAGENTA-1*(f%3)^2.75, 5);
+					// let shot = CreateShotA2(ex,ey,0,ObjMove_GetAngle(boss)+a0+da*i, 0.05, 3, CARD_GRAY+PURPLE-1*(f%2), 5);
+					// let shot = CreateShotA2(ex,ey,0,ObjMove_GetAngle(boss)+a0+da*i, 0.05, 3, FLOWDOT+MAGENTA-1*(f%2), 5);
+					// let shot = CreateShotA2(ex,ey,0,ObjMove_GetAngle(boss)+a0+da*i, 0.05, 3, FLOWDOT+f%GRAY, 5);
+					// let shot = CreateShotA2(ex,ey,0,ObjMove_GetAngle(boss)+a0+da*i, 0.05, 3, FLOWDOT+f%GRAY+500, 5);
+					// let shot = CreateShotA2(ex,ey,0,ObjMove_GetAngle(boss)+a0+da*i, 0.05, 3, ZPEL+f%GRAY+500, 5);
+					// let shot = CreateShotA2(ex,ey,0,ObjMove_GetAngle(boss)+a0+da*i, 0.05, 3, ZPEL_RED+f%7, 5);
+					// OS_TintShot(shot,128);
+					// OM_BounceA1(shot,1,[LFT,TOP,RGT,BTM]);
+					let shot = CreateShotA2(ex,ey,0,ObjMove_GetAngle(boss)+a0+da*i, 0.05, 3, GALE+500, 5);
+					// OR_SetColor(shot,255,64,64);
+					OR_SetColor(shot,255,64,255);
+				}
+				if(f%3==0){SE_Play(se_chime,60);SE_Play(se_shot,40);}
+				EffectParticleA1(x,y,1,rand(0,360),"feather",128,128,128);
+				yield;
+			}
+			wait(30);
+		}
 		
 		// TestTypes;
 		
@@ -123,6 +157,7 @@ task TShoot{
 		// O_SetPropertyAtDecel(boss,MOVE_X,px,60);
 		// O_SetPropertyAtAccel(boss,MOVE_Y,py,60);
 		
+		//goin down
 		O_SetPropertyAtWeight(boss,MOVE_X,px,60,10);
 		O_SetPropertyAtWeight(boss,MOVE_Y,sy+20,60,-50);
 		wait(50);
@@ -207,7 +242,7 @@ task TShoot{
 		// }
 		
 		
-		let x; let y;
+		
 		
 		ascent(k in 0..2){
 			// ObjMove_SetDestAtWeight(boss,cx+randSign*rand(0,cx*0.75),rand(60,cy*0.9), gap*0.66,20);

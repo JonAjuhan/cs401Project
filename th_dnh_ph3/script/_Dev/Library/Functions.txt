@@ -893,8 +893,7 @@ function CrossLineA3(x,y, m1x,m1y,m2x,m2y, width) {
 ///////////////////////////////////////////////////////////////
 //Bounce/Wrap Functions
 ///////////////////////////////////////////////////////////////
-let LFT = 999900; let TOP = 999901; let RGT = 999902; let BTM = 999903;
-let CLIP = 999910;
+
 
 //Finds the angle needed to bounce a shot so that it hits the specified coords
 //Does not actually bounce the shot, so do that separately
@@ -942,7 +941,7 @@ function AimWrap(x0,y0,x1,y1,wall) {
 //----------------------------------------------------------------
 //Bounce off the walls of the stage frame
 //Changes only angle
-task BounceA1(shot, bounces, walls) {
+task OM_BounceA1(shot, bounces, walls) {
 	while(isOffScreen(shot)&&!Obj_IsDeleted(shot)){yield;} //wait for shot to move away from walls
 	let lft=checkarr(walls,LFT)!=-1; let top = checkarr(walls,TOP)!=-1; let rgt = checkarr(walls,RGT)!=-1; let btm = checkarr(walls,BTM)!=-1;
 	let x = ObjMove_GetX(shot); let y = ObjMove_GetY(shot);
@@ -978,7 +977,7 @@ task BounceA1(shot, bounces, walls) {
 	}
 	return;
 }
-task WrapA1(shot, wraps, walls) {
+task OM_WrapA1(shot, wraps, walls) {
 	let lft=checkarr(walls,LFT)!=-1; let top = checkarr(walls,TOP)!=-1; let rgt = checkarr(walls,RGT)!=-1; let btm = checkarr(walls,BTM)!=-1;
 	//let clip = checkarr(walls,CLIP); //if(clip!=-1){clip = walls[clip+1];}else{clip=0;}
 	let x = ObjMove_GetX(shot); let y = ObjMove_GetY(shot);
@@ -1009,6 +1008,102 @@ task WrapA1(shot, wraps, walls) {
 		wraps--;
 	}
 	return;
+}
+
+function BounceA1(shot, bounces, walls){OM_BounceA1(shot, bounces, walls);}
+function WrapA1(shot, bounces, walls){OM_WrapA1(shot, bounces, walls);}
+
+
+
+
+function GetMoveAtWrap(x0,y0,x1,y1,walls){
+	//Unpack array of walls
+	let lft=false; let top=false; let rgt=false; let btm=false; let non=false;
+	let over = 1;    //number of times to wrap around before reaching destination
+	let orthweight = 1.5; //preferred number of walls to wrap across (1=orthagonal, 2=diagonal)
+	let wrapweight = 2.25;
+	let exind = 0; //number of extra parameters processed
+	ascent(i in 0..length(walls)){
+		alternative(walls[i])
+		case(LFT){lft=true;}case(TOP){top=true;}case(RGT){rgt=true;}case(BTM){btm=true;}case(NON){non=true;}
+		//Extra args: first=over, second=orthweight, third=wrapweight
+		others{
+			alternative(exind)
+			case(0){over=walls[i];}
+			case(1){orthweight=walls[i]}
+			case(2){wrapweight=walls[i]}
+			exind++;
+		}
+	}
+	//Find dist/ang when wrapping across each wall
+	let dists = []; let compdists = []; let angs = []; let xdests = []; let ydests = [];
+	ascent(i in -over..over+1){
+		if( (i==0) || (lft&&(i<0)) || (rgt&&(i>0)) ){
+			ascent(j in -over..over+1){
+				if( ((non||i!=0)&&(j==0)) || (top&&(j<0)) || (btm&&(j>0)) ){
+					let x = x1+sx*i;
+					let y = y1+sy*j;
+					let dist = getdistance(x0,y0,x,y); let compdist=dist;
+					let ang = getangle(x0,y0,x,y);
+					
+					dists  = dists  ~ [ dist ];
+					angs   = angs   ~ [ ang ];
+					xdests = xdests ~ [ x ];
+					ydests = ydests ~ [ y ];
+					
+					// let yc = y1+sx*j *over; //treat stage as square for determining which wall
+					// let compdist = getdistance(x0,y0,x,yc);
+					
+					//No wrap - bias against not wrapping
+					if(i==0&&j==0){compdist*=wrapweight;}
+					//Diagonal wrap - bias against wrapping across multiple different walls
+					else if(i!=0&&j!=0){
+						let k = (i^2+j^2)^0.5;
+						compdist*=orthweight*k;
+					} 
+					//Orthagonal wrap - bias against wrapping across only a single wall
+					else{ 
+						compdist*=(1/orthweight); 
+					}
+					
+					compdists  = compdists  ~ [ compdist ];
+				}
+			}
+		}
+	}
+	//Determine shortest dist
+	let shortest = 999999; 
+	let index = -1;
+	ascent(i in 0..length(dists)){
+		if(compdists[i] < shortest){
+			index = i;
+			shortest = compdists[i];
+		}
+	}
+	return [ dists[index], angs[index], xdests[index], ydests[index] ];
+}
+
+function GetDistanceAtWrap(x0,y0,x1,y1,walls){ return GetMoveAtWrap(x0,y0,x1,y1,walls)[0]; }
+function GetAngleAtWrap(x0,y0,x1,y1,walls){ return GetMoveAtWrap(x0,y0,x1,y1,walls)[1]; }
+function GetDestAtWrap(x0,y0,x1,y1,walls){ let arr = GetMoveAtWrap(x0,y0,x1,y1,walls); return [arr[2],arr[3]]; }
+
+task OM_SetDestAtWrapF(obj,x,y,walls,frames){
+	let move = GetMoveAtWrap(ObjMove_GetX(obj),ObjMove_GetY(obj),x,y,walls);
+	let dist = move[0];
+	let ang = move[1];
+	// let spd = dist/frames;
+	let spd = (dist/frames)*1.1;
+	ObjMove_AddPatternA1(obj,0,spd,ang);
+	task MyWrap{loop(frames){wrap(obj);yield;}}MyWrap;
+	wait(frames*0.9);
+	// let over = 1; ascent(i in 0..length(walls)){if(walls[i]<LFT){over=walls[i];break;}}
+	descent(i in 0..frames*0.1){
+		let t = i/(frames*0.1);
+		ObjMove_SetSpeed(obj, spd*t^2 );
+		// ObjMove_SetSpeed(obj, spd*(i/(frames/10))^(over-1) );
+		yield;
+	}
+	ObjMove_SetSpeed(obj, 0 );
 }
 
 
@@ -1335,12 +1430,12 @@ function SyncOrbit(rad,spd) {
 	return 2*pi()*rad/n; //I no longer remember what this does
 }
 
-//todo
-function GetLimitAngv(obj){
-	let s = OM_GetMaxSpeed(obj);
+//todo - supposed to make sure a shot doesn't circle indefinitely
+// function GetLimitAngv(obj){
+	// let s = OM_GetMaxSpeed(obj);
 	
-	// let angv = 2*pi() / period * 57.2958;
-}
+	// // let angv = 2*pi() / period * 57.2958;
+// }
 
 
 
@@ -1737,24 +1832,6 @@ task ObjFog_SetTargAtFrameA2(fog,targ,r,a, time){
 }
 
 
-//why do I even have this
-function GetFigureEightPoint(x0,y0, x1,y1, t){
-	let rad = getdist(x0,y0,x1,y1)/2;
-	let ang = getangle(x0,y0,x1,y1); let dir;
-	let cx; let cy; let x; let y;
-	t%=2;
-	if(t<1){
-		cx=x0; cy=y0; dir=1;
-		t--;
-	}else{
-		cx=x1; cy=y1;
-		ang+=180; dir=-1;
-	}
-	
-	x = cx+rad*cos(ang+360*t*dir); 
-	y = cy+rad*sin(ang+360*t*dir);
-	return [x,y];
-}
 
 
 
@@ -3085,298 +3162,6 @@ function CreateFeather(x0,y0,dx,dy,scale,alpha1) {
 
 
 
-///////////////////////////////////////////////////////////////
-//Dialogue functions - grabbed from Koishi Heck
-///////////////////////////////////////////////////////////////
-/*
-task DialogueText(posX,posY,controltype,waittime,fontsize,message){
-	let objTxt = ObjText_Create;
-	let alpha = 0;
-	
-	ObjRender_SetAlpha(objTxt,alpha);
-	ObjRender_SetPosition(objTxt,posX,posY,0);
-	
-	ObjText_SetText(objTxt,message);
-	ObjText_SetFontSize(objTxt,fontsize);
-	ObjText_SetFontType(objTxt,"Cirno");
-	ObjText_SetFontColorTop(objTxt,0,0,0);
-	ObjText_SetFontColorBottom(objTxt,0,0,0);
-	ObjText_SetFontBorderType(objTxt,BORDER_NONE);
-	ObjText_SetHorizontalAlignment(objTxt, ALIGNMENT_CENTER);
-	ObjText_SetMaxWidth(objTxt, 400);
-	Obj_SetRenderPriority(objTxt, 100);
-	
-	wait(5);
-	
-	loop(5){
-		alpha+=255/5;
-		ObjRender_SetAlpha(objTxt,alpha);
-	yield;}
-	
-	if(controltype == "TIMED"){
-		loop(waittime){yield;}	
-	}
-	
-	if(controltype == "CONTROL"){
-		while(GetVirtualKeyState(VK_SHOT)!=KEY_PUSH){yield;}
-	}
-	
-	loop(5){
-		alpha-=255/5;
-		ObjRender_SetAlpha(objTxt,alpha);
-	yield;}
-	
-	Obj_Delete(objTxt);
-
-}
-task DialogueText2(posX,posY,controltype,waittime,fontsize,message,priority){
-	let objTxt = ObjText_Create;
-	let alpha = 0;
-	
-	ObjRender_SetAlpha(objTxt,alpha);
-	ObjRender_SetPosition(objTxt,posX,posY,0);
-	
-	ObjText_SetText(objTxt,message);
-	ObjText_SetFontSize(objTxt,fontsize);
-	ObjText_SetFontType(objTxt,"Cirno");
-	ObjText_SetFontColorTop(objTxt,0,0,0);
-	ObjText_SetFontColorBottom(objTxt,0,0,0);
-	ObjText_SetFontBorderType(objTxt,BORDER_NONE);
-	ObjText_SetHorizontalAlignment(objTxt, ALIGNMENT_CENTER);
-	ObjText_SetMaxWidth(objTxt, 400);
-	Obj_SetRenderPriority(objTxt, priority);
-	
-	wait(5);
-	
-	loop(5){
-		alpha+=255/5;
-		ObjRender_SetAlpha(objTxt,alpha);
-	yield;}
-	
-	if(controltype == "TIMED"){
-		loop(waittime){yield;}	
-	}
-	
-	if(controltype == "CONTROL"){
-		while(GetVirtualKeyState(VK_SHOT)!=KEY_PUSH){yield;}
-	}
-	
-	loop(5){
-		alpha-=255/5;
-		ObjRender_SetAlpha(objTxt,alpha);
-	yield;}
-	
-	Obj_Delete(objTxt);
-
-}
-task DialogueBubble(vertangle,posX,posY,Yscale,lengthtimes,controltype,waittime){
-	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
-	let obj2 = ObjPrim_Create(OBJ_SPRITE_2D);
-	let obj3 = ObjPrim_Create(OBJ_SPRITE_2D);
-	let obj4 = ObjPrim_Create(OBJ_SPRITE_2D);
-	let obj5 = ObjPrim_Create(OBJ_SPRITE_2D);
-	let obj6 = ObjPrim_Create(OBJ_SPRITE_2D);
-	
-	ObjPrim_SetTexture(obj, GetCurrentScriptDirectory~"./img/balloon.png");
-	ObjSprite2D_SetSourceRect(obj,64, 1, 127, 64);
-	ObjRender_SetScaleXYZ(obj,2,Yscale,0);
-	Obj_SetRenderPriorityI(obj,100);
-	ObjSprite2D_SetDestCenter(obj);
-	ObjRender_SetPosition(obj,posX,posY,0);
-	ObjRender_SetAngleX(obj,90);
-	ObjRender_SetBlendType(obj,BLEND_ALPHA);
-		
-	ObjPrim_SetTexture(obj2, GetCurrentScriptDirectory~"./img/balloon.png");
-	ObjSprite2D_SetSourceRect(obj2,1, 1, 63, 64);
-	ObjRender_SetScaleXYZ(obj2,2,Yscale,0);
-	Obj_SetRenderPriorityI(obj2,100);
-	ObjSprite2D_SetDestCenter(obj2);
-	ObjRender_SetPosition(obj2,posX+115,posY,0);
-	ObjRender_SetAngleX(obj2,90);
-	ObjRender_SetBlendType(obj2,BLEND_ALPHA);
-	
-	if(lengthtimes>1){
-		ObjPrim_SetTexture(obj3, GetCurrentScriptDirectory~"./img/balloon.png");
-		ObjSprite2D_SetSourceRect(obj3,1, 1, 63, 64);
-		ObjRender_SetScaleXYZ(obj3,2,Yscale,0);
-		Obj_SetRenderPriorityI(obj3,100);
-		ObjSprite2D_SetDestCenter(obj3);
-		ObjRender_SetPosition(obj3,posX+160,posY,0);
-		ObjRender_SetAngleX(obj3,90);
-		ObjRender_SetBlendType(obj3,BLEND_ALPHA);
-	}	
-	if(lengthtimes>2){
-		ObjPrim_SetTexture(obj4, GetCurrentScriptDirectory~"./img/balloon.png");
-		ObjSprite2D_SetSourceRect(obj4,1, 1, 63, 64);
-		ObjRender_SetScaleXYZ(obj4,2,Yscale,0);
-		Obj_SetRenderPriorityI(obj4,100);
-		ObjSprite2D_SetDestCenter(obj4);
-		ObjRender_SetPosition(obj4,posX+205,posY,0);
-		ObjRender_SetAngleX(obj4,90);
-		ObjRender_SetBlendType(obj4,BLEND_ALPHA);
-	}
-	if(lengthtimes>3){
-		ObjPrim_SetTexture(obj5, GetCurrentScriptDirectory~"./img/balloon.png");
-		ObjSprite2D_SetSourceRect(obj5,1, 1, 63, 64);
-		ObjRender_SetScaleXYZ(obj5,2,Yscale,0);
-		Obj_SetRenderPriorityI(obj5,100);
-		ObjSprite2D_SetDestCenter(obj5);
-		ObjRender_SetPosition(obj5,posX+250,posY,0);
-		ObjRender_SetAngleX(obj5,90);
-		ObjRender_SetBlendType(obj5,BLEND_ALPHA);
-	}
-	
-	let dif = -(90-vertangle);
-	let angleX = 90;
-	
-	SE_Play(se_bubble,100);
-	
-	loop(10){
-		angleX+=dif/10;
-		ObjRender_SetAngleX(obj,angleX);
-		ObjRender_SetAngleX(obj2,angleX);
-		if(lengthtimes>1){ObjRender_SetAngleX(obj3,angleX);}
-		if(lengthtimes>2){ObjRender_SetAngleX(obj4,angleX);}
-		if(lengthtimes>3){ObjRender_SetAngleX(obj5,angleX);}
-		if(lengthtimes>4){ObjRender_SetAngleX(obj6,angleX);}
-	yield;}
-	
-	if(controltype == "TIMED"){
-		loop(waittime){yield;}	
-	}
-	
-	if(controltype == "CONTROL"){
-		while(GetVirtualKeyState(VK_SHOT)!=KEY_PUSH){yield;}
-	}
-	
-	loop(10){
-		angleX+=dif/10;
-		ObjRender_SetAngleX(obj,angleX);
-		ObjRender_SetAngleX(obj2,angleX);
-		if(lengthtimes>1){ObjRender_SetAngleX(obj3,angleX);}
-		if(lengthtimes>2){ObjRender_SetAngleX(obj4,angleX);}
-		if(lengthtimes>3){ObjRender_SetAngleX(obj5,angleX);}
-		if(lengthtimes>4){ObjRender_SetAngleX(obj6,angleX);}
-	yield;}
-	
-	Obj_Delete(obj);
-	Obj_Delete(obj2);
-	Obj_Delete(obj3);
-	Obj_Delete(obj4);
-	Obj_Delete(obj5);
-	Obj_Delete(obj6);
-}
-task DialogueBubble2(horizangle,vertangle,posX,posY,Yscale,lengthtimes,controltype,waittime,priority){
-	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
-	let obj2 = ObjPrim_Create(OBJ_SPRITE_2D);
-	let obj3 = ObjPrim_Create(OBJ_SPRITE_2D);
-	let obj4 = ObjPrim_Create(OBJ_SPRITE_2D);
-	let obj5 = ObjPrim_Create(OBJ_SPRITE_2D);
-	let obj6 = ObjPrim_Create(OBJ_SPRITE_2D);
-	
-	ObjPrim_SetTexture(obj, GetCurrentScriptDirectory~"./img/balloon.png");
-	ObjSprite2D_SetSourceRect(obj,64, 1, 127, 64);
-	ObjRender_SetScaleXYZ(obj,2,Yscale,0);
-	Obj_SetRenderPriorityI(obj,priority);
-	ObjSprite2D_SetDestCenter(obj);
-	ObjRender_SetPosition(obj,posX,posY,0);
-	ObjRender_SetAngleX(obj,90);
-	ObjRender_SetAngleY(obj,horizangle);
-	ObjRender_SetBlendType(obj,BLEND_ALPHA);
-		
-	ObjPrim_SetTexture(obj2, GetCurrentScriptDirectory~"./img/balloon.png");
-	ObjSprite2D_SetSourceRect(obj2,1, 1, 63, 64);
-	ObjRender_SetScaleXYZ(obj2,2,Yscale,0);
-	Obj_SetRenderPriorityI(obj2,priority);
-	ObjSprite2D_SetDestCenter(obj2);
-	if(horizangle==0){ObjRender_SetPosition(obj2,posX+115,posY,0);}
-	if(horizangle==180){ObjRender_SetPosition(obj2,posX-115,posY,0);}
-	ObjRender_SetAngleX(obj2,90);
-	ObjRender_SetAngleY(obj2,horizangle);
-	ObjRender_SetBlendType(obj2,BLEND_ALPHA);
-	
-	if(lengthtimes>1){
-		ObjPrim_SetTexture(obj3, GetCurrentScriptDirectory~"./img/balloon.png");
-		ObjSprite2D_SetSourceRect(obj3,1, 1, 63, 64);
-		ObjRender_SetScaleXYZ(obj3,2,Yscale,0);
-		Obj_SetRenderPriorityI(obj3,priority);
-		ObjSprite2D_SetDestCenter(obj3);
-		if(horizangle==0){ObjRender_SetPosition(obj3,posX+160,posY,0);}
-		if(horizangle==180){ObjRender_SetPosition(obj3,posX-160,posY,0);}
-		ObjRender_SetAngleX(obj3,90);
-		ObjRender_SetAngleY(obj3,horizangle);
-		ObjRender_SetBlendType(obj3,BLEND_ALPHA);
-	}	
-	if(lengthtimes>2){
-		ObjPrim_SetTexture(obj4, GetCurrentScriptDirectory~"./img/balloon.png");
-		ObjSprite2D_SetSourceRect(obj4,1, 1, 63, 64);
-		ObjRender_SetScaleXYZ(obj4,2,Yscale,0);
-		Obj_SetRenderPriorityI(obj4,priority);
-		ObjSprite2D_SetDestCenter(obj4);
-		if(horizangle==0){ObjRender_SetPosition(obj4,posX+205,posY,0);}
-		if(horizangle==180){ObjRender_SetPosition(obj4,posX-205,posY,0);}
-		ObjRender_SetAngleX(obj4,90);
-		ObjRender_SetAngleY(obj4,horizangle);
-		ObjRender_SetBlendType(obj4,BLEND_ALPHA);
-	}
-	if(lengthtimes>3){
-		ObjPrim_SetTexture(obj5, GetCurrentScriptDirectory~"./img/balloon.png");
-		ObjSprite2D_SetSourceRect(obj5,1, 1, 63, 64);
-		ObjRender_SetScaleXYZ(obj5,2,Yscale,0);
-		Obj_SetRenderPriorityI(obj5,priority);
-		ObjSprite2D_SetDestCenter(obj5);
-		if(horizangle==0){ObjRender_SetPosition(obj5,posX+250,posY,0);}
-		if(horizangle==180){ObjRender_SetPosition(obj5,posX-250,posY,0);}
-		ObjRender_SetAngleX(obj5,90);
-		ObjRender_SetAngleY(obj5,horizangle);
-		ObjRender_SetBlendType(obj5,BLEND_ALPHA);
-	}
-	
-	let dif = -(90-vertangle);
-	let angleX = 90;
-	
-	SE_Play(se_bubble,100);
-	
-	loop(10){
-		angleX+=dif/10;
-		ObjRender_SetAngleX(obj,angleX);
-		ObjRender_SetAngleX(obj2,angleX);
-		if(lengthtimes>1){ObjRender_SetAngleX(obj3,angleX);}
-		if(lengthtimes>2){ObjRender_SetAngleX(obj4,angleX);}
-		if(lengthtimes>3){ObjRender_SetAngleX(obj5,angleX);}
-		if(lengthtimes>4){ObjRender_SetAngleX(obj6,angleX);}
-	yield;}
-	
-	if(controltype == "TIMED"){
-		loop(waittime){yield;}	
-	}
-	
-	if(controltype == "CONTROL"){
-		while(GetVirtualKeyState(VK_SHOT)!=KEY_PUSH){yield;}
-	}
-	
-	loop(10){
-		angleX+=dif/10;
-		ObjRender_SetAngleX(obj,angleX);
-		ObjRender_SetAngleX(obj2,angleX);
-		if(lengthtimes>1){ObjRender_SetAngleX(obj3,angleX);}
-		if(lengthtimes>2){ObjRender_SetAngleX(obj4,angleX);}
-		if(lengthtimes>3){ObjRender_SetAngleX(obj5,angleX);}
-		if(lengthtimes>4){ObjRender_SetAngleX(obj6,angleX);}
-	yield;}
-	
-	Obj_Delete(obj);
-	Obj_Delete(obj2);
-	Obj_Delete(obj3);
-	Obj_Delete(obj4);
-	Obj_Delete(obj5);
-	Obj_Delete(obj6);
-}
-*/
-///////////////////////////////////////////////////////////////
-//End of dialogue functions
-///////////////////////////////////////////////////////////////
-
 
 
 
@@ -3390,7 +3175,7 @@ task DialogueBubble2(horizangle,vertangle,posX,posY,Yscale,lengthtimes,controlty
 //ASSORTED BULLSHIT I HAVEN'T REALLY MESSED WITH YET
 ///////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////
-/*
+
 
 //grabbed from Celestial Showdown
 function CurvyLaser(xpos,ypos,speed,angle,length,width,bulletgraphic,trailgraphic,delay) {
@@ -3460,173 +3245,173 @@ task widescreen{
 
 
 
-function ClearFam {
-	let enemies = GetAllEnemyID;
-	ascent(i in 0..length(enemies)) {
-		if(enemies[i]!=boss){TDelete(enemies[i]);}
-	}
+// function DeleteEnemyAll {
+	// let enemies = GetAllEnemyID;
+	// ascent(i in 0..length(enemies)) {
+		// if(enemies[i]!=boss){TDelete(enemies[i]);}
+	// }
 	
-	task TDelete(fam) {
-		let a0 = Obj_GetValueD(fam,"Alpha",255);
-		ascent(i in 0..60){
-			ObjRender_SetAlpha(fam,a0-(a0/60)*i);
-		}
-		Obj_Delete(fam);
-	}
-}
+	// task TDelete(fam) {
+		// let a0 = Obj_GetValueD(fam,"Alpha",255);
+		// ascent(i in 0..60){
+			// ObjRender_SetAlpha(fam,a0-(a0/60)*i);
+		// }
+		// Obj_Delete(fam);
+	// }
+// }
 
 
-function StageStart(img){ //It's a function so that it stops the script while it's executed
-	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
-	ObjPrim_SetTexture(obj, img);
-	ObjSprite2D_SetSourceRect(obj, 0, 0, 256, 96);
-	ObjSprite2D_SetDestCenter(obj);
-	Obj_SetRenderPriority(obj, 0.79);
+// function StageStart(img){ //It's a function so that it stops the script while it's executed
+	// let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	// ObjPrim_SetTexture(obj, img);
+	// ObjSprite2D_SetSourceRect(obj, 0, 0, 256, 96);
+	// ObjSprite2D_SetDestCenter(obj);
+	// Obj_SetRenderPriority(obj, 0.79);
 
-	ObjRender_SetPosition(obj, GetStgFrameWidth/2, GetStgFrameHeight/2, 0);
-	wait(60);
-	ObjPrim_SetTexture(obj, GetCurrentScriptDirectory ~ "./../IMG/go.png");
-	ObjSprite2D_SetSourceRect(obj, 0, 0, 128, 128);
-	ObjSprite2D_SetDestCenter(obj);
-	wait(60);
-	Obj_Delete(obj);
-}
-function StageClear{ //It's a function so that it stops the script while it's executed
-	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
-	ObjPrim_SetTexture(obj, GetCurrentScriptDirectory ~ "./../IMG/clear.png");
-	ObjSprite2D_SetSourceRect(obj, 0, 0, 256, 64);
-	ObjSprite2D_SetDestCenter(obj);
-	Obj_SetRenderPriority(obj, 0.79);
+	// ObjRender_SetPosition(obj, GetStgFrameWidth/2, GetStgFrameHeight/2, 0);
+	// wait(60);
+	// ObjPrim_SetTexture(obj, GetCurrentScriptDirectory ~ "./../IMG/go.png");
+	// ObjSprite2D_SetSourceRect(obj, 0, 0, 128, 128);
+	// ObjSprite2D_SetDestCenter(obj);
+	// wait(60);
+	// Obj_Delete(obj);
+// }
+// function StageClear{ //It's a function so that it stops the script while it's executed
+	// let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	// ObjPrim_SetTexture(obj, GetCurrentScriptDirectory ~ "./../IMG/clear.png");
+	// ObjSprite2D_SetSourceRect(obj, 0, 0, 256, 64);
+	// ObjSprite2D_SetDestCenter(obj);
+	// Obj_SetRenderPriority(obj, 0.79);
 
-	ObjRender_SetPosition(obj, GetStgFrameWidth/2, GetStgFrameHeight/2, 0);
-	ObjRender_SetAlpha(obj, 0);
-	let alpha = 0;
-	while(alpha < 255){
-		ObjRender_SetAlpha(obj, alpha);
-		alpha += 5;
-		yield;
-	}
-	wait(60);
-	while(alpha > 0){
-		ObjRender_SetAlpha(obj, alpha);
-		alpha -= 5;
-		yield;
-	}
-	wait(10);
-	Obj_Delete(obj);
-}
-function SetStaticBackground(img, r1, r2, r3, r4, s){
-	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
-	ObjPrim_SetTexture(obj, img);
-	ObjSprite2D_SetSourceRect(obj, r1, r2, r3, r4);
-	ObjSprite2D_SetDestCenter(obj);
-	Obj_SetRenderPriority(obj, 0.2);
-	ObjRender_SetPosition(obj, GetStgFrameWidth/2, GetStgFrameHeight/2, 0);
-	ObjRender_SetScaleXYZ(obj, s, s, s);
-}
-task FadeToBlack(i){
-	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
-	ObjPrim_SetTexture(obj, GetCurrentScriptDirectory ~ "./../IMG/black.png");
-	ObjSprite2D_SetSourceRect(obj, 0, 0, 100, 100);
-	ObjSprite2D_SetDestCenter(obj);
-	Obj_SetRenderPriority(obj, 1.0);
-	ObjRender_SetAlpha(obj, 0);
+	// ObjRender_SetPosition(obj, GetStgFrameWidth/2, GetStgFrameHeight/2, 0);
+	// ObjRender_SetAlpha(obj, 0);
+	// let alpha = 0;
+	// while(alpha < 255){
+		// ObjRender_SetAlpha(obj, alpha);
+		// alpha += 5;
+		// yield;
+	// }
+	// wait(60);
+	// while(alpha > 0){
+		// ObjRender_SetAlpha(obj, alpha);
+		// alpha -= 5;
+		// yield;
+	// }
+	// wait(10);
+	// Obj_Delete(obj);
+// }
+// function SetStaticBackground(img, r1, r2, r3, r4, s){
+	// let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	// ObjPrim_SetTexture(obj, img);
+	// ObjSprite2D_SetSourceRect(obj, r1, r2, r3, r4);
+	// ObjSprite2D_SetDestCenter(obj);
+	// Obj_SetRenderPriority(obj, 0.2);
+	// ObjRender_SetPosition(obj, GetStgFrameWidth/2, GetStgFrameHeight/2, 0);
+	// ObjRender_SetScaleXYZ(obj, s, s, s);
+// }
+// task FadeToBlack(i){
+	// let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	// ObjPrim_SetTexture(obj, GetCurrentScriptDirectory ~ "./../IMG/black.png");
+	// ObjSprite2D_SetSourceRect(obj, 0, 0, 100, 100);
+	// ObjSprite2D_SetDestCenter(obj);
+	// Obj_SetRenderPriority(obj, 1.0);
+	// ObjRender_SetAlpha(obj, 0);
 
-	ObjRender_SetPosition(obj, GetCenterX, GetCenterY, 0);
-	ObjRender_SetScaleXYZ(obj, 8, 8, 0);
-	let a = 0;
-	while(a < 255){
-		ObjRender_SetAlpha(obj, a);
-		a += 2;
-		yield;
-	}
-	wait(i);
-	Obj_Delete(obj);
-}
-
-
+	// ObjRender_SetPosition(obj, GetCenterX, GetCenterY, 0);
+	// ObjRender_SetScaleXYZ(obj, 8, 8, 0);
+	// let a = 0;
+	// while(a < 255){
+		// ObjRender_SetAlpha(obj, a);
+		// a += 2;
+		// yield;
+	// }
+	// wait(i);
+	// Obj_Delete(obj);
+// }
 
 
-//modified from TalosMistake's Yuyuko script
-function CallFan(type,expand) {
-	let obj=ObjPrim_Create(OBJ_SPRITE_2D);
-	let img;
-	let count = 0;
-	img = CSD~"../img/ougi.png";
-	LoadTexture(img);
-	ObjPrim_SetTexture(obj,img);
-	ObjSprite2D_SetSourceRect(obj, 0, 0, 512, 256+32);
-	ObjSprite2D_SetDestCenter(obj);
-	ObjRender_SetBlendType(obj,BLEND_ADD_ARGB);
-	Obj_SetRenderPriorityI(obj,22);
-	SetScale;
+
+
+// //modified from TalosMistake's Yuyuko script
+// function CallFan(type,expand) {
+	// let obj=ObjPrim_Create(OBJ_SPRITE_2D);
+	// let img;
+	// let count = 0;
+	// img = CSD~"../img/ougi.png";
+	// LoadTexture(img);
+	// ObjPrim_SetTexture(obj,img);
+	// ObjSprite2D_SetSourceRect(obj, 0, 0, 512, 256+32);
+	// ObjSprite2D_SetDestCenter(obj);
+	// ObjRender_SetBlendType(obj,BLEND_ADD_ARGB);
+	// Obj_SetRenderPriorityI(obj,22);
+	// SetScale;
 	
-	let typenum=0;
-	if(type=="Bright"){typenum=1;}else if(type=="Player"){typenum=2;}
+	// let typenum=0;
+	// if(type=="Bright"){typenum=1;}else if(type=="Player"){typenum=2;}
 	
-	TFan;
-	return obj;
+	// TFan;
+	// return obj;
 	
-	task TFan {
-		while(!Obj_IsDeleted(obj)){
-			alternative(typenum)
-			case(0) {
-				ObjRender_SetPosition(obj,ex-32-8,ey,0);
-				ObjRender_SetColor(obj,128,128,128);
-			}
-			case(1) {
-				ObjRender_SetPosition(obj,ex-32-8,ey,0);
-				ObjRender_SetColor(obj,255,255,255);
-			}
-			case(2) {
-				ObjRender_SetPosition(obj,GetPlayerX-32-8,GetPlayerY,0);
-				ObjRender_SetColor(obj,128,128,128);
-			}
+	// task TFan {
+		// while(!Obj_IsDeleted(obj)){
+			// alternative(typenum)
+			// case(0) {
+				// ObjRender_SetPosition(obj,ex-32-8,ey,0);
+				// ObjRender_SetColor(obj,128,128,128);
+			// }
+			// case(1) {
+				// ObjRender_SetPosition(obj,ex-32-8,ey,0);
+				// ObjRender_SetColor(obj,255,255,255);
+			// }
+			// case(2) {
+				// ObjRender_SetPosition(obj,GetPlayerX-32-8,GetPlayerY,0);
+				// ObjRender_SetColor(obj,128,128,128);
+			// }
 			
-			count++;
-			if(count>120 && GetCommonData("IsFan",false)==false){
-				Obj_Delete(obj);
-			}
-			yield;
-		}
-	}
+			// count++;
+			// if(count>120 && GetCommonData("IsFan",false)==false){
+				// Obj_Delete(obj);
+			// }
+			// yield;
+		// }
+	// }
 	
-	task SetScale {
-		if(expand==1){
-			ascent(i in 0..45){
-				ObjRender_SetScaleXYZ(obj,1,0.1*sin(i*2),1);
-				yield;
-			}
-			ascent(i in 0..45){
-				ObjRender_SetScaleXYZ(obj,1,0.1+0.9*sin(i*2),1);
-				yield;
-			}
-			SetCommonData("IsFan",true);
-		}
-		else if(expand==0){
-			ObjRender_SetScaleXYZ(obj,1,1,1);
-			SetCommonData("IsFan",true);
-		}
-		else if(expand==-1){
-			SetCommonData("IsFan",false);
-			ObjRender_SetScaleXYZ(obj,0,0,0);
-			yield;
-			descent(i in 0..45) {
-				ObjRender_SetScaleXYZ(obj,1,sin(i*2),1);
-				yield;
-			}
-			Obj_Delete(obj);
-		}
-		else if(expand==-2){
-			Obj_Delete(obj);
-		}
-	}
-}
+	// task SetScale {
+		// if(expand==1){
+			// ascent(i in 0..45){
+				// ObjRender_SetScaleXYZ(obj,1,0.1*sin(i*2),1);
+				// yield;
+			// }
+			// ascent(i in 0..45){
+				// ObjRender_SetScaleXYZ(obj,1,0.1+0.9*sin(i*2),1);
+				// yield;
+			// }
+			// SetCommonData("IsFan",true);
+		// }
+		// else if(expand==0){
+			// ObjRender_SetScaleXYZ(obj,1,1,1);
+			// SetCommonData("IsFan",true);
+		// }
+		// else if(expand==-1){
+			// SetCommonData("IsFan",false);
+			// ObjRender_SetScaleXYZ(obj,0,0,0);
+			// yield;
+			// descent(i in 0..45) {
+				// ObjRender_SetScaleXYZ(obj,1,sin(i*2),1);
+				// yield;
+			// }
+			// Obj_Delete(obj);
+		// }
+		// else if(expand==-2){
+			// Obj_Delete(obj);
+		// }
+	// }
+// }
 
 
 
 
-*/
+
 ///////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////
 //BELOW THIS LINE: 
