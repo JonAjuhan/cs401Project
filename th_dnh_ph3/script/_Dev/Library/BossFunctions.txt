@@ -3,7 +3,7 @@
 //Boss functions
 ///////////////////////////////////////////////////////////////
 function spawnBoss() {
-	WriteLog("Resources: Creating boss object");
+	// WriteLog("Resources: Creating boss object");
 	let boss = ObjEnemy_Create(OBJ_ENEMY_BOSS);
 	ObjEnemy_Regist(boss);
 
@@ -77,6 +77,23 @@ function spawnBossBlank(name){
 	return boss;
 }
 
+function CreateBoss(name){
+	let boss;
+	if(length(GetAllEnemyID)==0){
+	// if(length(GetEnemyBossObjectID)==0){
+		boss = ObjEnemy_Create(OBJ_ENEMY_BOSS);
+		UpdatePositions;
+	}else{
+		boss = ObjEnemy_Create(OBJ_ENEMY);
+		ObjEnemy_SetLife(boss,9999);
+	}
+	ObjEnemy_Regist(boss);
+	Obj_SetValue(boss,"IsUseCustAnimLib",false);
+	let c = GetCommonData("BossNameColor",[255,180,255]);
+	EnemyName(boss, name, c[0], c[1], c[2]);
+	return boss;
+}
+
 let POSE_SET = -1; let POSE_END = 0;
 function SetAttackPose(dur){
 	if(Obj_GetValueD(boss,"IsUseCustAnimLib",true)){
@@ -99,64 +116,51 @@ function SetAttackPose(dur){
 //Set boss to use "blurred" version of sprite, like Suwako or Murasa
 //Also disables her hitbox while blurred
 function SetBossBlur(blur){
+	let boss = GetEnemyBossObjectID();
+	Obj_SetValue(boss,FLAG_INTERSECTION,!blur);	
 	if(Obj_GetValueD(boss,"DisplayName","")=="Andi"){
-		let yoff; let frames; let frame;
-		if(blur){yoff=255;}else{yoff=0;}
-		
+		let yoff; let frames; let frame; if(blur){yoff=255;}else{yoff=0;}
 		let types = [ANIM_IDLE,ANIM_MOVE,ANIM_MOVEEND,ANIM_ATTACK,ANIM_ATTACKEND]; let type;
 		let rows  = [0,1,1,2,2]; let row;
 		ascent(t in 0..length(types)){
-			type = types[t]; row = rows[t];
-			frames = GetAnimationFrames(boss, type);
-			ascent(i in 0..length(frames)){
-				frame = frames[i];
-				frame[1] = 1+80*row+yoff;
-				frame[3] = 80*(row+1)+yoff;
-				frames[i] = frame;
-			}
+			type = types[t]; row = rows[t]; frames = GetAnimationFrames(boss, type);
+			ascent(i in 0..length(frames)){ frame = frames[i]; frame[1] = 1+80*row+yoff; frame[3] = 80*(row+1)+yoff; frames[i] = frame; }
 			Obj_SetValue(boss,"anim_"~type,frames);
 		}
-		Obj_SetValue(boss,FLAG_INTERSECTION,!blur);
-		// IsBossIntersectionEnable = !blur;
-		return frames;
 	}
 	else{
-		Obj_SetValue(boss,FLAG_INTERSECTION,!blur);	
-		// IsBossIntersectionEnable = !blur;
 		if(blur){
 			ObjRender_SetAlpha(boss,64);
 			let obj = CreateSprite2(dirimg~"mist.png", 24, [0, 0, 128, 128], [64, 64]);
 			Obj_SetValue(boss,"BlurObject",obj);
 			ObjRender_SetColor(obj, 255, 0, 64); ObjRender_SetAlpha(obj, 255 );
 			ObjRender_SetBlendType(obj, BLEND_ADD_ARGB);
-			task TFollow{
-				let i=0;
-				while(!Obj_GetValueD(boss,FLAG_INTERSECTION,true) && !Obj_IsDeleted(obj)) {
+			task TFollow{     let i=0;
+				while(!Obj_GetValueD(boss,FLAG_INTERSECTION,true)&&!Obj_IsDeleted(obj)) {
 					ObjRender_SetPosition(obj, ex, ey, 0);
 					ObjRender_SetAngleZ(obj, i);
 					i++; yield;
-				}
-				Obj_Delete(obj);
+				} Obj_Delete(obj);
 			}
-			TFollow;
-			return obj;
-		}
-		else{
+			TFollow; return obj;
+		}else{
 			ObjRender_SetAlpha(boss,255);
 			if(Obj_IsValueExists(boss,"BlurObject")){Obj_Delete(Obj_GetValue(boss,"BlurObject"));}
 		}
 	}
 }
 
-function SetBossHitbox(boss,ex,ey){
-	if(Obj_GetValueD(boss,FLAG_INTERSECTION,true)){
-		let s = OR_GetScale(boss);
+function SetBossHitbox(enem,ex,ey){
+	let boss = GetEnemyBossObjectID[0];
+	if(Obj_GetValueD(enem,FLAG_INTERSECTION,true)){
+		let s = OR_GetScale(enem);
 		ObjEnemy_SetIntersectionCircleToShot(  boss, ex, ey, 24*s); //32
 		ObjEnemy_SetIntersectionCircleToPlayer(boss, ex, ey, 16*s); //24
 	}
 }
 
 task TSpellImmune{
+	let boss = GetEnemyBossObjectID[0];
 	let wasIntersection;
 	while(!Obj_IsDeleted(boss)){
 		while(!IsPlayerSpellActive){yield;}
@@ -169,12 +173,14 @@ task TSpellImmune{
 }
 
 function GetSwordTipX(){
+	let boss = GetEnemyBossObjectID[0];
 	let isAttackPose = Obj_GetValueD(boss, "anim_isattackplaying", false);
 	let dir = boolSign(ObjRender_GetScaleX(boss)<0);
 	if(!isAttackPose){ return ex+(17*dir); }
 	else { return ex+(14*dir); }
 }
 function GetSwordTipY(){	
+	let boss = GetEnemyBossObjectID[0];
 	let isAttackPose = Obj_GetValueD(boss, "anim_isattackplaying", false);
 	let dir = ObjRender_GetScaleX(boss)<0;
 	if(!isAttackPose){ return ey-26; }
@@ -184,7 +190,8 @@ function GetSwordTipY(){
 //Makes sure px,py,ex,ey,etc are always up-to-date
 task UpdatePositions {
 	yield;
-//	let boss = GetEnemyBossObjectID();
+	while(length(GetEnemyBossObjectID)==0){yield;}
+	let boss = GetEnemyBossObjectID[0];
 	while(!Obj_IsDeleted(boss)) {
 		px = GetPlayerX;
 		py = GetPlayerY;
@@ -351,8 +358,15 @@ task EnemyName(obj, name, r, g, b){ //Blurred originally
 
 	Obj_SetValue(obj,"DisplayName",name);
 	
+	let boss = GetEnemyBossObjectID[0];
+	let num = Obj_GetValueD(boss,"DisplayNameCount",0)+1;
+	Obj_SetValue(boss,"DisplayNameCount",num);
+	if(num>1){
+		ObjRender_SetY(text,12*num);
+	}
 	
-	while(ObjEnemy_GetInfo(obj,INFO_LIFE)>0){yield;}
+	yield;
+	while(ObjEnemy_GetInfo(boss,INFO_LIFE)>0){yield;}
 	wait(12);//It can only handle 12 yields, currently, before the script is closed.
 	Obj_Delete(text);
 }

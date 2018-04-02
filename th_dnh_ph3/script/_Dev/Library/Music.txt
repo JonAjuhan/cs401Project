@@ -64,42 +64,82 @@ function ResumeBGM{
 
 
 task ShowBGMTitle(title){
+	let subtitle = "";
+	let arr = SplitString(title,"@");
+	if(length(arr)>1){
+		title = arr[0];
+		subtitle = "Arrange: ["~arr[1]~"]";
+	}
+	let tmp;
+	tmp = GetCommonData("BGMTitle","");
+	if(tmp!=""){ title = tmp; SetCommonData("BGMTitle",""); };
+	tmp = GetCommonData("BGMSubtitle","");
+	if(tmp!=""){ subtitle = tmp; SetCommonData("BGMSubtitle",""); };	
 	//let obj = makeText(sx-15,sy-20,16,[0,0,255],ALIGNMENT_RIGHT, 0, title);
-	let obj = GetCommonData("BGMTitleObject",ObjText_Create);
+	let obj  = GetCommonData("BGMTitleObject",ObjText_Create);
 	SetCommonData("BGMTitleObject",obj);
 	Obj_SetVisible(obj,true);
-	ObjRender_SetPosition(obj,-15,sy-16,0);
+	ObjRender_SetPosition(obj, -15,sy-32,0); //-16
 	ObjText_SetMaxWidth(obj,sx);
 	ObjText_SetHorizontalAlignment(obj,ALIGNMENT_RIGHT);
 	ObjText_SetText(obj,title);
+
+	let obj2 = GetCommonData("BGMSubtitleObject",ObjText_Create);
+	SetCommonData("BGMSubtitleObject",obj2);
+	Obj_SetVisible(obj2,true);
+	ObjRender_SetPosition(obj2,-15,sy- 16,0); //
+	ObjText_SetMaxWidth(obj2,sx);
+	ObjText_SetHorizontalAlignment(obj2,ALIGNMENT_RIGHT);
+	ObjText_SetText(obj2,subtitle);
 	
-	//Less intrusive
-	ObjText_SetFontColorTop(   obj, 180, 180, 255);
-	ObjText_SetFontColorBottom(obj,  64,  64, 255);
-	//More intrusive
-	// ObjText_SetFontColorTop(   obj, 255, 255, 255);
-	// ObjText_SetFontColorBottom(obj,  180,  180, 255);
+	//Less obtrusive
+	// ObjText_SetFontColorTop(   obj, 180, 180, 255);
+	// ObjText_SetFontColorTop(   obj2, 180, 180, 255);
+	// ObjText_SetFontColorBottom(obj,  64,  64, 255);
+	// ObjText_SetFontColorBottom(obj2,  64,  64, 255);
+	//More obtrusive
+	ObjText_SetFontColorTop(   obj,  255, 255, 255);
+	ObjText_SetFontColorTop(   obj2, 200, 200, 255);
+	ObjText_SetFontColorBottom(obj,  180, 180, 255);
+	ObjText_SetFontColorBottom(obj2, 180, 180, 255);
 
 	ObjText_SetFontBorderColor(obj,   0,   0, 255);
+	ObjText_SetFontBorderColor(obj2,   0,   0, 255);
 	ObjText_SetFontBorderType(obj, BORDER_FULL);
+	ObjText_SetFontBorderType(obj2, BORDER_FULL);
 	ObjText_SetFontBorderWidth(obj, 1);
+	ObjText_SetFontBorderWidth(obj2, 1);
 	
 	
 	ObjText_SetFontType(obj, "Cirno");
+	ObjText_SetFontType(obj2, "THSpatial");
+	
+	ObjText_SetFontSize(obj, 20); //16
+	ObjText_SetFontSize(obj2,12); //12
+	
 	Obj_SetRenderPriorityI(obj,79.9999);
+	Obj_SetRenderPriorityI(obj2,79.9999);
+	
+	ObjRender_SetAlpha(obj2,0);
 	descent(i in 0..40){ //100
-		ObjRender_SetY(obj,sy-20+i);
-		ObjRender_SetAlpha(obj,200-2*i);
+		ObjRender_SetY(obj ,sy-32+i); //sy-20+i
+		ObjRender_SetAlpha(obj ,200-2*i);
+		yield;
+	}
+	descent(i in 0..100){ //100
+		// ObjRender_SetY(obj2,sy-16+i);
+		ObjRender_SetAlpha(obj2,200-2*i);
 		yield;
 	}
 	wait(180); //120
 	ascent(i in 0..120){ //120
 		// ObjRender_SetX(obj,-(15+sx/120*i) );
-		ObjRender_SetX(obj,qerp(-15,-15+(0.15*sx),-15-sx,i/120));
+		ObjRender_SetX(obj ,qerp(-15,-15+(0.15*sx),-15-sx,i/120));
+		ObjRender_SetX(obj2,qerp(-15,-15+(0.15*sx),-15-sx,i/120));
 		yield;
 	}
-	// Obj_Delete(obj);
-	Obj_SetVisible(obj,false);
+	Obj_SetVisible(obj ,false);
+	Obj_SetVisible(obj2,false);
 }
 
 

@@ -949,14 +949,14 @@ ShotData{ id=821 rect=(447,160,479,191) render=ADD_ARGB fixed_angle=true angular
 ShotData{ id=822 rect=(479,160,511,191) render=ADD_ARGB fixed_angle=true angular_velocity = 2 delay_color= (255,128,64) } // Orange
 
 // Bubbles
-ShotData{ id=830 rect=(960,64,1023,127) render=ADD_ARGB fixed_angle=true angular_velocity = 15 delay_color= (255,255,255) } // Gray
-ShotData{ id=823 rect=(768,0,831,63) render=ADD_ARGB fixed_angle=true angular_velocity = 15 delay_color= (255,64,64) } // Red
-ShotData{ id=829 rect=(896,64,959,127) render=ADD_ARGB fixed_angle=true angular_velocity = 15 delay_color= (255,128,64) } // Orange
-ShotData{ id=826 rect=(960,0,1023,63) render=ADD_ARGB fixed_angle=true angular_velocity = 15 delay_color= (255,255,64) } // Yellow
-ShotData{ id=825 rect=(896,0,959,63) render=ADD_ARGB fixed_angle=true angular_velocity = 15 delay_color= (64,255,64) } // Green
-ShotData{ id=827 rect=(768,64,831,127) render=ADD_ARGB fixed_angle=true angular_velocity = 15 delay_color= (64,255,255) } // Aqua
-ShotData{ id=824 rect=(832,0,895,63) render=ADD_ARGB fixed_angle=true angular_velocity = 15 delay_color= (64,64,255) } // Blue
-ShotData{ id=828 rect=(832,64,895,127) render=ADD_ARGB fixed_angle=true angular_velocity = 15 delay_color= (255,64,255) } // Purple
+ShotData{ id=823 rect=(960,64,1023,127) render=ADD_ARGB fixed_angle=true angular_velocity = 15 delay_color= (255,255,255) } // Gray
+ShotData{ id=824 rect=(768,0,831,63)    render=ADD_ARGB fixed_angle=true angular_velocity = 15 delay_color= (255,64,64) } // Red
+ShotData{ id=825 rect=(896,64,959,127)  render=ADD_ARGB fixed_angle=true angular_velocity = 15 delay_color= (255,128,64) } // Orange
+ShotData{ id=826 rect=(960,0,1023,63)   render=ADD_ARGB fixed_angle=true angular_velocity = 15 delay_color= (255,255,64) } // Yellow
+ShotData{ id=827 rect=(896,0,959,63)    render=ADD_ARGB fixed_angle=true angular_velocity = 15 delay_color= (64,255,64) } // Green
+ShotData{ id=828 rect=(768,64,831,127)  render=ADD_ARGB fixed_angle=true angular_velocity = 15 delay_color= (64,255,255) } // Aqua
+ShotData{ id=829 rect=(832,0,895,63)    render=ADD_ARGB fixed_angle=true angular_velocity = 15 delay_color= (64,64,255) } // Blue
+ShotData{ id=830 rect=(832,64,895,127)  render=ADD_ARGB fixed_angle=true angular_velocity = 15 delay_color= (255,64,255) } // Purple
 
 
 // Fireballs

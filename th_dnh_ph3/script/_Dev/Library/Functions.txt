@@ -73,8 +73,9 @@ task TBreakSpell(args) {
 	let eff = GlowCircle(ex,ey,[255,255,255,255],1,20,30);
 	Obj_SetRenderPriorityI(eff,79);
 	
-	wait(del);
+	let boss = GetEnemyBossObjectID[0];
 	
+	wait(del);
 	if(!Obj_IsDeleted(boss)){Obj_Delete(boss);}
 	CloseScript(GetOwnScriptID());
 	return;
@@ -92,6 +93,7 @@ task TBreakNonspell(args) {
 	
 	let del=checkarr(args,BREAK_DELAY); if(del==-1){del=15;}else{del=args[del+1];}
 	// wait(del);
+	let boss = GetEnemyBossObjectID[0];
 	loop(del){ DeleteShotAll(TYPE_ALL, TYPE_ITEM); yield; }
 	
 	if(!Obj_IsDeleted(boss)){Obj_Delete(boss);}
@@ -1022,6 +1024,7 @@ function GetMoveAtWrap(x0,y0,x1,y1,walls){
 	let over = 1;    //number of times to wrap around before reaching destination
 	let orthweight = 1.5; //preferred number of walls to wrap across (1=orthagonal, 2=diagonal)
 	let wrapweight = 2.25;
+	let overshoot = 1; //multiplier for final distance
 	let exind = 0; //number of extra parameters processed
 	ascent(i in 0..length(walls)){
 		alternative(walls[i])
@@ -1032,6 +1035,7 @@ function GetMoveAtWrap(x0,y0,x1,y1,walls){
 			case(0){over=walls[i];}
 			case(1){orthweight=walls[i]}
 			case(2){wrapweight=walls[i]}
+			case(3){overshoot=walls[i]}
 			exind++;
 		}
 	}
@@ -1046,10 +1050,10 @@ function GetMoveAtWrap(x0,y0,x1,y1,walls){
 					let dist = getdistance(x0,y0,x,y); let compdist=dist;
 					let ang = getangle(x0,y0,x,y);
 					
-					dists  = dists  ~ [ dist ];
+					dists  = dists  ~ [ dist*overshoot ];
 					angs   = angs   ~ [ ang ];
-					xdests = xdests ~ [ x ];
-					ydests = ydests ~ [ y ];
+					xdests = xdests ~ [ x*overshoot ];
+					ydests = ydests ~ [ y*overshoot ];
 					
 					// let yc = y1+sx*j *over; //treat stage as square for determining which wall
 					// let compdist = getdistance(x0,y0,x,yc);
