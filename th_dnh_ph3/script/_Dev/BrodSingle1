@@ -82,7 +82,6 @@ task MainTask {
 
 	TShoot;
 	RingShoot;
-	AimShot;
 }
 
 
@@ -95,19 +94,20 @@ task TShoot
 	let a=0;
 	let spd;
 	let N;
+	let n;
 
 	let diff = rank();
 	alternative(diff)
-	case(RANK_EASY){	N = 3; spd = 1;}
-	case(RANK_NORM){	N = 5; spd = 1.5;}
-	case(RANK_HARD){	N = 7; spd = 2;}
-	case(RANK_LUNA){	N = 10; spd = 2.5;}
+	case(RANK_EASY){	N = 5; n = 1; spd = 1;}
+	case(RANK_NORM){	N = 7; n = 1; spd = 1.25;}
+	case(RANK_HARD){	N = 10; n = 2; spd = 1.75;}
+	case(RANK_LUNA){	N = 15; n = 3; spd = 2;}
 
 	while(!Obj_IsDeleted(boss)) {
 		ascent(i in 0..N)
 		{
 			a=a0+i*(360/N);
-			ascent(j in -1..2)
+			ascent(j in 0..n)
 			{
 				shot = CreateShotA1(ex+50*cos(a),ey+50*sin(a),spd, a0+i*(360/N),SUPP_RED+500, 15);
 				ObjMove_SetAngularVelocity(shot,0.01*j);
@@ -124,50 +124,27 @@ task RingShoot
 	let a0 =0;
 	let a=0;
 	let spd;
+	let n;
 	let N;
 
 	let diff = rank();
 	alternative(diff)
-	case(RANK_EASY){	N = 3; spd = 1}
-	case(RANK_NORM){	N = 4; spd = 1.5}
-	case(RANK_HARD){	N = 5; spd = 2}
-	case(RANK_LUNA){	N = 6; spd = 2.5}
+	case(RANK_EASY){	N = 7; n = 1; spd = 1}
+	case(RANK_NORM){	N = 10; n = 2; spd = 1.25}
+	case(RANK_HARD){	N = 15; n = 3; spd = 1.75}
+	case(RANK_LUNA){	N = 20; n = 5; spd = 2.5}
 
 	while(!Obj_IsDeleted(boss)) {
 		ascent(i in 0..N)
 		{
 			a=a0+i*(360/N);
-			ascent(j in -1..2)
+			ascent(j in 0..n)
 			{
 				shot = CreateShotA1(0*cos(a),180*sin(a),spd, a0+i*(360/N),SUPP_RED+500, 15);
-				ObjMove_SetAngularVelocity(shot,0.01*j);
+				ObjMove_SetAngularVelocity(shot,0.025*j);
 			}
 		a0+=15;
 		}
 	wait(10);
-	}
-}
-
-task AimShot
-{
-	let shot;
-	let angle;
-	let N;
-
-	let diff = rank();
-	alternative(diff)
-	case(RANK_EASY){	N = 5; spd = 1}
-	case(RANK_NORM){	N = 7; spd = 1.5}
-	case(RANK_HARD){	N = 10; spd = 2}
-	case(RANK_LUNA){	N = 15; spd = 2.5}
-
-	while(!Obj_IsDeleted(boss))
-	{
-		ascent(i in 0..N){
-		//ex = boss x, ey = boss y, px py player
-		angle = getangle(ex,ey,px,py);
-		shot = CreateShotA1(ex,ey,spd,angle,SUPP_RED+500,10);
-
-		wait(25);}
 	}
 }

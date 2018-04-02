@@ -96,10 +96,10 @@ task TShoot
 
 	let diff = rank();
 	alternative(diff)
-	case(RANK_EASY){	width = 10; deletetime = 150; frame = 200;}
-	case(RANK_NORM){	width = 15; deletetime = 125; frame = 150;}
-	case(RANK_HARD){	width = 20; deletetime = 100; frame = 100;}
-	case(RANK_LUNA){	width = 25; deletetime = 50; frame = 75;}
+	case(RANK_EASY){	width = 25; deletetime = 150; frame = 200;}
+	case(RANK_NORM){	width = 30; deletetime = 125; frame = 150;}
+	case(RANK_HARD){	width = 40; deletetime = 75; frame = 100;}
+	case(RANK_LUNA){	width = 60; deletetime = 25; frame = 50;}
 
 	while(!Obj_IsDeleted(boss)) {
     shot = CreateStraightLaserA1(rand(1,381),rand(1,483),-90,1000,width,deletetime,SUPP_RED+500, frame);
@@ -114,22 +114,23 @@ task RingShoot
 	let a=0;
 	let spd;
 	let N;
+	let n;
 
 	let diff = rank();
 	alternative(diff)
-	case(RANK_EASY){	N = 3; spd = 1}
-	case(RANK_NORM){	N = 5; spd = 1.5}
-	case(RANK_HARD){	N = 7; spd = 2}
-	case(RANK_LUNA){	N = 10; spd = 2.5}
+	case(RANK_EASY){	N = 1; n = 2; spd = 1}
+	case(RANK_NORM){	N = 3; n = 3; spd = 1.25}
+	case(RANK_HARD){	N = 3; n = 3; spd = 1.5}
+	case(RANK_LUNA){	N = 5; n = 5; spd = 2}
 
 	while(!Obj_IsDeleted(boss)) {
 		ascent(i in 0..N)
 		{
 			a=a0+i*(360/N);
-			ascent(j in -1..2)
+			ascent(j in 0..n)
 			{
 				shot = CreateShotA1(ex+25*cos(a),ex+25*sin(a),spd, a0+i*(360/N),SUPP_RED+500, 15);
-				ObjMove_SetAngularVelocity(shot,0.01*j);
+				ObjMove_SetAngularVelocity(shot,0.025*j);
 			}
 		a0+=15;
 		}

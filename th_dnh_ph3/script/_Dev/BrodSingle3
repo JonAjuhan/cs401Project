@@ -89,16 +89,26 @@ task AimShot
 	let shot;
 	let shot1;
 	let angle;
+	let N;
+	let spd;
+	let aspd;
+
+	let diff = rank();
+	alternative(diff)
+	case(RANK_EASY){	N = 8; spd = 1.5; aspd = 0.20;}
+	case(RANK_NORM){	N = 11; spd = 1.75; aspd = 0.25;}
+	case(RANK_HARD){	N = 15; spd = 2; aspd = 0.30;}
+	case(RANK_LUNA){	N = 20; spd = 2.25; aspd = 0.35;}
 
 	while(!Obj_IsDeleted(boss))
 	{
-		ascent(j in -1..10)
+		ascent(j in -1..N)
 		{
-			shot = CreateShotA1(ex,ey,2,90,SUPP_RED+500,1);
-			shot1 = CreateShotA1(ex,ey,2,45,SUPP_RED+500,1);
-			ObjMove_SetAngularVelocity(shot,0.25*j);
+			shot = CreateShotA1(ex,ey,spd,90,SUPP_RED+500,1);
+			shot1 = CreateShotA1(ex,ey,spd,45,SUPP_RED+500,1);
+			ObjMove_SetAngularVelocity(shot,aspd*j);
 			ObjMove_AddPatternA1(shot,300,2,90);
-			ObjMove_SetAngularVelocity(shot1,-0.25*j);
+			ObjMove_SetAngularVelocity(shot1,aspd*-j);
 			ObjMove_AddPatternA1(shot1,300,2,90);
 		}
 		wait(75);
