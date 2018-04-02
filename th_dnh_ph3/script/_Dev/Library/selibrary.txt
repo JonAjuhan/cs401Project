@@ -121,14 +121,18 @@ let se_bubble = sed~"bubble.wav";
 let se_playershot = csd~"../se/playershot.wav";
 
 
-task SE_Play(let path, let vl){
+function SE_Play(let path, let vl){
 	vl*=GetAreaCommonData("CONFIG","SE Volume",0.80);
 	let seobj = ObjSound_Create;
 	ObjSound_Load(seobj,path);
 	ObjSound_Play(seobj);
 	ObjSound_SetVolumeRate(seobj,vl);
-	loop(120){yield;}
-	// RemoveSound(path);
+	Manage; return seobj;
+	task Manage{
+		loop(120){yield;}
+		RemoveSound(path);
+		Obj_Delete(seobj);
+	}
 }
 
 
