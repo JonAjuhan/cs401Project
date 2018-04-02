@@ -1,0 +1,57 @@
+#TouhouDanmakufu[Plural]
+#ScriptVersion[3]
+#Title["Brod Plural"]
+#Text["A test plural."]
+
+#include "./Index.txt"
+#System["./system/Andi_System.txt"]
+#Background["./system/Background/Mystia/BG_work.txt"]
+
+// #BGM["./bgm/bgm - Deaf to All but the Song.ogg"]
+
+let hold = true;
+
+@Loading {
+}
+
+@Event{
+	alternative(GetEventType())
+	case(EV_START_BOSS) {
+		hold = false;
+	}
+}
+
+@Initialize{
+	SetCommonData("IsPlural",true); //to figure out what was selected from the menu, when needed
+	TPlural;
+}
+@MainLoop{
+	yield;
+}
+
+
+task TPlural {
+	let dir = GetCurrentScriptDirectory()~"./";
+    let obj = ObjEnemyBossScene_Create();
+
+	yield;
+
+	//params: boss scene object, lifebar number, filepath
+	ObjEnemyBossScene_Add(obj,0,dir~"Single-7-Mystia-Dialogue.dnh");
+	//ObjEnemyBossScene_Add(obj,0,dir~"BrodSingle1");
+	ObjEnemyBossScene_Add(obj,1,dir~"BrodSingle2");
+	ObjEnemyBossScene_Add(obj,2,dir~"BrodSingle3");
+	ObjEnemyBossScene_Add(obj,2,dir~"Single-7-Mystia-Explode.dnh");
+
+	ObjEnemyBossScene_LoadInThread(obj);
+
+	if(noStage){hold=false;}
+	while(hold){yield;}
+
+	ObjEnemyBossScene_Regist(obj);
+
+	//wait for singles to end
+	while(!Obj_IsDeleted(obj)){yield;}
+	CloseScript(GetOwnScriptID());
+
+}

@@ -1,0 +1,144 @@
+#TouhouDanmakufu[Single]
+#ScriptVersion[3]
+#Title["Brod Single 2"]
+#Text["..."]
+#BGM["./bgm/bgm - A Maiden's Illusionary Funeral ~ Necro-Fantasy.ogg"]						//"./bgm/bgm - Bhava-Agra As Seen Through a Child's Mind.mp3"]
+#System["./system/Default_System.txt"]
+#Background["./system/Background_Sky.txt"]
+// 380x482
+#include "./Index.txt"
+
+
+let fog; let ingap; let outgap;
+
+let timer = 37; //30
+
+@Event
+{
+	alternative(GetEventType())
+	case(EV_REQUEST_LIFE)
+	{
+		SetScriptResult(2000);
+	}
+	case(EV_REQUEST_SPELL_SCORE){
+        SetScriptResult(5000000);
+    }
+//	case(EV_REQUEST_IS_DURABLE_SPELL) {
+//		SetScriptResult(true);
+//	}
+//	case(EV_REQUEST_IS_LAST_SPELL){
+//		SetScriptResult(true);
+//	}
+
+	case(EV_REQUEST_TIMER) { SetScriptResult(timer*60); } //4500
+}
+@Initialize
+{
+	SetCommonData("CurrentSC","Boundary \"Geas of Near and Far\"");
+	SetCommonData("Difficulty","Phantasm");
+
+	boss = spawnBoss();
+
+	ObjEnemy_SetDamageRate(boss,0,0);
+	SetShotAutoDeleteClip(64,96,64,64);
+
+	//EnemyName(boss, "Andi's OC", 255, 180, 255);
+
+	MainTask;
+
+
+}
+@MainLoop
+{
+
+	if(ObjEnemy_GetInfo(boss, INFO_LIFE) <= 0 && !finishing)
+	{
+		finishing = true;
+		TBreakSpell([]);
+	}
+	else {
+		SetBossHitbox(boss,ex,ey);
+	}
+	frame++;
+	yield;
+}
+
+
+task MainTask {
+
+	ObjEnemy_SetDamageRate(boss,0,0);
+	ObjMove_SetDestAtFrame(boss, cx, cy-120, 60);
+
+	SetSpellCard;
+//	MCircNextAlpha = 80;
+//	Obj_SetValue(objSpellCircle,"MaxAlpha",64);
+
+	ObjEnemyBossScene_StartSpell(objScene);
+	ObjEnemyBossScene_SetSpellTimer(objScene,timer*60); //5760
+
+//	SetCaution;
+//	SetBossBlur(true);
+	AuraRainbow(boss,255,255,255);
+	TSpellImmune;
+
+	wait(90);
+	Tmovement(cx-120,cx+120, cy-90,cy-60, 60,240, [MOVE_PLAYERBIAS,2,0,MOVE_MAXSPEED,1.5] );
+	ObjEnemy_SetDamageRate(boss,24,8);
+	frame = 0;
+
+	TShoot;
+	RingShoot;
+}
+
+
+
+
+task TShoot
+{
+	let shot;
+	let width;
+	let deletetime;
+	let frame;
+
+	let diff = rank();
+	alternative(diff)
+	case(RANK_EASY){	width = 10; deletetime = 150; frame = 200;}
+	case(RANK_NORM){	width = 15; deletetime = 125; frame = 150;}
+	case(RANK_HARD){	width = 20; deletetime = 100; frame = 100;}
+	case(RANK_LUNA){	width = 25; deletetime = 50; frame = 75;}
+
+	while(!Obj_IsDeleted(boss)) {
+    shot = CreateStraightLaserA1(rand(1,381),rand(1,483),-90,1000,width,deletetime,SUPP_RED+500, frame);
+	  wait(10);
+	}
+}
+
+task RingShoot
+{
+	let shot;
+	let a0 =0;
+	let a=0;
+	let spd;
+	let N;
+
+	let diff = rank();
+	alternative(diff)
+	case(RANK_EASY){	N = 3; spd = 1}
+	case(RANK_NORM){	N = 5; spd = 1.5}
+	case(RANK_HARD){	N = 7; spd = 2}
+	case(RANK_LUNA){	N = 10; spd = 2.5}
+
+	while(!Obj_IsDeleted(boss)) {
+		ascent(i in 0..N)
+		{
+			a=a0+i*(360/N);
+			ascent(j in -1..2)
+			{
+				shot = CreateShotA1(ex+25*cos(a),ex+25*sin(a),spd, a0+i*(360/N),SUPP_RED+500, 15);
+				ObjMove_SetAngularVelocity(shot,0.01*j);
+			}
+		a0+=15;
+		}
+	wait(10);
+	}
+}

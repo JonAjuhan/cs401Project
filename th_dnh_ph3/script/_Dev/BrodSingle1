@@ -1,0 +1,165 @@
+#TouhouDanmakufu[Single]
+#ScriptVersion[3]
+#Title["Brod Single 1"]
+#Text["series 7: scales with difficulty"]
+#BGM["./bgm/bgm - Deaf to All but the Song.ogg"]//"./bgm/bgm - Kid's Festival ~ Innocent Treasures.ogg"] // CC-CGR-loop.ogg"]
+#System["./system/Andi_System.txt"]
+#Background["./system/Background/Mystia/BG_work.txt"]
+
+#include "./Index.txt"
+
+let timer = 37; //37 //47
+let drate = 24; //24
+let mlife = 2000; //2000
+
+@Event
+{
+	alternative(GetEventType())
+	case(EV_REQUEST_LIFE){				SetScriptResult(mlife);		}
+	case(EV_REQUEST_SPELL_SCORE){		SetScriptResult(5000000);	}
+	case(EV_REQUEST_TIMER) {			SetScriptResult(timer*60);	}
+	case(EV_REQUEST_IS_DURABLE_SPELL) {	SetScriptResult(false);		}
+}
+@Initialize
+{
+	if(noPlural){	SetDifficultyD(HARD); }
+	alternative(rank)
+	case(RANK_EASY){	SetCommonData("CurrentSC","Bird Sign \"Tune of Insufficient Light\"");}
+	case(RANK_NORM){	SetCommonData("CurrentSC","Vocal Sign \"Twilight Sparrow\"");}
+	case(RANK_HARD){	SetCommonData("CurrentSC","Vocal Sign \"Midnight Sparrow's Song\"");}
+	others         {	SetCommonData("CurrentSC","Night Sparrow \"Darkest Hour\"");}
+
+	SetShotAutoDeleteClip(32,32,32,32);
+
+	// boss = spawnBoss();
+	boss = spawnBossBlank("Mystia Lorelai");
+	renderMystiaIN(boss,1);
+
+	MainTask;
+
+
+}
+@MainLoop
+{
+
+	if(ObjEnemy_GetInfo(boss, INFO_LIFE) <= 0 && !finishing)
+	{
+		finishing = true;
+		DropItemsSpellEnd;
+		TBreakSpell([]);
+	}
+	else {
+		SetBossHitbox(boss,ex,ey);
+	}
+	frame++;
+	yield;
+}
+
+
+task MainTask {
+	ObjEnemy_SetDamageRate(boss,0,0);
+	ObjMove_SetDestAtFrame(boss, cx, cy-100, 60); //cy-120
+
+	wait(45);
+
+	// SetSpellCard;
+	SetSpellCardA2(NAZRIN,dirlib~"Cutin/Cutin_Mystia.png");
+
+
+	ObjEnemyBossScene_StartSpell(objScene);
+	ObjEnemyBossScene_SetSpellTimer(objScene,timer*60); //5760
+
+	//SetCaution;
+	// TSpellImmune;
+	Aura(boss,255,64,255,64);
+	SetMagicCircleAlpha(64,64);
+
+	wait(90);
+
+	Tmovement(cx-120,cx+120, cy-90,cy-60, 60,240, [MOVE_PLAYERBIAS,2,0,MOVE_MAXSPEED,1.5] );
+	ObjEnemy_SetDamageRate(boss,drate,drate/3);
+	frame = 0;
+
+	TShoot;
+	RingShoot;
+	AimShot;
+}
+
+
+
+
+task TShoot
+{
+	let shot;
+	let a0 =0;
+	let a=0;
+	let spd;
+	let N;
+
+	let diff = rank();
+	alternative(diff)
+	case(RANK_EASY){	N = 3; spd = 1;}
+	case(RANK_NORM){	N = 5; spd = 1.5;}
+	case(RANK_HARD){	N = 7; spd = 2;}
+	case(RANK_LUNA){	N = 10; spd = 2.5;}
+
+	while(!Obj_IsDeleted(boss)) {
+		ascent(i in 0..N)
+		{
+			a=a0+i*(360/N);
+			ascent(j in -1..2)
+			{
+				shot = CreateShotA1(ex+50*cos(a),ey+50*sin(a),spd, a0+i*(360/N),SUPP_RED+500, 15);
+				ObjMove_SetAngularVelocity(shot,0.01*j);
+			}
+		a0+=15;
+		}
+	wait(20);
+	}
+}
+
+task RingShoot
+{
+	let shot;
+	let a0 =0;
+	let a=0;
+	let spd;
+	let N;
+
+	let diff = rank();
+	alternative(diff)
+	case(RANK_EASY){	N = 3; spd = 1}
+	case(RANK_NORM){	N = 5; spd = 1.5}
+	case(RANK_HARD){	N = 7; spd = 2}
+	case(RANK_LUNA){	N = 10; spd = 2.5}
+
+	while(!Obj_IsDeleted(boss)) {
+		ascent(i in 0..N)
+		{
+			a=a0+i*(360/N);
+			ascent(j in -1..2)
+			{
+				shot = CreateShotA1(0*cos(a),180*sin(a),1, a0+i*(360/N),SUPP_RED+500, 15);
+				ObjMove_SetAngularVelocity(shot,0.01*j);
+			}
+		a0+=15;
+		}
+	wait(10);
+	}
+}
+
+task AimShot
+{
+	let shot;
+	let angle;
+
+	while(!Obj_IsDeleted(boss))
+	{
+		ascent(i in 0..10){
+		//ex = boss x, ey = boss y, px py player
+		angle = getangle(ex,ey,px,py);
+		shot = CreateShotA1(ex,ey,2,angle,SUPP_RED+500,25);
+
+		wait(25);}
+	}
+}

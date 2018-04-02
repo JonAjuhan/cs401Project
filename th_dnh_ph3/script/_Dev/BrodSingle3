@@ -1,0 +1,112 @@
+#TouhouDanmakufu[Single]
+#ScriptVersion[3]
+#Title["Brod Single 3"]
+#Text["..."]
+#BGM["./bgm/bgm - A Maiden's Illusionary Funeral ~ Necro-Fantasy.ogg"]						//"./bgm/bgm - Bhava-Agra As Seen Through a Child's Mind.mp3"]
+#System["./system/Default_System.txt"]
+#Background["./system/Background_Sky.txt"]
+// 380x482
+#include "./Index.txt"
+
+
+let fog; let ingap; let outgap;
+
+let timer = 37; //30
+
+@Event
+{
+	alternative(GetEventType())
+	case(EV_REQUEST_LIFE)
+	{
+		SetScriptResult(2000);
+	}
+	case(EV_REQUEST_SPELL_SCORE){
+        SetScriptResult(5000000);
+    }
+//	case(EV_REQUEST_IS_DURABLE_SPELL) {
+//		SetScriptResult(true);
+//	}
+//	case(EV_REQUEST_IS_LAST_SPELL){
+//		SetScriptResult(true);
+//	}
+
+	case(EV_REQUEST_TIMER) { SetScriptResult(timer*60); } //4500
+}
+@Initialize
+{
+	SetCommonData("CurrentSC","Boundary \"Geas of Near and Far\"");
+	SetCommonData("Difficulty","Phantasm");
+
+	boss = spawnBoss();
+
+	ObjEnemy_SetDamageRate(boss,0,0);
+	SetShotAutoDeleteClip(64,96,64,64);
+
+	//EnemyName(boss, "Andi's OC", 255, 180, 255);
+
+	MainTask;
+
+
+}
+@MainLoop
+{
+
+	if(ObjEnemy_GetInfo(boss, INFO_LIFE) <= 0 && !finishing)
+	{
+		finishing = true;
+		TBreakSpell([]);
+	}
+	else {
+		SetBossHitbox(boss,ex,ey);
+	}
+	frame++;
+	yield;
+}
+
+
+task MainTask {
+
+	ObjEnemy_SetDamageRate(boss,0,0);
+	ObjMove_SetDestAtFrame(boss, cx, cy-120, 60);
+
+	SetSpellCard;
+//	MCircNextAlpha = 80;
+//	Obj_SetValue(objSpellCircle,"MaxAlpha",64);
+
+	ObjEnemyBossScene_StartSpell(objScene);
+	ObjEnemyBossScene_SetSpellTimer(objScene,timer*60); //5760
+
+//	SetCaution;
+//	SetBossBlur(true);
+	AuraRainbow(boss,255,255,255);
+	TSpellImmune;
+
+	wait(90);
+	Tmovement(cx-120,cx+120, cy-90,cy-60, 60,240, [MOVE_PLAYERBIAS,2,0,MOVE_MAXSPEED,1.5] );
+	ObjEnemy_SetDamageRate(boss,24,8);
+	frame = 0;
+
+	AimShot;
+}
+
+
+task AimShot
+{
+	let shot;
+	let shot1;
+	let angle;
+
+	while(!Obj_IsDeleted(boss))
+	{
+		ascent(j in -1..10)
+		{
+			shot = CreateShotA1(ex,ey,2,90,SUPP_RED+500,1);
+			shot1 = CreateShotA1(ex,ey,2,45,SUPP_RED+500,1);
+			ObjMove_SetAngularVelocity(shot,0.25*j);
+			ObjMove_AddPatternA1(shot,300,2,90);
+			ObjMove_SetAngularVelocity(shot1,-0.25*j);
+			ObjMove_AddPatternA1(shot1,300,2,90);
+		}
+		wait(75);
+	}
+}
