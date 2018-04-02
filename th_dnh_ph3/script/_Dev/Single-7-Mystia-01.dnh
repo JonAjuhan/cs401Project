@@ -76,7 +76,7 @@ task MainTask {
 
 	wait(90);
 		
-	Tmovement(cx-120,cx+120, cy-90,cy-60, 60,240, [MOVE_PLAYERBIAS,2,0,MOVE_MAXSPEED,1.5] );
+	Tmovement(cx-120,cx+120, cy-90,cy-60, 60,240, [MOVE_PLAYERBIAS,2,0,MOVE_LIMITSPEED,1.5] );
 	ObjEnemy_SetDamageRate(boss,drate,drate/3);
 	frame = 0;
 	

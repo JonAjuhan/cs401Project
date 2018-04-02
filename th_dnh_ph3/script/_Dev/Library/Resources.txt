@@ -54,16 +54,21 @@ function O_GetType(obj){
 	others{return Obj_GetType(obj);}
 }
 
-//To detect when some other task has messed with the thing a task is using
-function SetHash(obj,k){
-	let h = itoa(ObjRender_GetX(obj))~itoa(ObjRender_GetY(obj))~itoa(frame%90+10); //~tost(Obj_GetValueD(obj,k,randint(10,99)));
-	Obj_SetValue(obj,k~"_hash",h);
-	return h;
-}
-function GetHash(obj,k){
-	return Obj_GetValueD(obj,k~"_hash",itoa(frame%90+10));
-}
+// //To detect when some other task has messed with the thing a task is using
+// function SetHash(obj,k){
+	// let h = itoa(ObjRender_GetX(obj))~itoa(ObjRender_GetY(obj))~itoa(frame%90+10); //~tost(Obj_GetValueD(obj,k,randint(10,99)));
+	// Obj_SetValue(obj,k~"_hash",h);
+	// return h;
+// }
+// function GetHash(obj,k){
+	// return Obj_GetValueD(obj,k~"_hash",itoa(frame%90+10));
+// }
 
+function GetNextHash{
+	let hash = GetCommonData("NextHash",0);
+	SetCommonData("NextHash",(hash+1)%256);
+	return hash;
+}
 
 
 

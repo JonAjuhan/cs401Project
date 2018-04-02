@@ -115,10 +115,12 @@ let se_timeunstall= sed~"timereversegrow.wav";
 
 let se_theworld = sed~"TrollSounds/za warudo.wav";
 
-let paf = csd~"../se/se_enep00.wav";
+let se_paf = csd~"../se/se_enep00.wav";   let paf = se_paf;
 let se_bubble = sed~"bubble.wav";
 
 let se_playershot = csd~"../se/playershot.wav";
+
+
 
 
 function SE_Play(let path, let vl){
@@ -130,13 +132,54 @@ function SE_Play(let path, let vl){
 	Manage; return seobj;
 	task Manage{
 		loop(120){yield;}
-		RemoveSound(path);
+		// RemoveSound(path);
 		Obj_Delete(seobj);
 	}
 }
 
+//Experimental version
+//Once working properly, this should help
+//avoid creating extraneous sound objects
+//while preventing sounds from being cut off.
+function SE_PlayA1(let path, let vl){
+	vl*=GetAreaCommonData("CONFIG","SE Volume",0.80);
+	let name = path[length(path)-9..length(path)-4];
+	let seobj = GetCommonData("SoundObject_"~name,ObjSound_Create);
+	if(Obj_IsDeleted(seobj)){seobj=ObjSound_Create;}
+	SetCommonData("SoundObject_"~name,seobj);
+	ObjSound_Load(seobj,path);
+	ObjSound_Play(seobj);
+	ObjSound_SetVolumeRate(seobj,vl);
+	Manage; return seobj;
+	task Manage{
+		let hash = GetCommonData("NextHash",0);
+		SetCommonData("NextHash",(hash+1)%256);
+		
+		let numsounds = GetCommonData("NumSoundObjects",0);
+		SetCommonData("NumSoundObjects",numsounds+1);
+		let del = max(10,120-30*numsounds);
+		
+		SetCommonData("SoundManage_"~name,hash);
+		// loop(del){yield;}
+		loop(120){yield;}
+		// if(GetCommonData("SoundManage_"~name,NULL)==hash || Obj_IsDeleted(seobj)){
+		if(GetCommonData("SoundManage_"~name,hash)-hash < 10 || Obj_IsDeleted(seobj)){
+			RemoveSound(path);
+			DeleteCommonData("SoundManage_"~name);
+			DeleteCommonData("SoundObject_"~name);
+			Obj_Delete(seobj);
+		}
+		// else{
+			// while(GetCommonData("SoundManage_"~name,hash)-hash < 10){yield;}
+			// Obj_Delete(seobj);
+		// }
+		SetCommonData("NumSoundObjects",SetCommonData("NumSoundObjects",0)-1);
+		//TODO: Make sure objects are cleaned up when interrupted by end of script
+	}
+}
 
-function SE_PlayA1(let path, let vl){ SE_Play(path,vl); }
+
+
 
 //specify se obj and duration
 task SE_PlayA2(let path, let vl, let seobj, dur) {
@@ -145,11 +188,43 @@ task SE_PlayA2(let path, let vl, let seobj, dur) {
 	ObjSound_Play(seobj);
 	ObjSound_SetVolumeRate(seobj,vl);
 	loop(dur){yield;}
-	RemoveSound(path);
+	MaybeRemoveSound(path);
 }
 
 
 task SE_Play_Del(let path, let vl, let del) {
 	loop(del){yield;}
 	SE_Play(path,vl);
+}
+
+
+
+
+
+
+function MaybeRemoveSound(path){
+	alternative(path)
+	case(
+		se_shot,
+		se_shot1,
+		se_shot2,
+		se_shot3,
+		se_shot4,
+		se_shot5,
+		se_shot6,
+		se_shot7,
+		se_shot8,
+		se_chime,
+		se_chime2,
+		se_kira01,
+		se_kira02,
+		se_fam,
+		se_fam2,
+		se_paf,
+		se_item
+	){return false;}
+	others{
+		RemoveSound(path);
+		return true;
+	}
 }
