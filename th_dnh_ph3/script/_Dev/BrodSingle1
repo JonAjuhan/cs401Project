@@ -76,7 +76,7 @@ task MainTask {
 
 	wait(90);
 
-	Tmovement(cx-120,cx+120, cy-90,cy-60, 60,240, [MOVE_PLAYERBIAS,2,0,MOVE_MAXSPEED,1.5] );
+	Tmovement(cx-120,cx+120, cy-90,cy-60, 60,240, [MOVE_PLAYERBIAS,2,0,MOVE_LIMITSPEED,1.5] );
 	ObjEnemy_SetDamageRate(boss,drate,drate/3);
 	frame = 0;
 
@@ -129,9 +129,9 @@ task RingShoot
 	let diff = rank();
 	alternative(diff)
 	case(RANK_EASY){	N = 3; spd = 1}
-	case(RANK_NORM){	N = 5; spd = 1.5}
-	case(RANK_HARD){	N = 7; spd = 2}
-	case(RANK_LUNA){	N = 10; spd = 2.5}
+	case(RANK_NORM){	N = 4; spd = 1.5}
+	case(RANK_HARD){	N = 5; spd = 2}
+	case(RANK_LUNA){	N = 6; spd = 2.5}
 
 	while(!Obj_IsDeleted(boss)) {
 		ascent(i in 0..N)
@@ -139,7 +139,7 @@ task RingShoot
 			a=a0+i*(360/N);
 			ascent(j in -1..2)
 			{
-				shot = CreateShotA1(0*cos(a),180*sin(a),1, a0+i*(360/N),SUPP_RED+500, 15);
+				shot = CreateShotA1(0*cos(a),180*sin(a),spd, a0+i*(360/N),SUPP_RED+500, 15);
 				ObjMove_SetAngularVelocity(shot,0.01*j);
 			}
 		a0+=15;
@@ -152,13 +152,21 @@ task AimShot
 {
 	let shot;
 	let angle;
+	let N;
+
+	let diff = rank();
+	alternative(diff)
+	case(RANK_EASY){	N = 5; spd = 1}
+	case(RANK_NORM){	N = 7; spd = 1.5}
+	case(RANK_HARD){	N = 10; spd = 2}
+	case(RANK_LUNA){	N = 15; spd = 2.5}
 
 	while(!Obj_IsDeleted(boss))
 	{
-		ascent(i in 0..10){
+		ascent(i in 0..N){
 		//ex = boss x, ey = boss y, px py player
 		angle = getangle(ex,ey,px,py);
-		shot = CreateShotA1(ex,ey,2,angle,SUPP_RED+500,25);
+		shot = CreateShotA1(ex,ey,spd,angle,SUPP_RED+500,10);
 
 		wait(25);}
 	}

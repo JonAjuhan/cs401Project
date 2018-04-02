@@ -38,7 +38,7 @@ task TPlural {
 
 	//params: boss scene object, lifebar number, filepath
 	ObjEnemyBossScene_Add(obj,0,dir~"Single-7-Mystia-Dialogue.dnh");
-	//ObjEnemyBossScene_Add(obj,0,dir~"BrodSingle1");
+	ObjEnemyBossScene_Add(obj,0,dir~"BrodSingle1");
 	ObjEnemyBossScene_Add(obj,1,dir~"BrodSingle2");
 	ObjEnemyBossScene_Add(obj,2,dir~"BrodSingle3");
 	ObjEnemyBossScene_Add(obj,2,dir~"Single-7-Mystia-Explode.dnh");
