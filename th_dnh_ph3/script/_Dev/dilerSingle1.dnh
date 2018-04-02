@@ -3,8 +3,8 @@
 #Title["DilerSingle-1"]
 #Text["..."]
 #BGM["./bgm/bgm - A Maiden's Illusionary Funeral ~ Necro-Fantasy.ogg"]						//"./bgm/bgm - Bhava-Agra As Seen Through a Child's Mind.mp3"]
-#System["./system/Default_System.txt"]
-#Background["./system/Background_Sky.txt"]
+#System["./system/Andi_System.txt"]
+#Background["./system/background/Background_Sky.txt"]
 
 #include "./Index.txt"
 #include "./Library/AndiGapFunctions.txt"
@@ -35,8 +35,8 @@ let timer = 37; //30
 }
 @Initialize
 {
-	SetCommonData("CurrentSC","Boundary \"Geas of Near and Far\"");
-	SetCommonData("Difficulty","Phantasm");
+	SetCommonData("CurrentSC","test sign \"test of near and test\"");
+	// SetCommonData("Difficulty","Phantasm");
 
 	boss = spawnBoss();
 	ObjEnemy_SetDamageRate(boss,0,0);
@@ -82,7 +82,7 @@ task MainTask {
 	TSpellImmune;
 
 	wait(90);
-	Tmovement(cx-120,cx+120, cy-90,cy-60, 60,240, [MOVE_PLAYERBIAS,2,0,MOVE_MAXSPEED,1.5] );
+	Tmovement(cx-120,cx+120, cy-90,cy-60, 60,240, [MOVE_PLAYERBIAS,2,0,MOVE_LIMITSPEED,1.5] );
 	ObjEnemy_SetDamageRate(boss,24,8);
 	frame = 0;
 

@@ -4,7 +4,8 @@
 // #include "./../Library/selibrary.txt"
 
 let CSD = GetCurrentScriptDirectory;
-let img_break = CSD~"img/etbreak_ddc.png";
+// let img_break = CSD~"img/etbreak_ddc.png";
+let img_break = CSD~"img/etbreak_"~GetCommonData("BulletKillType","ddc")~".png";
 let break_frames = 8;
 
 @Loading{
@@ -50,13 +51,10 @@ let break_frames = 8;
 task BulletDelete(bullet, pos, frame, alpha){
 	let id = ObjShot_GetImageID(bullet);
 	if(id==0){return;} //prevents errors from "dummy bullets"
-	// if(id > 1000 && id < 1058){return;} //lasers
-	// if(Obj_IsDeleted(bullet) || !Obj_IsVisible(bullet) || (pos[0]==0&&pos[1]==0)){return;}
-	let c = GetShotDataInfoA1(id, TARGET_ENEMY, INFO_DELAY_COLOR); //deletion effect color should match the delay effect's
+	//deletion effect color should match the delay effect's
+	let c = Obj_GetValueD(bullet,"Color",GetShotDataInfoA1(id, TARGET_ENEMY, INFO_DELAY_COLOR));
 
 	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
-	// ObjPrim_SetTexture(obj, CSD~"img/etbreak_"~CommonData("BulletKillType","td")~".png");
-	// ObjPrim_SetTexture(obj, CSD~"img/etbreak_ddc.png");
 	ObjPrim_SetTexture(obj, img_break);
 	ObjSprite2D_SetSourceRect(obj, 0, 0, 32, 32);
 	ObjSprite2D_SetDestCenter(obj);

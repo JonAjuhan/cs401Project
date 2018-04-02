@@ -1,0 +1,225 @@
+#TouhouDanmakufu[Single]
+#ScriptVersion[3]
+#Title["(Mystia Unused Nonspell 3)"]
+#Text["series 7: scales with difficulty"] 
+// #BGM["./bgm/bgm - Deaf to All but the Song.ogg"]
+#BGM["./bgm/bgm - Kid's Festival ~ Innocent Treasures.ogg"]
+#System["./system/Andi_System.txt"]
+#Background["./system/Background/Mystia/BG_work.txt"]
+
+#include "./Index.txt"
+#include "./Library/ExperimentalFunctions.txt"
+
+let timer = 37; //37 //47
+let drate = 64; //24
+let mlife = 4000; //2000
+
+@Event
+{
+	alternative(GetEventType())
+	case(EV_REQUEST_LIFE){				SetScriptResult(mlife);		}
+	// case(EV_REQUEST_SPELL_SCORE){		SetScriptResult(5000000);	}
+	// case(EV_REQUEST_TIMER) {			SetScriptResult(timer*60);	}
+	// case(EV_REQUEST_IS_DURABLE_SPELL) {	SetScriptResult(false);		}
+}
+@Initialize
+{
+	if(noPlural){	SetDifficultyD(HARD); }
+	// alternative(rank)
+	// case(RANK_EASY){	SetCommonData("CurrentSC","Bird Sign \"Tune of Insufficient Light\"");}
+	// case(RANK_NORM){	SetCommonData("CurrentSC","Vocal Sign \"Twilight Sparrow\"");}
+	// case(RANK_HARD){	SetCommonData("CurrentSC","Vocal Sign \"Midnight Sparrow's Song\"");}
+	// others         {	SetCommonData("CurrentSC","Night Sparrow \"Darkest Hour\"");}
+	
+	SetShotAutoDeleteClip(32,32,32,32);
+	
+	// boss = spawnBoss();
+	boss = spawnBossBlank("Mystia Lorelai");
+	renderMystiaIN(boss,1);
+	
+	MainTask;
+	
+
+}
+@MainLoop
+{
+
+	if(ObjEnemy_GetInfo(boss, INFO_LIFE) <= 0 && !finishing)
+	{
+		finishing = true;
+		DropItemsNonspellEnd;
+		TBreakNonspell([BREAK_DELAY,45,NULL]);
+	}
+	else {
+		SetBossHitbox(boss,ex,ey);
+	}
+	frame++;
+	yield;
+}
+
+
+task MainTask {
+	// ObjEnemy_SetDamageRate(boss,0,0);
+	ObjEnemy_SetDamageRate(boss,drate,drate/3);
+	ObjMove_SetDestAtFrame(boss, cx, cy-100, 60); //cy-120
+	
+	// SetSpellCard;
+	// ObjEnemyBossScene_StartSpell(objScene);
+	// ObjEnemyBossScene_SetSpellTimer(objScene,timer*60); //5760
+	
+	//SetCaution;
+	// TSpellImmune;
+	// Aura(boss,255,255,255,64);
+	// SetMagicCircleAlpha(64,64);
+
+	wait(90);
+		
+	// Tmovement(cx-120,cx+120, cy-90,cy-60, 60,240, [MOVE_PLAYERBIAS,2,0,MOVE_MAXSPEED,1.5] );
+	ObjEnemy_SetDamageRate(boss,drate,drate/3);
+	frame = 0;
+	
+	
+	TShoot;
+	
+}
+
+
+
+
+task TShoot{
+	wait(60);
+
+	let shot; 
+	
+	let gap; let N; let M; let del; let famgap;
+	let diff = rank();	
+	alternative(diff)
+	case(RANK_EASY){	N = 10; M = 3;  gap=120; del = 120; famgap = 15; }
+	case(RANK_NORM){	N = 20; M = 6;  gap=90;  del = 120; famgap = 10; }
+	case(RANK_HARD){	N = 25; M = 9;  gap=70;  del = 120;  famgap = 7; }
+	case(RANK_LUNA){	N = 30; M = 12; gap=50;  del = 120;  famgap = 5; }
+	others{ N=100;M=10;gap=20;del=90;famgap = 1;}
+	let shootinterval = 30/N; //total of 30 frames, in N intervals
+
+	
+	let count=0; let a; let dir;
+	
+	while(!Obj_IsDeleted(boss) && !finishing){
+		
+		
+		
+		
+		let x; let y;
+		
+		ascent(k in 0..2){			
+			x = cx+randSign*rand(0,cx*0.75);
+			y = rand(60,cy*0.9);
+			a = getangle(ex,y,x,y+100);
+			
+			ObjMove_SetDestAtBezierF(boss,x,y, (ex+x)/2,y, gap*0.66);
+			
+			wait(gap/2);
+			if(finishing){DeleteShotAll(TYPE_ALL,TYPE_ITEM);return;}
+			dir = -altSign(k);
+			ascent(i in 0..N){
+				ascent(j in 0..M){ //12 //6 //3
+					dir = -altSign(k);
+					a = 270+(90+15+300/N*i)*dir;
+					dir = -altSign(j);
+					let isalt = frombool(altSign(j)==altSign(k));
+					
+					shot = CreateShotA2(ex,ey,5.5-0.5*trunc(j/2+altBin(i)/3),a, -0.15,0, BALL_O_GREEN+isalt*(SCALE_MAGENTA-BALL_O_GREEN-2*tobin(altBin(trunc(j/2+i)))),10);
+					
+					// OM_AddPatternA5(shot,  0, NO_CHANGE,NO_CHANGE,   0,         0,    0,   -0.005,   -1,         0,        0);
+					OM_SetMaxAcceleration(shot,-1);
+					OM_SetJerk(shot,-0.005);
+					O_AddPropertyPatternA1(shot,30,MOVE_JERK,0.001);
+					
+					let spd = 0;
+					let mspd= 5; //4
+					let acc  = 0; //0.5
+					let jerk = 0.003; //-0.0015
+					let macc = 0.15; //0.15
+					OM_AddPatternA5(shot,del, spd,NO_CHANGE,  acc, -dir*3.55,   mspd,  jerk, macc, dir*0.15, dir*1.25);
+					
+					O_SetPropertyAtDelay(shot,MOVE_ANGV,0,(1.5+0.01*j)*del);
+					
+					if(altSign(j)==altSign(k)){
+						Manage(shot);
+						task Manage(shot){
+							ObjRender_SetAlpha(shot,0);
+							wait(del);
+							ascent(i in 0..60){
+								ObjRender_SetAlpha(shot,255*(i/60)^2);
+								yield;
+							}
+						}
+					}
+					
+				}
+				SE_Play(se_shot,60);
+				DelayChime;
+				waitr(shootinterval,i);
+				if(finishing){DeleteShotAll(TYPE_ALL,TYPE_ITEM);return;}
+			}
+			wait(gap/2);
+			wait(gap*(k%2));
+			
+		}
+	
+		wait(gap*1.5); //60
+		
+		let a0 = GetAngleToPlayer(boss);
+		ascent(i in 0..10){
+			
+			let fam = SpawnFamiliarC1(ex,ey,"blue",150+50*diff);
+			// ObjMove_AddPatternA1(fam,0,3.5,a0-90+15+36*i);
+			OM_AddPatternA5(fam,  0, 2,a0-90+15+36*i,   0,0,6,   0.001,0.1,   0.05,1);
+			// ObjMove_AddPatternA2(fam,60,NO_CHANGE,NO_CHANGE, -0.15, 0.25/cos(((|i-4.5|))), 0.75);
+			SE_Play(se_fam,100);
+			TFamShoot(fam);
+			//Each familiar's shots
+			task TFamShoot(fam){
+				wait(30); let shot; let fx; let fy; let fa; let off=0;
+				if(finishing){Obj_Delete(fam);return;}
+				while(!Obj_IsDeleted(fam) && !isOffScreen(fam)){
+					fx = ObjMove_GetX(fam); fy = ObjMove_GetY(fam); fa = ObjMove_GetAngle(fam);
+					ascent(i in 0..2){
+						x=fx+rand(-20,20); y=fy+rand(-20,20);
+						shot = CreateShotA2(x,y,0,fa+180+160*i+off, 0,0, LARGE_AQUA,15); //1.5
+						ObjShot_Delete(shot);
+						shot = CreateShotA1(x,y, 2, fa+180+160*i+(i+1)*off, ZPEL_RED, 0);
+						OR_SetAlpha(shot,min(0,60-getdistance(x,y,px,py)));
+						O_SetPropertyAtAccel(shot,RENDER_ALPHA,255,45);
+						O_SetProperty(shot,FLAG_INTERSECTION,false);
+						O_SetPropertyAtDelay(shot,FLAG_INTERSECTION,true,20);
+						// CheckShot(shot,500);
+						// ObjMove_AddPatternA3(shot,del,0,NO_CHANGE,0.05,0,2.25, LARGE_AQUA);
+						// ObjMove_AddPatternA4(shot,del,0,NO_CHANGE,0.05,0,2.25, GetPlayerObjectID, LARGE_AQUA);
+						// ObjMove_AddPatternA4(shot,del,0,160*i+off*sin(off)*cos(off),0.05,0,2.25, GetPlayerObjectID, LARGE_BLUE);
+					}
+					SE_Play(se_shot1,70);
+					DelayChime;
+					wait(famgap);
+					if(finishing){Obj_Delete(fam);return;}
+					off += 15*famgap;
+				}
+				Obj_Delete(fam);
+			}//end of familiars' shots
+			wait(3);
+		}
+		
+		
+		wait(120);
+		
+		
+	}	
+	
+	
+	task DelayChime{
+		wait(del);
+		if(!finishing){SE_Play(se_chime,75);}
+	}
+}
+
+

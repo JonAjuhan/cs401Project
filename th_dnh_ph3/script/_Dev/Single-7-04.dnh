@@ -1,0 +1,399 @@
+#TouhouDanmakufu[Single]
+#ScriptVersion[3]
+#Title["Glow \"Sondering Starlight\""]
+#Text["series 7: scales with difficulty"] 
+// #BGM["./bgm/bgm - Deaf to All but the Song.ogg"]
+#BGM["./bgm/bgm - Kid's Festival ~ Innocent Treasures.ogg"]
+#System["./system/Andi_System.txt"]
+#Background["./system/Background/Mystia/BG_work.txt"]
+
+#include "./Index.txt"
+#include "./Library/ExperimentalFunctions.txt"
+
+let timer = 37; //37 //47
+let drate = 64; //24
+let mlife = 4000; //2000
+
+@Event
+{
+	alternative(GetEventType())
+	case(EV_REQUEST_LIFE){				SetScriptResult(mlife);		}
+	case(EV_REQUEST_SPELL_SCORE){		SetScriptResult(5000000);	}
+	case(EV_REQUEST_TIMER) {			SetScriptResult(timer*60);	}
+	case(EV_REQUEST_IS_DURABLE_SPELL) {	SetScriptResult(true);		}
+}
+@Initialize
+{
+	if(noPlural){	SetDifficultyD(EXTRA); if(rank==RANK_HARD){SetDifficulty(EXTRA);} }
+	// SetCommonData("CurrentSC","Nova \"Wondrous Starlight\"");
+	// SetCommonData("CurrentSC","Glow \"Wondrous Nebula\"");
+	// SetCommonData("CurrentSC","Glow \"Wondrous Night Sky\"");
+	// SetCommonData("CurrentSC","Glow \"Count the Stars\"");
+	// SetCommonData("CurrentSC","Glow \"Eternal Dancing Starlight\"");
+	SetCommonData("CurrentSC","Glow \"Sondering Starlight\"");
+	// alternative(rank)
+	// case(RANK_EASY){	SetCommonData("CurrentSC","Bird Sign \"Tune of Insufficient Light\"");}
+	// case(RANK_NORM){	SetCommonData("CurrentSC","Vocal Sign \"Twilight Sparrow\"");}
+	// case(RANK_HARD){	SetCommonData("CurrentSC","Vocal Sign \"Midnight Sparrow's Song\"");}
+	// others         {	SetCommonData("CurrentSC","Night Sparrow \"Darkest Hour\"");}
+	
+	SetShotAutoDeleteClip(192,32,192,128);
+	
+	boss = spawnBoss();
+	// boss = spawnBossBlank("Mystia Lorelai");
+	// renderMystiaIN(boss,1);
+	
+	MainTask;
+	
+
+}
+@MainLoop
+{
+
+	if(ObjEnemy_GetInfo(boss, INFO_LIFE) <= 0 && !finishing)
+	{
+		finishing = true;
+		DropItemsSpellEnd;
+		TBreakSpell([]);
+	}
+	else {
+		SetBossHitbox(boss,ex,ey);
+		wrap(boss);
+	}
+	frame++;
+	yield;
+}
+
+
+task MainTask {
+	ObjEnemy_SetDamageRate(boss,0,0);
+	// ObjEnemy_SetDamageRate(boss,drate,drate/3);
+	ObjMove_SetDestAtFrame(boss, cx, cy-100, 60); //cy-120
+	
+	SetSpellCard;
+	ObjEnemyBossScene_StartSpell(objScene);
+	ObjEnemyBossScene_SetSpellTimer(objScene,timer*60); //5760
+	
+	//SetCaution;
+	Aura(boss,255,64,255,64);
+	AuraRainbow(boss,64,64,64);
+	SetMagicCircleAlpha(64,64);
+
+	wait(90);
+	TSpellImmune;
+		
+	// Tmovement(cx-120,cx+120, cy-90,cy-60, 60,240, [MOVE_PLAYERBIAS,2,0,MOVE_MAXSPEED,1.5] );
+	ObjEnemy_SetDamageRate(boss,drate,drate/3);
+	frame = 0;
+	
+	
+	TShoot;
+	
+}
+
+
+
+
+task TShoot{
+	wait(60);
+
+	let shot; 
+	
+	let gap; let N; let M; let del; let famgap;
+	let diff = rank();	
+	alternative(diff)
+	case(RANK_EASY){	N = 15; M = 4; gap=90; del = 120; famgap = 15; }
+	case(RANK_NORM){	N = 20; M = 6; gap=60; del = 120; famgap = 10; }
+	case(RANK_HARD){	N = 25; M = 6; gap=45; del = 120; famgap = 7; }
+	case(RANK_LUNA){	N = 30; M = 6; gap=45; del = 120; famgap = 5; }
+	others{ N=100;M=10;gap=20;del=90;famgap = 1;}
+	let shootinterval = 30/N; //total of 30 frames, in N intervals
+
+	
+	let count=0; let a; let dir; let a0;
+	
+	while(!Obj_IsDeleted(boss) && !finishing){
+		
+		//..........................................................
+		//Come on and slam
+		//..........................................................
+		
+		let ox = ex;
+		// ObjRender_SetBlendType(boss,BLEND_ADD_ARGB);
+		O_SetPropertyAtDecel(boss,RENDER_ALPHA,120,60); //200
+		O_SetPropertyAtFrame(boss,RENDER_COLOR,[255,0,128],60);
+		O_SetPropertyAtDecel(boss,RENDER_SCALE,3,60);
+		dir=sign(px-ex);
+		ObjMove_SetAngle(boss,90-90*dir);
+		ObjMove_SetSpeed(boss,0.1);
+		// O_SetPropertyAtDecel(boss,RENDER_ANGLE,360*3*dir,60);
+		// O_SetPropertyAtDecel(boss,RENDER_ANGLEX,360*3*dir,60);
+		// O_SetPropertyAtDecel(boss,RENDER_ANGLEY,360*3*dir,60);
+		// O_SetPropertyAtDecel(boss,RENDER_ANGLE,360*3*dir,60);
+		O_SetPropertyAtWeight(boss,MOVE_X,px,60,10);
+		O_SetPropertyAtWeight(boss,MOVE_Y,sy-65-30,60,-50);
+		SetAttackPose(120);
+		O_SetPropertyAtWeight(boss,RENDER_ANGLE,160*dir,60,-50);
+		wait(50);
+		
+		// KA
+		// ScreenShake(20,rand(-3,3),5);
+		ScreenShake(20,rand(-9,9),15);
+		SE_Play(se_explode,100);
+		SE_Play(se_anchor,100);
+		wait(10);
+		// BOOOOM
+		
+		ObjMove_SetSpeed(boss,0);
+		// O_SetPropertyAtAccel(boss,RENDER_ANGLE,0*dir,90);
+		O_SetPropertyAtWeight(boss,RENDER_ANGLE,0*dir,90,-20);
+		
+		//..........................................................
+		//And welcome to the jam
+		//..........................................................
+		
+		let sm = 1; //speed multiplier
+		let am = 2; //angle multiplier
+		a0=rand(0,360);
+		x = GetSwordTipX; y = sy;
+		ascent(i in 0..N*2){
+			ascent(j in 0..M){
+				a=a0+i*360/(2*N);
+				
+				// shot = CreateShotA2(x,y,(5.5-0.5*trunc(j/2+altBin(i)/3))*sm,a, -0.15*sm,0, BALL_O_GREEN+altBin(i)*(SCALE_MAGENTA-BALL_O_GREEN-2*tobin(altBin(trunc(j/2+i)))),10);
+				// shot = CreateShotA2(x,y,(5.5-0.5*trunc(j/2+altBin(i)/3))*sm,a, -0.15*sm,0, (BALL_O_RED)+altBin(i)*(SCALE_MAGENTA-(BALL_O_RED)-4*tobin(altBin(trunc(j/2+i)))),10);
+				shot = CreateShotA2(x,y,(5.5-0.5*trunc(j/2+altBin(i)/3))*sm,a, -0.15*sm,0, (BALL_O_BLUE)+altBin(i)*(SCALE_MAGENTA-(BALL_O_BLUE)-2*tobin(altBin(trunc(j/2+i)))),10);
+				OM_SetMaxAcceleration(shot,-1*sm);
+				OM_SetJerk(shot,-0.005*sm);
+				// O_AddPropertyPatternA1(shot,5,MOVE_JERK,0.0001/sm); //30
+				OM_AddPatternA5(shot,0,NO_CHANGE,NO_CHANGE,5*sm,-3.55*am,5*sm,0.003*sm,0.15*sm,0.15*am,1.25*am);			
+				
+				// O_SetPropertyAtDelay(shot,MOVE_ANGV,0,(1.5+0.01*j)*del/sm/am  + randint(0,5));
+				O_SetPropertyAtDelay(shot,MOVE_ANGV,0, 45 + randint(0,5));
+				OM_AddPatternA5(shot,70,NO_CHANGE,NO_CHANGE,5*sm,-3.55*am,5*sm,0.003*sm,0.15*sm,0.15*am,1.25*am);			
+				O_SetPropertyAtDelay(shot,MOVE_ANGV,0, 90 + randint(0,5));
+				
+				task DelTrem(shot){wait(15);OS_Tremble(shot,rand(-10,10),rand(-10,10),15);}
+				DelTrem(shot);
+				
+				EffectParticleA1(x,y,5*i/N,a,"FEATHER",200,16,200);
+				EffectParticleA1(x,y,5*i/N,a0+i*360/N,"FEATHER",200,16,200);
+				EffectParticleA1(x,y,5*i/N,a0+i*360/(N*1.5),"FEATHER",200,16,200);
+				// EffectParticleA1(x,y,5*i/N,a0+i*360/(N*2),"FEATHER",200,16,200);
+			}
+		}
+		wait(60);
+		O_SetPropertyAtAccel(boss,RENDER_ALPHA,255,60);
+		O_SetPropertyAtFrame(boss,RENDER_COLOR,[255,255,255],60);
+		O_SetPropertyAtAccel(boss,RENDER_SCALE,1,60);
+		O_SetPropertyAtDecel(boss,MOVE_Y,cy/2,60);
+		O_SetPropertyAtAccel(boss,MOVE_X,ox,60);
+		wait(60);
+		
+		//..........................................................
+		//Big shots up top
+		//..........................................................
+		
+		a0 = rand(0,360);
+		ascent(i in 0..N){
+			a = a0+i*360/N;
+			ascent(j in 0..(2+i%3)){
+				shot = CreateShotA1(ex+20*cos(a),ey+20*sin(a), 2+1*trunc(j/2), a+90*j, LARGE_MAGENTA+500, 10);
+				OS_Tremble(shot,10,10,30);
+				task DelTrem(shot){wait(25);OS_Tremble(shot,5,5,10);wait(10);OS_Tremble(shot,2,2,60);}
+				DelTrem(shot);
+				BounceA1(shot,2,[LFT,TOP,RGT]);
+			}
+		}
+		SE_Play(se_chime2,100);
+		
+		wait(15);
+		
+		//..........................................................
+		//Chase down
+		//..........................................................
+		
+		a=GetAngleToPlayer(boss);
+		O_AddPropertyPatternA1(boss,0,MOVE_X,3*cos(a));
+		O_AddPropertyPatternA1(boss,0,MOVE_Y,5);
+		wait(60);
+		a=GetAngleToPlayer(boss);
+		O_AddPropertyPatternA2(boss,0,MOVE_X,1*cos(a),0.05*cos(a),3*cos(a));
+		O_AddPropertyPatternA2(boss,0,MOVE_Y,1*sin(a),0.05*sin(a),3*sin(a));
+		wait(30);
+		ascent(i in 0..40){
+			wait(3);
+			a=GetAngleToPlayer(boss);
+			O_AddPropertyPatternA2(boss,0,MOVE_X,NO_CHANGE,0.5*cos(a),3*cos(a));
+			O_AddPropertyPatternA2(boss,0,MOVE_Y,NO_CHANGE,0.5*sin(a),3*sin(a));
+			
+			ascent(j in 0..N/2){
+				// let a1=rand(0,360);
+				let a1=a+j*360/(N/2)*(1+0.1*i);
+				shot = CreateShotA1(ex+2*j*cos(a1),ey+2*j*sin(a1),2,a+j*360/(N/2)*(1+0.1*i), DROP_RED+i%7+500,0);
+				task DelTrem(shot){
+					OS_Tremble(shot,rand(-10,10),rand(-10,10),5);
+					wait(5);
+					OS_Tremble(shot,rand(-5,5),rand(-5,5),5);
+					wait(5);
+					OS_Tremble(shot,rand(-3,3),rand(-3,3),5);
+					wait(5);
+					OS_Tremble(shot,rand(-1.5,1.5),rand(-1.5,1.5),60);
+				}
+				DelTrem(shot);
+			}
+			SE_Play(se_chime,50);
+		}
+		O_SetPropertyAtAccel(boss,MOVE_XSPEED,0, 120);
+		O_SetPropertyAtDecel(boss,MOVE_YSPEED,0, 120);
+		
+		wait(120);
+		
+		//..........................................................
+		//Swirly wings
+		//..........................................................
+		
+		let x; let y;
+		
+		ascent(k in 0..2){
+			// ObjMove_SetDestAtWeight(boss,cx+randSign*rand(0,cx*0.75),rand(60,cy*0.9), gap*0.66,20);
+			
+			x = cx+randSign*rand(0,cx*0.75);
+			y = rand(60,cy*0.9);
+			a = getangle(ex,y,x,y+100);
+			
+			// ObjMove_SetDestAtHermiteF(boss,x,y,100*cos(a),a,100*sin(a),a,gap*0.66);
+			// ObjMove_SetDestAtHermiteF(boss,x,y,100,a,100,a,60);
+			ObjMove_SetDestAtBezierF(boss,x,y, (ex+x)/2,y, gap*0.66);
+			
+			wait(gap/2);
+			if(finishing){DeleteShotAll(TYPE_ALL,TYPE_ITEM);return;}
+			dir = -altSign(k);
+			ascent(i in 0..N){
+				ascent(j in 0..6){ //3
+					dir = -altSign(k);
+					a = 270+(90+15+300/N*i)*dir;
+					dir = -altSign(j);
+					let isalt = frombool(altSign(j)==altSign(k));
+					// shot = CreateShotA2(ex,ey,5.5-0.5*j,a, -0.15,0, SCALE_GREEN,10);
+					// shot = CreateShotA2(ex,ey,5.5-0.5*j,a, -0.15,0, SCALE_BLUE-5*altBin(j),10);
+					// shot = CreateShotA2(ex,ey,5.5-0.5*trunc(j/2+altBin(i)/3),a, -0.15,0, BALL_O_GREEN,10);
+					// shot = CreateShotA2(ex,ey,5.5-0.5*trunc(j/2+altBin(i)/3),a, -0.15,0, BALL_O_GREEN+isalt*(SCALE_RED-BALL_O_GREEN+5*tobin(altBin(trunc(j/2+i)))),10);
+					
+					// shot = CreateShotA2(ex,ey,5.5-0.5*trunc(j/2+altBin(i)/3),a, -0.15,0, BALL_O_GREEN+isalt*(SCALE_MAGENTA-BALL_O_GREEN-2*tobin(altBin(trunc(j/2+i)))),10);
+					shot = CreateShotA2(ex,ey,5.5-0.5*trunc(j/2+altBin(i)/3),a, -0.15,0, BALL_O_MAGENTA+500-tobin(isalt+altBin(dir%3))*2,10);
+					
+					O_AddPropertyPatternA1(shot,30,MOVE_JERK,0.001);
+					
+					// shot = CreateShotA2(ex,ey,5.5-0.5*trunc(j/2+altBin(i)/3),a, -0.15,0, SSS_GREEN+round(3*sin(10*(6*i+j))),10);
+					// if(isalt==1){ObjShot_SetGraphic(shot,SCALE_RED+5*tobin(altBin(trunc(j/2+i)))); }
+					//          (obj, del,     speed,    angle, acc,      angv, mspd,    jerk,  macc,      anga,    mangv)
+					OM_AddPatternA5(shot,  0, NO_CHANGE,NO_CHANGE,   0,         0,    0,   -0.005,   -1,         0,        0);
+					// AddPatternA5(shot,  0, NO_CHANGE,NO_CHANGE,   6,         0,    0,   -0.05,   -1,         0,        0);
+					// AddPatternA5(shot,del, NO_CHANGE,NO_CHANGE,   0, -dir*1.55,    4,  0.0015, 0.15, dir*0.05, dir*0.01);
+					let spd = 0;
+					let mspd= 5; //4
+					
+					let acc  = 0; //0.5
+					let jerk = 0.003; //-0.0015
+					let macc = 0.15; //0.15
+					OM_AddPatternA5(shot,del, spd,NO_CHANGE,  acc, -dir*3.55,   mspd,  jerk, macc, dir*0.15, dir*1.25);
+					
+					O_SetPropertyAtDelay(shot,MOVE_ANGV,0,1.5*del);
+					
+					if(altSign(j)==altSign(k)){
+						Manage(shot);
+						task Manage(shot){
+							ObjRender_SetAlpha(shot,0);
+							wait(del);
+							let a = ObjMove_GetAngle(shot);
+							// O_SetPropertyAtDecel(shot,RENDER_ANGLE,a+360*60,1200);
+							ascent(i in 0..60){
+								ObjRender_SetAlpha(shot,255*(i/60)^2);
+								// ObjRender_SetAngleZ(shot,a-1024/(i*1024/60));
+								yield;
+							}
+						}
+					}
+					
+				}
+				SE_Play(se_shot,60);
+				DelayChime;
+				waitr(shootinterval,i);
+				if(finishing){DeleteShotAll(TYPE_ALL,TYPE_ITEM);return;}
+			}
+			wait(gap/2);
+			
+		}
+	
+		wait(gap); //60
+		
+		//..........................................................
+		//Lasers
+		//..........................................................
+		
+		// ObjRender_SetBlendType(boss,BLEND_ALPHA);
+		
+		a0 = GetAngleToPlayer(boss);
+		ascent(i in 0..10){
+			let las = PagodaLaserA2(ex,ey,a0-90+15+36*i,800,100,180,[196,64,255],60,"PagodaLaser2.png");
+			SE_Play(se_laser,100);
+			SE_Play(se_swrlaser,100);
+			
+			Manage;
+			task Manage{
+				wait(30-3*i);
+				while(!Obj_IsDeleted(las)){
+					ObjStLaser_SetAngle(las,ObjStLaser_GetAngle(las)+0.5);
+					yield;
+				}
+			}
+			
+			
+			let fam = SpawnFamiliarC1(ex,ey,"blue",150+50*diff);
+			// ObjMove_AddPatternA1(fam,0,3.5,a0-90+15+36*i);
+			OM_AddPatternA5(fam,  0, 2,a0-90+15+36*i,   0,0,6,   0.001,0.1,   0.05,1);
+			// ObjMove_AddPatternA2(fam,60,NO_CHANGE,NO_CHANGE, -0.15, 0.25/cos(((|i-4.5|))), 0.75);
+			SE_Play(se_fam,100);
+			TFamShoot(fam);
+			//Each familiar's shots
+			task TFamShoot(fam){
+				wait(30); let shot; let fx; let fy; let fa; let off=0;
+				if(finishing){Obj_Delete(fam);return;}
+				while(!Obj_IsDeleted(fam) && !isOffScreen(fam)){
+					fx = ObjMove_GetX(fam); fy = ObjMove_GetY(fam); fa = ObjMove_GetAngle(fam);
+					ascent(i in 0..2){
+						x=fx+rand(-20,20); y=fy+rand(-20,20);
+						shot = CreateShotA2(x,y,0,fa+180+160*i+off, 0,0, LARGE_AQUA,15); //1.5
+						ObjShot_Delete(shot);
+						shot = CreateShotA1(x,y, 2, fa+180+160*i+(i+1)*off, ZPEL_RED, 0);
+						OR_SetAlpha(shot,min(0,60-getdistance(x,y,px,py)));
+						O_SetPropertyAtAccel(shot,RENDER_ALPHA,255,45);
+						O_SetProperty(shot,FLAG_INTERSECTION,false);
+						O_SetPropertyAtDelay(shot,FLAG_INTERSECTION,true,20);
+					}
+					SE_Play(se_shot1,70);
+					DelayChime;
+					wait(famgap);
+					if(finishing){Obj_Delete(fam);return;}
+					off += 15*famgap;
+				}
+				Obj_Delete(fam);
+			}//end of familiars' shots
+			wait(3);
+		}
+		
+		
+		wait(120);
+		
+		
+	}	
+	
+	
+	task DelayChime{
+		wait(del);
+		if(!finishing){SE_Play(se_chime,75);}
+	}
+}
+
+

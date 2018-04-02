@@ -1,5 +1,50 @@
 
-
+function TestTypes{
+	WriteLog("String");
+	WriteLog(Obj_GetType("String")); //10
+	WriteLog("Int");
+	WriteLog(Obj_GetType(12)); //9
+	WriteLog("Real");
+	WriteLog(Obj_GetType(1.2)); //2
+	WriteLog("Real (1.0)");
+	WriteLog(Obj_GetType(1.0)); //2
+	WriteLog("Empty Array");
+	WriteLog(Obj_GetType([])); //10
+	WriteLog("Array of Numbers");
+	WriteLog(Obj_GetType([0,1,2])); //10
+	WriteLog("Array of Strings");
+	WriteLog(Obj_GetType(["","butts","hueheu"])); //10
+	WriteLog("Char 'a'");
+	WriteLog(Obj_GetType('a')); //-1
+	// WriteLog("Char? 'aZ'");
+	// WriteLog(Obj_GetType('aZ'));
+	WriteLog("ObjSound"); //10 *!*!*!*
+	WriteLog(Obj_GetType(ObjSound_Create));
+	WriteLog("ObjShot");
+	WriteLog(Obj_GetType(CreateDummyShot(0,0))); //106
+	WriteLog("ObjSprite2D");
+	WriteLog(Obj_GetType(ObjPrim_Create(OBJ_SPRITE_2D))); //2
+	WriteLog("ObjSpriteList2D");
+	WriteLog(Obj_GetType(ObjPrim_Create(OBJ_SPRITE_LIST_2D))); //3
+	WriteLog("Boolean"); //2
+	WriteLog(Obj_GetType(true));
+	WriteLog("True");
+	WriteLog(true);
+	WriteLog("False");
+	WriteLog(false);
+	WriteLog("ToString(true)");
+	WriteLog(ToString(true));
+	WriteLog("ToString(false)");
+	WriteLog(ToString(false));
+	
+	WriteLog("NO_CHANGE");
+	WriteLog(NO_CHANGE); //-16777216
+	WriteLog("NULL");
+	WriteLog(NULL); //0
+	WriteLog("ID_INVALID");
+	WriteLog(ID_INVALID); //-1
+	
+}
 
 
 
@@ -83,11 +128,10 @@ function projecttime(s,acc,mspd,dist){
 		let t2 = ( -s + sqrt(s^2 - 4*acc*(-dist2)) )/(2*acc);
 		return t1-t2;
 	}
+}
 	//	?at2 + ut - s = 0
 	//Using quadratic formula
 	//	t = ( -s + sqrt(s^2 - 4*acc*(-dist)) )/(2*acc)
-	
-}
 
 //WIP - find position of shot after given number of frames, assuming no angv
 function projectpos(x0,y0,s,ang,acc,mspd,t){
@@ -186,13 +230,42 @@ function GetLineWallIntersection(px, py, tx, ty){ //Trickysticks is such a nice 
 
 
 
+//why do I even have this
+function GetFigureEightPoint(x0,y0, x1,y1, t){
+	let rad = getdist(x0,y0,x1,y1)/2;
+	let ang = getangle(x0,y0,x1,y1); let dir;
+	let cx; let cy; let x; let y;
+	t%=2;
+	if(t<1){
+		cx=x0; cy=y0; dir=1;
+		t--;
+	}else{
+		cx=x1; cy=y1;
+		ang+=180; dir=-1;
+	}
+	
+	x = cx+rad*cos(ang+360*t*dir); 
+	y = cy+rad*sin(ang+360*t*dir);
+	return [x,y];
+}
+
+
+
+//eh
+function Exarg(k,v){
+	let obj = ObjShot_Create(OBJ_SHOT);
+	ObjShot_SetDeleteFrame(obj,1);
+	Obj_SetValue(obj,"Argument",k);
+	Obj_SetValue(obj,"Value",v);
+	Obj_SetValue(obj,k,v);
+	return obj;
+}
 
 
 
 
 
-
-
+/*
 //Python options select
 task Settings{
 	let endSettings = false;
@@ -213,7 +286,7 @@ task Settings{
 	ObjRender_SetPosition(cursor, 28, GetCenterY - 24, 0);
 	Obj_SetRenderPriorityI(cursor, 60);
 	Obj_SetVisible(cursor, false);
-	Obj_SpinXYZ(cursor, 0, 0, 7, 0);
+	// Obj_SpinXYZ(cursor, 0, 0, 7, 0);
 
 	let difficulty = ObjPrim_Create(OBJ_SPRITE_2D);
 	ObjPrim_SetTexture(difficulty, GetCurrentScriptDirectory ~ "System/img/difficulty.png");
@@ -529,3 +602,4 @@ task Settings{
 		}
 	}
 }
+*/

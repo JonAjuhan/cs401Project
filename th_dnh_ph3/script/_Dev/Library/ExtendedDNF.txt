@@ -7,93 +7,277 @@ let FLAG_INTERSECTION = "IsIntersectionEnable";
 let FLAG_SPELLRESIST = "IsSpellResist";
 let SHOT_GRAPHIC = "Graphic";
 
-// let 
 
-let MOVE_SPEED = "Speed"; //for consistency
+let MOVE_POS = "Position";
+let MOVE_X = "MoveX";
+let MOVE_Y = "MoveY";
+let MOVE_SPEED = "Speed";
 let MOVE_ACCEL = "Acceleration";
 let MOVE_MAXSPEED = "MaxSpeed";
 let MOVE_JERK = "Jerk";
 let MOVE_MAXACCEL = "MaxAcceleration";
 
-let MOVE_ANGLE = "Angle"; //for consistency
+let MOVE_ANGLE = "Angle";
 let MOVE_ANGV = "AngularVelocity";
-
 let MOVE_ANGACCEL = "AngularAcceleration";
 let MOVE_MAXANGV = "MaxAngularVelocity";
+
+let MOVE_XSPEED = "XSpeed";
+let MOVE_YSPEED = "YSpeed";
+let MOVE_XACCEL = "XAcceleration";
+let MOVE_YACCEL = "YAcceleration";
+let MOVE_XMAXSPEED = "XMaxSpeed";
+let MOVE_YMAXSPEED = "YMaxSpeed";
 
 let RENDER_ALPHA = "Alpha";
 let RENDER_COLOR = "Color";
 let RENDER_SCALE = "Scale"; //"overall" scale
+let RENDER_RCOL = "R";
+let RENDER_GCOL = "G";
+let RENDER_BCOL = "B";
 
+let RENDER_POS = "RenderPosition";
+let RENDER_X = "RenderX";
+let RENDER_Y = "RenderY";
+let RENDER_ANGLE = "AngleZ";
+let RENDER_ANGLEX = "AngleX";
+let RENDER_ANGLEY = "AngleY";
 
-function O_SetProperty(obj,info,val){
-	if(val==NO_CHANGE){return;} //todo: set to current value if it can be determined
-	alternative(info)
-	case(FLAG_INTERSECTION){ Obj_SetValue(obj,FLAG_INTERSECTION,val); }
-	case(FLAG_SPELLRESIST){ Obj_SetValue(obj,FLAG_INTERSECTION,val); }
-	case(MOVE_SPEED){ OM_SetSpeed(obj,val); }
-	case(MOVE_ACCEL){ OM_SetAcceleration(obj,val); }
-	case(MOVE_MAXSPEED){ OM_SetMaxSpeed(obj,val); }
-	case(MOVE_JERK){ OM_SetJerk(obj,val); }
-	case(MOVE_MAXACCEL){ OM_SetMaxAcceleration(obj,val); }
-	case(MOVE_ANGLE){ OM_SetAngle(obj,val); }
-	case(MOVE_ANGV){ OM_SetAngularVelocity(obj,val); }
-	case(MOVE_ANGACCEL){ OM_SetAngularAcceleration(obj,val); }
-	case(MOVE_MAXANGV){ OM_SetMaxAngularVelocity(obj,val); }
-	case(RENDER_ALPHA){ OR_SetAlpha(obj,val); }
-	case(RENDER_COLOR){ OR_SetColor(obj,val[0],val[1],val[2]); }
-	case(RENDER_SCALE){ OR_SetScale(obj,val); }
+//////////////////////////////////////////////////////////////////////////////
+//Higher-order functions for generalizing functions to operate on any property
+//////////////////////////////////////////////////////////////////////////////
+
+function O_SetProperty(obj,k,v){
+	if(O_GetType(v)==OBJ_NUMBER && v==NO_CHANGE){O_SetProperty(obj,k,O_GetProperty(obj,k));return;}
+	alternative(k)
+	case(FLAG_INTERSECTION){ Obj_SetValue(obj,FLAG_INTERSECTION,v); if(O_GetType(obj)==OBJ_SHOT){ObjShot_SetIntersectionEnable(obj,v);} }
+	case(FLAG_SPELLRESIST){ Obj_SetValue(obj,FLAG_SPELLRESIST,v); if(O_GetType(obj)==OBJ_SHOT){ObjShot_SetSpellResist(obj,v);} }
+	case(MOVE_POS){ if(O_GetType(v)==OBJ_ARRAY&&length(v)>1){ObjMove_SetX(obj,v[0]); ObjMove_SetY(obj,v[1]);} }
+	case(MOVE_X){ ObjMove_SetX(obj,v); }
+	case(MOVE_Y){ ObjMove_SetY(obj,v); }
+	case(MOVE_SPEED){       OM_SetSpeed(obj,v); }
+	case(MOVE_ACCEL){       OM_SetAcceleration(obj,v); }
+	case(MOVE_MAXSPEED){    OM_SetMaxSpeed(obj,v); }
+	case(MOVE_JERK){        OM_SetJerk(obj,v); }
+	case(MOVE_MAXACCEL){    OM_SetMaxAcceleration(obj,v); }
+	case(MOVE_ANGLE){       OM_SetAngle(obj,v); }
+	case(MOVE_ANGV){        OM_SetAngularVelocity(obj,v); }
+	case(MOVE_ANGACCEL){    OM_SetAngularAcceleration(obj,v); }
+	case(MOVE_MAXANGV){     OM_SetMaxAngularVelocity(obj,v); }
+	case(MOVE_XSPEED){      OM_SetSpeedX(obj,v); }
+	case(MOVE_YSPEED){      OM_SetSpeedY(obj,v); }
+	// case(MOVE_XACCEL){}
+	// case(MOVE_YACCEL){}
+	case(RENDER_ALPHA){     OR_SetAlpha(obj,v); }
+	case(RENDER_COLOR){     OR_SetColor(obj,v[0],v[1],v[2]); }
+	case(RENDER_RCOL){ let c = OR_GetColor(obj); OR_SetColor(obj,v   ,c[1],c[2]); }
+	case(RENDER_GCOL){ let c = OR_GetColor(obj); OR_SetColor(obj,c[0],v   ,c[2]); }
+	case(RENDER_BCOL){ let c = OR_GetColor(obj); OR_SetColor(obj,c[0],c[1],v   ); }
+	case(RENDER_SCALE){     OR_SetScale(obj,v); }
+	case(RENDER_ANGLE){  ObjRender_SetAngleZ(obj,v); }
+	case(RENDER_ANGLEX){ ObjRender_SetAngleX(obj,v); }
+	case(RENDER_ANGLEY){ ObjRender_SetAngleY(obj,v); }
+}
+function O_GetProperty(obj,k){
+	let v;
+	alternative(k)
+	case(FLAG_INTERSECTION){ v = Obj_GetValueD(obj,FLAG_INTERSECTION,v); }
+	case(FLAG_SPELLRESIST){ v = Obj_GetValueD(obj,FLAG_INTERSECTION,v); }
+	case(MOVE_POS){ v = [ObjMove_GetX(obj), ObjMove_GetY(obj)]; }
+	case(MOVE_X){ v = ObjMove_GetX(obj); }
+	case(MOVE_Y){ v = ObjMove_GetY(obj); }
+	case(MOVE_SPEED){        v = OM_GetSpeed(obj); }
+	case(MOVE_ACCEL){        v = OM_GetAcceleration(obj); }
+	case(MOVE_MAXSPEED){     v = OM_GetMaxSpeed(obj); }
+	case(MOVE_JERK){         v = OM_GetJerk(obj); }
+	case(MOVE_MAXACCEL){     v = OM_GetMaxAcceleration(obj); }
+	case(MOVE_ANGLE){        v = OM_GetAngle(obj); }
+	case(MOVE_ANGV){         v = OM_GetAngularVelocity(obj); }
+	case(MOVE_ANGACCEL){     v = OM_GetAngularAcceleration(obj); }
+	case(MOVE_MAXANGV){      v = OM_GetMaxAngularVelocity(obj); }
+	case(MOVE_XSPEED){       v = OM_GetSpeedX(obj); }
+	case(MOVE_YSPEED){       v = OM_GetSpeedY(obj); }
+	// case(MOVE_XACCEL){}
+	// case(MOVE_YACCEL){}
+	case(RENDER_ALPHA){      v = OR_GetAlpha(obj); }
+	case(RENDER_COLOR){      v = OR_GetColor(obj); }
+	case(RENDER_RCOL){       v = OR_GetColor(obj)[0]; }
+	case(RENDER_GCOL){       v = OR_GetColor(obj)[1]; }
+	case(RENDER_BCOL){       v = OR_GetColor(obj)[2]; }
+	case(RENDER_SCALE){      v = OR_GetScale(obj); }
+	case(RENDER_ANGLE){  v = ObjRender_GetAngleZ(obj); }
+	case(RENDER_ANGLEX){ v = ObjRender_GetAngleX(obj); }
+	case(RENDER_ANGLEY){ v = ObjRender_GetAngleY(obj); }
+	others{v=NULL;}
 	
+	return v;
 }
 
-function O_GetProperty(obj,info){
-	let def = NULL;
-	alternative(info)
-	case(FLAG_INTERSECTION){ Obj_GetValueD(obj,FLAG_INTERSECTION,def); }
-	case(FLAG_SPELLRESIST){ Obj_SetValue(obj,FLAG_INTERSECTION,def); }
-	case(MOVE_SPEED){ OM_GetSpeed(obj); }
-	case(MOVE_ACCEL){ OM_GetAcceleration(obj); }
-	case(MOVE_MAXSPEED){ OM_GetMaxSpeed(obj); }
-	case(MOVE_JERK){ OM_GetJerk(obj); }
-	case(MOVE_MAXACCEL){ OM_GetMaxAcceleration(obj); }
-	case(MOVE_ANGLE){ OM_GetAngle(obj); }
-	case(MOVE_ANGV){ OM_GetAngularVelocity(obj); }
-	case(MOVE_ANGACCEL){ OM_GetAngularAcceleration(obj); }
-	case(MOVE_MAXANGV){ OM_GetMaxAngularVelocity(obj); }
-	case(RENDER_ALPHA){ OR_GetAlpha(obj); }
-	case(RENDER_COLOR){ OR_GetColor(obj); }
-	case(RENDER_SCALE){ OR_GetScale(obj); }
+let PROP_VALUE = 0;     let PROP_RVALUE = 10;
+let PROP_SPEED = 1;     let PROP_RSPEED = 11;
+let PROP_ACCEL = 2;     let PROP_RACCEL = 12;
+let PROP_MAXSPEED = 3;  let PROP_RMAXSPEED = 13;
+let PROP_JERK = 4;      let PROP_RJERK = 14;
+let PROP_MAXACCEL = 5;  let PROP_RMAXACCEL = 15;
+
+//Given the name of a property, get the name of another property in that "set" of properties
+//e.g. GetRelatedProperty(MOVE_ANGLE,PROP_ACCEL) returns MOVE_ANGACCEL
+function GetRelatedProperty(key,relation){
+	let rels;
+	alternative(key)
+	case(MOVE_POS,MOVE_SPEED,MOVE_ACCEL,MOVE_MAXSPEED,MOVE_JERK,MOVE_MAXACCEL){
+		rels = [MOVE_POS,MOVE_SPEED,MOVE_ACCEL,MOVE_MAXSPEED,MOVE_JERK,MOVE_MAXACCEL];
+	}
+	case(MOVE_ANGLE,MOVE_ANGV,MOVE_ANGACCEL,MOVE_MAXANGV){
+		rels = [MOVE_ANGLE,MOVE_ANGV,MOVE_ANGACCEL,MOVE_MAXANGV];
+	}
+	case(MOVE_X,MOVE_XSPEED,MOVE_XACCEL,MOVE_XMAXSPEED){ rels = [MOVE_X,MOVE_XSPEED,MOVE_XACCEL,MOVE_XMAXSPEED]; }
+	case(MOVE_Y,MOVE_YSPEED,MOVE_YACCEL,MOVE_YMAXSPEED){ rels = [MOVE_Y,MOVE_YSPEED,MOVE_YACCEL,MOVE_YMAXSPEED]; }
+	others{ rels=[]; }
 	
+	if(relation < length(rels) && relation >= 0){
+		return rels[relation];
+	}else if((|relation|)-PROP_RVALUE < length(rels) && (|relation|)-PROP_RVALUE > 0){
+		let i=0; while(i<length(rels) && rels[i]!=key){i++;}
+		let off = ((|relation|)-10)*sign(relation);
+		if(0<=i+off&&i+off<length(rels)){
+			return rels[i+off];
+		}else{return key~itoa(relation);}
+	}else{
+		return "";
+	}
+}
+//Get the names of any properties which are components of the given property.
+function GetSubProperty(key,index){
+	let rels;
+	alternative(key)
+	case(MOVE_POS){ rels = [MOVE_X,MOVE_Y]; }
+	case(RENDER_POS){ rels = [RENDER_X,RENDER_Y]; }
+	case(RENDER_COLOR){ rels = [RENDER_RCOL,RENDER_GCOL,RENDER_BCOL,RENDER_ALPHA]; }
+	others{ rels=[]; }
+	
+	if(index < length(rels)){
+		return rels[index];
+	}else{
+		return "";
+	}
+}
+//Check if a property is stored as an array.
+function Prop_IsArray(k){
+	alternative(k)
+	case(MOVE_POS,RENDER_POS,RENDER_COLOR){return true;}
+	others{return false;}
 }
 
-
-
-
-task Obj_AddValuePatternA1(obj,del,key,s){
-	let v = Obj_GetValue(obj,key);
-	while(Obj_GetValue(obj,key)==v){
-		v+=s;
-		Obj_SetValue(obj,key,v);
-		yield;
+function OProp_CheckNoChange(obj,k,v){ //fucky atm
+	if(v>NO_CHANGE){ return v;}
+	else{
+		return O_GetProperty(obj,k);
 	}
 }
 
-task Obj_AddValuePatternA2(obj,del,key,s,a,ms){
-	let v = Obj_GetValue(obj,key);
-	while(Obj_GetValue(obj,key)==v){
+
+
+
+
+
+
+
+task O_AddPropertyPatternA1(obj,del,k_val,s){
+	wait(del);
+	let v = O_GetProperty(obj,k_val);
+	let k_spd = GetRelatedProperty(k_val,PROP_RSPEED);
+	s=OProp_CheckNoChange(obj,k_spd,s);
+	O_SetProperty(obj,k_spd,s);
+	while(!Obj_IsDeleted(obj) && O_GetProperty(obj,k_val)==v){
+		v+=s;
+		O_SetProperty(obj,k_val,v);
+		yield;
+	}
+}
+task O_AddPropertyPatternA2(obj,del,k_val,s,a,ms){
+	wait(del);
+	let v = O_GetProperty(obj,k_val);
+	let k_spd = GetRelatedProperty(k_val,PROP_RSPEED);   if(k_spd!=""){ s =OProp_CheckNoChange(obj,k_spd,s); }
+	let k_acc = GetRelatedProperty(k_val,PROP_RACCEL);   if(k_acc!=""){ a =OProp_CheckNoChange(obj,k_acc,a); }
+	let k_msp = GetRelatedProperty(k_val,PROP_MAXSPEED); if(k_msp!=""){ ms=OProp_CheckNoChange(obj,k_msp,ms); }
+	O_SetProperty(obj,k_msp,ms);
+	while(!Obj_IsDeleted(obj) && O_GetProperty(obj,k_val)==v){
 		s+=a;
-		if(s*a > ms*a){ s=ms; }
+		if(s*a > ms*a && ms!=0){ s=ms; break; }
 		v+=s;
-		Obj_SetValue(obj,key,v);
+		O_SetProperty(obj,k_val,v);
+		O_SetProperty(obj,k_spd,s);
 		yield;
 	}
+	O_SetProperty(obj,k_val,v);
+	O_SetProperty(obj,k_spd,s);
 }
 
 
-function GetRelatedKey(key,relation){
-	
+task O_SetPropertyAtFrame(obj,k,v,frame){
+	if(Prop_IsArray(k)){ascent(i in 0..length(v)){O_SetPropertyAtFrame(obj,GetSubProperty(k,i),v[i],frame);}return;}
+	let v0 = O_GetProperty(obj,k);
+	let dv = (v-v0)/frame;
+	ascent(t in 0..frame){
+		O_SetProperty(obj,k,v0+dv*t);
+		yield;
+	}
+	O_SetProperty(obj,k,v);
 }
-	
+task O_SetPropertyAtDelay(obj,k,v,frame){
+	if(Prop_IsArray(k)){ascent(i in 0..length(v)){O_SetPropertyAtDelay(obj,GetSubProperty(k,i),v[i],frame);}return;}
+	wait(frame);
+	O_SetProperty(obj,k,v);
+}
+task O_SetPropertyAtAccel(obj,k,v,frame){
+	if(Prop_IsArray(k)){ascent(i in 0..length(v)){O_SetPropertyAtAccel(obj,GetSubProperty(k,i),v[i],frame);}return;}
+	let v0 = O_GetProperty(obj,k);
+	let dv = (v-v0)/frame;
+	ascent(i in 0..frame){
+		let t = i/frame;
+		let vt = (v * t^2) + (v0 * (1-t^2));
+		O_SetProperty(obj,k,vt);
+		yield;
+	}
+	O_SetProperty(obj,k,v);
+}
+task O_SetPropertyAtDecel(obj,k,v,frame){
+	if(Prop_IsArray(k)){ascent(i in 0..length(v)){O_SetPropertyAtDecel(obj,GetSubProperty(k,i),v[i],frame);}return;}
+	let v0 = O_GetProperty(obj,k);
+	let dv = (v-v0)/frame;
+	ascent(i in 0..frame){
+		let t = i/frame;		
+		let u = 1-(1-t^2)*(1-t^2);
+		let vt = v*u + v0*(1-u);
+		O_SetProperty(obj,k,vt);
+		yield;
+	}
+	O_SetProperty(obj,k,v);
+}
+task O_SetPropertyAtWeight(obj,k,v,frame,weight){
+	if(Prop_IsArray(k)){ascent(i in 0..length(v)){O_SetPropertyAtWeight(obj,GetSubProperty(k,i),v[i],frame,weight);}return;}
+	let v0 = O_GetProperty(obj,k);
+	let dv = (v-v0)/frame;
+	let isaccel = weight<0; if(isaccel){weight=(|weight|);}
+	weight=weight^0.75;
+	ascent(i in 0..frame){
+		let t = i/frame;
+		let m; let vt;
+		if(!isaccel){
+			m = 1 - (1-t)^(0.5*(weight^0.5));
+			vt = v*m + v0*(1-m);
+		}else{
+			m = t^weight;
+			vt = v0+dv*i*m;
+		}
+		O_SetProperty(obj,k,vt);
+		yield;
+	}
+	O_SetProperty(obj,k,v);
+}
+
+
 
 
 
@@ -242,8 +426,8 @@ task OR_SetScaleAtFrame(obj,sx1,sy1,time){
 function OR_SetScale(obj,scale){
 	let sclx = ObjRender_GetScaleX(obj);
 	let scly = ObjRender_GetScaleY(obj);
-	let ratio = sclx/scly;
-	ObjRender_SetScaleXYZ(obj,scale*ratio,scale/ratio,ObjRender_GetScaleZ(obj));
+	let ratio = (|sclx/scly|);
+	ObjRender_SetScaleXYZ(obj,scale*ratio*sign(sclx),scale/ratio*sign(scly),ObjRender_GetScaleZ(obj));
 	Obj_SetValue(obj,RENDER_SCALE,scale);
 	return scale;
 }
@@ -252,10 +436,18 @@ function OR_GetScale(obj){
 	if(scale==NULL){
 		let sclx = ObjRender_GetScaleX(obj);
 		let scly = ObjRender_GetScaleY(obj);
-		scale = (sclx+scly)/2;
+		scale = ((|sclx|)+(|scly|))/2;
 	}
 	return scale;
 }
+
+
+function OR_GetX(obj){return ObjRender_GetX(obj);}
+function OR_GetY(obj){return ObjRender_GetY(obj);}
+function OR_SetX(obj,v){ObjRender_SetX(obj,v);}
+function OR_SetY(obj,v){ObjRender_SetY(obj,v);}
+
+
 
 
 
@@ -272,8 +464,6 @@ task Obj_FadeDelete(obj) {
 
 
 
-
-// task OR_AddPatternA1(del,fadespd,
 
 
 
@@ -333,40 +523,32 @@ function CopyShot(shot){
 	let ang = ObjMove_GetAngle(shot);
 	let graph = ObjShot_GetImageID(shot);
 	
-	let acc  = Obj_GetValueD(shot,MOVE_ACCEL,0);
-	let angv = Obj_GetValueD(shot,MOVE_ANGV,0);
+	let acc  = O_GetProperty(shot,MOVE_ACCEL);
+	let angv = O_GetProperty(shot,MOVE_ANGV);
 	let mspd = Obj_GetValueD(shot,MOVE_MAXSPEED,9999);
 	
 	let spellresist = ObjShot_IsSpellResist(shot);
 	let intersect = Obj_GetValueD(shot,FLAG_INTERSECTION,true);
 	let scalexyz = [ObjRender_GetScaleX(shot),ObjRender_GetScaleY(shot),ObjRender_GetScaleZ(shot)];
 	let blendtype = ObjRender_GetBlendType(shot);
-	// let color = Obj_GetValueD(shot,"Color",[255,255,255]);
 	let color = OR_GetColor(shot);
-	// let alpha = Obj_GetValueD(shot,"Alpha",255);
-	let alpha = OR_GetAlpha(shot);
-	
-	let length=NULL; let width=NULL; let dur=NULL; let del=0;
+	let alpha = OR_GetAlpha(shot);	
 	
 	let cpy=NULL; 
 	if(Obj_GetType(shot)==OBJ_SHOT){
 		cpy = CreateShotA1(x,y,spd,ang,graph,0);
 	}else{
-		length = ObjLaser_GetLength(shot);
-		width = Obj_GetValueD(shot,"Width",15);
-		dur = Obj_GetValueD(shot,"Duration",30);
-		del = Obj_GetValueD(shot,"Delay",tern(Obj_GetType(shot)==OBJ_STRAIGHT_LASER, 15, 0));
+		let length = ObjLaser_GetLength(shot);
+		let width = Obj_GetValueD(shot,"Width",15);
+		let dur = Obj_GetValueD(shot,"Duration",30);
+		let del = Obj_GetValueD(shot,"Delay",tern(Obj_GetType(shot)==OBJ_STRAIGHT_LASER, 15, 0));
 		if(Obj_GetType(shot)==OBJ_LOOSE_LASER){ cpy = CreateLooseLaserA1(x,y,spd,ang, length, width, graph, del); }else
 		if(Obj_GetType(shot)==OBJ_STRAIGHT_LASER){ cpy = CreateStraightLaserA1(x,y,ang,length,width, dur, graph, del); }else
 		if(Obj_GetType(shot)==OBJ_CURVE_LASER){ cpy = CreateCurveLaserA1(x,y,spd,ang, length, width, graph, del); }
 	}
 	
 	OM_AddPatternA3(shot,0,spd,ang,acc,angv,mspd,graph);
-	
-	// ObjMove_SetAcceleration(cpy,acc);
-	// ObjMove_SetAngularVelocity(cpy,angv);
-	// ObjMove_SetMaxSpeed(cpy,mspd);
-	
+		
 	ObjRender_SetBlendType(cpy, blendtype);
 	OR_SetColor(cpy,color[0],color[1],color[2]);
 	OR_SetAlpha(cpy,alpha);
@@ -375,18 +557,13 @@ function CopyShot(shot){
 	ObjShot_SetSpellResist(cpy,spellresist);
 	ObjShot_SetIntersectionEnable(cpy,intersect);	
 	Obj_SetRenderPriority(cpy,Obj_GetRenderPriority(shot));
-	
-	
-	// Obj_SetValue(cpy,"Acceleration",acc);
-	// Obj_SetValue(cpy,"AngularVelocity",angv);
-	// Obj_SetValue(cpy,"MaxSpeed",mspd);
-	// Obj_SetValue(cpy,"Alpha",alpha);
-	// Obj_SetValue(cpy,"Color",color); 
+		
 	Obj_SetValue(cpy,FLAG_INTERSECTION,intersect);
 	
 	return cpy;
 }
 
+function ObjShot_Delete(shot){ObjShot_SetDeleteFrame(shot,0);}
 
 
 
@@ -442,8 +619,7 @@ task Obj_AddPatternA2(obj,fr,s,a,acc,mspd){
 		dx = s*cos(a); dy = s*sin(a);
 	}
 }
-//hmm I should do some proper ObjRender_AddPattern functions
-//for stuff like alpha, color, and scale
+
 
 
 
@@ -529,11 +705,13 @@ task OR_SetAngularVelocityXYZ(obj,dxa,dya,dza){
 function OM_SetSpeed(obj,val){
 	ObjMove_SetSpeed(obj,val);
 	Obj_SetValue(obj,MOVE_SPEED,val);
+	Obj_SetValue(obj,FLAG_XYMOVE,false);
 }
-function OM_GetSpeed(obj){return ObjMove_GetSpeed(obj);}
+function OM_GetSpeed(obj){let s = ObjMove_GetSpeed(obj); if(s==0){s=Obj_GetValueD(obj,MOVE_SPEED,0);return s;} }
 function OM_SetAngle(obj,val){
 	ObjMove_SetAngle(obj,val);
 	Obj_SetValue(obj,MOVE_ANGLE,val);
+	Obj_SetValue(obj,FLAG_XYMOVE,false);
 }
 function OM_GetAngle(obj){return ObjMove_GetAngle(obj);}
 function OM_SetAcceleration(obj,val){
@@ -657,10 +835,9 @@ function OM_AddPatternB1(obj,del,xspd,yspd){
 	Update;
 	task Update{
 		wait(del);
-		Obj_SetValue(obj,"UseXYSystem",true);
-		Obj_SetValue(obj,"UseSASystem",false);
-		Obj_SetValue(obj,"XSpeed",xspd);
-		Obj_SetValue(obj,"YSpeed",yspd);
+		Obj_SetValue(obj,FLAG_XYMOVE,true);
+		Obj_SetValue(obj,MOVE_XSPEED,xspd);
+		Obj_SetValue(obj,MOVE_YSPEED,yspd);
 	}
 }
 function OM_AddPatternB2(obj,del,xspd,yspd,xacc,yacc,xmspd,ymspd){
@@ -677,19 +854,38 @@ function OM_AddPatternB2(obj,del,xspd,yspd,xacc,yacc,xmspd,ymspd){
 	Update;
 	task Update{
 		wait(del);
-		Obj_SetValue(obj,"UseXYSystem",true);
-		Obj_SetValue(obj,"UseSASystem",false);
-		Obj_SetValue(obj,"XSpeed",xspd);
-		Obj_SetValue(obj,"YSpeed",yspd);
-		Obj_SetValue(obj,"XAcceleration",xacc);
-		Obj_SetValue(obj,"YAcceleration",yacc);
-		Obj_SetValue(obj,"XMaxSpeed",xmspd);
-		Obj_SetValue(obj,"YMaxSpeed",ymspd);
+		Obj_SetValue(obj,FLAG_XYMOVE,true);
+		Obj_SetValue(obj,MOVE_XSPEED,xspd);
+		Obj_SetValue(obj,MOVE_YSPEED,yspd);
+		Obj_SetValue(obj,MOVE_XACCEL,xacc);
+		Obj_SetValue(obj,MOVE_YACCEL,yacc);
+		Obj_SetValue(obj,MOVE_XMAXSPEED,xmspd);
+		Obj_SetValue(obj,MOVE_YMAXSPEED,ymspd);
 	}
 }
 
 
+function OM_GetX(obj){return ObjMove_GetX(obj);}
+function OM_GetY(obj){return ObjMove_GetY(obj);}
+function OM_GetA(obj){return ObjMove_GetAngle(obj);}
+function OM_SetX(obj,v){ObjMove_SetX(obj,v);}
+function OM_SetY(obj,v){ObjMove_SetY(obj,v);}
+function OM_SetA(obj){return ObjMove_GetAngle(obj);}
 
+function OM_SetSpeedX(obj,s){
+	Obj_SetValue(obj,FLAG_XYMOVE,true);
+	Obj_SetValue(obj,MOVE_XSPEED,s);
+	// ObjMove_AddPatternB1(obj,0,s,OM_GetSpeedY(obj));
+	ObjMove_AddPatternB1(obj,0,s,NO_CHANGE);
+}
+function OM_SetSpeedY(obj,s){
+	Obj_SetValue(obj,FLAG_XYMOVE,true);
+	Obj_SetValue(obj,MOVE_YSPEED,s);
+	// ObjMove_AddPatternB1(obj,0,OM_GetSpeedX(obj),s);
+	ObjMove_AddPatternB1(obj,0,NO_CHANGE,s);
+}
+function OM_GetSpeedX(obj){return Obj_GetValueD(obj,MOVE_XSPEED,OM_GetSpeed(obj)*cos(ObjMove_GetAngle(obj)));}
+function OM_GetSpeedY(obj){return Obj_GetValueD(obj,MOVE_YSPEED,OM_GetSpeed(obj)*sin(ObjMove_GetAngle(obj)));}
 
 
 

@@ -197,7 +197,7 @@ task ObjMove_SetDestAtBezierS(obj,x2,y2,x1,y1,s){
     let y = 0;
     let speed = s/1000;
     
-    ObjMove_SetSpeed(obj,0.01);
+	ObjMove_SetSpeed(obj,0.01);
     
     while(t<=1){
         x = (1 - t) * (1 - t) * p[0] + 2 * (1 - t) * t * p[1] + t * t * p[2];

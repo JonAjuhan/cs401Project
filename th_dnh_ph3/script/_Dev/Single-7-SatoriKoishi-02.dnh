@@ -1,0 +1,261 @@
+#TouhouDanmakufu[Single]
+#ScriptVersion[3]
+#Title["(Satori & Koishi Nonspell 2)"]
+#Text["series 7: scales with difficulty"]
+// #BGM["./bgm/bgm - Kid's Festival ~ Innocent Treasures.ogg"]
+// #BGM["./bgm/bgm - Hartmann's Youkai Girl.ogg"]
+#System["./system/Andi_System.txt"]
+#Background["./system/Background/Mystia/BG_work.txt"]
+
+#include "./Index.txt"
+
+let timer = 37; //37 //47
+let drate = 48; //24
+let mlife = 4000; //2000
+
+let volumetweak = 0.75;
+
+let bsatori;
+let bkoishi;
+let kx; let ky;
+
+@Event{
+	alternative(GetEventType())
+	case(EV_REQUEST_LIFE){				SetScriptResult(mlife);		}
+	// case(EV_REQUEST_SPELL_SCORE){		SetScriptResult(5000000);	}
+	// case(EV_REQUEST_TIMER) {			SetScriptResult(timer*60);	}
+	// case(EV_REQUEST_IS_DURABLE_SPELL) {	SetScriptResult(true);		}
+}
+@Initialize{
+	if(noPlural){ 
+		SetDifficultyD(HARD); 
+		SetBGM("Hartmann's Youkai Girl@Magnum Opus",17.12,298.97);
+	}
+	alternative(rank)
+	case(RANK_EASY){	SetCommonData("CurrentSC","Recollection \"???\"");}
+	case(RANK_NORM){	SetCommonData("CurrentSC","Recollection \"???\"");}
+	case(RANK_HARD){	SetCommonData("CurrentSC","Recollection \"???\"");}
+	others         {	SetCommonData("CurrentSC","Recollection \"???\"");}
+	
+	SetShotAutoDeleteClip(32,32,32,32);
+	
+	SetCommonData("BossNameColor",[255,64,196]);
+	bsatori = CreateBoss("Satori Komeiji");
+	SetCommonData("BossNameColor",[128,255,128]);
+	bkoishi = CreateBoss("Koishi Komeiji");
+	renderSatoriSA(bsatori);
+	renderKoishiSA(bkoishi);
+	
+	MainTask;
+	
+
+}
+@MainLoop{
+	if(ObjEnemy_GetInfo(bsatori,INFO_LIFE)<=0 && !finishing){
+		finishing = true;
+		DropItemsNonspellEnd;
+		TBreakNonspell([]);
+	}
+	kx=ObjMove_GetX(bkoishi); ky=ObjMove_GetY(bkoishi);
+	SetBossHitbox(bsatori,ex,ey);
+	SetBossHitbox(bkoishi,kx,ky);
+	frame++;
+	yield;
+}
+
+
+task MainTask {
+	ObjEnemy_SetDamageRate(bsatori,0,0);
+	ObjMove_SetDestAtFrame(bsatori, cx, cy-100, 60); //cy-120
+	ObjMove_SetDestAtFrame(bkoishi, cx*1.1, cy-150, 60); //cy-120
+	
+	// SetSpellCard;
+	// ObjEnemyBossScene_StartSpell(objScene);
+	// ObjEnemyBossScene_SetSpellTimer(objScene,timer*60); //5760
+	
+	// SetCaution;
+	// TSpellImmune;
+	// SetBossBlur(true);
+	Aura(bsatori,255,64,128,64);
+	Aura(bkoishi,64,255,128,64);
+	// AuraRainbow(boss,64,64,64);
+	// SetMagicCircleAlpha(64,64);
+
+	// wait(90);
+	wait(20);
+	
+	// Tmovement(cx-120,cx+120, cy-90,cy-60, 60,240, [MOVE_PLAYERBIAS,2,0,MOVE_MAXSPEED,1.5] );
+	ObjEnemy_SetDamageRate(bsatori,drate,drate/3);
+	frame = 0;
+	
+	
+	TShootSatori1;
+	// TShootKoishi1;
+	TShootKoishi2;
+	
+}
+
+
+
+
+
+//adapted from Ginko
+task TShootSatori1{
+	let r; let R; let s; let S; let v; let j;
+	alternative(rank)
+	case(RANK_EASY){ r=50; R=-70; s=4.724; S=24.200; v = 1.2; j = 1; }
+	case(RANK_NORM){ r=30; R=-30; s=1.724; S=16.189; v = 1.4; j = 3; }
+	case(RANK_HARD){ r=30; R=-30; s=1.724; S=16.189; v = 1.4; j = 4; }
+	case(RANK_LUNA){ r=30; R=-70; s=2.524; S=16.189; v = 1.6; j = 5; }
+	// case(RANK_EASY){ r=50; R=-70; s=4.724; S=24.200; v = 1.2; j = 1; } //good distribution
+	// case(RANK_EASY){ r=30; R=-60; s=1.724; S=24.200; v = 1.2; j = 1; }
+	// case(RANK_LUNA){ r=50; R=-70; s=2.524; S=16.189; v = 1.6; j = 5; } //haha wow BS
+	// case(RANK_HARD){ r=30; R=-30; s=1.724; S=16.189; v = 1.4; j = 1; }
+	// case(RANK_LUNA){ r=30; R=-60; s=4.724; S=24.200; v = 2.9; j = 3; }
+
+	let spd; let acc; let mspd;
+	let bsp; let bac; let bmsp;
+	alternative(rank)
+	case(RANK_EASY){ spd = 6; mspd = 2; acc = (mspd-spd)/60; bsp = 3; bac = -0.2; bmsp = 1; }
+	case(RANK_NORM){ spd = 6; mspd = 3; acc = (mspd-spd)/30; bsp = 3; bac = -0.2; bmsp = 1; }
+	case(RANK_HARD){ spd = 6; mspd = 3; acc = (mspd-spd)/30; bsp = 3; bac = -0.2; bmsp = 1; }
+	case(RANK_LUNA){ spd = 6; mspd = 3; acc = (mspd-spd)/15; bsp = 3; bac = -0.2; bmsp = 1; }
+	
+	while(!Obj_IsDeleted(bsatori)&&!finishing){
+		let angle = rand(0,360);
+
+		wait(20);
+		let a=0;
+		let t=0;
+		loop(8000){ //8000
+			t++;
+			if(t%400==99){
+				ascent(j in 0..2){
+					ascent(i in 0..16){
+						CreateShotA2(ex,ey,bsp,22.5*i+11.25*j,  bac,bmsp,  BUBBLE_RED+500+j*(BLUE-RED),  30-10*(-1)^i);
+					}
+					// SE_Play(se_kira01,100);
+					SE_Play(se_chime2,100);
+					// wait(12*18*(1-j));
+					wait(18);
+				}
+				wait(11*18);
+			}
+			
+			// let spd = 2; let acc = -0.1; let mspd = 1;
+			// let spd = 3; let acc = -0.1; let mspd = 1;
+			
+			ascent(i in 0..j){
+				let a0 = (a+v/j*i);
+				let a1 = S*a0; let a2 = s*a0;
+				CreateShotA2(ex+cos(a1)*r+cos(a2)*R,ey+sin(a1)*r+sin(a2)*R,spd, a0     ,acc,mspd,ZPEL_RED     ,10); //light red
+				CreateShotA2(ex-cos(a1)*r-cos(a2)*R,ey+sin(a1)*r+sin(a2)*R,spd,-a0+180 ,acc,mspd,ZPEL_MAGENTA ,10); //lilac
+				CreateShotA2(ex+cos(a1)*r+cos(a2)*R,ey-sin(a1)*r-sin(a2)*R,spd, a0     ,acc,mspd,ZPEL_BLUE    ,10); //blue
+				CreateShotA2(ex-cos(a1)*r-cos(a2)*R,ey-sin(a1)*r-sin(a2)*R,spd,-a0+180 ,acc,mspd,ZPEL_PURPLE  ,10); //purple
+				a+=(v*2*max(0,i-1));
+			}
+			
+			if(t%3==0){
+				SE_Play(se_shot1,60*volumetweak);
+				SE_Play(se_shot2,60*volumetweak);
+				// SE_Play(se_shot,50*volumetweak);
+			}
+			
+			a=a+v;
+			angle += rand(0,360);
+			yield;
+		}
+		wait(60);
+	}
+}
+
+
+task TShootKoishi1{
+	let N; let len; let frq; let spd; let incr; let rotspd; let linespd;
+	alternative(rank)
+	case(RANK_EASY){ N = 8;  len = 10; frq = 3; spd = 1;   incr = spd/4; rotspd = 3; linespd = 2; }
+	case(RANK_NORM){ N = 8;  len = 10; frq = 3; spd = 1;   incr = spd/4; rotspd = 3; linespd = 2; }
+	case(RANK_HARD){ N = 12; len = 10; frq = 3; spd = 1.5; incr = spd/4; rotspd = 3; linespd = 2; }
+	case(RANK_LUNA){ N = 12; len = 20; frq = 1; spd = 2;   incr = spd/4; rotspd = 5; linespd = 3; } //forms a seal
+	// case(RANK_LUNA){ N = 8; len = 20; frq = 1; spd = 2; incr = spd/4; rotspd = 5; linespd = 3; } //forms a seal
+	// case(RANK_HARD){ N = 8; len = 10; frq = 3; spd = 1; incr = spd/4; rotspd = 3; linespd = 5; } //even distribution
+	let da = 360/N;
+	
+	while(!Obj_IsDeleted(bkoishi)&&!finishing){
+		O_SetPropertyAtFrame(bkoishi,RENDER_ALPHA,0,  120);
+		O_SetPropertyAtDelay(bkoishi,FLAG_INTERSECTION,false,60);
+		wait(120);
+		
+		OM_SetDestAtWrapF(bkoishi,px,py/2,[LFT,RGT,1,1.5,2.25,0.75],60);
+		wait(45);
+		O_SetPropertyAtFrame(bkoishi,RENDER_ALPHA,255,60);
+		O_SetPropertyAtDelay(bkoishi,FLAG_INTERSECTION,true,60);
+		wait(30);
+		
+		let a0 = getangle(kx,ky,px,py);
+		ascent(f in 0..60){
+			ascent(i in 0..N){
+				CreateShotA1(kx,ky,spd+(incr*((linespd*f)%len)/len),a0+da*i + rotspd*f - (linespd*f)%len, ZPEL_RED,10);
+				// CreateShotA1(kx,ky,1,a0+45*i + f + f%10, ZPEL_RED,10);
+			}
+			
+			SE_Play(se_chime,60*volumetweak);
+			wait(frq);
+		}
+		
+	}
+}
+
+
+
+task TShootKoishi2{
+	while(!Obj_IsDeleted(bkoishi)&&!finishing){
+		O_SetPropertyAtFrame(bkoishi,RENDER_ALPHA,0,  120);
+		O_SetPropertyAtDelay(bkoishi,FLAG_INTERSECTION,false,60);
+		wait(120);
+		
+		OM_SetDestAtWrapF(bkoishi,px,py/2,[LFT,RGT,1,1.5,2.25,0.75],60);
+		wait(45);
+		O_SetPropertyAtFrame(bkoishi,RENDER_ALPHA,255,60);
+		O_SetPropertyAtDelay(bkoishi,FLAG_INTERSECTION,true,60);
+		wait(30);
+		
+		let d = 40;
+		let t = 60;
+		let s0 = 8*d/t; //6
+		
+		ascent(f in 0..12){
+			let a0 = getangle(kx,ky,px,py);
+			ascent(i in 5..15){
+				// let shot = CreateShotA1(kx,ky,2+(i/8),a0+90*(-1)^i, ZPEL_RED,10);
+				// ObjMove_AddPatternA2(shot,20,0,a0, 0.1,0,4);
+				let s = s0*(i/16);
+				let acc = -((s0*i/16)/t);
+				ascent(j in 1..4){
+					let shot = CreateShotA2(kx,ky,s,a0+90*(-1)^i, acc,0, ZPEL_GREEN,10);
+					ObjMove_AddPatternA2(shot,t,0,a0, 0.1/j,0,4/j);
+					Obj_SetRenderPriorityI(shot,GetShotRenderPriorityI-1);
+					// ObjRender_SetBlendType(shot,BLEND_MULTIPLY);
+					TempNoAutoDelete(shot);
+				}
+			}
+			// let shot = CreateShotA2(kx,ky,4,a0, -0.4,2, LARGE_BLUE,10);
+			let shot = CreateShotA2(kx,ky,8,a0, -8/(t/2),0, HEART_BLUE,10);
+			ObjMove_AddPatternA2(shot,t/2,0,a0, 0.05,0,2);
+			// Obj_SetRenderPriorityI(shot,GetShotRenderPriorityI+1);
+			
+			SE_Play(se_chime,60*volumetweak);
+			SE_Play_Del(se_kira02,60*volumetweak,20);
+			wait(20); //3
+		}
+		
+	}
+}
+
+
+
+task TempNoAutoDelete(shot){
+	ObjShot_SetAutoDelete(shot,false);
+	wait(90);
+	ObjShot_SetAutoDelete(shot,true);
+}

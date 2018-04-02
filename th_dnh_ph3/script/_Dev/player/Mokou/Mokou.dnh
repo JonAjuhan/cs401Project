@@ -81,13 +81,16 @@ task InitializePowerAndOptions{
 			PlaySE(current~"se_graze.wav");
 			let number = GetEventArgument(0);
 			ascent(i in 0..number){
-				let c;
+				let c = [255,128,255];
 				if(length(GetEventArgument(1)) > i){
 					let shot = GetEventArgument(1)[i];
-					let graph = ObjShot_GetImageID(shot);
-					if(graph > 0){
-						c = GetShotDataInfoA1(ObjShot_GetImageID(shot),TARGET_ENEMY,INFO_DELAY_COLOR);
-					}else{ c = [255,128,255]; }
+					if(!Obj_IsDeleted(shot)){
+						let graph = ObjShot_GetImageID(shot);
+						if(graph > 0){
+							c = Obj_GetValueD(shot,"Color",GetShotDataInfoA1(ObjShot_GetImageID(shot), TARGET_ENEMY, INFO_DELAY_COLOR));
+							// c = GetShotDataInfoA1(ObjShot_GetImageID(shot),TARGET_ENEMY,INFO_DELAY_COLOR);
+						}else{ c = [255,128,255]; }
+					}
 				}else{ c = [255,128,255]; }
 				let a;
 				if(length(GetEventArgument(2)) > i){

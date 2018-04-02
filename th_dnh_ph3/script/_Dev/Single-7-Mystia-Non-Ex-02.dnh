@@ -2,11 +2,13 @@
 #ScriptVersion[3]
 #Title["(Mystia Unused Nonspell 2)/testing"]
 #Text["series 7: scales with difficulty"] 
-#BGM["./bgm/bgm - Deaf to All but the Song.ogg"]
+// #BGM["./bgm/bgm - Deaf to All but the Song.ogg"]
+#BGM["./bgm/bgm - Kid's Festival ~ Innocent Treasures.ogg"]
 #System["./system/Andi_System.txt"]
 #Background["./system/Background/Mystia/BG_work.txt"]
 
 #include "./Index.txt"
+#include "./Library/ExperimentalFunctions.txt"
 
 let timer = 37; //37 //47
 let drate = 64; //24
@@ -29,7 +31,7 @@ let mlife = 4000; //2000
 	// case(RANK_HARD){	SetCommonData("CurrentSC","Vocal Sign \"Midnight Sparrow's Song\"");}
 	// others         {	SetCommonData("CurrentSC","Night Sparrow \"Darkest Hour\"");}
 	
-	SetShotAutoDeleteClip(32,32,32,32);
+	SetShotAutoDeleteClip(192,32,192,128);
 	
 	// boss = spawnBoss();
 	boss = spawnBossBlank("Mystia Lorelai");
@@ -51,6 +53,9 @@ let mlife = 4000; //2000
 	else {
 		SetBossHitbox(boss,ex,ey);
 	}
+	
+	// wrap(boss);
+	
 	frame++;
 	yield;
 }
@@ -71,6 +76,7 @@ task MainTask {
 	// SetMagicCircleAlpha(64,64);
 
 	wait(90);
+	
 		
 	// Tmovement(cx-120,cx+120, cy-90,cy-60, 60,240, [MOVE_PLAYERBIAS,2,0,MOVE_MAXSPEED,1.5] );
 	ObjEnemy_SetDamageRate(boss,drate,drate/3);
@@ -89,23 +95,129 @@ task TShoot{
 
 	let shot; 
 	
-	let gap; let N; let del; let famgap;
+	let gap; let N; let M; let del; let famgap;
 	let diff = rank();	
 	alternative(diff)
-	case(RANK_EASY){	N = 10; gap=90; del = 120; famgap = 15; }
-	case(RANK_NORM){	N = 15; gap=60; del = 120; famgap = 10; }
-	case(RANK_HARD){	N = 25; gap=45; del = 90;  famgap = 7; }
-	case(RANK_LUNA){	N = 40; gap=25; del = 90;  famgap = 5; }
-	others{ N=100;gap=20;del=90;famgap = 1;}
+	case(RANK_EASY){	N = 10; M = 1; gap=90; del = 120; famgap = 15; }
+	case(RANK_NORM){	N = 15; M = 3; gap=60; del = 120; famgap = 10; }
+	case(RANK_HARD){	N = 25; M = 6; gap=45; del = 120; famgap = 7; }
+	case(RANK_LUNA){	N = 40; M = 9; gap=25; del = 120; famgap = 5; }
+	others{ N=100;M=10;gap=20;del=90;famgap = 1;}
 	let shootinterval = 30/N; //total of 30 frames, in N intervals
 
 	
-	let count=0; let a; let dir;
+	let count=0; let a; let dir; let a0;
+	let x; let y;
 	
 	while(!Obj_IsDeleted(boss) && !finishing){
 		
-		O_SetProperty(boss,MOVE_ACCEL,0.05);
-		let a = O_GetProperty(boss,MOVE_ACCEL);
+		loop{
+			// OM_SetDestAtWrapF(boss,px,py,[LFT,TOP,RGT,BTM,NON,2],90);
+			// OM_SetDestAtWrapF(boss,px,py,[LFT,TOP,RGT,BTM,3],90);
+			x=px; y=py;
+			OM_SetDestAtWrapF(boss,x,y,[LFT,TOP,RGT,BTM,5,0.1],90);
+			
+			let N = 5; let a0 = 180; let da = 45; //2,180,120
+			ascent(f in 0..90){
+				ascent(i in -(N-1)/2..(N-1)/2+1){
+					// let shot = CreateShotA2(ex,ey,0,ObjMove_GetAngle(boss)+a0+da*i, 0.05, 3, CARD_MAGENTA-1*(f%3)^2.75, 5);
+					// let shot = CreateShotA2(ex,ey,0,ObjMove_GetAngle(boss)+a0+da*i, 0.05, 3, CARD_GRAY+PURPLE-1*(f%2), 5);
+					// let shot = CreateShotA2(ex,ey,0,ObjMove_GetAngle(boss)+a0+da*i, 0.05, 3, FLOWDOT+MAGENTA-1*(f%2), 5);
+					// let shot = CreateShotA2(ex,ey,0,ObjMove_GetAngle(boss)+a0+da*i, 0.05, 3, FLOWDOT+f%GRAY, 5);
+					// let shot = CreateShotA2(ex,ey,0,ObjMove_GetAngle(boss)+a0+da*i, 0.05, 3, FLOWDOT+f%GRAY+500, 5);
+					// let shot = CreateShotA2(ex,ey,0,ObjMove_GetAngle(boss)+a0+da*i, 0.05, 3, ZPEL+f%GRAY+500, 5);
+					// let shot = CreateShotA2(ex,ey,0,ObjMove_GetAngle(boss)+a0+da*i, 0.05, 3, ZPEL_RED+f%7, 5);
+					// OS_TintShot(shot,128);
+					// OM_BounceA1(shot,1,[LFT,TOP,RGT,BTM]);
+					let shot = CreateShotA2(ex,ey,0,ObjMove_GetAngle(boss)+a0+da*i, 0.05, 3, GALE+500, 5);
+					// OR_SetColor(shot,255,64,64);
+					OR_SetColor(shot,255,64,255);
+				}
+				if(f%3==0){SE_Play(se_chime,60);SE_Play(se_shot,40);}
+				EffectParticleA1(x,y,1,rand(0,360),"feather",128,128,128);
+				yield;
+			}
+			wait(30);
+		}
+		
+		// TestTypes;
+		
+		// let weight = 10;
+		
+		// O_SetPropertyAtWeight(boss,RENDER_ALPHA,120,60,weight);
+		// O_SetPropertyAtWeight(boss,RENDER_SCALE,3,60,weight);
+		// wait(120);
+		// O_SetPropertyAtWeight(boss,RENDER_ALPHA,255,60,weight);
+		// O_SetPropertyAtWeight(boss,RENDER_SCALE,1,60,weight);
+		// wait(60);
+		let ox = ex;
+		O_SetPropertyAtDecel(boss,RENDER_ALPHA,200,60); //120
+		O_SetPropertyAtFrame(boss,RENDER_COLOR,[255,0,0],60);
+		O_SetPropertyAtDecel(boss,RENDER_SCALE,3,60);
+		// O_SetPropertyAtDecel(boss,MOVE_X,px,60);
+		// O_SetPropertyAtAccel(boss,MOVE_Y,py,60);
+		
+		//goin down
+		O_SetPropertyAtWeight(boss,MOVE_X,px,60,10);
+		O_SetPropertyAtWeight(boss,MOVE_Y,sy+20,60,-50);
+		wait(50);
+		ScreenShake(20,rand(-3,3),5);
+		SE_Play(se_explode,100);
+		SE_Play(se_anchor,100);
+		wait(10);
+		
+		let sm = 1; //speed multiplier
+		let am = 2; //angle multiplier
+		a0=rand(0,360);
+		ascent(i in 0..N*2){
+			ascent(j in 0..M){
+				a=a0+i*360/(2*N);
+				
+				shot = CreateShotA2(ex,ey,(5.5-0.5*trunc(j/2+altBin(i)/3))*sm,a, -0.15*sm,0, BALL_O_GREEN+altBin(i)*(SCALE_MAGENTA-BALL_O_GREEN-2*tobin(altBin(trunc(j/2+i)))),10);
+				OM_SetMaxAcceleration(shot,-1*sm);
+				OM_SetJerk(shot,-0.005*sm);
+				// O_AddPropertyPatternA1(shot,5,MOVE_JERK,0.0001/sm); //30
+				OM_AddPatternA5(shot,0,NO_CHANGE,NO_CHANGE,5*sm,-3.55*am,5*sm,0.003*sm,0.15*sm,0.15*am,1.25*am);			
+				
+				// O_SetPropertyAtDelay(shot,MOVE_ANGV,0,(1.5+0.01*j)*del/sm/am  + randint(0,5));
+				O_SetPropertyAtDelay(shot,MOVE_ANGV,0, 45 + randint(0,5));
+				OM_AddPatternA5(shot,70,NO_CHANGE,NO_CHANGE,5*sm,-3.55*am,5*sm,0.003*sm,0.15*sm,0.15*am,1.25*am);			
+				O_SetPropertyAtDelay(shot,MOVE_ANGV,0, 90 + randint(0,5));
+			}
+		}
+		wait(60);
+		O_SetPropertyAtAccel(boss,RENDER_ALPHA,255,60);
+		O_SetPropertyAtFrame(boss,RENDER_COLOR,[255,255,255],60);
+		O_SetPropertyAtAccel(boss,RENDER_SCALE,1,60);
+		O_SetPropertyAtDecel(boss,MOVE_Y,cy/2,60);
+		O_SetPropertyAtAccel(boss,MOVE_X,ox,60);
+		wait(60);
+		a=GetAngleToPlayer(boss);
+		O_AddPropertyPatternA1(boss,0,MOVE_X,3*cos(a));
+		O_AddPropertyPatternA1(boss,0,MOVE_Y,5);
+		wait(60);
+		a=GetAngleToPlayer(boss);
+		O_AddPropertyPatternA2(boss,0,MOVE_X,1*cos(a),0.05*cos(a),3*cos(a));
+		O_AddPropertyPatternA2(boss,0,MOVE_Y,1*sin(a),0.05*sin(a),3*sin(a));
+		wait(30);
+		ascent(i in 0..40){
+			wait(3);
+			// O_AddPropertyPatternA1(boss,0,MOVE_XSPEED,0.5*cos(a));
+			// O_AddPropertyPatternA1(boss,0,MOVE_YSPEED,0.5*sin(a));
+			a=GetAngleToPlayer(boss);
+			O_AddPropertyPatternA2(boss,0,MOVE_X,NO_CHANGE,0.5*cos(a),3*cos(a));
+			O_AddPropertyPatternA2(boss,0,MOVE_Y,NO_CHANGE,0.5*sin(a),3*sin(a));
+			
+			ascent(j in 0..N/2){
+				shot = CreateShotA1(ex,ey,2,a+j*360/(N/2)*(1+0.1*i), DROP_RED,5);
+			}
+			SE_Play(se_chime,50);
+		}
+		O_SetPropertyAtAccel(boss,MOVE_XSPEED,0, 120);
+		O_SetPropertyAtDecel(boss,MOVE_YSPEED,0, 120);
+		
+		wait(120);
+		
 		
 		// DropItemsNonspellEnd;
 		// DropItemsSpellEnd;
@@ -130,7 +242,7 @@ task TShoot{
 		// }
 		
 		
-		let x; let y;
+		
 		
 		ascent(k in 0..2){
 			// ObjMove_SetDestAtWeight(boss,cx+randSign*rand(0,cx*0.75),rand(60,cy*0.9), gap*0.66,20);
@@ -159,6 +271,8 @@ task TShoot{
 					
 					shot = CreateShotA2(ex,ey,5.5-0.5*trunc(j/2+altBin(i)/3),a, -0.15,0, BALL_O_GREEN+isalt*(SCALE_MAGENTA-BALL_O_GREEN-2*tobin(altBin(trunc(j/2+i)))),10);
 					
+					O_AddPropertyPatternA1(shot,30,MOVE_JERK,0.001);
+					
 					// shot = CreateShotA2(ex,ey,5.5-0.5*trunc(j/2+altBin(i)/3),a, -0.15,0, SSS_GREEN+round(3*sin(10*(6*i+j))),10);
 					// if(isalt==1){ObjShot_SetGraphic(shot,SCALE_RED+5*tobin(altBin(trunc(j/2+i)))); }
 					//          (obj, del,     speed,    angle, acc,      angv, mspd,    jerk,  macc,      anga,    mangv)
@@ -172,6 +286,8 @@ task TShoot{
 					let jerk = 0.003; //-0.0015
 					let macc = 0.15; //0.15
 					OM_AddPatternA5(shot,del, spd,NO_CHANGE,  acc, -dir*3.55,   mspd,  jerk, macc, dir*0.15, dir*1.25);
+					
+					O_SetPropertyAtDelay(shot,MOVE_ANGV,0,1.5*del);
 					
 					if(altSign(j)==altSign(k)){
 						Manage(shot);
@@ -197,7 +313,7 @@ task TShoot{
 	
 		wait(gap); //60
 		
-		let a0 = GetAngleToPlayer(boss);
+		a0 = GetAngleToPlayer(boss);
 		ascent(i in 0..10){
 			// PagodaLaser(x,y,a,maxlength,maxwidth,del,color,delay)
 			// let las = PagodaLaserA1(ex,ey,a0-90+15+36*i,800,40,300,[196,64,255],60);
