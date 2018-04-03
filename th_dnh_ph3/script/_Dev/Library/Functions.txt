@@ -8,9 +8,10 @@
 
 //Basic spellcard declaration, no cutin image
 function SetSpellCard() {
-	ObjCutin_SetSpellcardS3(GetCommonData("CurrentSC",""), 255, 128, 128);
-	let diff = GetCommonData("Difficulty","Normal");
+	let c = GetCommonData("SpellcardDeclareColor",[255,128,128]);
+	ObjCutin_SetSpellcardS3(GetCommonData("CurrentSC",""), c[0],c[1],c[2]);
 	if(length(Obj_GetValueD(GetEnemyBossObjectID[0], "Spellcards", [])) < 2){
+		let diff = GetCommonData("Difficulty","Normal");
 		ObjCutin_LaunchS3("AYA", "", diff);
 		TMagicCircle();
 	}
@@ -19,9 +20,10 @@ function SetSpellCard() {
 
 //Spellcard declaration with cutin image
 function SetSpellCardA2(style,img) {
-	ObjCutin_SetSpellcardS4(GetCommonData("CurrentSC",""),img,style, 255, 128, 128);
-	let diff = GetCommonData("Difficulty","Normal");
+	let c = GetCommonData("SpellcardDeclareColor",[255,128,128]);
+	ObjCutin_SetSpellcardS4(GetCommonData("CurrentSC",""),img,style, c[0],c[1],c[2]);
 	if(length(Obj_GetValueD(GetEnemyBossObjectID[0], "Spellcards", [])) < 2){
+		let diff = GetCommonData("Difficulty","Normal");
 		ObjCutin_LaunchS3(style, img, diff);
 		TMagicCircle();
 	}
@@ -30,9 +32,10 @@ function SetSpellCardA2(style,img) {
 
 //
 function SetSurvivalCard() {
-	ObjCutin_SetSpellcardS5(GetCommonData("CurrentSC",""),"","", 255, 128, 128, true);
-	let diff = GetCommonData("Difficulty","Normal");
+	let c = GetCommonData("SpellcardDeclareColor",[255,128,128]);
+	ObjCutin_SetSpellcardS5(GetCommonData("CurrentSC",""),"","", c[0],c[1],c[2], true);
 	if(length(Obj_GetValueD(GetEnemyBossObjectID[0], "Spellcards", [])) < 2){
+		let diff = GetCommonData("Difficulty","Normal");
 		ObjCutin_LaunchS3("AYA", "", diff);
 		TMagicCircle();
 	}
@@ -40,9 +43,10 @@ function SetSurvivalCard() {
 }
 //
 function SetSurvivalCardA2(style,img) {
-	ObjCutin_SetSpellcardS5(GetCommonData("CurrentSC",""),img,style, 255, 128, 128, true);
-	let diff = GetCommonData("Difficulty","Normal");
+	let c = GetCommonData("SpellcardDeclareColor",[255,128,128]);
+	ObjCutin_SetSpellcardS5(GetCommonData("CurrentSC",""),img,style, c[0],c[1],c[2], true);
 	if(length(Obj_GetValueD(GetEnemyBossObjectID[0], "Spellcards", [])) < 2){
+		let diff = GetCommonData("Difficulty","Normal");
 		ObjCutin_LaunchS3(style, img, diff);
 		TMagicCircle();
 	}
@@ -1835,6 +1839,47 @@ task ObjFog_SetTargAtFrameA2(fog,targ,r,a, time){
 	Obj_DeleteValue(fog,"NoFollow");
 }
 
+
+
+
+
+
+
+
+
+function PhilosophyOfAHatedPerson(x,y,r){
+	let shots = GetShotIdInCircleA2(x,y,r,TARGET_ENEMY);
+	ascent(i in 0..length(shots)){
+		let shot = shots[i];
+		
+		if(!Obj_IsValueExists(shot,"RoseCounter")){
+			let rosecolor = Obj_GetValueD(shot,"RoseColor",NULL);
+			if(rosecolor==NULL){
+				let c = Obj_GetValueD(shot,"Color",GetShotDataInfoA1(ObjShot_GetImageID(shot),TARGET_ENEMY,INFO_DELAY_COLOR));
+				if(c[0] > c[2]){ rosecolor = ROSE_RED;  }
+				else           { rosecolor = ROSE_BLUE; }
+			}
+			Obj_SetValue(shot,"RoseColor",rosecolor);
+			Obj_SetValue(shot,"RoseOrigGraphic",ObjShot_GetImageID(shot));
+			ObjShot_SetGraphic(shot,rosecolor);
+			Manage(shot);
+		}
+		Obj_SetValue(shot,"RoseCounter",10);
+		
+		task Manage(shot){
+			SE_Play(se_chime,100);
+			let counter=10;
+			while(counter > 8){
+				counter = Obj_GetValueD(shot,"RoseCounter",10)-1;
+				Obj_SetValue(shot,"RoseCounter",counter);
+				yield;
+			}
+			Obj_DeleteValue(shot,"RoseCounter");
+			ObjShot_SetGraphic(shot,Obj_GetValueD(shot,"RoseOrigGraphic",NULL));
+			SE_Play(se_chime,100);
+		}
+	}
+}
 
 
 

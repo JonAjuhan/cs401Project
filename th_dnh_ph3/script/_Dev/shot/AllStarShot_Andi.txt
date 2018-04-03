@@ -1244,6 +1244,20 @@ ShotData{ id=1185 rect=(104,910,161,967) render=ALPHA delay_color= (255,255,255)
 
 
 
+
+//Koishi roses
+//Red
+ShotData{ id=2000 rect=(896,480, 959,543) render=ALPHA delay_color= (255,128, 64) fixed_angle = true angular_velocity = 2 collision = 23;}
+//Blue
+ShotData{ id=2001 rect=(960,480,1023,543) render=ALPHA delay_color= ( 64, 64,255) fixed_angle = true angular_velocity = 2 collision = 23;}
+
+
+
+
+
+
+
+
 //Eirin pellets (edited ASS pellets, I think)
 ShotData{ id=1900 rect=(1008,1006,1023,1022) render=ADD_ARGB delay_color= (255,255,255) } //White
 ShotData{ id=1901 rect=(800,1006,816,1022) render=ADD_ARGB delay_color= (255,64,64) } //Red

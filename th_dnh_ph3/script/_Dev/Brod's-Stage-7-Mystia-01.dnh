@@ -746,9 +746,9 @@ function TKedama2(x,y,s,a,color,life){
 				a0+=15;
 			}
 			alternative(color)
-			case("red"){  DropItems(x,y, [ITEM_POWER_S,1,0] ); }
-			case("blue"){ DropItems(x,y, [ITEM_POINT_S,1,0] ); }
-			others{ DropItems(x,y, [ tern(rand(0,1)<0.5,ITEM_POWER_S,ITEM_POINT_S),1,0] ); }
+			case("red"){  DropItemsSmallest(x,y,ITEM_POWER_S); }
+			case("blue"){ DropItemsSmallest(x,y,ITEM_POINT_S); }
+			others{ DropItemsSmallest(x,y,tern(rand(0,1)<0.5,ITEM_POWER_S,ITEM_POINT_S)); }
 			Obj_Delete(kd2);
 		}
 	}
