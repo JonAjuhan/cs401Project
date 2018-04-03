@@ -16,7 +16,7 @@ let bossBGM;
 @Loading{
 	let csd = GetCurrentScriptDirectory();
 
-	bossScript = LoadScriptInThread(csd~"./Plural-7-Mystia.dnh");
+	bossScript = LoadScriptInThread(csd~"./dilersplural.dnh");
 
 	stageBGM = csd~"bgm/bgm - Song of the Night Sparrow ~ Night Bird.ogg";
 	LoadSound(stageBGM);
