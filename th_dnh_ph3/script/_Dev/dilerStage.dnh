@@ -187,8 +187,8 @@ task TStage {
 	while(!IsCloseScript(bossScript) && GetPlayerState() != STATE_END){
 		yield;
 	}
-	CloseStgScene();
-	CloseScript(GetOwnScriptID); //
+	// CloseStgScene();
+	// CloseScript(GetOwnScriptID); //
 	loop(240){yield;}
 	CloseStgScene();
 	CloseScript(GetOwnScriptID); //
