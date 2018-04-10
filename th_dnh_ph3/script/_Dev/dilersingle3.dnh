@@ -97,14 +97,14 @@ task AimedShots{
 	let shot2;
 	let angle;
 
-	while(!Obj_IsDeleted(boss)) {
+	while(!Obj_IsDeleted(boss) && !finishing) {
 		//ex = boss x, ey = boss y, px py player
 		angle = getangle(ex,ey,px,py);
-	  ascent(i in 0..5){
-	    shot = CreateShotA2(ex,ey,10,angle+i*72,0,2.5,SUPP_RED+500,10);
+		ascent(i in 0..5){
+			shot = CreateShotA2(ex,ey,10,angle+i*72,0,2.5,SUPP_RED+500,10);
 			MyBounce(shot);
 			ObjMove_AddPatternA1(shot,5,5,angle);
-		  wait(8);
+			wait(8);
 		}
 		shot2 = CreateStraightLaserA1(ex,ey,angle,300,10,60,LAS_WHITE,45);
 	}
@@ -112,10 +112,10 @@ task AimedShots{
 
 
 task MyBounce(shot){
-		let shot3;
-		while(!bounce(shot)){yield;}
-		shot3 = CreateShotA2(ex,ey,10,ObjMove_GetAngle(shot),0,2.5,SUPP_RED+500,10);
-    ObjMove_SetSpeed(shot,1.5*ObjMove_GetSpeed(shot));
+	let shot3;
+	while(!bounce(shot)){yield;}
+	shot3 = CreateShotA2(ex,ey,10,ObjMove_GetAngle(shot),0,2.5,SUPP_RED+500,10);
+	ObjMove_SetSpeed(shot,1.5*ObjMove_GetSpeed(shot));
 }
 
 

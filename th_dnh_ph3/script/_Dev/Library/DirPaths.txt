@@ -25,4 +25,5 @@ let dirsys = root~"/system/";
 let dirbgm = root~"/bgm/";
 let dirdat = root~"/data/";
 let dirshot = root~"/shot/";
+let dirscreenshot = root~"/Screenshot/";
 let dirplayer = root~"/player/";

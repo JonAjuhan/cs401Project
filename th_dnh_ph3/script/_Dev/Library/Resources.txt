@@ -26,33 +26,7 @@ let ex=0; let ey=0; let px=0; let py=0;
 // let swdx=0; let swdy = 0;
 
 
-//Primitive types
-let OBJ_INT = 9;
-let OBJ_REAL = 2; let OBJ_NUMBER = 2;
-let OBJ_BOOL = 2+10;
-let OBJ_CHAR = -1;
-let OBJ_ARRAY = 10;
-let OBJ_STRING = 10+1;
 
-function O_GetType(obj){
-	alternative(Obj_GetType(obj))
-	case(OBJ_INT){return OBJ_NUMBER;}
-	case(OBJ_REAL){
-		if(ToString(obj)=="true"||ToString(obj)=="false"){return OBJ_BOOL;}
-		else{ return OBJ_NUMBER; }
-	}
-	case(OBJ_ARRAY){
-		if(length(obj) > 0){
-			let contents = O_GetType(obj[0]); //recursive
-			if(contents==OBJ_CHAR){return OBJ_STRING;}
-			else{return OBJ_ARRAY;}
-		}else{return OBJ_ARRAY;}
-	}
-	case(OBJ_CHAR){return OBJ_CHAR;}
-	case(OBJ_SHOT){return OBJ_SHOT;} //106
-	case(OBJ_ENEMY,OBJ_ENEMY_BOSS){return OBJ_ENEMY;}
-	others{return Obj_GetType(obj);}
-}
 
 // //To detect when some other task has messed with the thing a task is using
 // function SetHash(obj,k){

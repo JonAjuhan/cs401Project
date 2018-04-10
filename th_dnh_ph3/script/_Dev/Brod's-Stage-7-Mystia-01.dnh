@@ -746,9 +746,16 @@ function TKedama2(x,y,s,a,color,life){
 				a0+=15;
 			}
 			alternative(color)
+//WHAT is this supposed to be??
+// <<<<<<< HEAD
+			// case("red"){  DropItemsSmallest(x,y,ITEM_POWER_S); }
+			// case("blue"){ DropItemsSmallest(x,y,ITEM_POINT_S); }
+			// others{ DropItemsSmallest(x,y,tern(rand(0,1)<0.5,ITEM_POWER_S,ITEM_POINT_S)); }
+// =======
 			case("red"){  DropItemsSmallest(x,y, I_POWER); }
 			case("blue"){ DropItemsSmallest(x,y, I_POINT); }
 			others{ DropItemsSmallest(x,y, tern(rand(0,1)<0.5,I_POINT,I_POWER)); }
+// >>>>>>> 5d46e398de4b310d123fef58a9300ef4ad70fa64
 			Obj_Delete(kd2);
 		}
 	}

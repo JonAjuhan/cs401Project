@@ -4,7 +4,7 @@
 #Text["blup"] 
 // #BGM["./bgm/bgm - Deaf to All but the Song.ogg"]
 #System["./system/Andi_System.txt"]
-#Background["./system/Background/Mystia/BG_work.txt"]
+// #Background["./system/Background/Mystia/BG_work.txt"]
 
 #include "./Index.txt"
 #include "./Package/PackageFunctions.txt"
@@ -28,19 +28,164 @@
 	frame++;yield;
 }
 
+let type;
+let arr;
+let a0;let a1;let a2;let a3;let a4;let a5;let a6;let a7;let a8;let a9;
+
+function Arr_Init(n,v){
+	let a;
+	alternative(type)
+	case('V'){ a=""; a0=v; }
+	case('v'){ a=""; ascent(i in 0..n){ SetAVar(i,v); } }
+	case('n'){ a=[]; loop(n){a=a~[v];} }
+	case('o'){  
+		a=""; ascent(i in 0..n){ Obj_SetValue(a,itoa(i),v); }
+		Obj_SetValue(a,"length",n);
+	}
+	case('c'){  
+		a="arr"~itoa(GetNextHash);  ascent(i in 0..n){ SetCommonData(a~itoa(i),v); }
+		SetCommonData(a~"length",n);
+	}
+	case('a'){
+		a="arr"~itoa(GetNextHash);
+		if(!IsCommonDataAreaExists(a)){	CreateCommonDataArea(a); } else { ClearAreaCommonData(a); }
+		ascent(i in 0..n){ SetAreaCommonData(a,itoa(i),v); } 
+		SetAreaCommonData(a,"length",n);
+	}
+	return a;
+}
+
+function Arr_Set(a,i,v){
+	alternative(type)
+	case('V'){ a0=v; }
+	case('v'){ SetAVar(i,v); }
+	case('n'){ arr[i] = v; } //cheating a bit
+	case('o'){ Obj_SetValue(a,itoa(i),v); }
+	case('c'){ SetCommonData(a~itoa(i),v); }
+	case('a'){ SetAreaCommonData(a,itoa(i),v); }
+}
+function Arr_Get(a,i){
+	alternative(type)
+	case('V'){ return a0; }
+	case('v'){ return GetAVar(i); }
+	case('n'){ return a[i]; }
+	case('o'){ return Obj_GetValue(a,itoa(i)); }
+	case('c'){ return GetCommonData(a~itoa(i),NULL); }
+	case('a'){ return GetAreaCommonData(a,itoa(i),NULL); }
+}
+
+function Arr_Length(a){
+	alternative(type)
+	case('n'){ return length(a); }
+	case('o'){ return Obj_GetValue(a,"length"); }
+	case('c'){ return GetCommonData(a~"length",0); }
+	case('a'){ return GetAreaCommonData(a,"length",0); }
+}
+
+
+
+function GetAVar(i){
+	alternative(i)
+	case(0){return a0;}case(1){return a1;}case(2){return a2;}case(3){return a3;}case(4){return a4;}case(5){return a5;}case(6){return a6;}case(7){return a7;}case(8){return a8;}case(9){return a9;}
+}
+function SetAVar(i,v){
+	alternative(i)
+	case(0){a0=v;}case(1){a1=v;}case(2){a2=v;}case(3){a3=v;}case(4){a4=v;}case(5){a5=v;}case(6){a6=v;}case(7){a7=v;}case(8){a8=v;}case(9){a9=v;}
+}
+
+
+
+type = 'v';
+// V:    | 27 |    | 33    single variable
+// v: 13 |    | 13 | 12    10 variables w/alternative
+// n: 09 | 24 | 21 | 19    normal array
+// o: 14 | 16 | 16 | 15    object dictionary
+// c: 09 | 11 | 10 | 10    common data
+// a: 09 | 11 | 11 | 10    area common data
+
+
+
 
 task MainTask {
 	// if(noStage){SetBGM("Song of the Night Sparrow ~ Night Bird",145.8,292.4);}
-	
 	ObjMove_SetPosition(boss,cx+120,-120);
 	ObjMove_SetDestAtWeight(boss,cx,120,60,20);
+	SetShotAutoDeleteClip(8,8,8,8);
+
+	let size = 10;
 	
+	let ops_per_frame = 10000;
+	
+	arr = Arr_Init(size,NULL);
+	let i = 0;
 	loop{
-	
-		let foo = MakeChoiceWindow(32, cy, ["banan","butts","snoof","plurt"], 75);
-		WriteLog(foo);
-		
+		loop(ops_per_frame){
+			let v = Arr_Get(arr,i);
+			Arr_Set(arr,i,v+1);
+			i=(i+1)%size;
+		}
+		yield;
 	}
+	
+	
+	
+	
+	
+	let npf = 10;
+	loop{
+		loop(npf){
+			ascent(k in 0..size){
+				let v = Arr_Get(arr,k);
+				Arr_Set(arr,k,v);
+			}
+		}
+		yield;
+	}
+	
+	
+	let size2 = size*3; let arr2 = Arr_Init(size2,NULL); 
+	let j = 0;
+	loop{
+		
+		loop(npf){
+			
+			let shot = CreateShotA2(ex,ey,6,rand(0,360), -0.1, 0,  BALL_O_WHITE,10);
+			// ObjShot_SetDeleteFrame(shot,180);
+			
+			arr = Arr_Set(arr,i,shot);
+			
+			i = (i+1)%size;
+			j=(j+1)%size2;
+			
+			shot = Arr_Get(arr2,j);
+			Obj_Delete(shot);
+			
+			shot = Arr_Get(arr,i);
+			ObjMove_AddPatternA2(shot,0,0,rand(0,360),0.05,0,1);
+			ObjShot_SetGraphic(shot,BALL_O_RED);
+			arr2 = Arr_Set(arr2,j,shot);
+			
+			ascent(k in 0..size){
+				shot = Arr_Get(arr,k);
+				Arr_Set(arr,k,shot);
+			}
+			
+			
+			
+			// shot = Arr_Get(arr,(i-size/2)%size);
+			// ObjMove_AddPatternA2(shot,0,0,rand(0,360),0.05,0,2);
+			// ObjShot_SetGraphic(shot,BALL_O_BLUE);
+			
+		}
+		
+		yield;
+	}
+	
+	// loop{
+		// let foo = MakeChoiceWindow(32, cy, ["banan","butts","snoof","plurt"], 75);
+		// WriteLog(foo);
+		
+	// }
 	
 	InitiateDialogueSequence();
 	SetPortraitNumber(1,1);

@@ -12,16 +12,14 @@ let timer = 37; //37 //47
 let drate = 24; //24
 let mlife = 2000; //2000
 
-@Event
-{
+@Event{
 	alternative(GetEventType())
 	case(EV_REQUEST_LIFE){				SetScriptResult(mlife);		}
 	case(EV_REQUEST_SPELL_SCORE){		SetScriptResult(5000000);	}
 	case(EV_REQUEST_TIMER) {			SetScriptResult(timer*60);	}
 	case(EV_REQUEST_IS_DURABLE_SPELL) {	SetScriptResult(false);		}
 }
-@Initialize
-{
+@Initialize{
 	if(noPlural){	SetDifficultyD(HARD); }
 	alternative(rank)
 	case(RANK_EASY){	SetCommonData("CurrentSC","Bird Sign \"Tune of Insufficient Light\"");}
@@ -39,8 +37,7 @@ let mlife = 2000; //2000
 
 
 }
-@MainLoop
-{
+@MainLoop{
 
 	if(ObjEnemy_GetInfo(boss, INFO_LIFE) <= 0 && !finishing)
 	{
@@ -84,8 +81,7 @@ task MainTask {
 }
 
 
-task AimShot
-{
+task AimShot{
 	let shot;
 	let shot1;
 	let angle;
@@ -100,8 +96,7 @@ task AimShot
 	case(RANK_HARD){	N = 15; spd = 2; aspd = 0.30;}
 	case(RANK_LUNA){	N = 20; spd = 2.25; aspd = 0.35;}
 
-	while(!Obj_IsDeleted(boss))
-	{
+	while(!Obj_IsDeleted(boss) && !finishing){
 		ascent(j in -1..N)
 		{
 			shot = CreateShotA1(ex,ey,spd,90,SUPP_RED+500,1);

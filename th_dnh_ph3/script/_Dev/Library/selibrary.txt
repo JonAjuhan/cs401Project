@@ -123,6 +123,22 @@ let se_playershot = csd~"../se/playershot.wav";
 
 
 
+// function SE_Play(let path, let vl){
+	// vl*=GetAreaCommonData("CONFIG","SE Volume",0.80);
+	// let seobj = ObjSound_Create;
+	// ObjSound_Load(seobj,path);
+	// ObjSound_Play(seobj);
+	// ObjSound_SetVolumeRate(seobj,vl);
+	// Manage; return seobj;
+	// task Manage{
+		// loop(120){yield;}
+		// // RemoveSound(path);
+		// Obj_Delete(seobj);
+	// }
+// }
+
+
+
 function SE_Play(let path, let vl){
 	vl*=GetAreaCommonData("CONFIG","SE Volume",0.80);
 	let seobj = ObjSound_Create;
@@ -131,8 +147,17 @@ function SE_Play(let path, let vl){
 	ObjSound_SetVolumeRate(seobj,vl);
 	Manage; return seobj;
 	task Manage{
-		loop(120){yield;}
-		// RemoveSound(path);
+		let name = path[length(path)-9..length(path)-4];
+		SetCommonData("SoundManage_"~name,seobj);
+		
+		loop(180){yield;} //120
+		
+		//If the sound has been played again since starting this task,
+		//leave it loaded. Then the last one to use it unloads it.
+		//This seems to help prevent sounds from being "cut off".
+		if(GetCommonData("SoundManage_"~name,NULL)==seobj){
+			RemoveSound(path);
+		}
 		Obj_Delete(seobj);
 	}
 }
@@ -141,42 +166,42 @@ function SE_Play(let path, let vl){
 //Once working properly, this should help
 //avoid creating extraneous sound objects
 //while preventing sounds from being cut off.
-function SE_PlayA1(let path, let vl){
-	vl*=GetAreaCommonData("CONFIG","SE Volume",0.80);
-	let name = path[length(path)-9..length(path)-4];
-	let seobj = GetCommonData("SoundObject_"~name,ObjSound_Create);
-	if(Obj_IsDeleted(seobj)){seobj=ObjSound_Create;}
-	SetCommonData("SoundObject_"~name,seobj);
-	ObjSound_Load(seobj,path);
-	ObjSound_Play(seobj);
-	ObjSound_SetVolumeRate(seobj,vl);
-	Manage; return seobj;
-	task Manage{
-		let hash = GetCommonData("NextHash",0);
-		SetCommonData("NextHash",(hash+1)%256);
+// function SE_PlayA1(let path, let vl){
+	// vl*=GetAreaCommonData("CONFIG","SE Volume",0.80);
+	// let name = path[length(path)-9..length(path)-4];
+	// let seobj = GetCommonData("SoundObject_"~name,ObjSound_Create);
+	// if(Obj_IsDeleted(seobj)){seobj=ObjSound_Create;}
+	// SetCommonData("SoundObject_"~name,seobj);
+	// ObjSound_Load(seobj,path);
+	// ObjSound_Play(seobj);
+	// ObjSound_SetVolumeRate(seobj,vl);
+	// Manage; return seobj;
+	// task Manage{
+		// let hash = GetCommonData("NextHash",0);
+		// SetCommonData("NextHash",(hash+1)%256);
 		
-		let numsounds = GetCommonData("NumSoundObjects",0);
-		SetCommonData("NumSoundObjects",numsounds+1);
-		let del = max(10,120-30*numsounds);
+		// let numsounds = GetCommonData("NumSoundObjects",0);
+		// SetCommonData("NumSoundObjects",numsounds+1);
+		// let del = max(10,120-30*numsounds);
 		
-		SetCommonData("SoundManage_"~name,hash);
-		// loop(del){yield;}
-		loop(120){yield;}
-		// if(GetCommonData("SoundManage_"~name,NULL)==hash || Obj_IsDeleted(seobj)){
-		if(GetCommonData("SoundManage_"~name,hash)-hash < 10 || Obj_IsDeleted(seobj)){
-			RemoveSound(path);
-			DeleteCommonData("SoundManage_"~name);
-			DeleteCommonData("SoundObject_"~name);
-			Obj_Delete(seobj);
-		}
-		// else{
-			// while(GetCommonData("SoundManage_"~name,hash)-hash < 10){yield;}
+		// SetCommonData("SoundManage_"~name,hash);
+		// // loop(del){yield;}
+		// loop(120){yield;}
+		// // if(GetCommonData("SoundManage_"~name,NULL)==hash || Obj_IsDeleted(seobj)){
+		// if(GetCommonData("SoundManage_"~name,hash)-hash < 10 || Obj_IsDeleted(seobj)){
+			// RemoveSound(path);
+			// DeleteCommonData("SoundManage_"~name);
+			// DeleteCommonData("SoundObject_"~name);
 			// Obj_Delete(seobj);
 		// }
-		SetCommonData("NumSoundObjects",SetCommonData("NumSoundObjects",0)-1);
-		//TODO: Make sure objects are cleaned up when interrupted by end of script
-	}
-}
+		// // else{
+			// // while(GetCommonData("SoundManage_"~name,hash)-hash < 10){yield;}
+			// // Obj_Delete(seobj);
+		// // }
+		// SetCommonData("NumSoundObjects",SetCommonData("NumSoundObjects",0)-1);
+		// //TODO: Make sure objects are cleaned up when interrupted by end of script
+	// }
+// }
 
 
 

@@ -650,11 +650,10 @@ let EX_AYA     = 1180;
 let EX_EIKI    = 1181;
 let EX_YUUKA   = 1182;
 
-//Yuuka flower shot edited to be white
-let EX_YUUKA_WHITE = 1183;
-let FLOWER_WHITE = 1183;            let FLW_WHITE = 1183;
-let FLOWER_COUNTER_WHITE = 1184;    let FLW_CNT_WHITE = 1184;
-let FLOWER_STILL_WHITE = 1185;      let FLW_STILL_WHITE = 1185;
+//Koishi roses
+let ROSE_RED  = 2000;
+let ROSE_BLUE = 2001;
+
 
 //----------------------------------------------------------
 
