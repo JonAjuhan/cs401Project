@@ -1,6 +1,6 @@
 #TouhouDanmakufu[Stage]
 #ScriptVersion[3]
-#Title["Brod (Mystia Stage) Stage 3"]
+#Title["Brod Stage Test"]
 #Text["Preliminary stage 2 or 3."]
 #Image["./ExRumia(�����u�~�b�h�i�C�g�����@���G�v).jpg"]
 
@@ -16,7 +16,7 @@ let bossBGM;
 @Loading{
 	let csd = GetCurrentScriptDirectory();
 
-	bossScript = LoadScriptInThread(csd~"./BrodPlural");
+	bossScript = LoadScriptInThread(csd~"./BrodPlural.dnh");
 
 	stageBGM = csd~"bgm/bgm - Song of the Night Sparrow ~ Night Bird.ogg";
 	LoadSound(stageBGM);
@@ -173,7 +173,7 @@ task TStage {
 	// wait(300);
 	wait(180);
 
-
+	
 	wait(300); //wait for leftover enemies to finish
 
 	/////////////////////////////////////////////////////
@@ -607,7 +607,7 @@ function TFamShootINFairy1(x,y,s,a,shootdel){
 						if(count%gap==0){
 							ascent(i in 0..3){
 								ascent(j in 0..3){
-									let shot = CreateShotA2(famx,famy,0,ObjMove_GetAngle(fam)+120*i+count, 0.01+0.01*j*j,2, CARD_GREEN+j,10);
+									let shot = CreateShotA2(famx,famy,0,rand(0,360), 0.01+0.01*j*j,2, SUPP_RED+500,10);
 									ObjMove_SetAngularVelocity(shot,0.05*j);
 								}
 							}

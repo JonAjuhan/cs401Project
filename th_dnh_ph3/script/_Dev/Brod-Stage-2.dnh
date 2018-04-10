@@ -1,0 +1,573 @@
+#TouhouDanmakufu[Stage]
+#ScriptVersion[3]
+#Title["Brod Stage Test 2"]
+#Text["Preliminary stage 2 or 3."]
+#Image["./ExRumia(�����u�~�b�h�i�C�g�����@���G�v).jpg"]
+
+#include "./Index.txt"
+#System["./system/Andi_System.txt"]
+#Background["./system/Background/Mystia/BG_work.txt"]
+
+
+let bossScript;
+let stageBGM;
+let bossBGM;
+
+@Loading{
+	let csd = GetCurrentScriptDirectory();
+
+	bossScript = LoadScriptInThread(csd~"./BrodPlural.dnh");
+
+	stageBGM = csd~"bgm/bgm - Song of the Night Sparrow ~ Night Bird.ogg";
+	LoadSound(stageBGM);
+
+	bossBGM  = csd~"bgm/bgm - Deaf to All but the Song.ogg";
+	LoadSound(bossBGM);
+
+	SetCommonData("InitialPlayerPower",200);
+
+}
+
+@Initialize
+{
+	SetCommonData("IsStage",true);
+	InitPlural;
+	TStage();
+}
+task InitPlural{
+	wait(1200); //give it time to compile
+	StartScript(bossScript); //will wait for event before starting boss
+}
+
+@MainLoop{
+	CheckGameOver;
+	yield;
+}
+
+@Finalize
+{
+}
+
+
+
+
+
+
+task TStage {
+	let csd = GetCurrentScriptDirectory();
+
+	SetBGM("Song of the Night Sparrow ~ Night Bird",145.8,292.4);
+	ShowPointOfCollection;
+
+	FadeToBlack(0,0,60);
+
+	loop(60){yield;}//1�b���炢�����΁A�R���p�C�����������Ǝv�������B
+
+
+	let x; let y; let dir; let side;
+
+
+
+	let fairy = TFairy1(cx,0,1.5,90,60);
+	ObjMove_SetDestAtWeight(fairy,cx,cy,150,15);
+
+	wait(200);
+
+	ascent(i in 0..4){
+		let fairy = TFairy2(cx+10*i,cy+5*i,1.5,90,60);
+		ObjMove_AddPatternA1(fairy, 60,1.5,45);
+		ObjMove_AddPatternA1(fairy,120,2,120);
+		wait(30);
+	}
+
+	let typearr = ["red","blue"];
+
+	ascent(k in 0..6){
+		dir = altSign(k);
+		ascent(i in 0..6){
+			let kd = TKedama(cx+dir*(cx+32),cy-120,3.5,90+90*dir,typearr[i%2],50);
+			ObjMove_SetDestAtWeight(kd,cx,cy,100,10);
+			SetTurnAtFrame(kd,60, -180*dir,5);
+			SetTurnAtFrame(kd,90, 180*dir,5);
+			SetTurnAtFrame(kd,120,-180*dir,5);
+			wait(10);
+			}
+	}
+	wait(150);
+
+	ascent(i in 0..2){
+		let fairy = TFairy3(cx,-90,1.5,90,60);
+		ObjMove_SetDestAtWeight(fairy,cx,cy+50,100,10);
+		ObjMove_AddPatternA1(fairy,300,2,90);
+	}
+
+	ascent(i in 0..5){
+		let fairy = TFairy4(cx-10*i,cy+25*i,2,30*i,60);
+		ObjMove_AddPatternA1(fairy, 60,1.75,45);
+		ObjMove_SetDestAtWeight(fairy,cx,cy+50,100,10);
+		wait(30);
+	}
+
+	ascent(i in 0..5){
+		let kd2 = TKedama2(cx,cy,3.5,60,typearr[i%2],50);
+		SetTurnAtFrame(kd2,75, -150,5);
+		SetTurnAtFrame(kd2,150, 100,5);
+		SetTurnAtFrame(kd2,225,-150,5);
+		wait(15);
+	}
+
+	/////////////////////////////////////////////////////
+	//End of the aforementioned bit where you say where to put enemies
+	/////////////////////////////////////////////////////
+
+	//Clean up any leftover shots and wait a moment before starting boss
+	//There shouldn't be any enemies left by the time we get here
+	loop(150){
+		DeleteShotAll(TYPE_ALL,TYPE_FADE);
+		yield;
+	}
+	//Start the boss plural
+	// StartScript(bossScript);
+	NotifyEvent(bossScript,EV_START_BOSS,[]);
+
+	while(!IsCloseScript(bossScript) && GetPlayerState() != STATE_END){
+		yield;
+	}
+	CloseStgScene();
+	CloseScript(GetOwnScriptID);
+}
+
+function TFairy1(x,y,s,a,shootdel){
+	let fairy = SpawnFairy(x,y,"blue","INSet1",14,800); //x,y,color,type,hitbox,life
+	ObjMove_SetSpeed(fairy,s); ObjMove_SetAngle(fairy,a);
+	//By doing it this way, you can use ObjMove_Foo and such on created fairies
+	Manage;
+	return fairy;
+	task Manage{
+		let fx = ObjMove_GetX(fairy); let fy = ObjMove_GetY(fairy);
+		let shot; let count=1;
+		let gap; let joff; let segap;
+		alternative(rank)
+			case(RANK_EASY){ gap = 30;  joff = 15; segap= 15; }
+			case(RANK_NORM){ gap = 20;  joff = 10; segap = 10; }
+			case(RANK_HARD){ gap = 10;  joff = 0;  segap = 10; }
+			case(RANK_LUNA){ gap = 5;  joff = 5;  segap =  5; } //10,5,5
+			others{ gap =  1; joff = 0; segap = 1; }
+		let FamCount = 5;
+		MakeFam;
+		//Create and manage familiars
+		task MakeFam{
+			ascent(i in 0..4){
+				ascent(j in 0..2){
+					if(Obj_IsDeleted(fairy)){return;}
+					ManageFam;
+					task ManageFam{
+						let fama = 90+i*360/5+j*360/5/2;
+						let famr = 40+30*j;
+						let famdir = (1-2*j);
+						let famspin = famdir*2;
+						let shotoff = i+j*joff;
+
+						let fam = CreateFamC1(fx+famr*cos(fama+count*famspin),fy+famr*sin(fama+count*famspin),"blue",225);
+						Obj_SetValue(fam,"AutoDeleteClip",240);
+						ObjMove_SetSpeed(fam,0.1); //so it renders as a bird instead of a ball
+						let fama0 = fama; let famx; let famy;
+						while(!Obj_IsDeleted(fam) && !Obj_IsDeleted(fairy)){
+							fama = fama0 + count*famspin;
+							famx = fx+famr*cos(fama); famy = fy+famr*sin(fama);
+							ObjMove_SetPosition(fam,famx,famy);
+							ObjMove_SetAngle(fam,fama+90*famdir);
+							if((count+shotoff)%gap==0){CreateShotA1(famx,famy,2,fama+45*famdir,BALL_O_RED+5*j,5);}
+							yield;
+						}
+						FamCount--;
+						Obj_Delete(fam);
+					}
+
+					SE_Play(se_fam,60);
+					wait(3);
+					// loop(5){yield;count++;}
+				}
+			}
+		}
+
+		//For first (shootdel) frames, count%10 cannot be 0,
+		//since count won't be an integer.
+		//Kind of a hack but saves checking another thing in the loop
+		//or making a duplicate loop without the SE.
+		DelShoot;
+		task DelShoot{loop(shootdel){count+=1/shootdel;}}
+
+		//Update loop - update fx,fy with fairy position, increment count, and play shot SE
+		while(!(ObjEnemy_GetLife(fairy)==0) && FamCount > 0){
+			fx=ObjMove_GetX(fairy); fy=ObjMove_GetY(fairy); //update each frame with the fairy's position
+			yield;
+			count++;
+			if(count%segap==0){SE_Play(se_shot,60);}
+		}
+		if(!Obj_IsDeleted(fairy)){ //if it was shot down rather than leaving screen
+			DeleteShotInCircle(TYPE_SHOT,TYPE_ITEM,fx,fy,150);
+			DropItemsLarge(fx,fy);
+			Obj_Delete(fairy);
+		}
+	}
+}
+
+function TFairy2(x,y,s,a,shootdel){
+	let fairy = SpawnFairy(x,y,"yellow","INSet1",14,780); //x,y,color,type,hitbox,life
+	ObjMove_SetSpeed(fairy,s); ObjMove_SetAngle(fairy,a);
+	//By doing it this way, you can use ObjMove_Foo and such on created fairies
+	Manage;
+	return fairy;
+
+	task Manage{
+		let shot;
+		let a0 =0;
+		let a=0;
+		let N;
+		let n;
+		let spd;
+		let t;
+
+		let diff = rank();
+		alternative(diff)
+		case(RANK_EASY){	N = 15; n = 1; spd = 1;}
+		case(RANK_NORM){	N = 18; n = 1; spd = 1.25;}
+		case(RANK_HARD){	N = 22; n = 2; spd = 1.75;}
+		case(RANK_LUNA){	N = 25; n = 3; spd = 2;}
+
+		fire;
+
+		task fire{
+			while(!Obj_IsDeleted(fairy)) {
+				let fx = ObjMove_GetX(fairy); let fy = ObjMove_GetY(fairy);
+				t = rand(-100,100);
+				ascent(i in 0..N)
+				{
+					a=a0+i*(360/N);
+					ascent(j in 0..n)
+					{
+						shot = CreateShotA1(t+cos(a),t+sin(a),spd, a0+i*(360/N),SUPP_RED+500, 15);
+						ObjMove_SetAngularVelocity(shot,0.025*j);
+					}
+				a0+=15;
+				}
+				wait(50);
+			}
+		}
+	}
+}
+
+function TKedama(x,y,s,a,color,life){
+	let kd = SpawnKedama(x,y,color,life);
+	ObjMove_AddPatternA1(kd,0,s,a);
+	Manage;
+	ManageFinalize;
+	return kd;
+
+	task Manage{
+		let del;
+		let N = 2;
+		alternative(rank)
+		case(RANK_EASY){ del = 90; s = 2;    }
+		case(RANK_NORM){ del = 45; s = 2.75; }
+		case(RANK_HARD){ del = 30; s = 3.5;  }
+		case(RANK_LUNA){ del = 10; s = 4.25; }
+		others{ del = 1; }
+
+		wait(1.5*del); //lengthy delay before it actually shoots anything
+		while(!Obj_IsDeleted(kd) && ObjEnemy_GetLife(kd)>0){
+			x = ObjMove_GetX(kd); y = ObjMove_GetY(kd);
+			ascent(i in 0..N)
+			{
+				CreateShotA1(x,y,s*(1-0.05*i), 90,SUPP_RED+500, 15);
+				CreateShotA1(x,y,s*(1-0.05*i), 80,SUPP_RED+500, 15);
+				CreateShotA1(x,y,s*(1-0.05*i), 100,SUPP_RED+500, 15);
+			}
+			SE_Play(se_shot,60);
+			loop(del){yield; if(ObjEnemy_GetLife(kd)==0){break;}}
+		}
+
+
+	}
+	task ManageFinalize{
+		let N=s*3;
+		let a0 =0;
+		let a=0;
+		let shot;
+		while(!Obj_IsDeleted(kd) && ObjEnemy_GetLife(kd)>0){yield;}
+		if(!Obj_IsDeleted(kd)){ //if it was shot down rather than leaving screen
+			x = ObjMove_GetX(kd); y = ObjMove_GetY(kd);
+			ascent(i in 0..N)
+			{
+				a=a0+i*(360/N);
+				ascent(j in -1..2)
+				{
+					shot = CreateShotA1(x+25*cos(a),y+25*sin(a),s*(1-0.05*i), a0+i*(360/N),SUPP_RED+500, 15);
+					ObjMove_SetAngularVelocity(shot,0.025*j);
+				}
+				a0+=15;
+			}
+			alternative(color)
+			case("red"){  DropItemsSmallest(x,y, I_POWER); }
+			case("blue"){ DropItemsSmallest(x,y, I_POINT); }
+			others{ DropItemsSmallest(x,y, tern(rand(0,1)<0.5,I_POINT,I_POWER)); }
+			Obj_Delete(kd);
+		}
+	}
+}
+
+function TFairy3(x,y,s,a,shootdel){
+	let fairy = SpawnFairy(x,y,"green","INSet1",14,135); //x,y,color,type,hitbox,life
+	ObjMove_SetSpeed(fairy,s); ObjMove_SetAngle(fairy,a);
+	//By doing it this way, you can use ObjMove_Foo and such on created fairies
+	Manage;
+	return fairy;
+
+	task Manage{
+		let fx = ObjMove_GetX(fairy); let fy = ObjMove_GetY(fairy);
+		// let fam; let famx; let famy; let fama; let famr; let famdir;
+		let shot; let count=1;
+		let gap; let joff; let segap;
+		alternative(rank)
+			case(RANK_EASY){ gap = 30;  joff = 15; segap = 15; }
+			case(RANK_NORM){ gap = 20;  joff = 10; segap = 10; }
+			case(RANK_HARD){ gap = 10;  joff = 0;  segap = 10; }
+			case(RANK_LUNA){ gap = 10;  joff = 5;  segap =  5; }
+			others{ gap =  1; joff = 0; segap = 1; }
+		let FamCount = 2;
+		MakeFam;
+		//Create and manage familiars
+		task MakeFam{
+			ascent(i in 0..2){
+				ascent(j in 0..2){
+					if(Obj_IsDeleted(fairy)){return;}
+					ManageFam;
+					task ManageFam{
+						let fama = 90+i*180+j*90;
+						let famr = 25+10*j;
+						let famdir = (1-2*j);
+						let famspin = famdir*3;
+						let shotoff = i+j*joff;
+
+						let fam = CreateFamC1(fx+famr*cos(fama+count*famspin),fy+famr*sin(fama+count*famspin),"green",225);
+						Obj_SetValue(fam,"AutoDeleteClip",240);
+						ObjMove_SetSpeed(fam,0.1); //so it renders as a bird instead of a ball
+						let fama0 = fama; let famx; let famy;
+						while(!Obj_IsDeleted(fam) && !Obj_IsDeleted(fairy)){
+							fama = fama0 + count*famspin;
+							famx = fx+famr*cos(fama); famy = fy+famr*sin(fama);
+							ObjMove_SetPosition(fam,famx,famy);
+							ObjMove_SetAngle(fam,fama+90*famdir);
+							if((count+shotoff)%gap==0){CreateShotA1(famx,famy,2,fama+90*famdir,PEL_RED+5*j,5);}
+							yield;
+						}
+						FamCount--;
+						Obj_Delete(fam);
+					}
+
+					SE_Play(se_fam,60);
+					wait(3);
+					// loop(5){yield;count++;}
+				}
+			}
+		}
+		//For first (shootdel) frames, count%10 cannot be 0,
+		//since count won't be an int.
+		//Kind of a hack but saves checking another thing in the loop
+		//or making a duplicate loop without the SE.
+		DelShoot;
+		task DelShoot{loop(shootdel){count+=1/shootdel;}}
+		//Update loop - update fx,fy with fairy position, increment count, and play shot SE
+		while(!(ObjEnemy_GetLife(fairy)==0) && FamCount > 0){
+			fx=ObjMove_GetX(fairy); fy=ObjMove_GetY(fairy); //update each frame with the fairy's position
+			yield;
+			count++;
+			if(count%segap==0){SE_Play(se_shot2,60);}
+		}
+		if(!Obj_IsDeleted(fairy)){ //if it was shot down rather than leaving screen
+			DeleteShotInCircle(TYPE_SHOT,TYPE_ITEM,fx,fy,50);
+			DropItemsSmaller(fx,fy);
+			Obj_Delete(fairy);
+		}
+	}
+}
+
+function TFairy4(x,y,s,a,shootdel){
+	let fairy = SpawnFairy(x,y,"red","INSet1",14,500); //x,y,color,type,hitbox,life
+	ObjMove_SetSpeed(fairy,s); ObjMove_SetAngle(fairy,a);
+	//By doing it this way, you can use ObjMove_Foo and such on created fairies
+	Manage;
+	return fairy;
+
+	task Manage{
+		let fx = ObjMove_GetX(fairy); let fy = ObjMove_GetY(fairy);
+		// let fam; let famx; let famy; let fama; let famr; let famdir;
+		let shot; let count=1;
+		let N = 3; //2
+		let gap; let joff; let segap;
+		let gap0 = 6; //10
+		let dG = N/2;
+		alternative(rank)
+			case(RANK_EASY){ gap = 3*gap0*N;	joff =1.5*gap0*dG;	segap =1.5*gap0; }
+			case(RANK_NORM){ gap = 2*gap0*N;	joff = gap0*dG;		segap = gap0; }
+			case(RANK_HARD){ gap = gap0*N;		joff = 0;			segap = gap0; }
+			case(RANK_LUNA){ gap = gap0/2*N;	joff = gap0/2*dG;  	segap = gap0/2; }
+			others{ gap =  1; joff = 0; segap = 1; }
+		let sspd = 0.75*(1+0.75*rank); //3.5		//1.75, 2.5, 3.25, 4
+		let FamCount = 3;
+		MakeFam;
+		//Create and manage familiars
+		task MakeFam{
+			ascent(i in 0..N){
+				ascent(j in 0..2){
+					if(Obj_IsDeleted(fairy)){return;}
+					ManageFam;
+					task ManageFam{
+						let fama = 90+i*360/N+j*360/N/2;
+						let famr = 25+10*j;
+						let famdir = (1-2*j);
+						let famspin = famdir*6;
+						let shotoff = i+j*joff;
+
+						let fam = CreateFamC1(fx+famr*cos(fama+count*famspin),fy+famr*sin(fama+count*famspin),"red",225);
+						Obj_SetValue(fam,"AutoDeleteClip",240);
+						ObjMove_SetSpeed(fam,0.1); //so it renders as a bird instead of a ball
+						let fama0 = fama; let famx; let famy;
+						while(!Obj_IsDeleted(fam) && !Obj_IsDeleted(fairy)){
+							fama = fama0 + count*famspin;
+							famx = fx+famr*cos(fama); famy = fy+famr*sin(fama);
+							ObjMove_SetPosition(fam,famx,famy);
+							ObjMove_SetAngle(fam,fama+90*famdir);
+							// if((count+shotoff)%gap==0){CreateShotA1(famx,famy,2,fama+90*famdir,PEL_RED+5*j,5);}
+							if((count+shotoff)%gap==0){CreateShotA1(famx,famy,sspd,GetAngleToPlayer(fam)+((getangle(fx,fy,famx,famy)-GetAngleToPlayer(fairy))/3),BIGDOT_RED+2*j,15);} //BALL_RED+3*j
+							yield;
+						}
+						FamCount--;
+						Obj_Delete(fam);
+					}
+
+					SE_Play(se_fam,60);
+					wait(3);
+					// loop(5){yield;count++;}
+				}
+			}
+		}
+		//For first (shootdel) frames, count%10 cannot be 0,
+		//since count won't be an int.
+		//Kind of a hack but saves checking another thing in the loop
+		//or making a duplicate loop without the SE.
+		DelShoot;
+		task DelShoot{loop(shootdel){count+=1/shootdel;}}
+		//Update loop - update fx,fy with fairy position, increment count, and play shot SE
+		while(!(ObjEnemy_GetLife(fairy)==0) && FamCount > 0){
+			fx=ObjMove_GetX(fairy); fy=ObjMove_GetY(fairy); //update each frame with the fairy's position
+			yield;
+			count++;
+			if(count%segap==0){SE_Play(se_shot,60);}
+		}
+		if(!Obj_IsDeleted(fairy)){ //if it was shot down rather than leaving screen
+			DeleteShotInCircle(TYPE_SHOT,TYPE_ITEM,fx,fy,50);
+			DropItemsSmall(fx,fy);
+			Obj_Delete(fairy);
+		}
+	}
+}
+
+function TKedama2(x,y,s,a,color,life){
+	let kd2 = SpawnKedama(x,y,color,life);
+	ObjMove_AddPatternA1(kd2,0,s,a);
+	Manage;
+	ManageFinalize;
+	return kd2;
+
+	task Manage{
+		let del;
+		alternative(rank)
+		case(RANK_EASY){ del = 70; s = 2;    }
+		case(RANK_NORM){ del = 40; s = 2.75; }
+		case(RANK_HARD){ del = 20; s = 3.5;  }
+		case(RANK_LUNA){ del = 10; s = 4.25; }
+		others{ del = 1; }
+
+		wait(2*del); //lengthy delay before it actually shoots anything
+		while(!Obj_IsDeleted(kd2) && ObjEnemy_GetLife(kd2)>0){
+			x = ObjMove_GetX(kd2); y = ObjMove_GetY(kd2);
+			ascent(i in 0..2){
+				CreateShotA1(x,y,s*(1-0.20*i),GetAngleToPlayer(kd2), KUNAI_RED,15);
+			}
+			SE_Play(se_shot,60);
+			loop(del){yield; if(ObjEnemy_GetLife(kd2)==0){break;}}
+		}
+
+
+	}
+	task ManageFinalize{
+		while(!Obj_IsDeleted(kd2) && ObjEnemy_GetLife(kd2)>0){yield;}
+		if(!Obj_IsDeleted(kd2)){ //if it was shot down rather than leaving screen
+			x = ObjMove_GetX(kd2); y = ObjMove_GetY(kd2);
+			ascent(i in 0..3){
+				CreateShotA1(x,y,s*(1-0.15*i),rand(0,360), BALL_BLUE,0);
+			}
+			alternative(color)
+			case("red"){  DropItemsSmallest(x,y, I_POWER); }
+			case("blue"){ DropItemsSmallest(x,y, I_POINT); }
+			others{ DropItemsSmallest(x,y, tern(rand(0,1)<0.5,I_POINT,I_POWER)); }
+			Obj_Delete(kd2);
+		}
+	}
+}
+
+function DropItemsSmallest(x,y,type){
+	DropItemsA1(x,y, type,1,0,0);
+	ItemExplode(x,y,randint(1,2));
+}
+
+function DropItemsSmaller(x,y){
+	let a = rand(0,360);
+	DropItemsA1(x,y,I_POINT,3,15,a);
+	DropItemsA1(x,y,I_POWER,1,0,a);
+	ItemExplode(x,y,3);
+}
+
+function DropItemsSmall(x,y){
+	let a = rand(0,360);
+	DropItemsA1(x,y,I_POINT,8,20,a);
+	DropItemsA1(x,y,I_POWER,3,8,a);
+	ItemExplode(x,y,5);
+}
+function DropItemsLarge(x,y){
+	let a = rand(0,360);
+	DropItemsA1(x,y,I_POINT,8,20,a);
+	DropItemsA1(x,y,I_POINT_S,16,28,a+360/16);
+	DropItemsA1(x,y,I_POWER_L,1,0,a);
+	ItemExplode(x,y,10);
+}
+function DropItemsLifePiece(x,y){
+	let a = rand(0,360);
+	DropItemsA1(x,y,I_POINT,8,20,a);
+	DropItemsA1(x,y,I_POINT_S,16,28,a+360/16);
+	DropItemsA1(x,y,I_EXTEND_S,1,0,a);
+	ItemExplode(x,y,10);
+}
+
+
+function SetTurnAtFrame(obj,del,turndegrees,turnradius){
+	let circum = todeg(2*pi*turnradius);
+	let arclength = circum * turndegrees/360;
+
+	let spd = ObjMove_GetSpeed(obj);
+	let turntime = (|arclength/spd|);             //works for finding angv,
+	let angv = circum/turntime*sign(turndegrees); //but then never stops?
+	let actualrealfinalturntime = turndegrees/angv; // �P\_(�c)_/�P this works for some reason
+
+	Manage;
+	task Manage{
+		wait(del);
+		ObjMove_SetAngularVelocity(obj,angv);
+		loop(actualrealfinalturntime){ yield; } //wait to face new angle
+		ObjMove_SetAngularVelocity(obj,0);
+	}
+
+	return turntime;
+}

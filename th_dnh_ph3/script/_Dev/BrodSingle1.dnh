@@ -129,10 +129,10 @@ task RingShoot
 
 	let diff = rank();
 	alternative(diff)
-	case(RANK_EASY){	N = 7; n = 1; spd = 1}
-	case(RANK_NORM){	N = 10; n = 2; spd = 1.25}
-	case(RANK_HARD){	N = 15; n = 3; spd = 1.75}
-	case(RANK_LUNA){	N = 20; n = 5; spd = 2.5}
+	case(RANK_EASY){	N = 5; n = 1; spd = 1}
+	case(RANK_NORM){	N = 6; n = 2; spd = 1.25}
+	case(RANK_HARD){	N = 8; n = 2; spd = 1.75}
+	case(RANK_LUNA){	N = 10; n = 3; spd = 2.5}
 
 	while(!Obj_IsDeleted(boss)) {
 		ascent(i in 0..N)
@@ -141,10 +141,10 @@ task RingShoot
 			ascent(j in 0..n)
 			{
 				shot = CreateShotA1(0*cos(a),180*sin(a),spd, a0+i*(360/N),SUPP_RED+500, 15);
-				ObjMove_SetAngularVelocity(shot,0.025*j);
+				ObjMove_SetAngularVelocity(shot,0.20*j);
 			}
 		a0+=15;
 		}
-	wait(10);
+	wait(25);
 	}
 }
