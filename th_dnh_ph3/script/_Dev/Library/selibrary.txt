@@ -147,20 +147,18 @@ function SE_Play(let path, let vl){
 	ObjSound_SetVolumeRate(seobj,vl);
 	Manage; return seobj;
 	task Manage{
-		let hash = GetCommonData("NextHash",0);
-		SetCommonData("NextHash",(hash+1)%256);
 		let name = path[length(path)-9..length(path)-4];
-		SetCommonData("SoundManage_"~name,hash);
+		SetCommonData("SoundManage_"~name,seobj);
 		
 		loop(180){yield;} //120
-		Obj_Delete(seobj);
 		
 		//If the sound has been played again since starting this task,
-		//leave it loaded to avoid cutting off sounds.
-		//Then the last one to use it unloads it.
-		if(GetCommonData("SoundManage_"~name,NULL)==hash){
+		//leave it loaded. Then the last one to use it unloads it.
+		//This seems to help prevent sounds from being "cut off".
+		if(GetCommonData("SoundManage_"~name,NULL)==seobj){
 			RemoveSound(path);
 		}
+		Obj_Delete(seobj);
 	}
 }
 

@@ -1849,35 +1849,42 @@ task ObjFog_SetTargAtFrameA2(fog,targ,r,a, time){
 
 function PhilosophyOfAHatedPerson(x,y,r){
 	let shots = GetShotIdInCircleA2(x,y,r,TARGET_ENEMY);
+	let dosound = false;
 	ascent(i in 0..length(shots)){
 		let shot = shots[i];
 		
-		if(!Obj_IsValueExists(shot,"RoseCounter")){
-			let rosecolor = Obj_GetValueD(shot,"RoseColor",NULL);
-			if(rosecolor==NULL){
-				let c = Obj_GetValueD(shot,"Color",GetShotDataInfoA1(ObjShot_GetImageID(shot),TARGET_ENEMY,INFO_DELAY_COLOR));
-				if(c[0] > c[2]){ rosecolor = ROSE_RED;  }
-				else           { rosecolor = ROSE_BLUE; }
+		if(Obj_GetValueD(shot,FLAG_INTERSECTION,true)){
+			
+			if(!Obj_IsValueExists(shot,"RoseCounter")){
+				let rosecolor = Obj_GetValueD(shot,"RoseColor",NULL);
+				if(rosecolor==NULL){
+					let c = Obj_GetValueD(shot,"Color",GetShotDataInfoA1(ObjShot_GetImageID(shot),TARGET_ENEMY,INFO_DELAY_COLOR));
+					if(c[0] > c[2]){ rosecolor = ROSE_RED;  }
+					else           { rosecolor = ROSE_BLUE; }
+				}
+				Obj_SetValue(shot,"RoseColor",rosecolor);
+				Obj_SetValue(shot,"RoseOrigGraphic",ObjShot_GetImageID(shot));
+				ObjShot_SetGraphic(shot,rosecolor);
+				Manage(shot);
+				dosound=true;
 			}
-			Obj_SetValue(shot,"RoseColor",rosecolor);
-			Obj_SetValue(shot,"RoseOrigGraphic",ObjShot_GetImageID(shot));
-			ObjShot_SetGraphic(shot,rosecolor);
-			Manage(shot);
-		}
-		Obj_SetValue(shot,"RoseCounter",10);
-		
-		task Manage(shot){
-			SE_Play(se_chime,100);
-			let counter=10;
-			while(counter > 8){
-				counter = Obj_GetValueD(shot,"RoseCounter",10)-1;
-				Obj_SetValue(shot,"RoseCounter",counter);
-				yield;
+			Obj_SetValue(shot,"RoseCounter",2); //10
+			
+			task Manage(shot){
+				let counter=10; //10
+				while(counter > 0){ //8
+					counter = Obj_GetValueD(shot,"RoseCounter",10)-1;
+					Obj_SetValue(shot,"RoseCounter",counter);
+					yield;
+				}
+				Obj_DeleteValue(shot,"RoseCounter");
+				ObjShot_SetGraphic(shot,Obj_GetValueD(shot,"RoseOrigGraphic",NULL));
+				SE_Play(se_chime,100);
 			}
-			Obj_DeleteValue(shot,"RoseCounter");
-			ObjShot_SetGraphic(shot,Obj_GetValueD(shot,"RoseOrigGraphic",NULL));
-			SE_Play(se_chime,100);
 		}
+	}
+	if(dosound){
+		SE_Play(se_chime,100);
 	}
 }
 

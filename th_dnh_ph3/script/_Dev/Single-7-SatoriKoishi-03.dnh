@@ -37,7 +37,7 @@ let kx; let ky;
 	case(RANK_HARD){	SetCommonData("CurrentSC","Anguish \"Deafening Silence of a Single Mind\"");}
 	others         {	SetCommonData("CurrentSC","Anguish \"Deafening Silence of a Single Mind\"");}
 	
-	SetShotAutoDeleteClip(32,32,32,32);
+	SetShotAutoDeleteClip(32,96,32,32);
 	
 	SetCommonData("BossNameColor",[255,64,196]);
 	bsatori = CreateBoss("Satori Komeiji");
@@ -66,12 +66,13 @@ let kx; let ky;
 
 task MainTask {
 	ObjEnemy_SetDamageRate(bsatori,0,0);
-	ObjMove_SetDestAtFrame(bsatori, cx, cy-100, 60); //cy-120
+	// ObjMove_SetDestAtFrame(bsatori, cx, cy-100, 60); //cy-120
+	ObjMove_SetDestAtFrame(bsatori, cx, cy-60, 60); //cy-120
 	ObjMove_SetDestAtFrame(bkoishi, cx*1.1, cy-150, 60); //cy-120
 	
 	// SetSpellCard;
 	SetCommonData("SpellcardDeclareColor",[255,64,196]);
-	SetSpellCardA2(NAZRIN,dirlib~"Cutin/Cutin_Satori.png");
+	SetSurvivalCardA2(NAZRIN,dirlib~"Cutin/Cutin_Satori.png");
 	ObjEnemyBossScene_StartSpell(objScene);
 	ObjEnemyBossScene_SetSpellTimer(objScene,timer*60); //5760
 	
@@ -91,10 +92,7 @@ task MainTask {
 	frame = 0;
 	
 	
-	// TShootSatori1;
-	TShootSatori2;
-	// TShootKoishi1;
-	// TShootKoishi2;
+	TShootSatori;
 	TPhilosophyOfAHatedPerson;
 	
 }
@@ -103,90 +101,40 @@ task MainTask {
 
 
 
+
+
 //adapted from Ginko
-task TShootSatori1{
+task TShootSatori{
 	let r; let R; let s; let S; let v; let j;
 	alternative(rank)
-	case(RANK_EASY){ r=30; R=-60; s=1.724; S=24.200; v = 1.2; j = 1; }
-	case(RANK_NORM){ r=30; R=-30; s=1.724; S=16.189; v = 1.4; j = 1; }
-	case(RANK_HARD){ r=30; R=-30; s=1.724; S=16.189; v = 1.4; j = 1; }
+	case(RANK_EASY){ r=30; R=-60; s=1.724; S=16.189; v = 1.2; j = 3; }
+	case(RANK_NORM){ r=30; R=-30; s=1.724; S=16.189; v = 1.4; j = 3; }
+	case(RANK_HARD){ r=30; R=-30; s=1.724; S=16.189; v = 1.4; j = 4; }
 	case(RANK_LUNA){ r=50; R=-70; s=2.524; S=16.189; v = 1.6; j = 2; }
+	// case(RANK_EASY){ r=30; R=-60; s=1.724; S=24.200; v = 1.2; j = 3; }
 	// case(RANK_LUNA){ r=30; R=-60; s=4.724; S=24.200; v = 2.9; j = 3; }
 
-	let spd; let acc; let mspd;
-	let bsp; let bac; let bmsp;
+	// let bsp; let bac; let bmsp;
+	let spd; let acc; let mspd; let del;
 	alternative(rank)
-	case(RANK_EASY){ spd = 2; acc = -0.1; mspd = 1; bsp = 3; bac = -0.2; bmsp = 1; }
-	case(RANK_NORM){ spd = 2; acc = -0.1; mspd = 1; bsp = 3; bac = -0.2; bmsp = 1; }
-	case(RANK_HARD){ spd = 2; acc = -0.1; mspd = 1; bsp = 3; bac = -0.2; bmsp = 1; }
-	case(RANK_LUNA){ spd = 2; acc = -0.1; mspd = 1; bsp = 3; bac = -0.2; bmsp = 1; }
+	case(RANK_EASY){ spd = 3; acc = -0.05; mspd = 1; del = 2*90; }
+	case(RANK_NORM){ spd = 3; acc = -0.05; mspd = 1; del = 2*90; }
+	case(RANK_HARD){ spd = 6; acc = -0.15; mspd = 1; del = 2*45; }
+	case(RANK_LUNA){ spd = 3; acc = -0.05; mspd = 1; del = 2*90; }
+	// case(RANK_HARD){ spd = 3; acc = -0.05; mspd = 1; bsp = 3; bac = -0.2; bmsp = 1; }
+	// case(RANK_HARD){ spd = 2; acc = -0.1; mspd = 1; bsp = 3; bac = -0.2; bmsp = 1; }
 	
-	while(!Obj_IsDeleted(bsatori)&&!finishing){
-		let angle = rand(0,360);
-
-		wait(20);
-		let a=0;
-		let t=0;
-		loop(8000){ //8000
-			t++;
-			if(t%400==99){
-				ascent(j in 0..2){
-					ascent(i in 0..16){
-						CreateShotA2(ex,ey,bsp,22.5*i+11.25*j,  bac,bmsp,  BUBBLE_RED+500+j*(BLUE-RED),  30-10*(-1)^i);
-					}
-					// SE_Play(se_kira01,100);
-					SE_Play(se_chime2,100);
-					// wait(12*18*(1-j));
-					wait(18);
-				}
-				wait(11*18);
-			}
-			
-			// let spd = 2; let acc = -0.1; let mspd = 1;
-			// let spd = 3; let acc = -0.1; let mspd = 1;
-			
-			ascent(i in 0..j){
-				let a0 = (a+v/j*i);
-				let a1 = S*a0; let a2 = s*a0;
-				CreateShotA2(ex+cos(a1)*r+cos(a2)*R,ey+sin(a1)*r+sin(a2)*R,spd, a0     ,acc,mspd,ZPEL_RED     ,10); //light red
-				CreateShotA2(ex-cos(a1)*r-cos(a2)*R,ey+sin(a1)*r+sin(a2)*R,spd,-a0+180 ,acc,mspd,ZPEL_MAGENTA ,10); //lilac
-				CreateShotA2(ex+cos(a1)*r+cos(a2)*R,ey-sin(a1)*r-sin(a2)*R,spd, a0     ,acc,mspd,ZPEL_BLUE    ,10); //blue
-				CreateShotA2(ex-cos(a1)*r-cos(a2)*R,ey-sin(a1)*r-sin(a2)*R,spd,-a0+180 ,acc,mspd,ZPEL_PURPLE  ,10); //purple
-			}
-			
-			if(t%3==0){
-				SE_Play(se_shot1,60*volumetweak);
-				SE_Play(se_shot2,60*volumetweak);
-				// SE_Play(se_shot,50*volumetweak);
-			}
-			
-			a=a+v;
-			angle += rand(0,360);
-			yield;
-		}
-		wait(60);
-	}
-}
-
-
-
-//adapted from Ginko
-task TShootSatori2{
-	let r; let R; let s; let S; let v; let j;
+	let ysp; let yac; let yms; let yco; let yco2;
 	alternative(rank)
-	case(RANK_EASY){ r=30; R=-60; s=1.724; S=24.200; v = 1.2; j = 1; }
-	case(RANK_NORM){ r=30; R=-30; s=1.724; S=16.189; v = 1.4; j = 1; }
-	case(RANK_HARD){ r=30; R=-30; s=1.724; S=16.189; v = 1.4; j = 1; }
-	case(RANK_LUNA){ r=50; R=-70; s=2.524; S=16.189; v = 1.6; j = 2; }
-	// case(RANK_LUNA){ r=30; R=-60; s=4.724; S=24.200; v = 2.9; j = 3; }
-
-	let spd; let acc; let mspd;
-	let bsp; let bac; let bmsp;
-	alternative(rank)
-	case(RANK_EASY){ spd = 2; acc = -0.1; mspd = 1; bsp = 3; bac = -0.2; bmsp = 1; }
-	case(RANK_NORM){ spd = 2; acc = -0.1; mspd = 1; bsp = 3; bac = -0.2; bmsp = 1; }
-	case(RANK_HARD){ spd = 2; acc = -0.1; mspd = 1; bsp = 3; bac = -0.2; bmsp = 1; }
-	case(RANK_LUNA){ spd = 2; acc = -0.1; mspd = 1; bsp = 3; bac = -0.2; bmsp = 1; }
+	case(RANK_EASY){ ysp = -1; yac = 0.03; yms = 2; yco = 2; yco2 = 0.5; }
+	case(RANK_NORM){ ysp = -1; yac = 0.03; yms = 2; yco = 2; yco2 = 0.5; }
+	case(RANK_HARD){ ysp = -1; yac = 0.03; yms = 2; yco = 2; yco2 = 0.5; }
+	case(RANK_LUNA){ ysp = -1; yac = 0.03; yms = 2; yco = 2; yco2 = 0.5; }
+	// case(RANK_NORM){ ysp = -1; yac = 0.02; yms = 4; yco = 1; yco2 = 0.5; }
+	// case(RANK_HARD){ ysp = -1; yac = 0.03; yms = 2; yco = 2; yco2 = 0.5; }
+	// case(RANK_HARD){ ysp = -1; yac = 0.01; yms = 4; }
+	
+	O_SetPropertyAtDecel(bsatori,MOVE_Z,0.30*sz,120);
 	
 	while(!Obj_IsDeleted(bsatori)&&!finishing){
 		let angle = rand(0,360);
@@ -217,11 +165,29 @@ task TShootSatori2{
 					let V = (-1)^(trunc(k/2));
 					let dx = U*(cos(a1)*r+cos(a2)*R);
 					let dy = V*(sin(a1)*r+sin(a2)*R);
-					// let types = [ZPEL_RED,ZPEL_MAGENTA,ZPEL_BLUE,ZPEL_PURPLE];
-					// let type = types[k];
-					let type = ZPEL_RED + max(0,ceil(k/2))*6 - ((-1)^(k+1) * max(0,min(1,k-2)) );
+					let types = [ZPEL_RED,ZPEL_MAGENTA,ZPEL_BLUE,ZPEL_PURPLE];
+					let type = types[k];
+					// let type = ZPEL_RED + max(0,ceil(k/2))*6 - ((-1)^(k+1) * max(0,min(1,k-2)) );
 					
-					let shot = CreateShotA2(ex+dx,ey+dy,spd,  U*a0+k%2*180  ,acc,mspd,type,10);
+					let A  = U*a0+k%2*180;
+					let A2 = V*a0+k%2*180;
+					
+					let vary = (|GetAngularDistance((A+A2)%180,90)|)/90;
+					let vary2 = (dy+50)/50;
+					
+					// let del = 90+(|GetAngularDistance(A%180,90)|);
+					// let del = 90+90*vary*yco*yco2;
+					let del1 = del+del*(vary)+i;
+					// let yac1 = yac+yac*((OM_GetY(shot))/ey);
+					let yac1 = yac+yac*vary*yco*vary2;
+					// let yms1 = yms/2+yms/2*yco2*yco*vary;
+					
+					let shot = CreateShotA2(ex+dx,ey+dy,spd,  A  ,acc,mspd,type,0); //del=10
+					Obj_SetValue(shot,"RoseColor",ROSE_RED+k%2);
+					// ObjMove_AddPatternB2(shot,del, 0,ysp, 0,yac1, 0,yms);
+					ObjMove_AddPatternB2(shot,del, 0,ysp+ysp*vary, 0,yac1, 0,yms);
+					EnterShotFromBack(shot,del,type);
+					
 				}                                                                                                      //             id = RED + max(0,ceil(k/2))*6 - ((-1)^(k+1) * max(0,min(1,k-2)) )
 				// CreateShotA2(ex+cos(a1)*r+cos(a2)*R,ey+sin(a1)*r+sin(a2)*R,spd, a0     ,acc,mspd,ZPEL_RED     ,10); //light red     1 =   1 + max(0,ceil(0/2))*6 - ((-1)^(0+1) * max(0,min(1,0-2)) ) = 1
 				// CreateShotA2(ex-cos(a1)*r-cos(a2)*R,ey+sin(a1)*r+sin(a2)*R,spd,-a0+180 ,acc,mspd,ZPEL_MAGENTA ,10); //lilac         7 =   1 + max(0,ceil(1/2))*6 - ((-1)^(1+1) * max(0,min(1,1-2)) ) = 7
@@ -229,96 +195,60 @@ task TShootSatori2{
 				// CreateShotA2(ex-cos(a1)*r-cos(a2)*R,ey-sin(a1)*r-sin(a2)*R,spd,-a0+180 ,acc,mspd,ZPEL_PURPLE  ,10); //purple       14 =   1 + max(0,ceil(3/2))*6 - ((-1)^(3+1) * max(0,min(1,3-2)) ) = 14
 			}                                                                                                       //                      
 			
-			if(t%3==0){
-				SE_Play(se_shot1,60*volumetweak);
-				SE_Play(se_shot2,60*volumetweak);
-			}
+			// if(t%3==0){
+				// SE_Play(se_shot1,60*volumetweak);
+				// SE_Play(se_shot2,60*volumetweak);
+			// }
 			
-			a=a+v;
+			a=a+v*j;
 			angle += rand(0,360);
-			yield;
+			loop(j){yield;}
 		}
 		// wait(60);
 	}
 }
 
 
-
-task TShootKoishi1{
-	let N; let len; let frq; let spd; let incr; let rotspd; let linespd;
-	alternative(rank)
-	case(RANK_EASY){ N = 8;  len = 10; frq = 3; spd = 1;   incr = spd/4; rotspd = 3; linespd = 2; }
-	case(RANK_NORM){ N = 8;  len = 10; frq = 3; spd = 1;   incr = spd/4; rotspd = 3; linespd = 2; }
-	case(RANK_HARD){ N = 12; len = 10; frq = 3; spd = 1.5; incr = spd/4; rotspd = 3; linespd = 2; }
-	case(RANK_LUNA){ N = 12; len = 20; frq = 1; spd = 2;   incr = spd/4; rotspd = 5; linespd = 3; } //forms a seal
-	// case(RANK_LUNA){ N = 8; len = 20; frq = 1; spd = 2; incr = spd/4; rotspd = 5; linespd = 3; } //forms a seal
-	// case(RANK_HARD){ N = 8; len = 10; frq = 3; spd = 1; incr = spd/4; rotspd = 3; linespd = 5; } //even distribution
-	let da = 360/N;
+task EnterShotFromBack(shot,time,type){
+	let c = OR_GetColor(shot);
+	let r = c[0]; let g = c[1]; let b = c[2];
+	let S = OR_GetScale(shot);
+	let A = OR_GetAlpha(shot)/2;
+	let pri = Obj_GetRenderPriorityI(shot)-20;
 	
-	while(!Obj_IsDeleted(bkoishi)&&!finishing){
-		O_SetPropertyAtFrame(bkoishi,RENDER_ALPHA,0,  120);
-		O_SetPropertyAtDelay(bkoishi,FLAG_INTERSECTION,false,60);
-		wait(120);
-		
-		// OM_SetDestAtWrapF(bkoishi,px,py/2,[LFT,RGT,1,1.5,2.25,0.75],60);
-		ObjMove_SetDestAtFrame(bkoishi,px,py/2,60);
-		wait(45);
-		O_SetPropertyAtFrame(bkoishi,RENDER_ALPHA,255,60);
-		O_SetPropertyAtDelay(bkoishi,FLAG_INTERSECTION,true,60);
-		wait(30);
-		
-		let a0 = getangle(kx,ky,px,py);
-		ascent(f in 0..60){
-			ascent(i in 0..N){
-				CreateShotA1(kx,ky,spd+(incr*((linespd*f)%len)/len),a0+da*i + rotspd*f - (linespd*f)%len, ZPEL_RED,10);
-				// CreateShotA1(kx,ky,1,a0+45*i + f + f%10, ZPEL_RED,10);
-			}
-			
-			SE_Play(se_chime,60*volumetweak);
-			wait(frq);
-		}
-		
+	OC_SetIntersectionEnable(shot,false);
+	ObjShot_SetSpellResist(shot,true);
+	
+	let type1 = type-ZPEL+DARKPEL_Z;
+	ObjShot_SetGraphic(shot,type1);
+	
+	let i = time;
+	while(i > 0){
+		let t = i/time;
+		OM_SetZ(shot,t*sz);
+		loop(10){ yield; i--; }
 	}
+	ObjShot_SetSpellResist(shot,false);
+	let y0 = OM_GetY(shot);
+	let time2 = (|O_GetProperty(shot,MOVE_YSPEED)/O_GetProperty(shot,MOVE_YACCEL)|);
+	let y1 = y0-ProjectDist(O_GetProperty(shot,MOVE_YSPEED),O_GetProperty(shot,MOVE_YACCEL),0, time2);
+	yield;
+	while(ObjMove_GetY(shot) <= y0){
+		OM_SetZ(shot,-(| ObjMove_GetY(shot) - y0 |)*3 );
+		loop(10){ yield; }
+	}
+	ObjShot_SetGraphic(shot,type);
+	
+	OC_SetIntersectionEnable(shot,true);
+	OM_SetZ(shot,0);
+	
+	
+	
 }
 
-task TShootKoishi2{
-	while(!Obj_IsDeleted(bkoishi)&&!finishing){
-		O_SetPropertyAtFrame(bkoishi,RENDER_ALPHA,0,  120);
-		O_SetPropertyAtDelay(bkoishi,FLAG_INTERSECTION,false,60);
-		wait(120);
-		
-		// OM_SetDestAtWrapF(bkoishi,px,py/2,[LFT,TOP,RGT,BTM,1,1.5,2.25,0.75],60);
-		ObjMove_SetDestAtFrame(bkoishi,px,py/2,60);
-		wait(45);
-		O_SetPropertyAtFrame(bkoishi,RENDER_ALPHA,255,60);
-		O_SetPropertyAtDelay(bkoishi,FLAG_INTERSECTION,true,60);
-		wait(30);
-		
-		let d = 40;
-		let t = 60;
-		let s0 = 8*d/t; //6
-		
-		ascent(f in 0..12){
-			let a0 = getangle(kx,ky,px,py);
-			ascent(i in 5..16){
-				// let shot = CreateShotA1(kx,ky,2+(i/8),a0+90*(-1)^i, ZPEL_RED,10);
-				// ObjMove_AddPatternA2(shot,20,0,a0, 0.1,0,4);
-				let s = s0*(i/16);
-				let acc = -((s0*i/16)/t);
-				ascent(j in 1..4){
-					let shot = CreateShotA2(kx,ky,s,a0+90*(-1)^i, acc,0, ZPEL_PURPLE,10);
-					ObjMove_AddPatternA2(shot,t,0,a0, 0.1/j,0,4/j);
-				}
-			}
-			CreateShotA2(kx,ky,4,a0, -0.4,2, LARGE_BLUE,10);
-			
-			SE_Play(se_chime,60*volumetweak);
-			SE_Play_Del(se_kira02,60*volumetweak,20);
-			wait(20); //3
-		}
-		
-	}
-}
+
+
+
 
 
 task TPhilosophyOfAHatedPerson{
@@ -337,13 +267,15 @@ task TPhilosophyOfAHatedPerson{
 	O_SetProperty(bkoishi,FLAG_INTERSECTION,false);
 	O_SetPropertyAtFrame(bkoishi,RENDER_ALPHA,0,  120);
 	O_SetPropertyAtFrame(bkoishi,RENDER_SCALE,10, 120);
+	O_SetPropertyAtFrame(bkoishi,MOVE_Y,sy+120, 120);
 	
 	wait(90);
 	
 	task TManagePOAHP{
 		while(!Obj_IsDeleted(bkoishi)&&!finishing){
 			if(DoRose){
-				PhilosophyOfAHatedPerson(kx,ky,100);
+				// PhilosophyOfAHatedPerson(kx+rand(-10,10),ky+rand(-10,10),75); //100
+				PhilosophyOfAHatedPerson(kx,ky,75); //100
 			}
 			yield;			
 		}

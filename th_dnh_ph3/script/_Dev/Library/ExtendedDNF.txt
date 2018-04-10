@@ -31,7 +31,6 @@ let MOVE_YMAXSPEED = "YMaxSpeed";
 
 let RENDER_ALPHA = "Alpha";
 let RENDER_COLOR = "Color";
-let RENDER_SCALE = "Scale"; //"overall" scale
 let RENDER_RCOL = "R";
 let RENDER_GCOL = "G";
 let RENDER_BCOL = "B";
@@ -42,6 +41,15 @@ let RENDER_Y = "RenderY";
 let RENDER_ANGLE = "AngleZ";
 let RENDER_ANGLEX = "AngleX";
 let RENDER_ANGLEY = "AngleY";
+let RENDER_SCALE = "Scale"; //"overall" scale
+let RENDER_SCALEX = "ScaleX";
+let RENDER_SCALEY = "ScaleY";
+
+let RENDER_PRIORITY = "RenderPriority";
+
+let MOVE_Z = "MoveZ"; //experimental
+
+let COL_RADIUS = "CollisionRadius";
 
 //////////////////////////////////////////////////////////////////////////////
 //Higher-order functions for generalizing functions to operate on any property
@@ -74,9 +82,13 @@ function O_SetProperty(obj,k,v){
 	case(RENDER_GCOL){ let c = OR_GetColor(obj); OR_SetColor(obj,c[0],v   ,c[2]); }
 	case(RENDER_BCOL){ let c = OR_GetColor(obj); OR_SetColor(obj,c[0],c[1],v   ); }
 	case(RENDER_SCALE){     OR_SetScale(obj,v); }
-	case(RENDER_ANGLE){  ObjRender_SetAngleZ(obj,v); }
-	case(RENDER_ANGLEX){ ObjRender_SetAngleX(obj,v); }
-	case(RENDER_ANGLEY){ ObjRender_SetAngleY(obj,v); }
+	case(RENDER_SCALEX){    OR_SetScaleX(obj,v); }
+	case(RENDER_SCALEY){    OR_SetScaleY(obj,v); }
+	case(RENDER_ANGLE){  ObjRender_SetAngleZ(obj,v); } //todo
+	case(RENDER_ANGLEX){ ObjRender_SetAngleX(obj,v); } //todo
+	case(RENDER_ANGLEY){ ObjRender_SetAngleY(obj,v); } //todo
+	case(RENDER_PRIORITY){ O_SetRenderPriorityI(obj,v); }
+	case(MOVE_Z){ OM_SetZ(obj,v); }
 }
 function O_GetProperty(obj,k){
 	let v;
@@ -105,9 +117,13 @@ function O_GetProperty(obj,k){
 	case(RENDER_GCOL){       v = OR_GetColor(obj)[1]; }
 	case(RENDER_BCOL){       v = OR_GetColor(obj)[2]; }
 	case(RENDER_SCALE){      v = OR_GetScale(obj); }
+	case(RENDER_SCALEX){     v = OR_GetScaleX(obj); }
+	case(RENDER_SCALEY){     v = OR_GetScaleY(obj); }
 	case(RENDER_ANGLE){  v = ObjRender_GetAngleZ(obj); }
 	case(RENDER_ANGLEX){ v = ObjRender_GetAngleX(obj); }
 	case(RENDER_ANGLEY){ v = ObjRender_GetAngleY(obj); }
+	case(RENDER_PRIORITY){   v = O_GetRenderPriorityI(obj); }
+	case(MOVE_Z){ v = OM_GetZ(obj); }
 	others{v=NULL;}
 	
 	return v;
@@ -177,11 +193,7 @@ function OProp_CheckNoChange(obj,k,v){ //fucky atm
 }
 
 
-
-
-
-
-
+//---------------------
 
 task O_AddPropertyPatternA1(obj,del,k_val,s){
 	wait(del);
@@ -279,13 +291,43 @@ task O_SetPropertyAtWeight(obj,k,v,frame,weight){
 
 
 
+//////////////////////////////////////////////////////////////////
+//Object Functions
+//////////////////////////////////////////////////////////////////
+
+//Primitive types
+let OBJ_INT = 9;
+let OBJ_REAL = 2; let OBJ_NUMBER = 2;
+let OBJ_BOOL = 2+10;
+let OBJ_CHAR = -1;
+let OBJ_ARRAY = 10;
+let OBJ_STRING = 10+1;
+
+function O_GetType(obj){
+	alternative(Obj_GetType(obj))
+	case(OBJ_INT){return OBJ_NUMBER;}
+	case(OBJ_REAL){
+		if(ToString(obj)=="true"||ToString(obj)=="false"){return OBJ_BOOL;}
+		else{ return OBJ_NUMBER; }
+	}
+	case(OBJ_ARRAY){
+		if(length(obj) > 0){
+			let contents = O_GetType(obj[0]); //recursive
+			if(contents==OBJ_CHAR){return OBJ_STRING;}
+			else{return OBJ_ARRAY;}
+		}else{return OBJ_ARRAY;}
+	}
+	case(OBJ_CHAR){return OBJ_CHAR;}
+	case(OBJ_SHOT){return OBJ_SHOT;} //106
+	case(OBJ_ENEMY,OBJ_ENEMY_BOSS){return OBJ_ENEMY;}
+	others{return Obj_GetType(obj);}
+}
+
 
 
 
 
 //MISC
-
-
 
 function ObjEnemy_GetLife(enemy){ return ObjEnemy_GetInfo(enemy,INFO_LIFE); }
 
@@ -434,20 +476,29 @@ function OR_SetScale(obj,scale){
 function OR_GetScale(obj){
 	let scale = Obj_GetValueD(obj,RENDER_SCALE,NULL);
 	if(scale==NULL){
-		let sclx = ObjRender_GetScaleX(obj);
-		let scly = ObjRender_GetScaleY(obj);
+		let sclx = OR_GetScaleX(obj);
+		let scly = OR_GetScaleY(obj);
 		scale = ((|sclx|)+(|scly|))/2;
 	}
 	return scale;
 }
+function OR_SetScaleX(obj,scalex){
+	ObjRender_SetScaleX(obj,scalex);
+	Obj_SetValue(obj,RENDER_SCALEX,scalex);
+}
+function OR_GetScaleX(obj){return Obj_GetValueD(obj,RENDER_SCALEX,ObjRender_GetScaleX(obj));}
+
+function OR_SetScaleY(obj,scaley){
+	ObjRender_SetScaleY(obj,scaley);
+	Obj_SetValue(obj,RENDER_SCALEY,scaley);
+}
+function OR_GetScaleY(obj){return Obj_GetValueD(obj,RENDER_SCALEY,ObjRender_GetScaleY(obj));}
 
 
 function OR_GetX(obj){return ObjRender_GetX(obj);}
 function OR_GetY(obj){return ObjRender_GetY(obj);}
 function OR_SetX(obj,v){ObjRender_SetX(obj,v);}
 function OR_SetY(obj,v){ObjRender_SetY(obj,v);}
-
-
 
 
 
@@ -463,7 +514,29 @@ task Obj_FadeDelete(obj) {
 }
 
 
+function O_SetRenderPriorityI(obj,v){
+	Obj_SetRenderPriorityI(obj,v);
+	Obj_SetValue(obj,RENDER_PRIORITY,v);
+}
+function O_GetRenderPriorityI(obj){
+	if(Obj_IsValueExists(obj,RENDER_PRIORITY)){
+		return Obj_GetValue(obj,RENDER_PRIORITY);
+	}else{
+		return Obj_GetRenderPriorityI(obj);
+	}
+}
 
+function O_SetRenderPriority(obj,v){
+	Obj_SetRenderPriority(obj,v);
+	Obj_SetValue(obj,RENDER_PRIORITY,v*100);
+}
+function O_GetRenderPriority(obj){
+	if(Obj_IsValueExists(obj,RENDER_PRIORITY)){
+		return Obj_GetValue(obj,RENDER_PRIORITY)/100;
+	}else{
+		return Obj_GetRenderPriority(obj);
+	}
+}
 
 
 
@@ -574,7 +647,9 @@ function OS_GetDelayColor(shot) {
 
 function OS_GetCollisionRadius(shot) {
 	if(isnull(shot)){return 0;}
-	return GetShotDataInfoA1(max(1,ObjShot_GetImageID(shot)),TARGET_ENEMY,INFO_COLLISION);
+	let base = GetShotDataInfoA1(max(1,ObjShot_GetImageID(shot)),TARGET_ENEMY,INFO_COLLISION);
+	let scl = OR_GetScale(shot);
+	return base*scl;
 }
 
 
@@ -911,6 +986,57 @@ function ObjMove_Still(obj,time){OM_Still(obj,time);}
 
 
 
+//Simulate 3D position for 2D objects
+//Z=0: normal plane; Z=100: fully receded; Z=-100: fully proceded
+//Intentionally don't store new values, so "true" ones remain stored
+let sz=400;
+function OM_SetZ(obj,z){
+	Obj_SetValue(obj,MOVE_Z,z);
+	let t = z/sz; //-1..0..1 //t=0 when normal, t->1 in bg, t->-1 in fg
+	let c = OR_GetColor(obj);
+	let r = c[0]/2+128; let g = c[1]/2+128; let b = c[2]/2+128;
+	let Sx = Obj_GetValueD(obj,RENDER_SCALEX,1);
+	let Sy = Obj_GetValueD(obj,RENDER_SCALEY,1);
+	let A = OR_GetAlpha(obj);
+	
+	let pri = O_GetRenderPriorityI(obj);
+	if(!Obj_IsValueExists(obj,RENDER_PRIORITY)){
+		Obj_SetValue(obj,RENDER_PRIORITY,pri);
+	}
+	Obj_SetRenderPriorityI(obj,pri-10*t);
+	
+	ObjRender_SetColor(obj, r-r/2*t, g-g/2*t, b-b/2*t );
+	// ObjRender_SetColor(obj, r-r/2*(|t|), g-g/2*(|t|), b-b/2*(|t|) );
+	if(z>=0){
+		ObjRender_SetAlpha(obj, A-A/2*(|t|));
+		ObjRender_SetScaleXYZ(obj,Sx*(|1-t|),Sy*(|1-t|),1);
+	}else{
+		// ObjRender_SetAlpha(obj, A-A*2*(|t|)^0.5);
+		// ObjRender_SetScaleXYZ(obj,Sx*(1+(|t|)^0.25),Sy*(1+(|t|)^0.25),1);
+		ObjRender_SetAlpha(obj, A-A*5*(|t/10|)^0.5);
+		ObjRender_SetScaleXYZ(obj,Sx*(1+(|t|)^0.25),Sy*(1+(|t|)^0.25),1);
+	}
+	
+	
+	// let collide = (|z|) <= OC_GetIntersectionRadius(obj);
+	if(O_GetType(obj)==OBJ_SHOT){
+		let collide = ( Obj_GetValueD(obj,FLAG_INTERSECTION,true) && ((|z|)<=OC_GetIntersectionRadius(obj)) );
+		ObjShot_SetIntersectionEnable(obj,collide);
+	}else{ 
+		OC_SetIntersectionEnable(obj, (|z|)<=OC_GetIntersectionRadius(obj) );
+	}
+	
+}
+
+function OM_GetZ(obj){
+	return Obj_GetValueD(obj,MOVE_Z,0);
+}
+
+
+
+
+
+
 
 
 
@@ -1085,5 +1211,43 @@ function GetIntersection_Line_Line(x0,y0,x1,y1,  x2,y2,x3,y3) {
 		return [x,y];
 	}else{
 		return [NULL,NULL];
+	}
+}
+
+//////////////////////////////////////////////////////////////////
+//Collision Object Functions
+//////////////////////////////////////////////////////////////////
+
+function OC_GetIntersectionRadius(obj){
+	// if(!OC_IsIntersectionEnable(obj)){return 0;}
+	if(Obj_IsValueExists(obj,COL_RADIUS)){
+		return Obj_GetValue(obj,COL_RADIUS);
+	}
+	alternative(O_GetType(obj))
+	case(OBJ_SHOT){return OS_GetCollisionRadius(obj);}
+	case(OBJ_ENEMY){return 10;}
+	others{return 0;}
+}
+function OC_SetIntersectionRadius(obj,v){
+	if(O_GetType(obj)==OBJ_SHOT){
+		let base = OS_GetCollisionRadius(obj)/OR_GetScale(obj);
+		OR_SetScale(obj,v/base);
+	}
+	Obj_SetValue(obj,COL_RADIUS,v);
+}
+
+function OC_SetIntersectionEnable(obj,intersect){
+	Obj_SetValue(obj,FLAG_INTERSECTION,intersect); 
+	if(O_GetType(obj)==OBJ_SHOT){
+		ObjShot_SetIntersectionEnable(obj,intersect);
+	}
+}
+function OC_IsIntersectionEnable(obj){
+	if(Obj_IsValueExists(obj,FLAG_INTERSECTION)){return Obj_GetValue(obj,FLAG_INTERSECTION);}
+	else{
+		alternative(O_GetType(obj))
+		case(OBJ_SHOT){return !( Obj_GetValueD(obj,FLAG_DUMMY,false) || (ObjShot_GetImageID(obj)==0) );}
+		case(OBJ_ENEMY){return true;}
+		others{return false;}
 	}
 }

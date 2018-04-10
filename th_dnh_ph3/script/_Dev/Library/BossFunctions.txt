@@ -154,8 +154,10 @@ function SetBossHitbox(enem,ex,ey){
 	let boss = GetEnemyBossObjectID[0];
 	if(Obj_GetValueD(enem,FLAG_INTERSECTION,true)){
 		let s = OR_GetScale(enem);
-		ObjEnemy_SetIntersectionCircleToShot(  boss, ex, ey, 24*s); //32
-		ObjEnemy_SetIntersectionCircleToPlayer(boss, ex, ey, 16*s); //24
+		let r = Obj_GetValueD(enem,COL_RADIUS,16*s);
+		ObjEnemy_SetIntersectionCircleToShot(  boss, ex, ey, r*1.5); //24*s  //32
+		ObjEnemy_SetIntersectionCircleToPlayer(boss, ex, ey, r    ); //16*s  //24
+		Obj_SetValue(enem,COL_RADIUS,20*s); //average it out
 	}
 }
 
@@ -211,6 +213,7 @@ let MOVE_PLAYERBIAS	= 999902;	//	[MOVE_PLAYERBIAS,xbias,ybias]
 								//Extra arguments (compatible):
 let MOVE_NEAR		= 999910;	//  [MOVE_NEAR,maxrad]
 let MOVE_FAR		= 999911;	//	[MOVE_FAR, minrad]
+//let MOVE_WHEREEVERYOUARE = 999911.5;
 let MOVE_PNLSPACE	= 999912;	//	[MOVE_PNLSPACE, personalspace]
 let MOVE_ATSPEED	= 999913;	//	[MOVE_SPEED,   spd] 			(*incompatible with MOVE_MAXSPEED)
 let MOVE_LIMITSPEED	= 999914;	//	[MOVE_MAXSPEED,spd] 			(*incompatible with MOVE_SPEED)
@@ -362,17 +365,17 @@ task EnemyName(obj, name, r, g, b){ //Blurred originally
 	let num = Obj_GetValueD(boss,"DisplayNameCount",0)+1;
 	Obj_SetValue(boss,"DisplayNameCount",num);
 	if(num>1){
-		ObjRender_SetY(text,12*num);
+		ObjRender_SetY(text,12+10*(num-1)); //12*num
 	}
 	
 	yield;
 	while(ObjEnemy_GetInfo(boss,INFO_LIFE)>0){yield;}
-	wait(12);//It can only handle 12 yields, currently, before the script is closed.
+	wait(12);//"It can only handle 12 yields, currently, before the script is closed."
 	Obj_Delete(text);
 }
 
 
-/*
+//Alternative lifebar style, circular around boss
 task LifeCircle(renderObj, enemyObj){
 	let path = root~"/system/img/Default_System.png";
 	let obj = ObjPrim_Create(OBJ_PRIMITIVE_2D); //lifebar base
@@ -448,5 +451,5 @@ task LifeCircle(renderObj, enemyObj){
 		yield;
 	}
 }
-*/
+
 
