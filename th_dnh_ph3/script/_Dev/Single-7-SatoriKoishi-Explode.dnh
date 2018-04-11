@@ -1,0 +1,142 @@
+#TouhouDanmakufu[Single]
+#ScriptVersion[3]
+#Title["(Satori & Koishi end explosion)"]
+#Text["series 7: scales with difficulty"] 
+// #BGM["./bgm/bgm - Deaf to All but the Song.ogg"]
+#System["./system/Andi_System.txt"]
+#Background["./system/Background/Mystia/BG_work.txt"]
+
+#include "./Index.txt"
+
+let bsatori; let bkoishi;
+
+@Event
+{
+	alternative(GetEventType())
+	case(EV_REQUEST_LIFE){ SetScriptResult(1); }
+}
+@Initialize
+{
+
+	// boss = spawnBossBlank("Mystia Lorelai");
+	// renderMystiaIN(boss,1);
+	
+	SetCommonData("BossNameColor",[255,64,196]);
+	bsatori = CreateBoss("Satori Komeiji");
+	SetCommonData("BossNameColor",[128,255,128]);
+	bkoishi = CreateBoss("Koishi Komeiji");
+	ObjMove_SetPosition(bkoishi,GetCommonData("Boss2_X",cy),GetCommonData("Boss2_Y",-120));
+	renderSatoriSA(bsatori);
+	renderKoishiSA(bkoishi);
+	
+	MainTask;
+	
+
+}
+@MainLoop{
+	frame++;yield;
+}
+
+
+task MainTask {
+	if(noPlural){SetBGM("Hartmann's Youkai Girl@Magnum Opus",17.12,298.97);}
+	
+	SE_Play(se_defeated,100);
+	ascent(b in 0..2){
+		let boss;
+		if(b==0){ boss = bsatori; }
+		else    { boss = bkoishi; }
+		
+		Manage(boss);
+		task Manage(boss){
+			if(noPlural){ObjMove_SetPosition(boss,cx-120*(-1)^b,cy/2);}
+			let x = ObjMove_GetX(boss); let y = ObjMove_GetY(boss);
+			loop(9){
+				SE_Play(se_tan00,60);
+				loop(10){
+					loop(3){
+						EffectParticleA2(x,y,rand(2,6.5),rand(0,360),"CHERRY",25,0,0.25,  180,64,200);
+						EffectParticleA2(x,y,rand(2,5.5),rand(0,360),"CHERRY",15,0,0.25,  200,64, 64);
+						EffectParticleA2(x,y,rand(2,5.5),rand(0,360),"CHERRY",15,0,0.25,   64,64,200);
+					}
+					yield;
+				}
+			}
+			SE_Play(se_defeated,100);
+			ObjEnemy_SetLife(boss,0.001);
+			// Obj_Delete(boss);
+			Obj_SetVisible(boss,false);
+			ScreenShake(30,3,5);
+			loop(30){
+				loop(10){
+					EffectParticleA2(x,y,rand(1,7),rand(0,360),"CHERRY",60,0,0.5,  180,64,200);
+					EffectParticleA2(x,y,rand(1,7),rand(0,360),"CHERRY",60,0,0.5,  200,64, 64);
+					EffectParticleA2(x,y,rand(1,7),rand(0,360),"CHERRY",60,0,0.5,   64,64,200);
+				}
+				yield;
+			}
+		}
+	
+	}
+	
+	wait(9*10+30);
+	
+	// wait(90);
+	// CloseScript(GetOwnScriptID);
+	
+	wait(45);
+	
+	
+	
+	
+	
+	let SATORI = 1; let KOISHI = 0; let MOKOU = 2; 
+	let initialized = [true,true,true];
+	let side=0; let speaker=0;
+	function Say(character,portrait,time,text){
+		let color;
+		alternative(character)
+		case(MOKOU) { side=0;                 color = [255,128,128]; }
+		case(SATORI){ side=1; speaker=SATORI; color = [255, 64,196]; }
+		case(KOISHI){ side=1; speaker=KOISHI; color = [128,255,128]; }
+		if(!initialized[character]){
+			alternative(character)
+			case(MOKOU){  SetNewPlayerPort(dirportrait~"Mokou_" ~portrait~".png",0); }
+			case(SATORI){ SetNewEnemyPort (dirportrait~"Satori_"~portrait~".png",SATORI); }
+			case(KOISHI){ SetNewEnemyPort (dirportrait~"Koishi_"~portrait~".png",KOISHI); }
+			initialized[character] = true;
+		}
+		alternative(character)
+		case(MOKOU){  SetPlayerPort(dirportrait~"Mokou_" ~portrait~".png",0); }
+		case(SATORI){ SetEnemyPort (dirportrait~"Satori_"~portrait~".png",SATORI); }
+		case(KOISHI){ SetEnemyPort (dirportrait~"Koishi_"~portrait~".png",KOISHI); }
+		SetEnemySpeaker(speaker);
+		SetSpeaker(side);		
+		if(time==0){ SetDialogueTextA1(text,color); }
+		else       { SetDialogueTextA2(text,color,time); }
+	}
+	
+	
+	
+	InitiateDialogueSequence();
+	SetPortraitNumber(1,2);
+	
+	SetNewPlayerPort(dirportrait~"Mokou_Smug.png",0);
+	SetNewEnemyPort(dirportrait~"Satori_Pout.png",SATORI);
+	SetNewEnemyPort(dirportrait~"Koishi_Pout.png",KOISHI);
+	
+	Say(MOKOU ,"Smug",0,"Omae wa mou shindeiru.");
+	Say(KOISHI,"Surprise",0,"Nani?!");
+	Say(SATORI,"Sweatdrop",0,"Can we please stop with the Jojo references?");
+	Say(KOISHI,"Pout",0,"OAHHH NOOOO!!");
+	
+	EndDialogueSequence();
+		
+	StageOutro(6);
+	ObjEnemy_SetLife(bsatori,0);
+	Obj_Delete(bsatori);
+	CloseScript(GetOwnScriptID);
+	
+	
+}
+

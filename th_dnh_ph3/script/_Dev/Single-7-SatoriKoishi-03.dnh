@@ -9,11 +9,11 @@
 
 #include "./Index.txt"
 
-let timer = 37; //37 //47
+let timer = 47; //37 //47
 let drate = 48; //24
 let mlife = 4000; //2000
 
-let volumetweak = 0.75;
+let volumetweak = 1; //.75
 
 let bsatori;
 let bkoishi;
@@ -43,6 +43,7 @@ let kx; let ky;
 	bsatori = CreateBoss("Satori Komeiji");
 	SetCommonData("BossNameColor",[128,255,128]);
 	bkoishi = CreateBoss("Koishi Komeiji");
+	ObjMove_SetPosition(bkoishi,GetCommonData("Boss2_X",cy),GetCommonData("Boss2_Y",-120));
 	renderSatoriSA(bsatori);
 	renderKoishiSA(bkoishi);
 	
@@ -54,6 +55,7 @@ let kx; let ky;
 	if(ObjEnemy_GetInfo(bsatori,INFO_LIFE)<=0 && !finishing){
 		finishing = true;
 		DropItemsSpellEnd;
+		SetCommonData("Boss2_X",ObjMove_GetX(bkoishi));	SetCommonData("Boss2_Y",ObjMove_GetY(bkoishi));
 		TBreakSpell([]);
 	}
 	kx=ObjMove_GetX(bkoishi); ky=ObjMove_GetY(bkoishi);
@@ -80,7 +82,8 @@ task MainTask {
 	// TSpellImmune;
 	// SetBossBlur(true);
 	Aura(bsatori,255,64,128,64);
-	Aura(bkoishi,64,255,128,64);
+	// Aura(bkoishi,64,255,128,64);
+	
 	// AuraRainbow(boss,64,64,64);
 	// SetMagicCircleAlpha(64,64);
 
@@ -264,14 +267,38 @@ task TPhilosophyOfAHatedPerson{
 	SetSpellCardA2(NAZRIN,dirlib~"Cutin/Cutin_Koishi.png");
 	ObjEnemyBossScene_StartSpell(objScene);
 	
+	
+	
 	O_SetProperty(bkoishi,FLAG_INTERSECTION,false);
 	O_SetPropertyAtFrame(bkoishi,RENDER_ALPHA,0,  120);
 	O_SetPropertyAtFrame(bkoishi,RENDER_SCALE,10, 120);
 	O_SetPropertyAtFrame(bkoishi,MOVE_Y,sy+120, 120);
 	
+	
+	let size;
+	alternative(rank)
+	case(RANK_EASY){ size =  50; }
+	case(RANK_NORM){ size =  75; }
+	case(RANK_HARD){ size =  90; }
+	case(RANK_LUNA){ size = 105; }
+	
+	TRenderPOAHP;
+	task TRenderPOAHP{
+		let light = CreateSprite(kx,ky,dirimg~"shield1.png",[0,0,255,255],60);
+		OR_SetScale(light,size/128);
+		ObjRender_SetBlendType(light,BLEND_ADD_ARGB);
+		OR_SetAlpha(light,64);
+		while(!Obj_IsDeleted(bkoishi)&&!finishing){
+			ObjRender_SetPosition(light,kx,ky,0);
+			yield;
+		}
+	}
+	
+	
 	wait(90);
 	
-	task TManagePOAHP{
+	
+	task TManagePOAHP{		
 		while(!Obj_IsDeleted(bkoishi)&&!finishing){
 			if(DoRose){
 				// PhilosophyOfAHatedPerson(kx+rand(-10,10),ky+rand(-10,10),75); //100
@@ -281,10 +308,12 @@ task TPhilosophyOfAHatedPerson{
 		}
 	}
 	TManagePOAHP;
+	
+	
 	function CheckBreak{if(Obj_IsDeleted(bkoishi)||finishing){break;}}
 	
-	O_SetPropertyAtFrame(bkoishi,RENDER_SCALE,3, 120);
-	O_SetPropertyAtFrame(bkoishi,RENDER_ALPHA,64,120);
+	// O_SetPropertyAtFrame(bkoishi,RENDER_SCALE,3, 120);
+	// O_SetPropertyAtFrame(bkoishi,RENDER_ALPHA,64,120);
 	wait(60);
 	DoRose = true;
 

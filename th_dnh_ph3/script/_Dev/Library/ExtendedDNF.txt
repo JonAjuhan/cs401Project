@@ -323,6 +323,12 @@ function O_GetType(obj){
 	others{return Obj_GetType(obj);}
 }
 
+//Other pseudo-types, used for "objects" like ObjGap, ObjFog, &c.
+
+function O_GetSubType(obj){
+	return Obj_GetValueD(obj,"Subtype",O_GetType(obj));
+}
+
 
 
 

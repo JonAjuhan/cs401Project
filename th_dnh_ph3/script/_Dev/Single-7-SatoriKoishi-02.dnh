@@ -43,6 +43,7 @@ let kx; let ky;
 	bsatori = CreateBoss("Satori Komeiji");
 	SetCommonData("BossNameColor",[128,255,128]);
 	bkoishi = CreateBoss("Koishi Komeiji");
+	ObjMove_SetPosition(bkoishi,GetCommonData("Boss2_X",cy),GetCommonData("Boss2_Y",-120));
 	renderSatoriSA(bsatori);
 	renderKoishiSA(bkoishi);
 	
@@ -54,6 +55,7 @@ let kx; let ky;
 	if(ObjEnemy_GetInfo(bsatori,INFO_LIFE)<=0 && !finishing){
 		finishing = true;
 		DropItemsNonspellEnd;
+		SetCommonData("Boss2_X",ObjMove_GetX(bkoishi));	SetCommonData("Boss2_Y",ObjMove_GetY(bkoishi));
 		TBreakNonspell([]);
 	}
 	kx=ObjMove_GetX(bkoishi); ky=ObjMove_GetY(bkoishi);

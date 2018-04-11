@@ -1,0 +1,58 @@
+#TouhouDanmakufu[Plural]
+#ScriptVersion[3]
+#Title["(Satori & Koishi Plural) Stage 6 boss"]
+#Text["A test plural."]
+
+#include "./Index.txt"
+#System["./system/Andi_System.txt"]
+#Background["./system/Background/Mystia/BG_work.txt"]
+
+
+let hold = true;
+
+@Loading {
+}
+
+@Event{
+	alternative(GetEventType())
+	case(EV_START_BOSS) {
+		hold = false;
+	}
+}
+
+@Initialize{
+	SetCommonData("IsPlural",true); //to figure out what was selected from the menu, when needed
+	TPlural;
+}
+@MainLoop{
+	yield;
+}
+
+
+task TPlural {
+	let dir = GetCurrentScriptDirectory()~"./";
+    let obj = ObjEnemyBossScene_Create();
+	
+	yield;
+	
+	//params: boss scene object, lifebar number, filepath
+	ObjEnemyBossScene_Add(obj,0,dir~"Single-7-SatoriKoishi-Dialogue.dnh");
+	ObjEnemyBossScene_Add(obj,0,dir~"Single-7-SatoriKoishi-01.dnh");
+	ObjEnemyBossScene_Add(obj,1,dir~"Single-7-SatoriKoishi-02.dnh");
+	ObjEnemyBossScene_Add(obj,2,dir~"Single-7-SatoriKoishi-03.dnh");
+	ObjEnemyBossScene_Add(obj,2,dir~"Single-7-SatoriKoishi-Explode.dnh");
+	
+	ObjEnemyBossScene_LoadInThread(obj);
+	
+	if(noStage){hold=false;}
+	while(hold){yield;}
+	
+	ObjEnemyBossScene_Regist(obj);
+	
+	//wait for boss scene to end
+	while(!Obj_IsDeleted(obj)){yield;}
+	CloseScript(GetOwnScriptID());
+	
+}
+
+
