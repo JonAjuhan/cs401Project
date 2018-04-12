@@ -53,7 +53,7 @@ Mkfile.old
 dkms.conf
 
 # I don't know what this is supposed to be
-.DS_Store
+*.DS_Store*
 
 # Screenshots
 *Screenshot*
