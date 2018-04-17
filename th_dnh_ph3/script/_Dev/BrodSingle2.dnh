@@ -129,8 +129,8 @@ task RingShoot
 			a=a0+i*(360/N);
 			ascent(j in 0..n)
 			{
-				shot = CreateShotA1(ex+25*cos(a),ex+25*sin(a),spd, a0+i*(360/N),SUPP_RED+500, 15);
-				ObjMove_SetAngularVelocity(shot,0.025*j);
+				shot = CreateShotA1(ex+cos(a),ex+sin(a),spd, a0+i*(360/N),SUPP_RED+500, 15);
+				ObjMove_SetAngularVelocity(shot,0.25*j);
 			}
 		a0+=15;
 		}

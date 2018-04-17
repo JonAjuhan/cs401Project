@@ -100,7 +100,7 @@ task AimShot{
 		ascent(j in -1..N)
 		{
 			shot = CreateShotA1(ex,ey,spd,90,SUPP_RED+500,1);
-			shot1 = CreateShotA1(ex,ey,spd,45,SUPP_RED+500,1);
+			shot1 = CreateShotA1(ex,ey,spd,90,SUPP_RED+500,1);
 			ObjMove_SetAngularVelocity(shot,aspd*j);
 			ObjMove_AddPatternA1(shot,300,2,90);
 			ObjMove_SetAngularVelocity(shot1,aspd*-j);
