@@ -1,0 +1,106 @@
+#TouhouDanmakufu[Single]
+#ScriptVersion[3]
+#Title["(Satori & Koishi intro dialogue)"]
+#Text["series 7: scales with difficulty"] 
+// #BGM["./bgm/bgm - Deaf to All but the Song.ogg"]
+#System["./system/Andi_System.txt"]
+#Background["./system/Background/Mystia/BG_work.txt"]
+
+#include "./Index.txt"
+
+let bsatori; let bkoishi;
+
+@Event
+{
+	alternative(GetEventType())
+	case(EV_REQUEST_LIFE){ SetScriptResult(1); }
+}
+@Initialize
+{
+
+	// boss = spawnBossBlank("Mystia Lorelai");
+	// renderMystiaIN(boss,1);
+	
+	SetCommonData("BossNameColor",[255,64,196]);
+	bsatori = CreateBoss("Satori Komeiji");
+	SetCommonData("BossNameColor",[128,255,128]);
+	bkoishi = CreateBoss("Koishi Komeiji");
+	renderSatoriSA(bsatori);
+	renderKoishiSA(bkoishi);
+	
+	MainTask;
+	
+
+}
+@MainLoop{
+	frame++;yield;
+}
+
+
+task MainTask {
+	ObjMove_SetPosition(bsatori,sx,-120);
+	ObjMove_SetPosition(bkoishi, 0,-120);
+	ObjMove_SetDestAtWeight(bsatori,cx*0.8,cy*0.66,60,20);
+	ObjMove_SetDestAtWeight(bkoishi,cx*1.2,cy*0.66,60,20);
+	if(noStage){SetBGM("Last Remote@Magnum Opus",88.29,271.67);}
+	
+	let SATORI = 0; let KOISHI = 1; let MOKOU = 2; 
+	let initialized = [false,false,false];
+	
+	let side=0; let speaker=0;
+	
+	function Say(character,portrait,time,text){
+		let color;
+		alternative(character)
+		case(MOKOU) { side=0;            color = [255,128,128]; }
+		case(SATORI){ side=1; speaker=0; color = [255, 64,196]; }
+		case(KOISHI){ side=1; speaker=1; color = [128,255,128]; }
+		
+		if(!initialized[character]){
+			alternative(character)
+			case(MOKOU){  SetNewPlayerPort(dirportrait~"Mokou_" ~portrait~".png",0); }
+			case(SATORI){ SetNewEnemyPort (dirportrait~"Satori_"~portrait~".png",0); }
+			case(KOISHI){ SetNewEnemyPort (dirportrait~"Koishi_"~portrait~".png",1); }
+			initialized[character] = true;
+		}
+		alternative(character)
+		case(MOKOU){  SetPlayerPort(dirportrait~"Mokou_" ~portrait~".png",0); }
+		case(SATORI){ SetEnemyPort (dirportrait~"Satori_"~portrait~".png",0); }
+		case(KOISHI){ SetEnemyPort (dirportrait~"Koishi_"~portrait~".png",1); }
+		
+		SetEnemySpeaker(speaker);
+		SetSpeaker(side);
+			
+		if(time==0){ SetDialogueTextA1(text,color); }
+		else       { SetDialogueTextA2(text,color,time); }
+	}
+	
+	
+	InitiateDialogueSequence();
+	SetPortraitNumber(1,2);
+	
+	Say(SATORI,"Normal",0,"Nice of the princess to invite us over for a picnic, eh Koishi?");
+	Say(KOISHI,"Normal",0,"I hope she made lotsa spaghetti!");
+	Say(SATORI,"Surprise",0,"Koishi, look!");
+	Say(KOISHI,"Smile",0,"It's Mokou!");
+	Say(MOKOU, "Smug",0,"Dear pesky plumbers,");
+	Say(MOKOU, "Smug",0,"The Mokoulings and I have taken over [r]Gensokyo!");
+	Say(KOISHI,"Surprise",0,"Nani?");
+	SetBGM("Hartmann's Youkai Girl@Magnum Opus",17.12,298.97);
+	Say(SATORI,"Smug",120,"Your next line is... [r]\"I wonder what's for dinner?\"");
+	Say(MOKOU, "Normal",60,"I wonder what's for-");
+	Say(MOKOU, "Sweatdrop",60,"NANI?!");
+	Say(KOISHI,"EyeSmile",60,"NANI?!");
+	Say(SATORI,"Vein",120,"Nani the fuck are we doing?");
+	
+	
+	
+	
+	EndDialogueSequence();
+	ObjEnemy_SetLife(bsatori,0);
+	Obj_Delete(bsatori);
+	SetCommonData("Boss2_X",ObjMove_GetX(bkoishi));	SetCommonData("Boss2_Y",ObjMove_GetY(bkoishi));
+	Obj_Delete(bkoishi);
+	CloseScript(GetOwnScriptID);
+}
+

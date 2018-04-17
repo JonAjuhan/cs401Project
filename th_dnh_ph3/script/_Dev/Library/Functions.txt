@@ -71,13 +71,13 @@ task TBreakSpell(args) {
 		//SE_Play(defeated,100);
 		//SetAutoDeleteObject(false);
 	}
-	
-	DeleteShotAll(TYPE_ALL, TYPE_ITEM);
+	let boss = GetEnemyBossObjectID[0];
+	DeleteShotAllOut(TYPE_ALL, TYPE_ITEM, ObjMove_GetX(boss), ObjMove_GetY(boss),del);
+	// DeleteShotAll(TYPE_ALL, TYPE_ITEM);
 	//AfterImageCircle(ex,ey,[255,255,255,255],1,20,30,BLEND_ADD_ARGB,79);
 	let eff = GlowCircle(ex,ey,[255,255,255,255],1,20,30);
 	Obj_SetRenderPriorityI(eff,79);
 	
-	let boss = GetEnemyBossObjectID[0];
 	
 	wait(del);
 	if(!Obj_IsDeleted(boss)){Obj_Delete(boss);}
@@ -92,12 +92,13 @@ task TBreakNonspell(args) {
 		let eff = GlowCircle(ex,ey,[255,255,255,255],1,20,30);
 		Obj_SetRenderPriorityI(eff,79);
 	}
-	// DeleteShotAll(TYPE_ALL, TYPE_FADE);
-	DeleteShotAll(TYPE_ALL, TYPE_ITEM);
-	
-	let del=checkarr(args,BREAK_DELAY); if(del==-1){del=15;}else{del=args[del+1];}
-	// wait(del);
 	let boss = GetEnemyBossObjectID[0];
+	let del=checkarr(args,BREAK_DELAY); if(del==-1){del=15;}else{del=args[del+1];}
+	// DeleteShotAll(TYPE_ALL, TYPE_FADE);
+	DeleteShotAllOut(TYPE_ALL, TYPE_ITEM, ObjMove_GetX(boss), ObjMove_GetY(boss), del); 	
+	// DeleteShotAll(TYPE_ALL, TYPE_ITEM);
+	
+	// wait(del);
 	loop(del){ DeleteShotAll(TYPE_ALL, TYPE_ITEM); yield; }
 	
 	if(!Obj_IsDeleted(boss)){Obj_Delete(boss);}
@@ -1889,6 +1890,15 @@ function PhilosophyOfAHatedPerson(x,y,r){
 }
 
 
+
+//todo
+task DeleteShotAllOut(type,deltype,x,y,t){
+	let dr = 800/t;
+	ascent(i in 0..t){
+		DeleteShotInCircle(type,deltype,x,y,dr*i);
+		yield;
+	}
+}
 
 
 
