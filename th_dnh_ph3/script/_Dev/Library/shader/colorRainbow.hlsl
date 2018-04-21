@@ -1,5 +1,6 @@
 
 //Rainbow color modifying shader
+// TecRainbow
 // Will transform pixels in a rainbow wave
 // s_period - How long the period of each wave is
 // s_angle - The angle of the wave (you must edit this each iteration)

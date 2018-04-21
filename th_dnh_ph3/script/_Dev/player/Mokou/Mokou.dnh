@@ -437,7 +437,7 @@ task RenderHitboxImage(plobj, offx, hitboxnum){
 	IsHitboxActive = true;
 	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
 	ObjRender_SetBlendType(obj, BLEND_ALPHA);
-	Obj_SetRenderPriority(obj, 0.39);
+	Obj_SetRenderPriorityI(obj, 39); //39
 	ObjRender_SetAlpha(obj, 220);
 	ObjPrim_SetTexture(obj, snowflake);
 	ObjSprite2D_SetSourceRect(obj, 0, 0, 64, 64);
@@ -445,7 +445,7 @@ task RenderHitboxImage(plobj, offx, hitboxnum){
 	
 	let obj2 = ObjPrim_Create(OBJ_SPRITE_2D);
 	ObjRender_SetBlendType(obj2, BLEND_ALPHA);
-	Obj_SetRenderPriority(obj2, 0.69); //0.69
+	Obj_SetRenderPriorityI(obj2, 63); //69
 	ObjRender_SetAlpha(obj2, 220);
 	ObjPrim_SetTexture(obj2, snowflake);
 	ObjSprite2D_SetSourceRect(obj2, 0, 0, 64, 64);
@@ -527,7 +527,7 @@ task RenderPlayerImage(ObjectRender, offset){
 	let bn = 0;
 	
 	ObjPrim_SetTexture(ObjectRender, imgfuto);
-	Obj_SetRenderPriority(ObjectRender, 0.45);
+	Obj_SetRenderPriorityI(ObjectRender, 45); //45
 	
 	loop{
 

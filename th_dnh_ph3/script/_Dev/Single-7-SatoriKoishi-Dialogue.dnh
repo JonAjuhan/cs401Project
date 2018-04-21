@@ -89,8 +89,8 @@ task MainTask {
 	SetBGM("Hartmann's Youkai Girl@Magnum Opus",17.12,298.97);
 	Say(SATORI,"Smug",120,"Your next line is... [r]\"I wonder what's for dinner?\"");
 	Say(MOKOU, "Normal",60,"I wonder what's for-");
-	Say(MOKOU, "Sweatdrop",60,"NANI?!");
-	Say(KOISHI,"EyeSmile",60,"NANI?!");
+	Say(MOKOU, "Sweatdrop",60,"Nani?!");
+	Say(KOISHI,"EyeSmile",60,"Nani?!");
 	Say(SATORI,"Vein",120,"Nani the fuck are we doing?");
 	
 	

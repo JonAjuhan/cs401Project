@@ -6,7 +6,7 @@ let IsTimeStoppedPseudo = false;
 
 
 //let timezonescale = 1.15-argument/360;
-
+/*
 task TimeStopL1(r, g, b, bw, spd, duration, minpri, maxpri){
 	let RecoveryTime = 14;
 	let bspeed = GetCommonData("stgspeed", 4);
@@ -127,7 +127,7 @@ task TimeStopL1(r, g, b, bw, spd, duration, minpri, maxpri){
 		Obj_Delete(obj);
 	}
 }
-
+*/
 /*
 task TimeStopL2(duration){
 	//Background is render targetted; mask will "remove" the timestop
@@ -220,7 +220,7 @@ task TimeStopL2(duration){
 task ColorWarpA1(minpri, maxpri, period, horiz, verti){
 	if(quality < 2){return;}
 	
-	let pathShader = GetMainStgScriptDirectory~"ds_system/shader/colorRainbow.hlsl";
+	let pathShader = dirlib~"shader/colorRainbow.hlsl";
 	
 	let objShader = ObjPrim_Create(OBJ_SPRITE_2D);
 	ObjShader_SetShaderF(objShader, pathShader);

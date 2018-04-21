@@ -21,6 +21,7 @@
 function SpawnFairy(x,y,color,type,collision,life){
 	let fairy = CreateFairyObject(life);
 	ObjMove_SetPosition(fairy,x,y);
+	Obj_SetRenderPriorityI(fairy,PRI_ENEMY); //40
 	ObjEnemy_SetDamageRate(fairy,100,100);
 	ManageFairy;
 	return fairy;
@@ -64,6 +65,7 @@ function SpawnYinYang(x,y,color,life,del){
 function SpawnSpirit(x,y,cstring,life){
 	let hd = CreateFairyObject(life);
 	ObjMove_SetPosition(hd,x,y);
+	Obj_SetRenderPriorityI(hd,PRI_ENEMY); //40
 	ObjEnemy_SetDamageRate(hd,100,100);
 	ManageSpirit;
 	return hd;
@@ -99,6 +101,7 @@ function SpawnSpirit(x,y,cstring,life){
 function SpawnKedama(x,y,cstring,life){
 	let kd = CreateFairyObject(life);
 	ObjMove_SetPosition(kd,x,y);
+	Obj_SetRenderPriorityI(kd,PRI_ENEMY); //40
 	ObjEnemy_SetDamageRate(kd,100,100);
 	AnimateKedama(kd,cstring);
 	ManageKedama;
@@ -143,7 +146,7 @@ function SpawnFamiliarA1(x,y,color,life){
 	// EffectGlowA1(x,y,15,  1,0, dirimg~"./Effect/Light.png",[0,0,63,63],[255,255,255]);
 	FFlash(x,y);
 	let fam = SpawnFairy(x,y,color,"INFam",13,life);
-	Obj_SetRenderPriorityI(fam,39);
+	Obj_SetRenderPriorityI(fam,PRI_FAM); //39
 	Obj_SetValue(fam,"IsFam",true);
 	return fam;
 }
@@ -154,7 +157,7 @@ function SpawnFamiliarB1(x,y,color,life){
 	let fam = SpawnFairy(x,y,color,"INFam",13,life);
 	Obj_SetValue(fam,"IsIntersectionEnable",false);
 	ObjRender_SetScaleXYZ(fam,0.75,0.75,1);
-	Obj_SetRenderPriorityI(fam,39);
+	Obj_SetRenderPriorityI(fam,PRI_FAM); //39
 	Obj_SetValue(fam,"IsFam",true);
 	return fam;
 }
@@ -165,7 +168,7 @@ function SpawnFamiliarA2(x,y,color,life,collision){
 	FFlash(x,y);
 	let fam = SpawnFairy(x,y,color,"INFam",collision,life);
 	Obj_SetValue(fam,"FamColor",color);
-	Obj_SetRenderPriorityI(fam,39);
+	Obj_SetRenderPriorityI(fam,PRI_FAM); //39
 	Obj_SetValue(fam,"IsFam",true);
 	return fam;
 }
@@ -177,7 +180,7 @@ function SpawnFamiliarB2(x,y,color,life,collision){
 	Obj_SetValue(fam,"IsIntersectionEnable",false);
 	Obj_SetValue(fam,"FamColor",color);
 	ObjRender_SetScaleXYZ(fam,0.75,0.75,1);
-	Obj_SetRenderPriorityI(fam,39);
+	Obj_SetRenderPriorityI(fam,PRI_FAM); //39
 	Obj_SetValue(fam,"IsFam",true);
 	return fam;
 }
@@ -190,7 +193,7 @@ function SpawnFamiliarC2(x,y,color,life,collision){
 	Obj_SetValue(fam,"IsIntersectionEnable",!(GetVirtualKeyState(VK_SLOWMOVE)==KEY_HOLD || GetVirtualKeyState(VK_SLOWMOVE)==KEY_PUSH));
 	Obj_SetValue(fam,"FamColor",color);
 	ObjRender_SetScaleXYZ(fam,0.75,0.75,1);
-	Obj_SetRenderPriorityI(fam,39);
+	Obj_SetRenderPriorityI(fam,PRI_FAM); //39
 	Obj_SetValue(fam,"IsFam",true);
 	Manage;
 	return fam;

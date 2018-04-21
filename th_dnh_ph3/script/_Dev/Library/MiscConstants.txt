@@ -1,0 +1,53 @@
+//RENDER PRIORITIES
+//70-79: overlay/HUD
+//60-69: screen effects
+//50-59: shot
+//40-49: player,enemy,effect,item
+//30-39: ?
+//20-29: background
+
+let PRI_MAX = 80;
+
+
+let PRI_TIMER = 75;
+let PRI_BOSSLIFE = 71;
+
+let PRI_OVERLAY = 70; 
+
+let PRI_HITBOX = 63; //projection; may lower
+
+let PRI_OVER = 60; //for things like flashing messages, etc
+
+
+
+let PRI_SHOT = 50; // GetShotRenderPriorityI; //def 50
+let PRI_EFFBREAK = 50; //not sure yet
+
+let PRI_PLAYER = 45; //def 30
+
+let PRI_EFFECT = 41;
+
+let PRI_BOSS = 40;
+let PRI_ENEMY = 40;
+let PRI_FAM = 39;
+
+let PRI_ITEM = 39; //def 60
+
+
+
+
+
+let PRI_MAGICCIRCLE = 30;
+
+let PRI_BACKGROUND = 20;
+
+
+
+
+
+let PRI_MIN = 20;
+
+
+let PRI_FRAME = 1;     //todo: still used for some ui elements
+let PRI_FRAMEUI = 10;  //consolidate to one or the other
+

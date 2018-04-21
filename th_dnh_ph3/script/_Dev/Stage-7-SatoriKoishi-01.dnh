@@ -57,7 +57,7 @@ task TStage {
 	let csd = GetCurrentScriptDirectory();
 
 	SetBGM("Last Remote@Magnum Opus",88.29,271.67);
-	ShowPointOfCollection;
+	if(noPackage){ ShowPointOfCollection; }
 	
 	FadeToBlack(0,0,60);
 	
@@ -67,17 +67,36 @@ task TStage {
 	let x; let y; let dir; let side;
 
 	//solo big guy
-	let fairy = TBigINFairy1(cx,0,1.5,90,60);
-	ObjMove_SetDestAtWeight(fairy,cx,cy*2/3,120,10);
-	ObjMove_AddPatternA2(fairy,240,0,270,0.05,0,1.5); //300
+	// let fairy = TBigINFairy1(cx,0,1.5,90,60);
+	// ObjMove_SetDestAtWeight(fairy,cx,cy*2/3,120,10);
+	// ObjMove_AddPatternA2(fairy,240,0,270,0.05,0,1.5); //300
 	
-	wait(240);
+	let xarr = [0.4,0.6,0.25,0.5,0.75];
+	ascent(i in 0..length(xarr)){
+		TStaticKunaiFairy1(sx*xarr[i],-30,cy*0.6,60,180);
+		wait(90);
+	}
+	
+	wait(120); //240
 	//throw up some vaguely cryptic and/or expository text
-	StageIntro("Final Stage","Vilification",
-	           "A closed mind cannot hear hatred,[r]but nor can it be heard itself.[r]To turn a blind eye,[r]or force it awake?",
+	StageIntro("Stage Final","Vilification",
+	           "[r][r]A closed mind cannot hear hatred,[r]but nor can it be heard itself.[r]To turn a blind eye,[r]or force it awake?",
 			   dirimg~"ThirdEyes.png",[0,0,255,255]);
 	wait(240);	
 	
+// loop{
+	
+	xarr = [0.4,0.6,0.25,0.5,0.75];
+	ascent(i in 0..length(xarr)){
+		// TStaticKunaiFairy1(sx*xarr[i],-30,cy*0.6,60,180);
+		let fa = TCardFanFairy2(sx*xarr[i],-30,60);
+		ObjMove_SetDestAtWeight(fa,sx*xarr[i],cy*0.6, 60,10);
+		ObjMove_AddPatternA2(fa,61,0,270,0.1,0,2);
+		wait(90);
+	}
+	
+// }
+/*	
 	let typearr = ["red","blue"];
 	ascent(k in 0..5){
 		dir = altSign(k);
@@ -170,7 +189,7 @@ task TStage {
 	
 	// wait(300);
 	wait(180);
-		
+*/		
 
 	wait(300); //wait for leftover enemies to finish
 	
@@ -205,6 +224,172 @@ task TStage {
 //BELOW: ENEMY TASKS
 ////////////////////////////////////////////////////////////////////////
 //......................................................................
+
+
+
+
+
+function TStaticKunaiFairy1(x0,y0,y1,f1,f2){
+	let fa = SpawnFairy(x0,y0,"blue","INSet1",14,300);
+	// ObjMove_AddPatternA1(fa,0,s,a);
+	ObjMove_SetDestAtWeight(fa,x0,y1,f1,10);
+	let x=x0; let y=y0;
+	Manage;
+	ManageMove;
+	ManageFinalize;
+	return fa;
+	task Manage{
+		let N; let ms; let del;
+		alternative(rank)
+		case(RANK_EASY){ N=1; ms=3.5; del=10; }
+		case(RANK_NORM){ N=1; ms=4.0; del=10; }
+		case(RANK_HARD){ N=2; ms=5.0; del=10; }
+		case(RANK_LUNA){ N=2; ms=6.0; del=10; }
+		
+		while(!Obj_IsDeleted(fa)){
+			x = ObjMove_GetX(fa); y = ObjMove_GetY(fa);
+			
+			ascent(i in 0..5){
+				ascent(j in 0..N){
+					CreateShotA1(x,y, ms*(1/(j+1))^0.5, 90+72*i, KUNAI_BLUE,3);
+				}
+			}
+			SE_Play(se_shot,80);
+			wait(del);
+		}
+	}
+	task ManageMove{
+		let count=0;
+		while(count<f2 && !Obj_IsDeleted(fa)){
+			count++; yield;
+		}
+		// ObjMove_SetDestAtWeight(fa,x0,y0,f1,10);
+		let a = getangle(OM_GetX(fa),OM_GetY(fa),x0,y0);
+		OM_AddPatternA2(fa,0, 0,a, 0.01, 0, 1.5);
+	}
+	task ManageFinalize{
+		while(!Obj_IsDeleted(fa) && ObjEnemy_GetLife(fa)>0){yield;}
+		if(!Obj_IsDeleted(fa)){ //if it was shot down rather than leaving screen
+			x = ObjMove_GetX(fa); y = ObjMove_GetY(fa);
+			DropItemsSmall(x,y);
+			Obj_Delete(fa);
+		}
+	}
+}
+
+
+
+
+
+
+
+function TCardFanFairy2(x,y,shotdel){
+	let fa = SpawnFairy(x,y,"green","MoF",14,600);
+	Manage;
+	ManageFinalize;
+	return fa;
+	task Manage{
+		// let N; let ms; let del;
+		let N; let M; let L; let s; let acc; let angv; let ms; let del1; let del2;
+		alternative(rank)
+		case(RANK_EASY){ N= 3; L=2; s=3; acc=0.05; ms=1.25; angv=0.35; del1=60; del2=60; }
+		case(RANK_NORM){ N= 4; L=2; s=3; acc=0.05; ms=1.25; angv=0.35; del1=60; del2=60; }
+		case(RANK_HARD){ N= 5; L=2; s=3; acc=0.05; ms=1.25; angv=0.35; del1=60; del2=60; }
+		case(RANK_LUNA){ N= 6; L=2; s=3; acc=0.05; ms=1.25; angv=0.35; del1=60; del2=60; }
+		// case(RANK_HARD){ N= 5; M=1; L=2; s=3; acc=0.05; ms=3.25; angv=0.35; del1=60; del2=60; }
+		
+		wait(shotdel);
+		
+		x = ObjMove_GetX(fa); y = ObjMove_GetY(fa);
+		let angle = GetAngleToPlayer(fa);
+		let shot = CreateShotA2(x,y, s,angle, -s/del1, 0, CARD_GREEN, 10);
+		AddShot(shot,L);
+		task AddShot(shot0,num){
+			ObjMove_AddPatternA2(shot0,0,NO_CHANGE,NO_CHANGE, -s/del1, NO_CHANGE, 0);
+			O_SetPropertyAtFrame(shot0,MOVE_ANGV,0,del1);
+			wait(del2);
+			if(Obj_IsDeleted(shot0)){return;}
+			let x = ObjMove_GetX(shot0); let y = ObjMove_GetY(shot0);
+			let a0 = ObjMove_GetAngle(shot0);
+			// let s1 = s-0.5*((L+1)-num);
+			// let s1 = s*cos((L-num)*4);
+			let s1 = s-1*(|a0-angle|)/180;
+			// let a1 = a0-30; let a2 = a1+60;
+			ascent(i in 0..N){
+				let off = lerp(-1,1,i/(N-1));
+				let shot = CreateShotA2(x,y, s,a0+180-60*off, -s1/del1, 0, CARD_GREEN, 0);
+				if(num>0){ AddShot(shot,num-1); }
+				else{
+					// ObjMove_AddPatternA2(shot,del2,NO_CHANGE,a0, acc, angv*off, ms);
+					ObjMove_AddPatternA2(shot,del2,s,a0, -acc, angv*off, ms);
+				}
+			}
+			Obj_Delete(shot0);
+			SE_Play(se_chime2,80);
+			if(num==0){ SE_Play_Del(se_chime2,80,del2); }
+		}
+	}
+	task ManageFinalize{
+		while(!Obj_IsDeleted(fa) && ObjEnemy_GetLife(fa)>0){yield;}
+		if(!Obj_IsDeleted(fa)){ //if it was shot down rather than leaving screen
+			x = ObjMove_GetX(fa); y = ObjMove_GetY(fa);
+			DropItemsSmall(x,y);
+			Obj_Delete(fa);
+		}
+	}
+}
+
+
+
+
+
+
+
+/*
+function TCardFanFairy1(x,y,shotdel){
+	let fa = SpawnFairy(x,y,"green","MoF",14,600);
+	Manage;
+	ManageFinalize;
+	return fa;
+	task Manage{
+		// let N; let ms; let del;
+		let N; let M; let L; let s; let acc; let angv; let ms; let del1; let del2;
+		alternative(rank)
+		case(RANK_EASY){ N=10; M=4; L=2; s=3; acc=0.05; ms=5.25; angv=0.35; del1=60; del2=45; }
+		case(RANK_NORM){ N=10; M=4; L=2; s=3; acc=0.05; ms=5.25; angv=0.35; del1=60; del2=45; }
+		case(RANK_HARD){ N=15; M=6; L=2; s=3; acc=0.05; ms=5.25; angv=0.35; del1=60; del2=45; }
+		case(RANK_LUNA){ N=10; M=4; L=2; s=3; acc=0.05; ms=5.25; angv=0.35; del1=60; del2=45; }
+		
+		wait(shotdel);
+		
+		x = ObjMove_GetX(fa); y = ObjMove_GetY(fa);
+		let a0 = GetAngleToPlayer(fa);
+		let shot;
+		let j=-L;
+		while(j<M){
+			ascent(i in 0..N){
+				let off = ((N/2)-i)/(N/2);
+				let vary = 1/(toNZ(j));
+				if(j<0){ vary = -1/((|j|)+1); }
+				shot = CreateShotA2(x,y, s,a0, -s/del1, 0, CARD_GREEN, 10);
+				ObjMove_AddPatternA2(shot,del2,NO_CHANGE,a0, acc*vary, angv*off*signNZ(j), ms*vary);
+			}
+			j++; if(j==0){j++;}
+		}
+		SE_Play(se_chime2,80);
+
+	}
+	task ManageFinalize{
+		while(!Obj_IsDeleted(fa) && ObjEnemy_GetLife(fa)>0){yield;}
+		if(!Obj_IsDeleted(fa)){ //if it was shot down rather than leaving screen
+			x = ObjMove_GetX(fa); y = ObjMove_GetY(fa);
+			DropItemsSmall(x,y);
+			Obj_Delete(fa);
+		}
+	}
+}
+*/
+
 
 
 

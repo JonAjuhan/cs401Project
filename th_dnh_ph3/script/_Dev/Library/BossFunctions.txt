@@ -2,81 +2,6 @@
 ///////////////////////////////////////////////////////////////
 //Boss functions
 ///////////////////////////////////////////////////////////////
-function spawnBoss() {
-	// WriteLog("Resources: Creating boss object");
-	let boss = ObjEnemy_Create(OBJ_ENEMY_BOSS);
-	ObjEnemy_Regist(boss);
-
-	let imgBoss = dirgizmo~"Andi.png";
-	let x0 = 1; let y0 = 1; let x1 = 48; let y1 = 80; let dx = x1-x0; let dy = y1-y0;
-	
-	ObjPrim_SetTexture(boss, imgBoss);  //Setting the above image file as a texture to the enemy object(boss)
-	ObjSprite2D_SetSourceRect(boss, x0,y0,x1,y1); //Setting the rectangle coordinates in the enemy image to use(Left, Top, Right, Bottom). //64, 1, 127, 64
-	ObjSprite2D_SetDestCenter(boss);  //Positioning the center of the rectangle(w/texture) at (0, 0) on the stage(top left corner).
-	
-	//Setting animation frames
-	
-	let arr; let row;
-	arr	= [0,0,0,1,1,1,3,3,3,2,2,2,1,1,1];
-	row = 0;
-	ascent(i in 0..length(arr)){
-		ObjAnim_AddFrameA1(boss, ANIM_IDLE,  x0+x1*arr[i],y0,x1+dx*arr[i],y1);
-	}
-	ObjAnim_SetLoopPointA1(boss, ANIM_IDLE, 0);
-	
-	//arr = [0,0,0,1,1,1,2,2,2,3,3,3];
-	arr = [0,1,1,2,2,3];
-	row = 1;
-	ascent(i in 0..length(arr)){
-		ObjAnim_AddFrameA1(boss, ANIM_MOVE,  x0+x1*arr[i],y0+dy,x1+dx*arr[i],y1+dy);
-	}
-	ObjAnim_SetLoopPointA1(boss, ANIM_MOVE, length(arr)-1);
-	
-	arr = [2,2,1,1,0];
-	row = 1;
-	ascent(i in 0..length(arr)){
-		ObjAnim_AddFrameA1(boss,ANIM_MOVEEND,x0+x1*arr[i],y0+dy,x1+dx*arr[i],y1+dy);
-	}
-	ObjAnim_SetLoopPointA1(boss, ANIM_MOVEEND, length(arr)-1);
-	
-	arr = [4,5,6,6,7,7];
-	row = 2;
-	ascent(i in 0..length(arr)){
-		ObjAnim_AddFrameA1(boss, ANIM_ATTACK,  x0+x1*arr[i],y0+dy*2,x1+dx*arr[i],y1+dy*2);
-	}
-	ObjAnim_SetLoopPointA1(boss, ANIM_ATTACK, length(arr)-4);
-	
-	arr = [7,6,6,5,5,4];
-	row = 2;
-	ascent(i in 0..length(arr)){
-		ObjAnim_AddFrameA1(boss, ANIM_ATTACKEND,  x0+x1*arr[i],y0+dy*2,x1+dx*arr[i],y1+dy*2);
-	}
-	ObjAnim_SetLoopPointA1(boss, ANIM_ATTACKEND, length(arr)-1);
-	
-	
-	ObjAnim_FlipMoveImage(boss,true);
-	//ObjAnim_StartAnimationA1(boss, 10, 2);
-	ObjAnim_StartAnimationA1(boss, 10, 0);
-	
-	
-	//Set enemy name to display
-	EnemyName(boss, "Andi", 255, 180, 255);
-	
-	//LifeCircle(boss,boss);
-	UpdatePositions; //start updating positions
-	WriteLog("Resources: Returning boss object");
-	return boss;
-}
-
-function spawnBossBlank(name){
-	let boss = ObjEnemy_Create(OBJ_ENEMY_BOSS);
-	ObjEnemy_Regist(boss);
-	EnemyName(boss, name, 255, 180, 255);
-	UpdatePositions;
-	Obj_SetValue(boss,"IsUseCustAnimLib",false);
-	return boss;
-}
-
 function CreateBoss(name){
 	let boss;
 	if(length(GetAllEnemyID)==0){
@@ -87,12 +12,19 @@ function CreateBoss(name){
 		boss = ObjEnemy_Create(OBJ_ENEMY);
 		ObjEnemy_SetLife(boss,9999);
 	}
+	Obj_SetValue(boss,FLAG_BOSS,true);
+	Obj_SetValue(boss,META_SUBTYPE,OBJ_ENEMY_BOSS);
 	ObjEnemy_Regist(boss);
 	Obj_SetValue(boss,"IsUseCustAnimLib",false);
 	let c = GetCommonData("BossNameColor",[255,180,255]);
 	EnemyName(boss, name, c[0], c[1], c[2]);
 	return boss;
 }
+
+
+function spawnBossBlank(name){return CreateBoss(name);}
+
+
 
 let POSE_SET = -1; let POSE_END = 0;
 function SetAttackPose(dur){
@@ -174,20 +106,7 @@ task TSpellImmune{
 	}
 }
 
-function GetSwordTipX(){
-	let boss = GetEnemyBossObjectID[0];
-	let isAttackPose = Obj_GetValueD(boss, "anim_isattackplaying", false);
-	let dir = boolSign(ObjRender_GetScaleX(boss)<0);
-	if(!isAttackPose){ return ex+(17*dir); }
-	else { return ex+(14*dir); }
-}
-function GetSwordTipY(){	
-	let boss = GetEnemyBossObjectID[0];
-	let isAttackPose = Obj_GetValueD(boss, "anim_isattackplaying", false);
-	let dir = ObjRender_GetScaleX(boss)<0;
-	if(!isAttackPose){ return ey-26; }
-	else { return ey-38; }
-}
+
 
 //Makes sure px,py,ex,ey,etc are always up-to-date
 task UpdatePositions {
@@ -202,6 +121,125 @@ task UpdatePositions {
 		yield;
 	}
 }
+
+
+
+
+//Sparen, originally
+task EnemyName(obj, name, r, g, b){ //Blurred originally	
+	let text = ObjText_Create;
+	ObjText_SetText(text,name);
+	ObjText_SetFontType(text,"Russell Square Regular"); //Helvetica: Use 14 pt font, All caps.
+	// ObjText_SetFontType(text,"Cirno");
+	ObjText_SetFontSize(text,12); //11, 12
+
+	ObjText_SetFontBold(text, true);
+	ObjText_SetFontColorTop(text,255,255,255);
+	ObjText_SetFontColorBottom(text, r, g, b);
+	ObjText_SetFontBorderType(text,BORDER_FULL);
+	ObjText_SetFontBorderColor(text,32,32,32);
+	ObjText_SetFontBorderWidth(text,1);
+	ObjText_SetHorizontalAlignment(text, ALIGNMENT_LEFT);
+	ObjText_SetMaxWidth(text, GetStgFrameWidth-24);
+	Obj_SetRenderPriority(text, 0.79+0.01);
+	ObjRender_SetPosition(text,5,12,0); //Orig 5,15, but some spell names were too long... (edited in conjunction with cutin.h)
+	ObjRender_SetAlpha(text, 150);
+
+	Obj_SetValue(obj,"DisplayName",name);
+	
+	let boss = GetEnemyBossObjectID[0];
+	let num = Obj_GetValueD(boss,"DisplayNameCount",0)+1;
+	Obj_SetValue(boss,"DisplayNameCount",num);
+	if(num>1){
+		ObjRender_SetY(text,12+10*(num-1)); //12*num
+	}
+	
+	yield;
+	while(ObjEnemy_GetInfo(boss,INFO_LIFE)>0){yield;}
+	wait(12);//"It can only handle 12 yields, currently, before the script is closed."
+	Obj_Delete(text);
+}
+
+
+//Alternative lifebar style, circular around boss
+task LifeCircle(renderObj, enemyObj){
+	let path = root~"/system/img/Default_System.png";
+	let obj = ObjPrim_Create(OBJ_PRIMITIVE_2D); //lifebar base
+	let objb = ObjPrim_Create(OBJ_PRIMITIVE_2D); //actual life bar
+	let obj2 = ObjPrim_Create(OBJ_SPRITE_LIST_2D); //boss stars
+	let obj3 = ObjPrim_Create(OBJ_SPRITE_LIST_2D); //life bar knobs
+	ObjPrim_SetPrimitiveType(obj, PRIMITIVE_TRIANGLESTRIP);
+	ObjPrim_SetPrimitiveType(objb, PRIMITIVE_TRIANGLESTRIP);
+	ObjPrim_SetTexture(obj, root~"/system/img/lifebar.png");
+	ObjPrim_SetTexture(objb, root~"/system/img/lifebar.png");
+	ObjPrim_SetTexture(obj2, path);
+	ObjPrim_SetTexture(obj3, root~"/system/img/lifebar.png");
+	Obj_SetRenderPriority(obj, 0.31);
+	Obj_SetRenderPriority(objb, 0.32);
+	Obj_SetRenderPriority(obj2, 0.7);
+	Obj_SetRenderPriority(obj3, 0.33);
+
+	let lastRemStep = -1;
+	let lifeRateRender = 0;
+
+	let vertexcount = 64;
+	let innerrad = 60; //inner radius of the circle
+	let outerrad = 68; //outer radius of the circle
+
+	let objScene = ID_INVALID;
+	let bossEnemy = [];
+
+	ObjPrim_SetVertexCount(obj, vertexcount);
+	ObjPrim_SetVertexCount(objb, vertexcount);
+
+	let lifeM = ObjEnemy_GetInfo(enemyObj, INFO_LIFE); //starting life
+	loop{
+		ObjSpriteList2D_ClearVertexCount(obj2);
+		ObjSpriteList2D_ClearVertexCount(obj3);
+		if(!Obj_IsDeleted(enemyObj)){
+			if(length(GetEnemyBossObjectID) > 0){
+				ObjRender_SetAlpha(obj, 256);
+				ObjRender_SetAlpha(objb, 256);
+				ObjRender_SetAlpha(obj2, 256);
+				ObjRender_SetAlpha(obj3, 256);
+			}else{
+				ObjRender_SetAlpha(obj, 0);
+				ObjRender_SetAlpha(objb, 0);
+				ObjRender_SetAlpha(obj2, 0);
+				ObjRender_SetAlpha(obj3, 0);
+			}
+
+			let life = ObjEnemy_GetInfo(enemyObj, INFO_LIFE); //life remaining
+			ascent(i in 0..vertexcount/2){
+		        let indexvert = i*2;
+		        let angle = i*360/(vertexcount*0.5-1) - 90;
+		        let angle2 = -90-(life/lifeM)*i*360/(vertexcount*0.5-1);
+		        ObjPrim_SetVertexPosition(obj, indexvert+0, ObjRender_GetX(renderObj)+innerrad*cos(angle), ObjRender_GetY(renderObj)+innerrad*sin(angle), 0);
+		        ObjPrim_SetVertexPosition(obj, indexvert+1, ObjRender_GetX(renderObj)+outerrad*cos(angle), ObjRender_GetY(renderObj)+outerrad*sin(angle), 0);
+
+		        ObjPrim_SetVertexUVT(obj, indexvert+0, 10, 0);
+		        ObjPrim_SetVertexUVT(obj, indexvert+1, 20, 32);
+
+
+		        ObjPrim_SetVertexPosition(objb, indexvert+0, ObjRender_GetX(renderObj)+innerrad*cos(angle2), ObjRender_GetY(renderObj)+innerrad*sin(angle2), 0);
+		        ObjPrim_SetVertexPosition(objb, indexvert+1, ObjRender_GetX(renderObj)+outerrad*cos(angle2), ObjRender_GetY(renderObj)+outerrad*sin(angle2), 0);
+
+		        ObjPrim_SetVertexUVT(objb, indexvert+0, 0, 0);
+		        ObjPrim_SetVertexUVT(objb, indexvert+1, 10, 32);
+		    }
+		}else{
+			Obj_Delete(obj);
+			Obj_Delete(objb);
+			Obj_Delete(obj2);
+			Obj_Delete(obj3);
+			return;
+		}
+		yield;
+	}
+}
+
+
+
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -338,118 +376,3 @@ task Tmovement(x1,x2, y1,y2, time,del0, exargs) {
 		}
 	}		
 }
-
-//Sparen, originally
-task EnemyName(obj, name, r, g, b){ //Blurred originally	
-	let text = ObjText_Create;
-	ObjText_SetText(text,name);
-	ObjText_SetFontType(text,"Russell Square Regular"); //Helvetica: Use 14 pt font, All caps.
-	// ObjText_SetFontType(text,"Cirno");
-	ObjText_SetFontSize(text,12); //11, 12
-
-	ObjText_SetFontBold(text, true);
-	ObjText_SetFontColorTop(text,255,255,255);
-	ObjText_SetFontColorBottom(text, r, g, b);
-	ObjText_SetFontBorderType(text,BORDER_FULL);
-	ObjText_SetFontBorderColor(text,32,32,32);
-	ObjText_SetFontBorderWidth(text,1);
-	ObjText_SetHorizontalAlignment(text, ALIGNMENT_LEFT);
-	ObjText_SetMaxWidth(text, GetStgFrameWidth-24);
-	Obj_SetRenderPriority(text, 0.79+0.01);
-	ObjRender_SetPosition(text,5,12,0); //Orig 5,15, but some spell names were too long... (edited in conjunction with cutin.h)
-	ObjRender_SetAlpha(text, 150);
-
-	Obj_SetValue(obj,"DisplayName",name);
-	
-	let boss = GetEnemyBossObjectID[0];
-	let num = Obj_GetValueD(boss,"DisplayNameCount",0)+1;
-	Obj_SetValue(boss,"DisplayNameCount",num);
-	if(num>1){
-		ObjRender_SetY(text,12+10*(num-1)); //12*num
-	}
-	
-	yield;
-	while(ObjEnemy_GetInfo(boss,INFO_LIFE)>0){yield;}
-	wait(12);//"It can only handle 12 yields, currently, before the script is closed."
-	Obj_Delete(text);
-}
-
-
-//Alternative lifebar style, circular around boss
-task LifeCircle(renderObj, enemyObj){
-	let path = root~"/system/img/Default_System.png";
-	let obj = ObjPrim_Create(OBJ_PRIMITIVE_2D); //lifebar base
-	let objb = ObjPrim_Create(OBJ_PRIMITIVE_2D); //actual life bar
-	let obj2 = ObjPrim_Create(OBJ_SPRITE_LIST_2D); //boss stars
-	let obj3 = ObjPrim_Create(OBJ_SPRITE_LIST_2D); //life bar knobs
-	ObjPrim_SetPrimitiveType(obj, PRIMITIVE_TRIANGLESTRIP);
-	ObjPrim_SetPrimitiveType(objb, PRIMITIVE_TRIANGLESTRIP);
-	ObjPrim_SetTexture(obj, root~"/system/img/lifebar.png");
-	ObjPrim_SetTexture(objb, root~"/system/img/lifebar.png");
-	ObjPrim_SetTexture(obj2, path);
-	ObjPrim_SetTexture(obj3, root~"/system/img/lifebar.png");
-	Obj_SetRenderPriority(obj, 0.31);
-	Obj_SetRenderPriority(objb, 0.32);
-	Obj_SetRenderPriority(obj2, 0.7);
-	Obj_SetRenderPriority(obj3, 0.33);
-
-	let lastRemStep = -1;
-	let lifeRateRender = 0;
-
-	let vertexcount = 64;
-	let innerrad = 60; //inner radius of the circle
-	let outerrad = 68; //outer radius of the circle
-
-	let objScene = ID_INVALID;
-	let bossEnemy = [];
-
-	ObjPrim_SetVertexCount(obj, vertexcount);
-	ObjPrim_SetVertexCount(objb, vertexcount);
-
-	let lifeM = ObjEnemy_GetInfo(enemyObj, INFO_LIFE); //starting life
-	loop{
-		ObjSpriteList2D_ClearVertexCount(obj2);
-		ObjSpriteList2D_ClearVertexCount(obj3);
-		if(!Obj_IsDeleted(enemyObj)){
-			if(length(GetEnemyBossObjectID) > 0){
-				ObjRender_SetAlpha(obj, 256);
-				ObjRender_SetAlpha(objb, 256);
-				ObjRender_SetAlpha(obj2, 256);
-				ObjRender_SetAlpha(obj3, 256);
-			}else{
-				ObjRender_SetAlpha(obj, 0);
-				ObjRender_SetAlpha(objb, 0);
-				ObjRender_SetAlpha(obj2, 0);
-				ObjRender_SetAlpha(obj3, 0);
-			}
-
-			let life = ObjEnemy_GetInfo(enemyObj, INFO_LIFE); //life remaining
-			ascent(i in 0..vertexcount/2){
-		        let indexvert = i*2;
-		        let angle = i*360/(vertexcount*0.5-1) - 90;
-		        let angle2 = -90-(life/lifeM)*i*360/(vertexcount*0.5-1);
-		        ObjPrim_SetVertexPosition(obj, indexvert+0, ObjRender_GetX(renderObj)+innerrad*cos(angle), ObjRender_GetY(renderObj)+innerrad*sin(angle), 0);
-		        ObjPrim_SetVertexPosition(obj, indexvert+1, ObjRender_GetX(renderObj)+outerrad*cos(angle), ObjRender_GetY(renderObj)+outerrad*sin(angle), 0);
-
-		        ObjPrim_SetVertexUVT(obj, indexvert+0, 10, 0);
-		        ObjPrim_SetVertexUVT(obj, indexvert+1, 20, 32);
-
-
-		        ObjPrim_SetVertexPosition(objb, indexvert+0, ObjRender_GetX(renderObj)+innerrad*cos(angle2), ObjRender_GetY(renderObj)+innerrad*sin(angle2), 0);
-		        ObjPrim_SetVertexPosition(objb, indexvert+1, ObjRender_GetX(renderObj)+outerrad*cos(angle2), ObjRender_GetY(renderObj)+outerrad*sin(angle2), 0);
-
-		        ObjPrim_SetVertexUVT(objb, indexvert+0, 0, 0);
-		        ObjPrim_SetVertexUVT(objb, indexvert+1, 10, 32);
-		    }
-		}else{
-			Obj_Delete(obj);
-			Obj_Delete(objb);
-			Obj_Delete(obj2);
-			Obj_Delete(obj3);
-			return;
-		}
-		yield;
-	}
-}
-
-

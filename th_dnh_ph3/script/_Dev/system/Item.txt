@@ -1,4 +1,5 @@
 #include "./ItemConst.txt"
+#include "./../Library/MiscConstants.txt"
 #include "./../Library/EventList.txt"
 #include "./../Library/selibrary.txt"
 
@@ -7,7 +8,7 @@ let CSD = GetCurrentScriptDirectory();
 @Initialize{
 	SetCommonData("ItemScriptID",GetOwnScriptID);
 	SetDefaultBonusItemEnable(false);
-	SetItemRenderPriorityI(39); //just below shots
+	SetItemRenderPriorityI(PRI_ITEM); //well below shots
 	LoadItemData(CSD~"item_data.txt");
 	
 	let PoC = GetStgFrameHeight*0.25;

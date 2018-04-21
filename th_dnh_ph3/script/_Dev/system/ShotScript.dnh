@@ -1,6 +1,7 @@
 //Python
 
-// #include "./../Library/DirPaths.txt"
+#include "./../Library/DirPaths.txt"
+#include "./../Library/MiscConstants.txt"
 // #include "./../Library/selibrary.txt"
 
 let CSD = GetCurrentScriptDirectory;
@@ -63,8 +64,10 @@ task BulletDelete(bullet, pos, frame, alpha){
 	ObjRender_SetPosition(obj, pos[0], pos[1], 0);
 	ObjRender_SetAngleZ(obj, rand(0, 360));
 	ObjRender_SetBlendType(obj, BLEND_ADD_ARGB);
-	
 	// if(c == [0, 0, 0]){ObjRender_SetBlendType(obj, BLEND_ALPHA);}
+	
+	Obj_SetRenderPriorityI(obj,PRI_EFFBREAK); //testing
+	
 
 	ObjRender_SetAlpha(obj,alpha);
 

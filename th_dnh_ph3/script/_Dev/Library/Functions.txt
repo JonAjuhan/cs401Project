@@ -54,7 +54,8 @@ function SetSurvivalCardA2(style,img) {
 }
 //
 function SetCaution() {
-	CautionCutin(51, cy-30, CSD~"../img/caution.png");
+	CautionCutin(51, 255,  cy-30, dirimg~"caution.png"   , []);
+	CautionCutin(50, 128,  cy-30, dirimg~"caution_bg.png", [0,0,255,255]);
 	SE_Play(se_caution,120);
 }
 
@@ -80,6 +81,7 @@ task TBreakSpell(args) {
 	
 	
 	wait(del);
+	ClearInvalidRenderPriority();
 	if(!Obj_IsDeleted(boss)){Obj_Delete(boss);}
 	CloseScript(GetOwnScriptID());
 	return;
@@ -100,7 +102,7 @@ task TBreakNonspell(args) {
 	
 	// wait(del);
 	loop(del){ DeleteShotAll(TYPE_ALL, TYPE_ITEM); yield; }
-	
+	ClearInvalidRenderPriority();
 	if(!Obj_IsDeleted(boss)){Obj_Delete(boss);}
 	CloseScript(GetOwnScriptID());
 	return;
@@ -2507,29 +2509,36 @@ function CreateSunShotA2(x, y, speed, angle, type, initScale, sizePerFrame, endS
 //------------------------------------------------------------
 //Utsuho caution cutin.
 //Made by AJS
-task CautionCutin(render, yposition, img){	
-	Tcaution(GetStgFrameWidth/2, yposition+90, render, img);
-	Tcaution(GetStgFrameWidth/2-250, yposition+90, render, img);
-	Tcaution(GetStgFrameWidth/2+250, yposition+90, render, img);
+task CautionCutin(render, alpha, yposition, img, rect){
+	let rect2=rect; if(length(rect)>4){ rect2 = rect[4..length(rect)]; }
+	Tcaution(GetStgFrameWidth/2     , yposition+90, render, alpha, img, rect );
+	Tcaution(GetStgFrameWidth/2-250 , yposition+90, render, alpha, img, rect );
+	Tcaution(GetStgFrameWidth/2+250 , yposition+90, render, alpha, img, rect );
 	
-	Tcaution(GetStgFrameWidth/2, yposition-90, render, img);
-	Tcaution(GetStgFrameWidth/2-250, yposition-90,render, img);
-	Tcaution(GetStgFrameWidth/2+250, yposition-90, render, img);
+	Tcaution(GetStgFrameWidth/2     , yposition-90, render, alpha, img, rect );
+	Tcaution(GetStgFrameWidth/2-250 , yposition-90, render, alpha, img, rect );
+	Tcaution(GetStgFrameWidth/2+250 , yposition-90, render, alpha, img, rect );
 	
-	radiation(GetStgFrameWidth/2, yposition, render, img);
-	radiation(GetStgFrameWidth/2-250, yposition, render, img);
-	radiation(GetStgFrameWidth/2+250, yposition, render, img);
+	radiation(GetStgFrameWidth/2    , yposition   , render, alpha, img, rect2 );
+	radiation(GetStgFrameWidth/2-250, yposition   , render, alpha, img, rect2 );
+	radiation(GetStgFrameWidth/2+250, yposition   , render, alpha, img, rect2 );
 	yield;
 }
-task Tcaution(xpos, ypos, renderpriority, img){
+
+task Tcaution(xpos, ypos, renderpriority, malpha, img, rect){
 	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
 	let counter = 0;
 	let size = 0;
 	let alpha = 0;
 	
+	
 	ObjPrim_SetTexture(obj, img);
-	ObjSprite2D_SetSourceRect(obj,0, 216, 256, 256);
-	ObjRender_SetScaleXYZ(obj,1,1,0);
+	if(length(rect)==0){ rect = [0,216,256,256]; }
+	ObjSprite2D_SetSourceRect(obj,rect[0], rect[1], rect[2], rect[3]);
+	let sclx = 256/(rect[2]-rect[0]);
+	let scly =  40/(rect[3]-rect[1]);
+	ObjRender_SetScaleXYZ(obj,sclx,scly,0);
+	
 	Obj_SetRenderPriorityI(obj,renderpriority);
 	ObjSprite2D_SetDestCenter(obj);
 	ObjRender_SetBlendType(obj,BLEND_ALPHA);
@@ -2539,7 +2548,7 @@ task Tcaution(xpos, ypos, renderpriority, img){
 	
 	loop(20){		
 		counter++;
-		alpha+=255/20;
+		alpha+=malpha/20;
 		ObjRender_SetAlpha(obj,alpha);
 		ObjRender_SetPosition(obj,xpos+(counter),ypos,0);		
 		yield;
@@ -2551,22 +2560,26 @@ task Tcaution(xpos, ypos, renderpriority, img){
 	}
 	loop(20){		
 		counter++;
-		alpha-=255/20;
+		alpha-=malpha/20;
 		ObjRender_SetAlpha(obj,alpha);
 		ObjRender_SetPosition(obj,xpos+(counter),ypos,0);		
 		yield;
 	}
 	Obj_Delete(obj);
 }
-task radiation(xpos, ypos, renderpriority, img){
+task radiation(xpos, ypos, renderpriority, malpha, img, rect){
 	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
 	let counter = 0;
 	let size = 0;
 	let alpha = 0;
 	
 	ObjPrim_SetTexture(obj, img);
-	ObjSprite2D_SetSourceRect(obj,0, 0, 256, 128);
-	ObjRender_SetScaleXYZ(obj,1,1,0);
+	if(length(rect)==0){ rect = [0,0,256,128]; }
+	ObjSprite2D_SetSourceRect(obj,rect[0], rect[1], rect[2], rect[3]);
+	let sclx = 256/(rect[2]-rect[0]);
+	let scly = 128/(rect[3]-rect[1]);
+	ObjRender_SetScaleXYZ(obj,sclx,scly,0);
+	
 	Obj_SetRenderPriorityI(obj,renderpriority);
 	ObjSprite2D_SetDestCenter(obj);
 	ObjRender_SetBlendType(obj,BLEND_ALPHA);
@@ -2576,7 +2589,7 @@ task radiation(xpos, ypos, renderpriority, img){
 	
 	loop(20){		
 		counter++;
-		alpha+=255/20;
+		alpha+=malpha/20;
 		ObjRender_SetAlpha(obj,alpha);
 		ObjRender_SetPosition(obj,xpos-(counter),ypos,0);		
 		yield;
@@ -2588,7 +2601,7 @@ task radiation(xpos, ypos, renderpriority, img){
 	}
 	loop(20){		
 		counter++;
-		alpha-=255/20;
+		alpha-=malpha/20;
 		ObjRender_SetAlpha(obj,alpha);
 		ObjRender_SetPosition(obj,xpos-(counter),ypos,0);		
 		yield;

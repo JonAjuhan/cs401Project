@@ -1,3 +1,79 @@
+function spawnBossAndi() {
+	let boss = ObjEnemy_Create(OBJ_ENEMY_BOSS);
+	ObjEnemy_Regist(boss);
+
+	let imgBoss = dirgizmo~"Andi.png";
+	let x0 = 1; let y0 = 1; let x1 = 48; let y1 = 80; let dx = x1-x0; let dy = y1-y0;
+	ObjPrim_SetTexture(boss, imgBoss);  //Setting the above image file as a texture to the enemy object(boss)
+	ObjSprite2D_SetSourceRect(boss, x0,y0,x1,y1); //Setting the rectangle coordinates in the enemy image to use(Left, Top, Right, Bottom). //64, 1, 127, 64
+	ObjSprite2D_SetDestCenter(boss);  //Positioning the center of the rectangle(w/texture) at (0, 0) on the stage(top left corner).
+	
+	//Setting animation frames
+	let arr; let row;
+	arr	= [0,0,0,1,1,1,3,3,3,2,2,2,1,1,1];
+	row = 0;
+	ascent(i in 0..length(arr)){
+		ObjAnim_AddFrameA1(boss, ANIM_IDLE,  x0+x1*arr[i],y0,x1+dx*arr[i],y1);
+	}
+	ObjAnim_SetLoopPointA1(boss, ANIM_IDLE, 0);
+	
+	//arr = [0,0,0,1,1,1,2,2,2,3,3,3];
+	arr = [0,1,1,2,2,3];
+	row = 1;
+	ascent(i in 0..length(arr)){
+		ObjAnim_AddFrameA1(boss, ANIM_MOVE,  x0+x1*arr[i],y0+dy,x1+dx*arr[i],y1+dy);
+	}
+	ObjAnim_SetLoopPointA1(boss, ANIM_MOVE, length(arr)-1);
+	
+	arr = [2,2,1,1,0];
+	row = 1;
+	ascent(i in 0..length(arr)){
+		ObjAnim_AddFrameA1(boss,ANIM_MOVEEND,x0+x1*arr[i],y0+dy,x1+dx*arr[i],y1+dy);
+	}
+	ObjAnim_SetLoopPointA1(boss, ANIM_MOVEEND, length(arr)-1);
+	
+	arr = [4,5,6,6,7,7];
+	row = 2;
+	ascent(i in 0..length(arr)){
+		ObjAnim_AddFrameA1(boss, ANIM_ATTACK,  x0+x1*arr[i],y0+dy*2,x1+dx*arr[i],y1+dy*2);
+	}
+	ObjAnim_SetLoopPointA1(boss, ANIM_ATTACK, length(arr)-4);
+	
+	arr = [7,6,6,5,5,4];
+	row = 2;
+	ascent(i in 0..length(arr)){
+		ObjAnim_AddFrameA1(boss, ANIM_ATTACKEND,  x0+x1*arr[i],y0+dy*2,x1+dx*arr[i],y1+dy*2);
+	}
+	ObjAnim_SetLoopPointA1(boss, ANIM_ATTACKEND, length(arr)-1);
+	
+	ObjAnim_FlipMoveImage(boss,true);
+	//ObjAnim_StartAnimationA1(boss, 10, 2);
+	ObjAnim_StartAnimationA1(boss, 10, 0);
+	
+	EnemyName(boss, "Andi", 255, 180, 255);
+	
+	//LifeCircle(boss,boss);
+	UpdatePositions; //start updating positions
+	return boss;
+}
+function GetSwordTipX(){
+	let boss = GetEnemyBossObjectID[0];
+	let isAttackPose = Obj_GetValueD(boss, "anim_isattackplaying", false);
+	let dir = boolSign(ObjRender_GetScaleX(boss)<0);
+	if(!isAttackPose){ return ex+(17*dir); }
+	else { return ex+(14*dir); }
+}
+function GetSwordTipY(){	
+	let boss = GetEnemyBossObjectID[0];
+	let isAttackPose = Obj_GetValueD(boss, "anim_isattackplaying", false);
+	let dir = ObjRender_GetScaleX(boss)<0;
+	if(!isAttackPose){ return ey-26; }
+	else { return ey-38; }
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+
 function spawnBossYukari() {
 	WriteLog("Creating Yukari boss object");
 	let Yukari = ObjEnemy_Create(OBJ_ENEMY_BOSS);
