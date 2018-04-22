@@ -35,10 +35,10 @@ task Shader_ColorWarpA1(minpri, maxpri, period, horiz, verti){
 }	
 
 
-task Shader_WarpA1(intensity, rate, pri, dur){
+task Shader_WarpHorizontal(intensity, rate, pri, dur){
 	if(quality < 2){return;}
 	
-	let pathShader = dirshader~"warp.hlsl";
+	let pathShader = dirshader~"warphorizontal.hlsl";
 	
 	let objShader = ObjPrim_Create(OBJ_SPRITE_2D);
 	ObjShader_SetShaderF(objShader, pathShader);
@@ -197,7 +197,8 @@ task TMotionBlur(dur,granul,num, alpha){
 //----------------------------------------------------
 //ボス周囲のゆらぎエフェクト
 //----------------------------------------------------
-task TDistortionCircle(obj, rad, pri) {
+//from SampleE02
+task TDistortionCircleOld(obj, rad, pri) {
 	//レンダリングターゲットに使用するテクスチャ
 	let renderTexture = GetReservedRenderTargetName(0);
 
@@ -408,3 +409,69 @@ task TDistortionCircle(obj, rad, pri) {
 	ClearInvalidRenderPriority(); 
 }
 
+
+
+//From SampleP03
+task TDistortionCircle(obj, rad, pri, color){
+	let renderTexture = GetReservedRenderTargetName(0);
+
+	let frame = 0; //フレーム
+	let baseEffectRadius = 128; //128 //144
+	let outerFluct = 16;        //16
+	let effectRadius = 0; //エフェクト半径
+	
+	baseEffectRadius = rad;
+	outerFluct*=rad/144;
+	if(length(pri)==0){ pri = [20,28]; }
+	// pri=[20,28];
+	let priEffectMin = pri[0]; //20
+	let priEffectMax = pri[1]; //28
+
+	SetInvalidRenderPriorityA1(priEffectMin, priEffectMax);
+
+	let frameWidth = GetStgFrameWidth();
+	let frameHeight = GetStgFrameHeight();
+	let frameLeft = GetStgFrameLeft();
+	let frameRight = frameLeft + frameWidth;
+	let frameTop = GetStgFrameTop();
+	let frameBottom = frameTop + frameHeight;
+
+	let objWave = ObjPrim_Create(OBJ_SPRITE_2D); //2Dスプライトオブジェクト生成
+	Obj_SetRenderPriorityI(objWave, 25); //描画優先度を設定
+	ObjPrim_SetTexture(objWave, renderTexture); //テクスチャを設定
+	ObjSprite2D_SetSourceRect(objWave, frameLeft, frameTop, frameRight, frameBottom);
+	ObjSprite2D_SetDestRect(objWave, 0, 0, frameWidth, frameHeight);
+	Obj_SetRenderPriorityI(objWave, priEffectMax + 1);
+
+	let pathShader = dirshader~"warpcircle.hlsl";
+	ObjShader_SetShaderF(objWave, pathShader);
+	ObjShader_SetTechnique(objWave, "TecWave");
+	
+	if(length(color)==0){ color = [128,128,128]; }
+	ObjShader_SetFloat(objWave, "filterR", 1-color[0]/128);
+	ObjShader_SetFloat(objWave, "filterG", 1-color[1]/128);
+	ObjShader_SetFloat(objWave, "filterB", 1-color[2]/128);
+
+	// let objEnemy = GetEnemyBossObjectID[0];
+	let objEnemy = obj;
+	// while(ObjEnemy_GetInfo(objEnemy, INFO_LIFE) > 0){
+	while(!Obj_IsDeleted(objEnemy)){
+		effectRadius = baseEffectRadius + outerFluct * sin(frame*4);
+
+		let enemyX = ObjMove_GetX(objEnemy); //敵座標X
+		let enemyY = ObjMove_GetY(objEnemy); //敵座標Y
+
+		RenderToTextureA1(renderTexture, priEffectMin, priEffectMax, true);
+
+		ObjShader_SetFloat(objWave, "frame_", frame);
+		ObjShader_SetFloat(objWave, "enemyX_", enemyX + frameLeft);
+		ObjShader_SetFloat(objWave, "enemyY_", enemyY + frameTop);
+		ObjShader_SetFloat(objWave, "waveRadius_", effectRadius);
+
+		frame++;
+		yield;
+	}
+
+	Obj_Delete(objWave);
+	ClearInvalidRenderPriority();
+}

@@ -1,0 +1,818 @@
+// #include "./../../lib/lib_img.txt"
+let GCSD=GetCurrentScriptDirectory();
+let bSpell = false;
+let current = GetCurrentScriptDirectory();
+let fo = 0;
+let adder = 0;
+
+@Initialize
+{
+	adder = 0;
+	SetFogEnable(true);
+	ResetBG;
+	SetCameraFocusX(-40);
+	SetCameraFocusY(190);
+	SetCameraFocusZ(0);
+	SetCameraAzimuthAngle(0);
+	SetCameraElevationAngle(0);
+	SetCommonData("SpellCardBG1",false);
+	SetCommonData("Transition",0);
+	TCallBg;
+	//MeshThing;
+	Floor(-75,0.1,22,180,BLEND_ADD_ARGB);
+	Floor(-95,0.1,21,180,BLEND_ADD_ARGB);
+	Toob(0, 0-300, 0,601*2, 1200*4, 0, 255, BLEND_ALPHA);
+	//Sun3d();
+	ascent(let pos in 0..3)
+	{
+		ascent(i in 0..3)
+		{
+			TNormalBackground(pos,i,120,2);
+		}
+	}
+	SpellBG;
+	
+	SetCameraRadius(500);
+
+	SetCameraPerspectiveClip(10,4000);
+	SetFogParam(500, 600, 0,0, 0);
+
+}
+function Distance(x1, y1, x2, y2)
+{
+	return ((x1-x2)^2 + (y1-y2)^2)^0.5;
+}
+let PITCH = 0;
+let ROLL = 0;
+let XCam = -50;
+let YCam = 200;
+let Bit = 1;
+@MainLoop
+{
+	let objScene = GetEnemyBossSceneObjectID();
+	bSpell = (objScene != ID_INVALID && ObjEnemyBossScene_GetInfo(objScene, INFO_IS_SPELL));
+	
+	
+	let amount;
+	if(GetCommonData("BossX", 0)>GetStgFrameWidth/2)
+	{
+		amount = Distance(GetCommonData("BossX", 0), 0,GetStgFrameWidth/2, 0);
+	}
+	else
+	{
+		amount = -Distance(GetCommonData("BossX", 0), 0,GetStgFrameWidth/2, 0);
+	}
+	PITCH = PITCH*0.995-60*sin(amount*0.6)*0.005;
+	SetCameraRoll(-0*sin(PITCH));
+	SetCameraYaw(-60*sin(PITCH)+adder);
+	SetCameraPitch(-0*sin(PITCH));
+	if((GetCommonData("Transition",0)>0)&&(GetCommonData("Transition",0)<4))
+	{
+		SetCameraYaw(0);
+	}
+	if((GetCommonData("Transition",0)==3))
+	{
+		SetCameraRoll(-10*sin(PITCH)+adder);
+	}
+	//SetCameraRoll(20*sin(ROLL));
+
+	fo++;
+	yield;
+}
+task ResetBG
+{
+	SetCameraFocusX(0);
+	SetCameraFocusY(300);
+	SetCameraFocusZ(0);
+	SetCameraAzimuthAngle(0);
+	SetCameraElevationAngle(0);
+	SetCameraRadius(800);
+
+	SetCameraPerspectiveClip(10,4000);
+	SetFogParam(500, 600, 0,0, 0);
+}
+let counter = 0;
+task TCallBg
+{
+
+	while(GetCommonData("Transition",0)==0)
+	{
+		yield;
+	}
+	
+	SetCameraElevationAngle(80);
+	SetCameraFocusY(25);
+	
+	SetFogParam(5500, 5600, 0,0, 0);
+	while(GetCommonData("Transition",0)==1)
+	{
+		yield;
+	}
+	
+	SetCameraFocusX(0);
+	SetCameraFocusY(200);
+	SetCameraFocusZ(0);
+	SetCameraAzimuthAngle(0);
+	SetCameraElevationAngle(0);
+	SetFogEnable(true);
+	SetFogParam(1900, 2700, 0,0, 0);
+
+	SetCameraRadius(1500);
+	MeshThing;
+	PalaceFloor(-85,0.1,20,255,BLEND_ALPHA);
+	adder=-0;
+	ascent(let pos in 0..3)
+	{
+		Walls(pos,1);
+		Walls(pos,-1);
+	}
+	while(GetCommonData("Transition",0)==2)
+	{
+		yield;
+	}
+	
+	SetCameraFocusX(0);
+	SetCameraFocusY(-120);
+	SetCameraFocusZ(225);
+	SetCameraRadius(200);
+	SetCameraElevationAngle(-55);
+	SetCameraAzimuthAngle(90);
+	
+	ascent(i in 0..3*60)
+	{
+		SetFogParam(1100, 1200, 25, 0, 0);
+	}
+	SetFogEnable(false);
+	StageBG1;
+	StageBG2;
+	StageBG3;
+	SignMaker;
+	while(GetCommonData("Transition",0)==3)
+	{
+		yield;
+	}
+	
+	SetCameraFocusX(800);
+	SetCameraFocusY(190);
+	SetCameraFocusZ(0);
+	SetCameraAzimuthAngle(0);
+	SetCameraElevationAngle(-14);
+	SetCameraRadius(500);
+	SetFogEnable(true);
+	SetCameraPerspectiveClip(10,4000);
+	SetFogParam(500, 3000, 32,10, 10);
+	ascent(pos in 0..3)
+	{
+		ascent(i in 0..3)
+		{
+			TNormalBackground2(pos,i,-450,2);
+		}
+	}
+	ToobCave(0, 100, 0,256*2, 256*16, 0, 255, BLEND_ALPHA);
+	
+	while(GetCommonData("Transition",0)==4)
+	{
+		yield;
+	}
+}
+
+task PalaceFloor(ypos,adder,rnd,alpha,BLENDTYPE)
+{
+
+	let obj = ObjPrim_Create(OBJ_PRIMITIVE_3D);
+	
+	ObjPrim_SetPrimitiveType(obj,PRIMITIVE_TRIANGLEFAN);
+	ObjPrim_SetVertexCount(obj,4);
+	ObjRender_SetZWrite(obj,true);
+	ObjRender_SetZTest(obj,true);
+	
+	Obj_SetRenderPriorityI(obj,rnd);
+	ObjRender_SetAngleX(obj,90);
+	ObjRender_SetAngleZ(obj,90);
+	ObjRender_SetAngleY(obj,0);
+	let size = 2048/16;
+	
+	let ang = 0;
+
+	ascent(i in 0..4)
+	{
+		ObjPrim_SetVertexUVT(obj,     i,  (16*size)*cos(ang-45),(16*size)*sin(ang-45));
+		ObjPrim_SetVertexPosition(obj,i,  (16*size)*cos(ang-45),(16*size)*sin(ang-45),0);
+
+		ang+=90;		
+	}
+	
+	ObjPrim_SetTexture(obj,GetCurrentScriptDirectory~"./floor.png");
+	
+
+	ObjRender_SetPosition(obj,0,GetStgFrameHeight/2+ypos,0);
+	ObjRender_SetScaleXYZ(obj,1.5,1,1.5);
+	ObjRender_SetBlendType(obj,BLENDTYPE);
+	ObjRender_SetAlpha(obj,255);
+	let cc = 0;
+	let scl = 1.5;
+	while(GetCommonData("Transition",0)==2)
+	{
+		ascent(i in 0..4)
+		{
+			ObjPrim_SetVertexUVT(obj,     i,  (16*size*scl)*cos(ang-45),(16*size*scl)*sin(ang-45)+cc);
+			ang+=90;	
+		}
+		cc+=GetCommonData("BackgroundSpeed",0)/2;
+		yield;
+	}
+	Obj_Delete(obj);
+}
+task Walls(pos2,zscale)
+{
+	let px = (pos2-1) * ((9765+512)*0.25);
+	let pz = 0;
+	let path = current ~ "./Komeiji WALL/the_wall5.mqo";
+	let obj = ObjMesh_Create();
+	ObjMesh_Load(obj, path);
+	Obj_SetRenderPriorityI(obj, 21);
+	let frameInvisible = 0;
+	ObjRender_SetScaleXYZ(obj,0.25,0.25,0.25*zscale);
+	ObjRender_SetPosition(obj,-70*zscale,GetStgFrameHeight/2-95,pz);
+	ObjRender_SetAngleY(obj,-0);
+	ObjRender_SetFogEnable(obj, true);
+	while(GetCommonData("Transition",0)==2)
+	{
+		if(bSpell)
+		{
+			frameInvisible++;
+			if(frameInvisible >= 60)
+			{
+				Obj_SetVisible(obj, false);
+			}
+		}
+		else
+		{
+			frameInvisible = 0;
+			Obj_SetVisible(obj, true);
+		}
+		ObjRender_SetX(obj, px);
+		px+=GetCommonData("BackgroundSpeed",0)/2;
+		if(GetCommonData("BackgroundSpeed",0)>0)
+		{
+			if(px > ((9765+512)*0.25)*1)
+			{
+				px -= ((9765+512)*0.25)*2;
+			}
+		}
+		else
+		{
+			if(px < -1000*2)
+			{
+				px += 3000*2;
+			}
+		}
+		yield;
+	}
+	Obj_Delete(obj);
+}
+
+task TNormalBackground(pos1,pos2,yp,id)
+{
+	let pz = (pos2-1) * 1000*2;
+	let px = (pos1-1) * 500*2;
+	let path = current ~ "./Default_Background_IceMountain.mqo";
+	let obj = ObjMesh_Create();
+	ObjMesh_Load(obj, path);
+	Obj_SetRenderPriorityI(obj, 20);
+	ObjRender_SetY(obj,yp);
+	let frameInvisible = 0;
+	ObjRender_SetScaleXYZ(obj,2,0.6,2);
+	if(yp>200)
+	{
+		ObjRender_SetScaleXYZ(obj,2,-1,2);
+	}
+	while(GetCommonData("Transition",0)<id)
+	{
+		if(bSpell)
+		{
+			frameInvisible++;
+			if(frameInvisible >= 60)
+			{
+				Obj_SetVisible(obj, false);
+			}
+		}
+		else
+		{
+			frameInvisible = 0;
+			Obj_SetVisible(obj, true);
+		}
+		ObjRender_SetX(obj, pz);
+		ObjRender_SetZ(obj, px-0);
+		pz+=GetCommonData("BackgroundSpeed",0)/4;
+		if(GetCommonData("BackgroundSpeed",0)>0)
+		{
+			if(pz > 1000*2)
+			{
+				pz -= 3000*2;
+			}
+		}
+		else
+		{
+			if(pz < -1000*2)
+			{
+				pz += 3000*2;
+			}
+		}
+		yield;
+	}
+	Obj_Delete(obj);
+}
+
+task TNormalBackground2(pos1,pos2,yp,id)
+{
+	let pz = (pos2-1) * 1000*2;
+	let px = (pos1-1) * 500*2;
+	let path = current ~ "./Default_Background_IceMountain.mqo";
+	let obj = ObjMesh_Create();
+	ObjMesh_Load(obj, path);
+	Obj_SetRenderPriorityI(obj, 19);
+	ObjRender_SetY(obj,yp);
+	let frameInvisible = 0;
+	ObjRender_SetScaleXYZ(obj,2,5,6);
+
+	while(GetCommonData("Transition",0)==4)
+	{
+		if(bSpell)
+		{
+			frameInvisible++;
+			if(frameInvisible >= 60)
+			{
+				Obj_SetVisible(obj, false);
+			}
+		}
+		else
+		{
+			frameInvisible = 0;
+			Obj_SetVisible(obj, true);
+		}
+		ObjRender_SetX(obj, pz);
+		ObjRender_SetZ(obj, px-0);
+		pz+=12;
+		if(GetCommonData("BackgroundSpeed",0)>0)
+		{
+			if(pz > 1000*2)
+			{
+				pz -= 3000*2;
+			}
+		}
+		else
+		{
+			if(pz < -1000*2)
+			{
+				pz += 3000*2;
+			}
+		}
+		yield;
+	}
+	Obj_Delete(obj);
+}
+
+task MeshThing
+{
+	let count = 0;
+	let obj=ObjPrim_Create(OBJ_SPRITE_2D);
+	
+	Obj_SetRenderPriorityI(obj,18);
+	ObjPrim_SetTexture(obj,current ~ "./Komeiji WALL/palace.png");
+	ObjSprite2D_SetSourceRect(obj,0,0,1280,720);
+	ObjSprite2D_SetDestCenter(obj);
+	ObjRender_SetBlendType(obj,BLEND_ALPHA);
+	ObjRender_SetPosition(obj,GetStgFrameWidth/2,GetStgFrameHeight/2,0);
+	ObjRender_SetScaleXYZ(obj, 1.3, 1.3, 1);
+	ObjRender_SetColor(obj,0,0,0);
+	while(GetCommonData("Transition",0)<5)
+	{
+		if(GetCommonData("Transition",0)==4)
+		{
+			ObjRender_SetColor(obj,32,10,10);
+		}
+		ObjRender_SetAngleXYZ(obj,0,0,count/4);
+		ObjRender_SetAlpha(obj, 255);
+		count++;
+		yield;
+	}
+	Obj_Delete(obj);
+}
+task Floor(ypos,adder,rnd,alpha,BLENDTYPE)
+{
+	let obj = ObjPrim_Create(OBJ_PRIMITIVE_3D);
+	
+	ObjPrim_SetPrimitiveType(obj,PRIMITIVE_TRIANGLEFAN);
+	ObjPrim_SetVertexCount(obj,8);
+	ObjRender_SetZWrite(obj,true);
+	ObjRender_SetZTest(obj,true);
+	
+	Obj_SetRenderPriorityI(obj,rnd);
+	ObjRender_SetAngleX(obj,90);
+	ObjRender_SetAngleZ(obj,+90);
+	ObjRender_SetAngleY(obj,0);
+	let size = 42;
+	
+	let ang = 0;
+	let angc = rand(0,360);
+	ascent(i in 0..4)
+	{
+		ObjPrim_SetVertexUVT(obj,     i*2,  (16*size)*cos(ang-45),(16*size)*sin(ang-45));
+		ObjPrim_SetVertexPosition(obj,i*2,  (16*size)*cos(ang-45),(16*size)*sin(ang-45),0);
+		
+		loopColor(obj,i*2,angc,angc+120,angc+240,rand(1,1.3),rand(1,1.3),rand(1,1.3));
+		
+		ObjPrim_SetVertexUVT(obj,     i*2+1,(16*size*0.71)*cos(ang),(16*size*0.71)*sin(ang));
+		ObjPrim_SetVertexPosition(obj,i*2+1,(16*size*0.71)*cos(ang),(16*size*0.71)*sin(ang),0);
+		
+		loopColor(obj,i*2+1,angc,angc+120,angc+240,rand(1,1.3),rand(1,1.3),rand(1,1.3));
+		
+		angc+=90;
+		ang+=90;		
+	}
+	
+	ObjPrim_SetTexture(obj,GetCurrentScriptDirectory~"./firewall.png");
+	
+
+	ObjRender_SetPosition(obj,0,GetStgFrameHeight/2+ypos,0);
+	ObjRender_SetScaleXYZ(obj,1,1,1);
+	ObjRender_SetBlendType(obj,BLENDTYPE);
+	ObjRender_SetAlpha(obj,alpha);
+	let cc = 0;
+	let scl = 1.5;
+	while(GetCommonData("Transition",0)<2)
+	{
+		if(GetCommonData("Transition",0)==1)
+		{
+			ObjRender_SetBlendType(obj,BLEND_ALPHA);
+			ObjRender_SetColor(obj,255,200,200);
+		}
+		
+		if(GetCommonData("UserBG",0)==0)
+		{
+			ObjRender_SetAlpha(obj,255);
+		}
+		else
+		{
+			ObjRender_SetAlpha(obj,0);
+		}
+		ascent(i in 0..4)
+		{
+			ObjPrim_SetVertexUVT(obj,     i*2,  (16*size*scl)*cos(ang-45),(16*size*scl)*sin(ang-45)+cc);
+
+			ObjPrim_SetVertexUVT(obj,     i*2+1,(16*size*0.71*scl)*cos(ang),(16*size*0.71*scl)*sin(ang)+cc);
+			ang+=90;	
+		}
+		cc+=GetCommonData("BackgroundSpeed",0)/2;
+		yield;
+	}
+	Obj_Delete(obj);
+	task loopColor(obj,id,ang1,ang2,ang3,p1,p2,p3)
+	{
+		loop
+		{
+			ObjPrim_SetVertexColor(obj,id,255,200+55*sin(ang2),128+128*sin(ang3));
+			ang1+=p1;
+			ang2+=p2;
+			ang3+=p3;
+			yield;
+		}
+	}
+}
+task ToobCave(x, y, z, rad, l, rspd, al, blend)
+{
+	let v_count = 4*10;
+
+	let obj = ObjPrim_Create(OBJ_PRIMITIVE_3D);
+	ObjPrim_SetPrimitiveType(obj, PRIMITIVE_TRIANGLESTRIP);
+	ObjPrim_SetTexture(obj, GetCurrentScriptDirectory~"./stage02b.png");
+	ObjPrim_SetVertexCount(obj, v_count);
+	Obj_SetRenderPriorityI(obj, 19);
+
+	ObjRender_SetPosition(obj, x, y, z);
+	ObjRender_SetAlpha(obj, al);
+	ObjRender_SetBlendType(obj, blend);
+	ObjRender_SetColor(obj, 222, 222, 222);
+	ObjRender_SetFogEnable(obj, true);
+
+	let dir = 0;
+	ascent(i in 0 .. v_count/2)
+	{
+		let ii = i*2;
+
+		ObjPrim_SetVertexPosition(obj, ii, x + rad*cos(dir), y - l/2, z + rad*sin(dir));
+		ObjPrim_SetVertexPosition(obj, ii+1, x + rad*cos(dir), y + l/2, z + rad*sin(dir));
+
+		ObjPrim_SetVertexUVT(obj, ii, (l/2)/(v_count/2-1)*i, 0);
+		ObjPrim_SetVertexUVT(obj, ii+1, (l/2)/(v_count/2-1)*i, l/2);
+
+		dir += 360/(v_count/2-1);
+	}
+
+	let yan = 0;
+	let alpha = 0;
+	ObjRender_SetAngleZ(obj, 90);
+	while(GetCommonData("Transition",0)==4)
+	{
+		dir = 0;
+		ascent(i in 0 .. v_count/2)
+		{
+			let ii = i*2;
+
+			ObjPrim_SetVertexPosition(obj, ii, x + rad*cos(dir), y - l/2, z + rad*sin(dir));
+			ObjPrim_SetVertexPosition(obj, ii+1, x + rad*cos(dir), y + l/2, z + rad*sin(dir));
+
+			ObjPrim_SetVertexUVT(obj, ii, (l/2)/(v_count/2-1)*i, 0+yan);
+			ObjPrim_SetVertexUVT(obj, ii+1, (l/2)/(v_count/2-1)*i, l/2+yan);
+
+			dir += 360/(v_count/2-1);
+		}
+		yan+=6;
+		ObjRender_SetAlpha(obj, 255);
+
+		ObjRender_SetAngleY(obj, 0);
+		yan += rspd;
+		yield;
+	}
+	Obj_Delete(obj);
+}
+task Toob(x, y, z, rad, l, rspd, al, blend)
+{
+	let v_count = 6*4;
+
+	let obj = ObjPrim_Create(OBJ_PRIMITIVE_3D);
+	ObjPrim_SetPrimitiveType(obj, PRIMITIVE_TRIANGLESTRIP);
+	ObjPrim_SetTexture(obj, GetCurrentScriptDirectory~"./reactor.png");
+	ObjPrim_SetVertexCount(obj, v_count);
+	Obj_SetRenderPriorityI(obj, 19);
+
+	ObjRender_SetPosition(obj, x, y, z);
+	ObjRender_SetAlpha(obj, al);
+	ObjRender_SetBlendType(obj, blend);
+	ObjRender_SetColor(obj, 222, 222, 222);
+	ObjRender_SetFogEnable(obj, false);
+
+	let dir = 0;
+	ascent(i in 0 .. v_count/2)
+	{
+		let ii = i*2;
+
+		ObjPrim_SetVertexPosition(obj, ii, x + rad*cos(dir), y - l/2, z + rad*sin(dir));
+		ObjPrim_SetVertexPosition(obj, ii+1, x + rad*cos(dir), y + l/2, z + rad*sin(dir));
+
+		ObjPrim_SetVertexUVT(obj, ii, (l/2)/(v_count/2-1)*i, 0);
+		ObjPrim_SetVertexUVT(obj, ii+1, (l/2)/(v_count/2-1)*i, l/2);
+
+		dir += 360/(v_count/2-1);
+	}
+
+	let yan = 0;
+	let alpha = 0;
+	while(GetCommonData("Transition",0)==0)
+	{
+
+		ObjRender_SetAlpha(obj, 255);
+
+		ObjRender_SetAngleY(obj, 45);
+		yan += rspd;
+		yield;
+	}
+	Obj_Delete(obj);
+}
+let bs = 6;
+task StageBG1
+{
+	let obj=ObjPrim_Create(OBJ_SPRITE_3D);
+	Obj_SetRenderPriority(obj,0.21);
+	let sc = 1;
+	ObjPrim_SetTexture(obj,GetCurrentScriptDirectory~"./stage03a.png");
+	ObjSprite3D_SetSourceDestRect(obj,0,0,256,256);
+	ObjRender_SetScaleXYZ(obj,sc,sc,sc);
+	let c = 0;
+	let alpha = 255;
+	while(GetCommonData("Transition",0)==3)
+	{
+		if(bSpell==false)
+		{
+			if(alpha<260){alpha+=5;}
+		}
+		if(bSpell==true)
+		{
+			if(alpha>-5){alpha-=5;}
+		}
+		ObjRender_SetAlpha(obj,alpha);
+		ObjSprite3D_SetSourceDestRect(obj,0,c,256,(256*13)+c);
+		c+=bs;
+		yield;
+	}
+	Obj_Delete(obj);
+}
+
+task StageBG2
+{
+	let obj=ObjPrim_Create(OBJ_SPRITE_3D);
+	Obj_SetRenderPriority(obj,0.21);
+	let sc = 0.65;
+	ObjPrim_SetTexture(obj,GetCurrentScriptDirectory~"./stage03b.png");
+	ObjSprite3D_SetSourceDestRect(obj,0,0,600,600);
+	ObjRender_SetScaleXYZ(obj,sc,sc,sc);
+	ObjRender_SetX(obj,-125);
+	ObjRender_SetAngleY(obj,30);
+	ObjRender_SetZ(obj,250);
+	let c = 0;
+	let alpha = 255;
+	while(GetCommonData("Transition",0)==3)
+	{
+		if(bSpell==false)
+		{
+			if(alpha<260){alpha+=5;}
+		}
+		if(bSpell==true)
+		{
+			if(alpha>-5){alpha-=5;}
+		}
+		ObjRender_SetAlpha(obj,alpha);
+		ObjSprite3D_SetSourceDestRect(obj,0,c,254,(256*13)+c);
+		c+=bs;
+		yield;
+	}
+	Obj_Delete(obj);
+}
+
+task StageBG3
+{
+	let obj=ObjPrim_Create(OBJ_SPRITE_3D);
+	Obj_SetRenderPriority(obj,0.21);
+	let sc = 0.65;
+	ObjPrim_SetTexture(obj,GetCurrentScriptDirectory~"./stage03b.png");
+	ObjSprite3D_SetSourceDestRect(obj,0,0,256,254);
+	ObjRender_SetScaleXYZ(obj,sc,sc,sc);
+	ObjRender_SetX(obj,125);
+	ObjRender_SetAngleY(obj,-30);
+	ObjRender_SetAngleZ(obj,180);
+	ObjRender_SetZ(obj,250);
+	let c = 0;
+	let alpha = 255;
+	while(GetCommonData("Transition",0)==3)
+	{
+		if(bSpell==false)
+		{
+			if(alpha<260){alpha+=5;}
+		}
+		if(bSpell==true)
+		{
+			if(alpha>-5){alpha-=5;}
+		}
+		ObjRender_SetAlpha(obj,alpha);
+		ObjSprite3D_SetSourceDestRect(obj,0,c,254,(256*13)+c);
+		c-=bs;
+		yield;
+	}
+	Obj_Delete(obj);
+}
+
+task SignMaker
+{
+	while(GetCommonData("Transition",0)==3)
+	{
+		CreateTree();
+		loop(120)
+		{
+			yield;
+		}
+	}
+	task CreateTree()
+	{
+		let bg = ObjPrim_Create(OBJ_SPRITE_3D);
+		let xslide = 1500;
+		ObjRender_SetBlendType(bg,BLEND_ALPHA);
+		Obj_SetRenderPriorityI(bg,20);
+		ObjRender_SetZWrite(bg,true);
+		ObjRender_SetZTest(bg,true);
+		ObjPrim_SetTexture(bg,GetCurrentScriptDirectory~"./stopsign.png");
+		ObjRender_SetAngleXYZ(bg,0,0,0);
+		ObjSprite3D_SetSourceRect(bg,0,0,64,256);
+		ObjSprite3D_SetDestRect(bg,0,0,64,256);
+		ObjSprite3D_SetSourceDestRect(bg,0,0,64,256);
+		
+		ObjRender_SetScaleXYZ(bg,1,1,1);
+		ObjRender_SetAngleX(bg,-90);
+		ObjRender_SetColor(bg,200,200,200);
+		let t = 0;
+		ObjRender_SetAngleZ(bg,rand(-15,15));
+		let xpos = rand(50,-50);
+		while(!Obj_IsDeleted(bg)&&xslide>-200&&GetCommonData("Transition",0)==3)
+		{
+			ObjRender_SetPosition(bg,xpos,xslide,60);
+
+			xslide-=bs;
+			yield;
+		}
+		Obj_Delete(bg);
+	}
+}
+
+task SpellBG
+{
+	// let path = GetCurrentScriptDirectory~"./bg_rose.png";
+	let path = GetCurrentScriptDirectory~"./sp0.png";
+	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjPrim_SetTexture(obj, path);
+	Obj_SetRenderPriorityI(obj, 23);
+	ObjSprite2D_SetSourceRect(obj, 0, 0, 512, 512);
+	ObjSprite2D_SetDestRect(obj, 0, 0, 512, 512);
+	ObjSprite2D_SetDestCenter(obj);
+	ObjRender_SetPosition(obj,GetStgFrameWidth/2,GetStgFrameHeight/2,0);
+	ObjRender_SetScaleXYZ(obj,1.95,1.95,0);
+	ObjRender_SetColor(obj,200,200,200);
+	
+	
+	// let path3 = IMG_OKUU_BG1;
+	let path3 = GetCurrentScriptDirectory~"./back1.png";
+	let obj3 = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjPrim_SetTexture(obj3, path3);
+	Obj_SetRenderPriorityI(obj3, 23);
+	ObjSprite2D_SetSourceRect(obj3, 0, 0, 512*2, 512*2);
+	ObjSprite2D_SetDestRect(obj3, 0, 0, GetStgFrameWidth, GetStgFrameHeight);
+	ObjSprite2D_SetDestCenter(obj3);
+	ObjRender_SetPosition(obj3,GetStgFrameWidth/2,GetStgFrameHeight/2,0);
+	ObjRender_SetBlendType(obj3,BLEND_ADD_ARGB);
+	ObjRender_SetAlpha(obj3,128);
+	
+	// let path2 = IMG_ORIN_BG2;
+	let path2 = GetCurrentScriptDirectory~"./sp1.png";
+	let obj2 = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjPrim_SetTexture(obj2, path2);
+	Obj_SetRenderPriorityI(obj2, 23);
+	ObjSprite2D_SetSourceRect(obj2, 0, 0, 256*4, 256*4);
+	ObjSprite2D_SetDestRect(obj2, 0, 0, GetStgFrameWidth, GetStgFrameHeight);
+	ObjSprite2D_SetDestCenter(obj2);
+	ObjRender_SetPosition(obj2,GetStgFrameWidth/2,GetStgFrameHeight/2,0);
+	ObjRender_SetBlendType(obj2,BLEND_SUBTRACT);
+	
+	// let path4 = IMG_OKUU_BG2;
+	let path4 = GetCurrentScriptDirectory~"./back2.png";
+	let obj4 = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjPrim_SetTexture(obj4, path4);
+	Obj_SetRenderPriorityI(obj4, 23);
+	ObjSprite2D_SetSourceRect(obj4, 0, 0, 256,256);
+	ObjSprite2D_SetDestRect(obj4, 0, 0, 256, 256);
+	ObjSprite2D_SetDestCenter(obj4);
+	ObjRender_SetPosition(obj4,0,GetStgFrameHeight/2,0);
+	ObjRender_SetScaleXYZ(obj4,2.2,2.2,0);
+	ObjRender_SetAngleY(obj4,-60);
+	
+	
+	let obj5 = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjPrim_SetTexture(obj5, path4);
+	Obj_SetRenderPriorityI(obj5, 23);
+	ObjSprite2D_SetSourceRect(obj5, 0, 0, 256,256);
+	ObjSprite2D_SetDestRect(obj5, 0, 0, 256, 256);
+	ObjSprite2D_SetDestCenter(obj5);
+	ObjRender_SetPosition(obj5,GetStgFrameWidth,GetStgFrameHeight/2,0);
+	ObjRender_SetScaleXYZ(obj5,2.2,2.2,0);
+	ObjRender_SetAngleY(obj5,60);
+	//ObjRender_SetBlendType(obj4,BLEND_ADD_ARGB);
+
+	
+	
+	let c = 0;
+	let alpha = 0;
+	loop
+	{
+		if(GetCommonData("SpellCardBG1",false)==true)
+		{
+			if(alpha < 1)
+			{ 
+				alpha += 1/90;
+			}
+		} 
+		else
+		{
+			if(alpha>0)
+			{
+				alpha -= 1/40;
+			}
+		}
+		ObjRender_SetAlpha(obj ,255*alpha);
+		ObjRender_SetAlpha(obj2,196*alpha);
+		ObjRender_SetAlpha(obj3,128*alpha);
+		ObjRender_SetAlpha(obj4,200*alpha);
+		ObjRender_SetAlpha(obj5,200*alpha);
+		
+		ObjRender_SetAngleZ(obj,ObjRender_GetAngleZ(obj)+0.025);
+		ObjRender_SetAngleZ(obj4,ObjRender_GetAngleZ(obj4)-0.05);
+		ObjRender_SetAngleZ(obj5,ObjRender_GetAngleZ(obj5)+0.05);
+		ObjSprite2D_SetSourceRect(obj2, 0, c, 256*4, 256*4+c);
+		ObjSprite2D_SetSourceRect(obj3, 0, -c, 512*2, 512*2-c);
+		c-=0.1;
+		yield;
+	}
+}
+
+
+
+
+
+

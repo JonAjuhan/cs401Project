@@ -6,7 +6,7 @@
 
 #include "./Index.txt"
 #System["./system/Andi_System.txt"]
-#Background["./system/Background/Mystia/BG_work.txt"] //todo
+#Background["./system/Background/Satori/BG_work.txt"] //todo
 
 
 let bossScript;
@@ -31,6 +31,7 @@ let bossBGM;
 @Initialize
 {
 	SetCommonData("IsStage",true);
+	SetScriptID(SCRIPT_STAGE);
 	InitPlural;
 	TStage();
 }
@@ -61,6 +62,19 @@ task TStage {
 	
 	FadeToBlack(0,0,60);
 	
+	yield;
+	//Stop bg movement
+	// Notify(SCRIPT_BACKGROUND,EV_USER_STAGE+1,[false]);
+	//Set yaw/pitch/roll
+	Notify(SCRIPT_BACKGROUND,EV_USER_STAGE+2,[-30,-30,-30,0]);
+	Notify(SCRIPT_BACKGROUND,EV_USER_STAGE+2,[0,0,0,180]);
+	//Set coefficients for movement thereof
+	// Notify(SCRIPT_BACKGROUND,EV_USER_STAGE+3,[0,0,0,0]);
+	Notify(SCRIPT_BACKGROUND,EV_USER_STAGE+3,[1,1,1,180]);
+	//Set brightness
+	Notify(SCRIPT_BACKGROUND,EV_USER_STAGE+4,[0,0]);
+	Notify(SCRIPT_BACKGROUND,EV_USER_STAGE+4,[255,180]);
+	
 	loop(60){yield;}//1秒くらいあれば、コンパイル完了すると思われる。
 	
 	
@@ -83,6 +97,8 @@ task TStage {
 	           "[r][r]A closed mind cannot hear hatred,[r]but nor can it be heard itself.[r]To turn a blind eye,[r]or force it awake?",
 			   dirimg~"ThirdEyes.png",[0,0,255,255]);
 	wait(240);	
+	
+	Notify(SCRIPT_BACKGROUND,EV_USER_STAGE+1,[true]);
 	
 // loop{
 	

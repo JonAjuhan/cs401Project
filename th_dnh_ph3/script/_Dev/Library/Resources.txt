@@ -198,10 +198,11 @@ function GetNullValue(type){
 
 
 //Aliases emulating other conventions
-function sqrt(n){return n^(1/2);}
+function sqrt(n){return (|n|)^0.5;}
 function abs(n){return (|n|);}
 //Ternary operator - does not short-circuit! for convenience only
 function tern(cond, iftrue, iffalse){ if(cond){return iftrue;}else{return iffalse;} }
+function xor(a,b){ return (a&&!b)||(b&&!a); }
 
 function sec(n) { return 1/cos(n); }
 function csc(n) { return 1/sin(n); }

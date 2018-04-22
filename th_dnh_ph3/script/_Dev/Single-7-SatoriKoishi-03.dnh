@@ -5,11 +5,11 @@
 // #BGM["./bgm/bgm - Kid's Festival ~ Innocent Treasures.ogg"]
 // #BGM["./bgm/bgm - Hartmann's Youkai Girl.ogg"]
 #System["./system/Andi_System.txt"]
-#Background["./system/Background/Mystia/BG_work.txt"]
+#Background["./system/Background/Satori/BG_work.txt"]
 
 #include "./Index.txt"
 
-let timer = 10; //47; //37 //47
+let timer = 47; //37 //47
 let drate = 48; //24
 let mlife = 4000; //2000
 
@@ -141,8 +141,9 @@ task TShootSatori{
 	
 	// Shader_ColorWarpA1(20,40, 600, 0,100);
 	
-	Shader_WarpA1( 0.001,1, [PRI_MIN,PRI_MAX], -1);
-	Shader_WarpA1( 0.005,1, [0,PRI_MIN], -1);
+	// Shader_WarpHorizontal( 0.001,1, [PRI_MIN,PRI_MAX], -1);
+	Shader_WarpHorizontal( 0.001,1, [PRI_SHOT,PRI_SHOT], -1);
+	Shader_WarpHorizontal( 0.005,1, [0,PRI_MIN-1], -1);
 	
 	// TMotionBlur(-1,30,    2, 64);
 	// TDistortionCircle(bsatori);
@@ -278,9 +279,14 @@ task TPhilosophyOfAHatedPerson{
 	wait(300);
 	// TDistortionCircle(bkoishi, size, [20,41]);
 	// TDistortionCircle(bkoishi, size, [20,50]);
-	TDistortionCircle(bkoishi, size, [PRI_MIN,PRI_SHOT]);
+	// TDistortionCircle(bkoishi, size, [PRI_MIN,PRI_SHOT]);
+	// TDistortionCircle(bkoishi, size, [PRI_MIN,PRI_SHOT-10]);
+	// TDistortionCircle(bkoishi, size, [], [0,255,0]);
+	TDistortionCircle(bkoishi, size, [], [0,0,0]);
 	
 	SetCaution;
+	ScreenShake(150,3,3);
+	
 	wait(60);
 	SetCommonData("CurrentSC","\"Philosophy of a Hated Person\"");
 	SetCommonData("SpellcardDeclareColor",[128,255,128]);

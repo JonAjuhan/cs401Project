@@ -1,23 +1,64 @@
+// #include "./Resources.txt"
+
 let EV_SPAWN_ITEM = EV_USER_SYSTEM+1;
 
-let EV_CHANGE_POWER = EV_USER_PLAYER+42069; //tell player script to reset options
-let EV_CANCEL_PLAYER_DEATH = EV_USER_PLAYER+2; //NYI
-let EV_GET_CONTINUE = EV_USER_PLAYER+2; //NYI
 
 
 
-let EV_SET_SONG    = EV_USER_STAGE+10;
-let EV_FADE_SONG   = EV_USER_STAGE+11;
+let EV_SET_SONG    = EV_USER_SYSTEM+10;
+let EV_FADE_SONG   = EV_USER_SYSTEM+11;
+let EV_STOP_SONG   = EV_USER_SYSTEM+12;
+let EV_RESUME_SONG = EV_USER_SYSTEM+13;
+let EV_START_SONG  = EV_USER_SYSTEM+14;
+let EV_DELETE_SONG = EV_USER_SYSTEM+15;
 
-let EV_STOP_SONG   = EV_USER_STAGE+12;
-let EV_RESUME_SONG  = EV_USER_STAGE+13;
 
-let EV_START_SONG  = EV_USER_STAGE+14;
-let EV_DELETE_SONG = EV_USER_STAGE+15;
-
+// let EV_CHANGE_POWER = EV_USER_PLAYER+42069; //tell player script to reset options
+// let EV_CANCEL_PLAYER_DEATH = EV_USER_PLAYER+2; //NYI
+// let EV_GET_CONTINUE = EV_USER_PLAYER+2; //NYI
 
 // let EV_SET_DIFFICULTY = EV_USER+8; //unused, I do this with common data
 // let EV_FAM_DIE = EV_USER+3; //unused afaik
 
 
-let EV_START_BOSS = EV_USER_STAGE+1; //signal already-running plural to start boss
+let EV_START_BOSS = EV_USER_STAGE+10; //signal already-running plural to start boss
+
+let EV_FAIL_SPELL = EV_GAIN_SPELL+0.5; //defined separately in magic circle
+
+
+
+let SCRIPT_ALL="";
+let SCRIPT_PACKAGE     = "PackageScriptID";
+let SCRIPT_SYSTEM      = "SystemScriptID"; 
+let SCRIPT_STAGE       = "StageScriptID";
+let SCRIPT_PLURAL      = "PluralScriptID"; 
+let SCRIPT_SINGLE      = "SingleScriptID";
+let SCRIPT_PLAYER      = "PlayerScriptID";
+
+let SCRIPT_BACKGROUND  = "BackgroundScriptID";
+let SCRIPT_MAGICCIRCLE = "MagicCircleScriptID";
+
+let SCRIPT_SHOT        = "ShotScriptID";
+let SCRIPT_ITEM        = "ItemScriptID";
+let SCRIPT_PAUSE       = "PauseScriptID";
+let SCRIPT_ENDSCENE    = "EndSceneScriptID";
+let SCRIPT_MUSIC       = "MusicScriptID"; //same as system script
+
+function GetScriptID(type){
+	let id = GetCommonData(type,ID_INVALID);
+	return id;
+}
+function SetScriptID(type){
+	SetCommonData(type,GetOwnScriptID);
+}
+
+function Notify(type,event,args){
+	let id = GetScriptID(type);
+	// if(id==ID_INVALID || type==SCRIPT_ALL || xor(type==SCRIPT_PACKAGE,GetOwnScriptID==SCRIPT_PACKAGE) ) {
+	if(id==ID_INVALID || type==SCRIPT_ALL || ((type==SCRIPT_PACKAGE)!=(GetOwnScriptID==GetScriptID(SCRIPT_PACKAGE))) ) {
+		NotifyEventAll(event,args);
+	}
+	else{
+		NotifyEvent(id,event,args);
+	}
+}
