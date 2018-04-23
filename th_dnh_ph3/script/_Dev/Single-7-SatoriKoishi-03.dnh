@@ -5,7 +5,7 @@
 // #BGM["./bgm/bgm - Kid's Festival ~ Innocent Treasures.ogg"]
 // #BGM["./bgm/bgm - Hartmann's Youkai Girl.ogg"]
 #System["./system/Andi_System.txt"]
-#Background["./system/Background/Mystia/BG_work.txt"]
+#Background["./system/Background/Satori/BG_work.txt"]
 
 #include "./Index.txt"
 
@@ -139,6 +139,16 @@ task TShootSatori{
 	
 	O_SetPropertyAtDecel(bsatori,MOVE_Z,0.30*sz,120);
 	
+	// Shader_ColorWarpA1(20,40, 600, 0,100);
+	
+	// Shader_WarpHorizontal( 0.001,1, [PRI_MIN,PRI_MAX], -1);
+	Shader_WarpHorizontal( 0.001,1, [PRI_SHOT,PRI_SHOT], -1);
+	Shader_WarpHorizontal( 0.005,1, [0,PRI_MIN-1], -1);
+	
+	// TMotionBlur(-1,30,    2, 64);
+	// TDistortionCircle(bsatori);
+	// TDistortionCircle(bsatori, 30, [PRI_MIN,PRI_BOSS-1]);
+	
 	while(!Obj_IsDeleted(bsatori)&&!finishing){
 		let angle = rand(0,360);
 
@@ -255,12 +265,28 @@ task EnterShotFromBack(shot,time,type){
 
 
 task TPhilosophyOfAHatedPerson{
+
+	let size;
+	alternative(rank)
+	case(RANK_EASY){ size =  50; }
+	case(RANK_NORM){ size =  75; }
+	case(RANK_HARD){ size =  90; }
+	case(RANK_LUNA){ size = 105; }
 	
 	let DoRose = false;
 	
+		
 	wait(300);
+	// TDistortionCircle(bkoishi, size, [20,41]);
+	// TDistortionCircle(bkoishi, size, [20,50]);
+	// TDistortionCircle(bkoishi, size, [PRI_MIN,PRI_SHOT]);
+	// TDistortionCircle(bkoishi, size, [PRI_MIN,PRI_SHOT-10]);
+	// TDistortionCircle(bkoishi, size, [], [0,255,0]);
+	TDistortionCircle(bkoishi, size, [], [0,0,0]);
 	
 	SetCaution;
+	ScreenShake(150,3,3);
+	
 	wait(60);
 	SetCommonData("CurrentSC","\"Philosophy of a Hated Person\"");
 	SetCommonData("SpellcardDeclareColor",[128,255,128]);
@@ -275,12 +301,7 @@ task TPhilosophyOfAHatedPerson{
 	O_SetPropertyAtFrame(bkoishi,MOVE_Y,sy+120, 120);
 	
 	
-	let size;
-	alternative(rank)
-	case(RANK_EASY){ size =  50; }
-	case(RANK_NORM){ size =  75; }
-	case(RANK_HARD){ size =  90; }
-	case(RANK_LUNA){ size = 105; }
+
 	
 	TRenderPOAHP;
 	task TRenderPOAHP{
@@ -288,6 +309,7 @@ task TPhilosophyOfAHatedPerson{
 		OR_SetScale(light,size/128);
 		ObjRender_SetBlendType(light,BLEND_ADD_ARGB);
 		OR_SetAlpha(light,64);
+		
 		while(!Obj_IsDeleted(bkoishi)&&!finishing){
 			ObjRender_SetPosition(light,kx,ky,0);
 			yield;

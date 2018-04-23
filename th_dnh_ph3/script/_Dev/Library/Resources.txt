@@ -15,7 +15,7 @@ let frame=0;
 let objScene = GetEnemyBossSceneObjectID();
 let finishing = false; 
 
-SetAutoDeleteObject(true); //everything should be set to this
+SetAutoDeleteObject(true); //default to true instead of false
 
 
 
@@ -97,6 +97,7 @@ function randint(min,max){ return trunc(rand(min,max+1)); }  //Random integer fr
 function randarr(arr){ return arr[randint(0,length(arr)-1)]; }  //random value from an array
 
 //For when zero messes things up
+function toNZ(num){if(num==0){return 1;}else{return num;}}
 function tononzero(num){if(num==0){return 1;}else{return num;}}
 function tononzeroD(num,def){if(num==0){return def;}else{return num;}}
 function signNZ(n){ alternative(n)   //guaranteed nonzero
@@ -197,10 +198,11 @@ function GetNullValue(type){
 
 
 //Aliases emulating other conventions
-function sqrt(n){return n^(1/2);}
+function sqrt(n){return (|n|)^0.5;}
 function abs(n){return (|n|);}
 //Ternary operator - does not short-circuit! for convenience only
 function tern(cond, iftrue, iffalse){ if(cond){return iftrue;}else{return iffalse;} }
+function xor(a,b){ return (a&&!b)||(b&&!a); }
 
 function sec(n) { return 1/cos(n); }
 function csc(n) { return 1/sin(n); }
@@ -320,6 +322,18 @@ function CatchInfiniteLoop(maxtries){
 	tries++; if(tries>maxtries){SetCommonData("Tries",0);break;}
 	task TReset{ yield; SetCommonData("Tries",0); }
 }
+
+
+
+//Create and instantiate an array in O(logn) time - Drake
+function MakeArray(size, value){
+	let a = [value];
+	while(length(a) < size * 2){
+		a = a ~ a;
+	}
+	return a[0..size];
+}
+
 
 
 

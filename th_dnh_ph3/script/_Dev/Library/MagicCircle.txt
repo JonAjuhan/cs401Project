@@ -20,7 +20,7 @@ let objMagicCircle;
 let objSpellCircle;
 
 task TMagicCircle() {
-	objSpellCircle = MagicCircle(); //the normal, better one
+	// objSpellCircle = MagicCircle(); //the normal, better one
 	
 	yield;
 	

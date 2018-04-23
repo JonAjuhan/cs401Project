@@ -7,6 +7,7 @@
 #include "./Library/selibrary.txt"  //constants for sound effects
 #include "./Library/DirPaths.txt"	//Constants for directories and function to get root script directory
 #include "./Library/Difficulty.txt"	//Difficulty system
+#include "./Library/MiscConstants.txt" //Misc constants
 #include "./Library/EventList.txt" //Constants for events
 #include "./Library/ItemFunctions.txt" //Interface with item script
 #include "./system/ItemConst.txt" //Constants for item IDs
@@ -20,6 +21,7 @@
 #include "./Library/Cutin/Cutin.txt"   //Spellcard cutins and history
 #include "./Library/aura_anim.txt"     //Fancy aura on the boss
 #include "./Library/OzzieEffects.txt"  //the effects library I was using before writing my own
+#include "./Library/ShaderFunctions.txt" //WIP
 //Other libraries
 #include "./Library/Dialogue.dnh" //Dialogue system
 #include "./Library/MagicCircle.txt" //kind of janky atm

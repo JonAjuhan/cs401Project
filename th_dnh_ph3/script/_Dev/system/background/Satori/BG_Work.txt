@@ -1,0 +1,314 @@
+#include "./../../../Library/EventList.txt"
+
+let bSpell = false;
+let sMove = true;
+
+let a = 0;
+let aa = 2;
+let el = 50;
+let xt = 0;
+let xtf = 1.5;
+let l = 60;
+let current = GetCurrentScriptDirectory();
+let b2 = 1;
+let focus = 0;
+let moveback = true;
+let c1 = 0;
+let c2 = 0;
+let c3 = 0;
+let r = 0;
+let fog = 0;
+let cherrytime = 0;
+
+//yaw/pitch/roll
+let Y = 0;
+let P = 0;
+let R = 0;
+
+let dY = 1;
+let dP = 1;
+let dR = 1;
+
+let tY = 1/2;
+let tP = 1/3;
+let tR = 1/5;
+
+let alpha = 125;
+let value = 255; //brightness
+
+let objstagebg;
+
+let frame = 0;
+
+@Initialize {
+	// SetFogParam(100, 100, 255, 255, 255);
+	
+	SetCameraFocusX(0);
+	SetCameraFocusY(0);
+	SetCameraFocusZ(0);
+	SetCameraRadius(800);
+	SetCameraElevationAngle(10);
+	SetCameraAzimuthAngle(90);
+	NormalBackground;
+	SpellBackground;
+	//SetCameraPerspectiveClip(10,9999);
+	
+	SetScriptID(SCRIPT_BACKGROUND);
+}
+
+
+@Event{
+	alternative(GetEventType())
+	//Enable/disable bg waver
+	case(EV_USER_STAGE+1) {
+		let args = GetEventArgument(0);
+		sMove = args[0];
+	}
+	//Set R/P/Y at frame
+	case(EV_USER_STAGE+2) {
+		let args = GetEventArgument(0);
+		SetCameraAtFrame(args[0],args[1],args[2],args[3]);
+	}
+	//Set factors for movement of R/Y/P at frame
+	case(EV_USER_STAGE+3) {
+		let args = GetEventArgument(0);
+		SetCameraMoveAtFrame(args[0],args[1],args[2],args[3]);
+	}
+	//Set brightness at frame
+	case(EV_USER_STAGE+4) {
+		let args = GetEventArgument(0);
+		SetBrightnessAtFrame(args[0],args[1]);
+	}
+}
+
+
+@MainLoop{
+
+
+	let objScene = GetEnemyBossSceneObjectID();
+
+	// if(objScene != ID_INVALID && ObjEnemyBossScene_GetInfo(objScene, INFO_IS_SPELL)){
+		// bSpell = true;
+	// }else{
+		// bSpell = false;
+	// }
+	bSpell = (objScene != ID_INVALID && ObjEnemyBossScene_GetInfo(objScene, INFO_IS_SPELL));
+	
+	frame++;
+	
+	yield;
+}  
+
+
+function SpriteCreate{
+	let obj = ObjPrim_Create(OBJ_SPRITE_3D);
+	ObjPrim_SetTexture(obj,current~"./stage01b.png");
+	Obj_SetRenderPriorityI(obj,20);
+	ObjRender_SetAngleX(obj,-40);
+	ObjSprite3D_SetSourceDestRect(obj,0,0,128,128);
+	ObjRender_SetScaleXYZ(obj,1.5,1.5,1.5);
+	ObjRender_SetBlendType(obj,BLEND_ALPHA);
+	return obj
+}
+task NormalBackground{
+	let obj = SpriteCreate;
+	objstagebg=obj;
+	ObjRender_SetAlpha(obj,125);
+	// let alpha = 0;
+	let frameInvisible = 0;
+	let movel = 0;
+	let movel2 = 0;
+	
+	loop{
+
+		movel+=0;
+		movel2+=1.5;
+		ObjSprite3D_SetSourceDestRect(obj,0,0+movel2,(256*6)+movel,(256*6)+movel2);
+		alpha=max(0,min(alpha,255));
+		ObjRender_SetAlpha(obj,alpha);
+		// ascent(i in 0..length(obj)){
+			// //ObjRender_SetAlpha(obj[i],alpha);
+			// //ObjRender_SetAlpha(objg,alpha);
+		// }
+
+		
+		if(bSpell){
+			alpha-=10;
+			// frameInvisible++;
+			// if(frameInvisible >= 60) {
+			// }
+		}
+		else {
+			alpha+=10;
+			// frameInvisible = 0;
+		}
+		
+		if(sMove){
+			// Y += 0.01*sin(frame)*dY;
+			// Y += 0.01*sin(frame^2)*dY;
+			// P += 0.01*sin(frame/3)*dP;
+			// R += 0.01*sin(frame/5)*dR;
+			
+			Y += 0.01*sin(frame*tY)* dY *(|sin(frame*tY)|)^0.5;
+			P += 0.01*sin(frame*tP)* dP *(|sin(frame*tP)|)^0.5;
+			R += 0.01*sin(frame*tR)* dR *(|sin(frame*tR)|)^0.5;
+			
+			SetCameraYaw(Y);
+			SetCameraPitch(P);
+			SetCameraRoll(R);
+		}
+
+		yield;
+	}
+}
+
+task SpellBackground{
+	let GetCenterY = GetStgFrameHeight() / 2;
+	let GetCenterX = GetStgFrameWidth() / 2;
+	let alpha = 0;
+	let alpha2 = 255;
+	let m = 0;
+	let moveleft=0;
+	let m2 = 0.5;
+	let mm = 0;
+	let mm2 = 0.4;
+	// let path = current ~ "./card01a.png";
+	let path = current ~ "./sp_rose.png";
+	let obj = [ObjPrim_Create(OBJ_SPRITE_2D),ObjPrim_Create(OBJ_SPRITE_2D)];
+
+	ObjRender_SetBlendType(obj[0], BLEND_ALPHA);
+	Obj_SetRenderPriorityI(obj[0], 20);
+	ObjPrim_SetTexture(obj[0], path);
+
+	loop {
+		if(bSpell) {
+			alpha += 4;
+			alpha2 -=4;
+		}
+		else {
+			alpha2 +=4;
+			alpha -= 4;
+		}
+		if(alpha<=0){
+			alpha = 0;
+		}
+		if(alpha>=255){
+			moveback = false;
+			alpha = 255;
+		}
+		if(alpha2>=255){
+			alpha2 = 255;
+		}
+		if(alpha2<=0){
+			alpha2 = 0;
+		}
+
+		ObjRender_SetAlpha(obj[0], alpha);
+		Obj_SetVisible(obj[0], 255 > 0);
+		ObjSprite2D_SetSourceRect(obj[0], mm, 0+mm2, 6*256+mm, 6*256+mm2);
+		ObjRender_SetScaleXYZ(obj[0],1,1,1);
+		ObjRender_SetPosition(obj[0],(GetStgFrameWidth/2),(GetStgFrameHeight/2),0);
+		ObjRender_SetAngleXYZ(obj[0],0,0,0);
+		ObjSprite2D_SetDestCenter(obj[0]);
+
+		// moveleft++;
+		// m++;
+		// m+=1;
+		
+		mm+=0.8;
+		// mm2+=0.8*sin(mm*6);
+		mm2+=1.6*sin(mm*6)^2;
+		mm-=1.6*sin(mm2*3)^2;
+
+		// mm2-=0.8;
+		// mm +=0.8*sin(mm2*6);
+		
+		yield;
+	}
+
+}
+
+
+
+
+task SetCameraAtFrame(Y1,P1,R1,frames){
+	let sMove0 = sMove;
+	sMove = false;
+	if(frames>0) {
+		let Y0=Y; let P0=P; let R0=R;
+		let dY = (Y1-Y0)/frames;
+		let dP = (P1-P0)/frames;
+		let dR = (R1-R0)/frames;
+		ascent(i in 0..frames){
+			// let t = frames*(i/frames)^0.5;
+			// 0.1   0.5   0.9
+			// 0.01  0.5   0.94
+			// let t = frames*(0.5+(0.5-i/frames)^2);
+			let t = frames*(i/frames)^(frames/(2*i));
+			Y = Y0+t*dY;
+			P = P0+t*dP;
+			R = R0+t*dR;
+			
+			SetCameraYaw(Y);
+			SetCameraPitch(P);
+			SetCameraRoll(R);
+			
+			yield;
+		}
+	}
+	Y=Y1; P=P1; R=R1;
+	SetCameraYaw(Y1);
+	SetCameraPitch(P1);
+	SetCameraRoll(R1);
+	sMove = sMove0;
+}
+
+
+
+task SetCameraMoveAtFrame(dY1,dP1,dR1,frames){
+	let dY0 = dY; let dP0 = dP; let dR0 = dR;
+	if(frames>0) {
+		let ddY = (dY1-dY0)/frames;
+		let ddP = (dP1-dP0)/frames;
+		let ddR = (dR1-dR0)/frames;
+		ascent(i in 0..frames){
+			dY = dY0+i*ddY;
+			dP = dP0+i*ddP;
+			dR = dR0+i*ddR;	
+			yield;
+		}
+	}
+	dY=dY1; dP=dP1; dR=dR1;
+}
+
+
+
+
+task SetAlphaAtFrame(alpha1,frames){
+	let alpha0 = alpha;
+	if(frames>0) {
+		let dalpha = (alpha1-alpha0)/frames;
+		ascent(i in 0..frames){
+			alpha = alpha0+i*dalpha;
+			ObjRender_SetAlpha(objstagebg,alpha);
+			yield;
+		}
+	}
+	alpha = alpha1;
+	ObjRender_SetAlpha(objstagebg,alpha);
+}
+
+
+task SetBrightnessAtFrame(value1,frames){
+	let value0 = value;
+	if(frames>0) {
+		let dvalue = (value1-value0)/frames;
+		ascent(i in 0..frames){
+			value = value0+i*dvalue;
+			ObjRender_SetColor(objstagebg,value,value,value);
+			yield;
+		}
+	}
+	value = value1;
+	ObjRender_SetColor(objstagebg,value,value,value);
+}

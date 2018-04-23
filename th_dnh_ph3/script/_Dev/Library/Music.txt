@@ -1,3 +1,4 @@
+#include "./EventList.txt"
 //Used by system script - 
 //others interface with functions in Functions.txt
 //with same names/parameters as these
@@ -6,7 +7,7 @@
 let music = GetCommonData("MusicObject",ObjSound_Create);
 SetCommonData("MusicObject",music);
 
-
+SetScriptID(SCRIPT_MUSIC);
 
 
 

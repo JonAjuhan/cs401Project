@@ -6,6 +6,9 @@ let FLAG_XYMOVE = "UseXYSystem";
 let FLAG_INTERSECTION = "IsIntersectionEnable";
 let FLAG_SPELLRESIST = "IsSpellResist";
 let SHOT_GRAPHIC = "Graphic";
+let FLAG_BOSS = "IsBoss";
+
+let META_SUBTYPE = "Subtype";
 
 
 let MOVE_POS = "Position";
