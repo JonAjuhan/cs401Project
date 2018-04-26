@@ -1,7 +1,7 @@
 #TouhouDanmakufu[Single]
 #ScriptVersion[3]
-#Title["(Satori & Koishi Nonspell 2)"]
-#Text["series 7: scales with difficulty"]
+#Title["(Satori & Koishi Nonspell 2 alternate)"]
+#Text["too hard!"]
 // #BGM["./bgm/bgm - Kid's Festival ~ Innocent Treasures.ogg"]
 // #BGM["./bgm/bgm - Hartmann's Youkai Girl.ogg"]
 #System["./system/Andi_System.txt"]
@@ -92,7 +92,8 @@ task MainTask {
 	frame = 0;
 	
 	
-	TShootSatori2;
+	TShootSatori1;
+	// TShootKoishi1;
 	TShootKoishi2;
 	
 }
@@ -170,99 +171,6 @@ task TShootSatori1{
 		wait(60);
 	}
 }
-
-
-
-//adapted from Ginko
-task TShootSatori2{
-	let r; let R; let s; let S; let v; let j;
-	alternative(rank)
-	case(RANK_EASY){ r=30; R=-60; s=1.724; S=16.189; v = 1.2; j = 3; }
-	case(RANK_NORM){ r=30; R=-30; s=1.724; S=16.189; v = 1.4; j = 3; }
-	case(RANK_HARD){ r=30; R=-30; s=1.724; S=16.189; v = 1.4; j = 4; }
-	case(RANK_LUNA){ r=50; R=-70; s=2.524; S=16.189; v = 1.6; j = 2; }
-	// case(RANK_EASY){ r=30; R=-60; s=1.724; S=24.200; v = 1.2; j = 3; }
-	// case(RANK_LUNA){ r=30; R=-60; s=4.724; S=24.200; v = 2.9; j = 3; }
-
-	// let bsp; let bac; let bmsp;
-	let spd; let acc; let mspd; let del;
-	alternative(rank)
-	case(RANK_EASY){ spd = 6; acc = -0.15; mspd = 1; del = 2*45; }
-	case(RANK_NORM){ spd = 6; acc = -0.15; mspd = 1; del = 2*45; }
-	case(RANK_HARD){ spd = 6; acc = -0.15; mspd = 1; del = 2*45; }
-	case(RANK_LUNA){ spd = 6; acc = -0.15; mspd = 1; del = 2*45; }
-	// case(RANK_HARD){ spd = 3; acc = -0.05; mspd = 1; bsp = 3; bac = -0.2; bmsp = 1; }
-	// case(RANK_HARD){ spd = 2; acc = -0.1; mspd = 1; bsp = 3; bac = -0.2; bmsp = 1; }
-	
-	let bsp; let bac; let bmsp;
-	alternative(rank)
-	case(RANK_EASY){ bsp = 3; bac = -0.2; bmsp = 1; }
-	case(RANK_NORM){ bsp = 3; bac = -0.2; bmsp = 1; }
-	case(RANK_HARD){ bsp = 3; bac = -0.2; bmsp = 1; }
-	case(RANK_LUNA){ bsp = 3; bac = -0.2; bmsp = 1; }
-	
-	while(!Obj_IsDeleted(bsatori)&&!finishing){
-		let angle = rand(0,360);
-
-		wait(20);
-		let a=0;
-		let t=0;
-		loop(8000){ //8000
-			t++;
-			if(t%400==99){
-				ascent(j in 0..2){
-					ascent(i in 0..16){
-						CreateShotA2(ex,ey,bsp,22.5*i+11.25*j,  bac,bmsp,  BUBBLE_RED+500+j*(BLUE-RED),  30-10*(-1)^i);
-					}
-					// SE_Play(se_kira01,100);
-					SE_Play(se_chime2,100);
-					// wait(12*18*(1-j));
-					wait(18);
-				}
-				wait(11*18);
-			}
-			
-			if(t%j==0){
-				let types = [ZPEL_RED,ZPEL_MAGENTA,ZPEL_BLUE,ZPEL_PURPLE];
-				ascent(i in 0..j){
-					let a0 = (a+v/j*i);
-					let a1 = S*a0; let a2 = s*a0;
-					ascent(k in 0..4){
-						let U = (-1)^k;
-						let V = (-1)^(trunc(k/2));
-						let dx = U*(cos(a1)*r+cos(a2)*R);
-						let dy = V*(sin(a1)*r+sin(a2)*R);
-						let type = types[k];
-						
-						let A  = U*a0+k%2*180;
-						let A2 = V*a0+k%2*180;
-						// let vary = (|GetAngularDistance((A+A2)%180,90)|)/90;
-						// let vary2 = (dy+50)/50;
-						// let del1 = del+del*(vary)+i;
-						// let yac1 = yac+yac*vary*yco*vary2;
-						let shot = CreateShotA2(ex+dx,ey+dy,spd,  A  ,acc,mspd,type,10); //del=10
-						
-					}
-				}     
-
-				a=a+v*j;
-				angle += rand(0,360);
-			}
-			// loop(j){yield;}			
-			
-			if(t%3==0){
-				SE_Play(se_shot1,60*volumetweak);
-				SE_Play(se_shot2,60*volumetweak);
-			}
-			
-			yield;
-		}
-		// wait(60);
-	}
-}
-
-
-
 
 
 task TShootKoishi1{

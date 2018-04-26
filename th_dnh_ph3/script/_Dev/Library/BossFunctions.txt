@@ -7,10 +7,12 @@ function CreateBoss(name){
 	if(length(GetAllEnemyID)==0){
 	// if(length(GetEnemyBossObjectID)==0){
 		boss = ObjEnemy_Create(OBJ_ENEMY_BOSS);
+		SetCommonData("BossCount",1);
 		UpdatePositions;
 	}else{
 		boss = ObjEnemy_Create(OBJ_ENEMY);
 		ObjEnemy_SetLife(boss,9999);
+		SetCommonData("BossCount",GetCommonData("BossCount",0)+1);
 	}
 	Obj_SetValue(boss,FLAG_BOSS,true);
 	Obj_SetValue(boss,META_SUBTYPE,OBJ_ENEMY_BOSS);
@@ -20,6 +22,11 @@ function CreateBoss(name){
 	EnemyName(boss, name, c[0], c[1], c[2]);
 	return boss;
 }
+
+
+
+
+
 
 
 function spawnBossBlank(name){return CreateBoss(name);}

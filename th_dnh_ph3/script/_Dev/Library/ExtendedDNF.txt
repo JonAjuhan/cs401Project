@@ -53,17 +53,18 @@ let RENDER_PRIORITY = "RenderPriority";
 let MOVE_Z = "MoveZ"; //experimental
 
 let COL_RADIUS = "CollisionRadius";
+let COL_SCALE = "CollisionScale";
 
 //////////////////////////////////////////////////////////////////////////////
 //Higher-order functions for generalizing functions to operate on any property
 //////////////////////////////////////////////////////////////////////////////
 
 function O_SetProperty(obj,k,v){
-	if(O_GetType(v)==OBJ_NUMBER && v==NO_CHANGE){O_SetProperty(obj,k,O_GetProperty(obj,k));return;}
+	if(typeof(v)==TYPE_NUMBER&&v==NO_CHANGE){O_SetProperty(obj,k,O_GetProperty(obj,k));return;}
 	alternative(k)
 	case(FLAG_INTERSECTION){ Obj_SetValue(obj,FLAG_INTERSECTION,v); if(O_GetType(obj)==OBJ_SHOT){ObjShot_SetIntersectionEnable(obj,v);} }
 	case(FLAG_SPELLRESIST){ Obj_SetValue(obj,FLAG_SPELLRESIST,v); if(O_GetType(obj)==OBJ_SHOT){ObjShot_SetSpellResist(obj,v);} }
-	case(MOVE_POS){ if(O_GetType(v)==OBJ_ARRAY&&length(v)>1){ObjMove_SetX(obj,v[0]); ObjMove_SetY(obj,v[1]);} }
+	case(MOVE_POS){ if(O_GetType(v)==TYPE_ARRAY&&length(v)>1){ObjMove_SetX(obj,v[0]); ObjMove_SetY(obj,v[1]);} }
 	case(MOVE_X){ ObjMove_SetX(obj,v); }
 	case(MOVE_Y){ ObjMove_SetY(obj,v); }
 	case(MOVE_SPEED){       OM_SetSpeed(obj,v); }
@@ -92,6 +93,7 @@ function O_SetProperty(obj,k,v){
 	case(RENDER_ANGLEY){ ObjRender_SetAngleY(obj,v); } //todo
 	case(RENDER_PRIORITY){ O_SetRenderPriorityI(obj,v); }
 	case(MOVE_Z){ OM_SetZ(obj,v); }
+	others{ Obj_SetValue(obj,k,v); }
 }
 function O_GetProperty(obj,k){
 	let v;
@@ -127,7 +129,7 @@ function O_GetProperty(obj,k){
 	case(RENDER_ANGLEY){ v = ObjRender_GetAngleY(obj); }
 	case(RENDER_PRIORITY){   v = O_GetRenderPriorityI(obj); }
 	case(MOVE_Z){ v = OM_GetZ(obj); }
-	others{v=NULL;}
+	others{v=Obj_GetValueD(obj,k,NULL);}
 	
 	return v;
 }
@@ -299,37 +301,47 @@ task O_SetPropertyAtWeight(obj,k,v,frame,weight){
 //////////////////////////////////////////////////////////////////
 
 //Primitive types
-let OBJ_INT = 9;
-let OBJ_REAL = 2; let OBJ_NUMBER = 2;
-let OBJ_BOOL = 2+10;
-let OBJ_CHAR = -1;
-let OBJ_ARRAY = 10;
-let OBJ_STRING = 10+1;
+let TYPE_INT = 9;
+let TYPE_REAL = 2; let TYPE_NUMBER = 2;
+let TYPE_BOOL = 2+10;
+let TYPE_CHAR = -1;
+let TYPE_ARRAY = 10;
+let TYPE_STRING = 10+1;
+//only here in case something breaks without them
+// let OBJ_INT=TYPE_INT;let OBJ_REAL=TYPE_REAL;let OBJ_NUMBER=TYPE_NUMBER;
+// let OBJ_BOOL=TYPE_BOOL;let OBJ_CHAR=TYPE_CHAR;let OBJ_ARRAY=TYPE_ARRAY;
+// let OBJ_STRING=TYPE_STRING;
 
-function O_GetType(obj){
+//Improved typeof function
+// -Lumps int and real together
+// -Distinguishes between array and string
+// -Distinguishes between real and bool
+// -Lump enemy and boss together
+function typeof(obj){
 	alternative(Obj_GetType(obj))
-	case(OBJ_INT){return OBJ_NUMBER;}
-	case(OBJ_REAL){
-		if(ToString(obj)=="true"||ToString(obj)=="false"){return OBJ_BOOL;}
-		else{ return OBJ_NUMBER; }
+	case(TYPE_INT){return TYPE_NUMBER;}
+	case(TYPE_REAL){
+		if(!(ToString(obj)!="true"&&ToString(obj)!="false")){return TYPE_BOOL;}
+		else{ return TYPE_NUMBER; }
 	}
-	case(OBJ_ARRAY){
+	case(TYPE_ARRAY){
 		if(length(obj) > 0){
-			let contents = O_GetType(obj[0]); //recursive
-			if(contents==OBJ_CHAR){return OBJ_STRING;}
-			else{return OBJ_ARRAY;}
-		}else{return OBJ_ARRAY;}
+			let contents = typeof(obj[0]); //recursive
+			if(contents==TYPE_CHAR){return TYPE_STRING;}
+			else{return TYPE_ARRAY;}
+		}else{return TYPE_ARRAY;}
 	}
-	case(OBJ_CHAR){return OBJ_CHAR;}
-	case(OBJ_SHOT){return OBJ_SHOT;} //106
+	case(TYPE_CHAR){return TYPE_CHAR;}
 	case(OBJ_ENEMY,OBJ_ENEMY_BOSS){return OBJ_ENEMY;}
 	others{return Obj_GetType(obj);}
 }
 
+function O_GetType(obj){return typeof(obj);}
+
 //Other pseudo-types, used for "objects" like ObjGap, ObjFog, &c.
 
 function O_GetSubType(obj){
-	return Obj_GetValueD(obj,"Subtype",O_GetType(obj));
+	return Obj_GetValueD(obj,"Subtype",typeof(obj));
 }
 
 
@@ -368,6 +380,22 @@ function DeleteEnemyAll(enetype,deletetype){
 			}
 		}
 	}
+}
+
+
+function GetAllBossID{
+	let enems = GetAllEnemyID;
+	let bosses = [];
+	let count = 0;
+	ascent(i in 0..length(enems)){
+		let enem = enems[i];
+		if(Obj_GetValueD(enem,FLAG_BOSS,Obj_GetType(enem)==OBJ_ENEMY_BOSS)){
+			bosses = bosses ~ [enem];
+			count++;
+		}
+	}
+	SetCommonData("BossCount",count);
+	return bosses;
 }
 
 
@@ -651,13 +679,16 @@ function ObjShot_Delete(shot){ObjShot_SetDeleteFrame(shot,0);}
 
 function OS_GetDelayColor(shot) {
 	if(isnull(shot)){return [0,0,0];}
-	return GetShotDataInfoA1(ObjShot_GetImageID(shot),TARGET_ENEMY,INFO_DELAY_COLOR);
+	let id = ObjShot_GetImageID(shot);
+	if(id==0){ return [0,0,0]; }
+	return GetShotDataInfoA1(id,TARGET_ENEMY,INFO_DELAY_COLOR);
 }
 
 function OS_GetCollisionRadius(shot) {
 	if(isnull(shot)){return 0;}
 	let base = GetShotDataInfoA1(max(1,ObjShot_GetImageID(shot)),TARGET_ENEMY,INFO_COLLISION);
-	let scl = OR_GetScale(shot);
+	// let scl = OR_GetScale(shot);
+	let scl = 1;
 	return base*scl;
 }
 
@@ -791,13 +822,37 @@ function OM_SetSpeed(obj,val){
 	Obj_SetValue(obj,MOVE_SPEED,val);
 	Obj_SetValue(obj,FLAG_XYMOVE,false);
 }
-function OM_GetSpeed(obj){let s = ObjMove_GetSpeed(obj); if(s==0){s=Obj_GetValueD(obj,MOVE_SPEED,0);return s;} }
+function OM_GetSpeed(obj){
+	let s;
+	alternative(Obj_GetValueD(obj,FLAG_XYMOVE,false))
+	case(false){
+		s=Obj_GetValueD(obj,MOVE_SPEED,ObjMove_GetSpeed(obj));
+	}
+	case(true){
+		let dx = OM_GetSpeedX(obj);
+		let dy = OM_GetSpeedY(obj);
+		s = (|dx^2+dy^2|)^0.5
+	}
+	return s;
+}
 function OM_SetAngle(obj,val){
 	ObjMove_SetAngle(obj,val);
 	Obj_SetValue(obj,MOVE_ANGLE,val);
 	Obj_SetValue(obj,FLAG_XYMOVE,false);
 }
-function OM_GetAngle(obj){return ObjMove_GetAngle(obj);}
+function OM_GetAngle(obj){
+	let a;
+	alternative(Obj_GetValueD(obj,FLAG_XYMOVE,false))
+	case(false){
+		a=Obj_GetValueD(obj,MOVE_ANGLE,ObjMove_GetAngle(obj));		
+	}
+	case(true){
+		let dx = OM_GetSpeedX(obj);
+		let dy = OM_GetSpeedY(obj);
+		a = atan2(dy,dx);
+	}
+	return a;
+}
 function OM_SetAcceleration(obj,val){
 	ObjMove_SetAcceleration(obj,val);
 	Obj_SetValue(obj,MOVE_ACCEL,val);
@@ -1232,18 +1287,52 @@ function OC_GetIntersectionRadius(obj){
 	if(Obj_IsValueExists(obj,COL_RADIUS)){
 		return Obj_GetValue(obj,COL_RADIUS);
 	}
+	if(Obj_IsValueExists(obj,"CollisionObject")){
+		let r = OC_GetIntersectionRadius(Obj_GetValue(obj,"CollisionObject"));
+		if(r>0){return r;}
+	}
+	//default values
 	alternative(O_GetType(obj))
-	case(OBJ_SHOT){return OS_GetCollisionRadius(obj);}
+	case(OBJ_SHOT){return OS_GetCollisionRadius(obj)*OR_GetScale(obj);}
 	case(OBJ_ENEMY){return 10;}
 	others{return 0;}
 }
 function OC_SetIntersectionRadius(obj,v){
 	if(O_GetType(obj)==OBJ_SHOT){
-		let base = OS_GetCollisionRadius(obj)/OR_GetScale(obj);
+		// let base = OS_GetCollisionRadius(obj)/OR_GetScale(obj);
+		let base = OS_GetCollisionRadius(obj);
 		OR_SetScale(obj,v/base);
+		Obj_SetValue(obj,COL_SCALE,v/base);
 	}
 	Obj_SetValue(obj,COL_RADIUS,v);
+	if(!Obj_IsValueExists(obj,"CollisionManagerHash")){
+		ManageCollisionRadius(obj,v);
+	}
+	// ManageCollisionRadius(obj,v);
+	
+	task ManageCollisionRadius(obj,r){
+		if(typeof(obj)==OBJ_SHOT){ ObjShot_SetIntersectionEnable(obj,false); }
+		let dummy = CreateDummyShot(0,0);
+		Obj_SetValue(obj,"CollisionObject",dummy);
+		Obj_SetValue(dummy,COL_RADIUS,r);
+		if(O_GetType(obj)==OBJ_SHOT){
+			Obj_SetValue(dummy,COL_SCALE,r/OS_GetCollisionRadius(obj));
+		}
+		
+		let hash = GetNextHash;
+		Obj_SetValue(obj,"CollisionManagerHash",hash);
+		while(!Obj_IsDeleted(obj)&&Obj_GetValueD(obj,"CollisionManagerHash",0)==hash){
+			let x = ObjMove_GetX(obj); let y = ObjMove_GetY(obj);
+			ObjMove_SetPosition(dummy,x,y);
+			r = Obj_GetValueD(obj,COL_RADIUS,r);
+			ObjShot_SetIntersectionCircleA1(dummy,r);
+			yield;
+		}
+		Obj_Delete(dummy);
+		ObjShot_SetIntersectionEnable(obj,Obj_GetValueD(obj,FLAG_INTERSECTION,true));
+	}
 }
+
 
 function OC_SetIntersectionEnable(obj,intersect){
 	Obj_SetValue(obj,FLAG_INTERSECTION,intersect); 
@@ -1259,4 +1348,17 @@ function OC_IsIntersectionEnable(obj){
 		case(OBJ_ENEMY){return true;}
 		others{return false;}
 	}
+}
+
+
+
+
+
+
+function OS_SetIntersectionEnable(obj,intersect){
+	Obj_SetValue(obj,FLAG_INTERSECTION,intersect); 
+	ObjShot_SetIntersectionEnable(obj,intersect);	
+}
+function OS_IsIntersectionEnable(obj){
+	return OC_IsIntersectionEnable(obj); 
 }

@@ -115,3 +115,14 @@ function GetCubicBezierCoordinates(x0,y0,x1,y1,x2,y2,x3,y3,t){
 }
 
 
+
+
+
+// function hermite(start,end,distance,angle,t){
+	// real scale = t / 1;
+	// real h1 =  2*scale^3 - 3*scale^2 + 1;
+	// real h2 = -2*scale^3 + 3*scale^2;
+	// real h3 =    scale^3 - 2*scale^2 + scale;
+	// real h4 =    scale^3 -   scale^2;
+	// return h1*start + h2*end + h3*distance + h4*angle;
+// }

@@ -18,6 +18,35 @@ function SetSpellCard() {
 	NotifyEventAll(EV_REQUEST_SPELL_SCORE,"");
 }
 
+
+//Spellcard declaration with image, name, color
+function SetSpellCardA1(NameOrIndex,c,style,img) {
+	let name="";
+	if(typeof(NameOrIndex)==TYPE_NUMBER || NameOrIndex==""){
+		name= GetCommonData("CurrentSC"~itoa(NameOrIndex),GetCommonData("CurrentSC",""));
+	}
+	// else if(NameOrIndex==""){name=GetCommonData("CurrentSC",""); }
+	if(length(c)==0){c=GetCommonData("SpellcardDeclareColor",[255,128,128]);}
+	// let issurvival = Notify(SCRIPT_SYSTEM,EV_REQUEST_IS_DURABLE_SPELL,[]);
+	let issurvival = GetCommonData("IsSurvival",false);
+	ObjCutin_SetSpellcardS5(name,img,style, c[0],c[1],c[2], issurvival);
+	if(length(Obj_GetValueD(GetEnemyBossObjectID[0], "Spellcards", [])) < 2){
+		let diff = GetCommonData("Difficulty","Normal");
+		ObjCutin_LaunchS3(style, img, diff);
+		TMagicCircle();
+	// }else if(GetCommonData("RepeatCutin",true)){
+		// let diff = GetCommonData("Difficulty","Normal");
+		// ObjCutin_LaunchS3(style, img, diff);
+		// SE_Play(se_spellcard,100);
+	}else{SE_Play(se_spellcard,100);}
+	NotifyEventAll(EV_REQUEST_SPELL_SCORE,[]);
+	// ObjEnemyBossScene_StartSpell(objScene);
+}
+
+
+
+
+
 //Spellcard declaration with cutin image
 function SetSpellCardA2(style,img) {
 	let c = GetCommonData("SpellcardDeclareColor",[255,128,128]);
@@ -29,6 +58,7 @@ function SetSpellCardA2(style,img) {
 	}
 	NotifyEventAll(EV_REQUEST_SPELL_SCORE,"");
 }
+
 
 //
 function SetSurvivalCard() {
@@ -1249,7 +1279,7 @@ function InfluenceCircleA1(cx,cy,rad,type,mag,subarg){ //[spd,ang,acc,angv,mspd,
 						
 						case(INFL_ACCEL){
 							let acc; let maxsp=9999; let minsp=-9999;
-							if(typeof(mag)==OBJ_ARRAY){
+							if(typeof(mag)==TYPE_ARRAY){
 								maxsp = mag[2]; minsp = mag[1]; acc = mag[0];
 							}else{acc=mag[0];}
 							

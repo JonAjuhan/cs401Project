@@ -82,9 +82,9 @@ task EffectBurstOutB2(obj,num,dur,speed,type,r,g,b){
 task EffectBurstInB2(obj,num,dur,speed,type,r,g,b){
 	let a; let x0; let y0;
 	let rscale = speed/2.5;
-	loop(dur){
+	ascent(i in 0..dur){
 		x0 = ObjRender_GetX(obj); y0 = ObjRender_GetY(obj);
-		loop(num){
+		loop(num*i%num+num){
 			a = rand(0,360);
 			EffectParticleA2(x0+90*rscale*cos(a),y0+90*rscale*sin(a),speed,a+180,type,36,0.5,0,r,g,b);
 		}
@@ -387,6 +387,19 @@ function EffectParticleB3(x,y,dx,dy,type,dur,s0,s1,alpha0,alpha1,r,g,b){
 	let angle = atan2(dy,dx);
 	return EffectParticleA3(x,y,speed,angle,type,dur,s0,s1,alpha0,alpha1,r,g,b);
 }
+
+
+
+//For easy inward particles
+function EffectParticleInA1(x0,y0,speed,a,type,r,g,b){
+	let rscale = speed/2.5;
+	return EffectParticleA2(x0+90*rscale*cos(a),y0+90*rscale*sin(a),speed,a+180,type,36,0.5,0,r,g,b);
+}
+function EffectParticleInA2(x0,y0,speed,a,type,dur,s0,s1,r,g,b){
+	let rscale = speed/2.5;
+	return EffectParticleA2(x0+90*rscale*cos(a),y0+90*rscale*sin(a),speed,a+180,type,dur,s0,s1,r,g,b);
+}
+
 
 
 

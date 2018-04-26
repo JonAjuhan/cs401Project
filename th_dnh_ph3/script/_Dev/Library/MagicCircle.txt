@@ -20,7 +20,8 @@ let objMagicCircle;
 let objSpellCircle;
 
 task TMagicCircle() {
-	// objSpellCircle = MagicCircle(); //the normal, better one
+	//apparently I've disabled starting the script that normally does this
+	objSpellCircle = MagicCircle(); //the normal, better one
 	
 	yield;
 	
@@ -274,8 +275,9 @@ function MagicCircle(){
 		if(typeEnd == END_FAILED){
 	//BREAK(nyaa,se_explode);
 			Obj_Delete(obj);
-			NotifyEventAll(EV_USER_STAGE+3,[]); //tell system to show failure message
-			CloseScript(GetOwnScriptID());
+			// NotifyEventAll(EV_USER_STAGE+3,[]); //tell system to show failure message
+			NotifyEventAll(EV_FAIL_SPELL,[]); //tell system to show failure message
+			CloseScript(GetOwnScriptID()); //hey, this isn't a separate script
 			return;
 		}
 
@@ -347,7 +349,7 @@ function MagicCircle(){
 		}
 
 		Obj_Delete(obj);
-		CloseScript(GetOwnScriptID());
+		CloseScript(GetOwnScriptID()); //hey, this isn't a separate script
 	
 	
 	

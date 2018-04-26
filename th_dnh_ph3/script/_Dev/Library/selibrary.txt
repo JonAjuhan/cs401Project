@@ -71,7 +71,7 @@ let se_shift = sed~"se_shift.wav";
 let se_split = sed~"split.wav";
 let se_glint = sed~"glint.wav";
 
-let splash = csd~"../se/se_water.wav";
+let se_splash = csd~"../se/se_water.wav";
 let se_anchor = csd~"../se/se_anchor.wav";
 
 let se_fam = csd~"../se/se_option.wav";

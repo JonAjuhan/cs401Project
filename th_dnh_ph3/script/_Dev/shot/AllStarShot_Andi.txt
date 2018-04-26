@@ -17,6 +17,10 @@ shot_image = "./img/AllStarShot_Andi.png"
 //or can specify one or more with 
 //	collision = (r,x,y) 
 
+//DUMMY
+// ShotData{ id=0 rect=(0,0,0,0) collision=0 delay_color= (255,255,255) }
+ShotData{ id=0 collision=0 delay_color= (255,255,255) }
+
 //ALPHA
 
 // Arrowheads

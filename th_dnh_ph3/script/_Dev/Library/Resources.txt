@@ -23,7 +23,6 @@ SetAutoDeleteObject(true); //default to true instead of false
 let sx = GetStgFrameWidth(); let sy = GetStgFrameHeight();
 let cx = sx/2; let cy = sy/2;
 let ex=0; let ey=0; let px=0; let py=0;
-// let swdx=0; let swdy = 0;
 
 
 
@@ -39,8 +38,8 @@ let ex=0; let ey=0; let px=0; let py=0;
 // }
 
 function GetNextHash{
-	let hash = GetCommonData("NextHash",0);
-	SetCommonData("NextHash",(hash+1)%256);
+	let hash = GetCommonData("NextHash",1);
+	SetCommonData("NextHash",hash%255+1);
 	return hash;
 }
 
@@ -73,7 +72,7 @@ function getdistance(x0,y0,x1,y1){return ((x0-x1)^2 + (y0-y1)^2)^0.5;}
 function GetAngleTo(let object1, let object2) { return atan2(ObjMove_GetY(object2)-ObjMove_GetY(object1), ObjMove_GetX(object2)-ObjMove_GetX(object1));}
 
 //more conventional typeof
-function typeof(obj){return Obj_GetType(obj);}
+// function typeof(obj){return O_GetType(obj);}
 //check whether an object is safe to dereference
 function isnull(obj){
 	//do something		//if it hasn't been set
@@ -84,10 +83,15 @@ function isnull(obj){
 
 
 //Rand, alt, and sign functions
-function sign(n){ return floor(n/((|n|)+1)) - floor(-n/((|-n|)+1)); }
-// function sign(n){ return n/(|n|); } //undefined for n=0
+//Overkill
+// function sign(n){ return floor(n/((|n|)+1)) - floor(-n/((|-n|)+1)); }
+//Elegant, but undefined at 0
+// function sign(n){ return n/(|n|); }
+//Best of both worlds
+function sign(n){ let s = n/((|n|)+1); return floor(s)-floor(-s); }
 
-function altSign(i) { return 2*(i%2-0.5); }  //Alternates between 1 and -1
+// function altSign(i) { return 2*(i%2-0.5); }  //Alternates between 1 and -1
+function altSign(i) { return (-1)^i; }  //Alternates between 1 and -1
 function randSign() { return (round(rand(0,1)))*2-1; }  //Returns 1 or -1
 
 // function altRange(i,a,b){let r=b-a; i%=r; i+=a; return i;}
@@ -135,7 +139,10 @@ function GetAngularDistance(angle1, angle2){
 //Andi - Uses a rotation matrix to rotate around the specified point
 //Returns an array [x,y]
 function rotate(x,y,a) { return [x*cos(a)-y*sin(a), x*sin(a)+y*cos(a)]; }
-function rotateC(x,y,cx,cy,theta) { return [cx+(x-cx)*cos(theta)-(y-cy)*sin(theta), cy+(x-cx)*sin(theta)+(y-cy)*cos(theta)]; }
+function rotateC(x,y,cx,cy,a) { return [cx+(x-cx)*cos(a)-(y-cy)*sin(a), cy+(x-cx)*sin(a)+(y-cy)*cos(a)]; }
+
+function rotateX(x,y,a) { return x*cos(a)-y*sin(a); }
+function rotateY(x,y,a) { return x*sin(a)+y*cos(a); }
 
 //Interpolation
 //Lerp blerp derp - (bi)linear interpolation by Andi
@@ -147,28 +154,47 @@ function bqerp(x0,y0,x1,y1,x2,y2,t){return [qerp(x0,x1,x2,t),qerp(y0,y1,y2,t)];}
 //Lerp between two angles, taking the shortest path
 function lerpa(starta,enda,t){return starta+t*getadist(starta,enda);}
 
-//
-function hermite(start,end,distance,angle,t){
-	real scale = t / 1;
-	real h1 = 2 * scale ^ 3 - 3 * scale ^ 2 + 1;
-	real h2 = -2 * scale ^ 3 + 3 * scale ^ 2;
-	real h3 = scale ^ 3 - 2 * scale ^ 2 + scale;
-	real h4 = scale ^ 3 - scale ^ 2;
-	return h1 * start + h2 * end + h3 * distance + h4 * angle;
+function erp(points,t){
+	if(length(points)==3){return qerp(points[0],points[1],points[2],t);}
+	return (1-t) *erp(slice(points,0,length(points)-1),t)
+	         +t  *erp(slice(points,1,length(points)  ),t);	
+}
+
+//Cubic Hermite spline
+function hermite(start,end, tangent0,tangent1, t){
+	real h0 =  2*t^3 - 3*t^2 + 1;     // 1 ..  0.75 .. 0.25 .. 0
+	real h1 = -2*t^3 + 3*t^2;         // 0 ..  0.25 .. 0.75 .. 1
+	real h2 =    t^3 - 2*t^2 + t;     // 0 ..  0.2 ..  0.1  .. 0
+	real h3 =    t^3 -   t^2;         // 0 .. -0.1 .. -0.2  .. 0
+	return h0*start + h1*end + h2*tangent0 + h3*tangent1;
+}
+
+function hermite2(start,end, tangent0,tangent1, dist0,dist1, t){
+	real h0 =  2*t^3 - 3*t^2 + 1;     // 1 ..  0.75 .. 0.25 .. 0
+	real h1 = -2*t^3 + 3*t^2;         // 0 ..  0.25 .. 0.75 .. 1
+	real h2 =    t^3 - 2*t^2 + t;     // 0 ..  0.2 ..  0.1  .. 0
+	real h3 =    t^3 -   t^2;         // 0 .. -0.1 .. -0.2  .. 0
+	return h0*start + h1*end + h2*tangent0*dist0 + h3*tangent1*dist1;
 }
 
 
-
-
-//ShedPH93 - returns the angle of reflection, given the angle of incidence and the angle of the "mirror"
-function reflect (angle, mirror)  {return 2*mirror-angle;}
+//ShedPH93 - returns the angle of reflection, 
+//given the angle of incidence and the angle of the "mirror"
+function reflect(angle, mirror){ return 2*mirror-angle; }
 
 
 
 //Working with strings
 
 //smarter, easier-to-remember tostring
-function tost(n){ if((|n|)%1==0){return itoa(n);}else{return rtos("0.00",n);} }
+function tost(n){
+	alternative(typeof(n))
+	case(TYPE_NUMBER){
+		if((|n|)%1==0){return itoa(n);}else{return rtos("0.00",n);}
+	}
+	// case(TYPE_ARRAY){ return atost(n); }
+	others{ return ToString(n); }
+}
 //array to string
 function atost(n){
 	if(Obj_GetType(n) == Obj_GetType([0,0,0]) && length(n)!=0 ){
@@ -186,12 +212,13 @@ function atost(n){
 	}
 } 
 
-//null value for unknown types - use O_GetType or provide type directly
+//null value for unknown types - use gettype or provide type directly
+//I'm not sure if this actually matters, though, NULL might work for everything
 function GetNullValue(type){
 	alternative(type)
-	case(OBJ_NUMBER){return NULL;}
-	case(OBJ_ARRAY){return [];}
-	case(OBJ_STRING){return "";}
+	case(TYPE_NUMBER){return NULL;}
+	case(TYPE_ARRAY){return [];}
+	case(TYPE_STRING){return "";}
 	others{return NULL;}
 }
 
@@ -225,7 +252,21 @@ function isOffScreen(obj) {
 	let x = ObjMove_GetX(obj); let y = ObjMove_GetY(obj);
 	return (x<0 || y<0 || x>sx || y > sy);
 }
-
+//is off screen
+function isoff(obj){
+	let x = ObjMove_GetX(obj); let y = ObjMove_GetY(obj);
+	return (x<0 || y<0 || x>sx || y > sy);
+}
+//is off screen at walls
+function isoffW(obj,lft,top,rgt,btm){
+	let x = ObjMove_GetX(obj); let y = ObjMove_GetY(obj);
+	return (lft&&x<0 || top&&y<0 || rgt&&x>sx || btm&&y>sy);
+}
+//is off clip
+function isoffC(obj,L,T,R,B){
+	let x = ObjMove_GetX(obj); let y = ObjMove_GetY(obj);
+	return (x<L || y<T || x>R || y > B);
+}
 
 
 
@@ -299,12 +340,21 @@ function altBin(i){ return i%2; }
 function randBin{return randint(0,1);}
 
 function boolSign(b){ if(b){return 1;}else{return -1;} }
+
 function tobool(val){
-	if(typeof(val)==OBJ_REAL){
-		return val==0;
-	}else{return !(val=="" || val=="false" || val=="0" || val=="f");}
+	alternative(typeof(val))
+	case(TYPE_NUMBER){ return !(val==0); }
+	case(TYPE_STRING){ return !(val==""||val=="false"||val=="0"||val=="f");}
+	case(TYPE_ARRAY) { return !(length(val)==0); }
+	case(TYPE_BOOL){   return val; }
 }
-function tobin(num){return (|sign(num)|);}
+function tobin(num){
+	alternative(typeof(num))
+	case(TYPE_NUMBER){ return max(0,ceil((|num|))); }
+	case(TYPE_BOOL){   if(num){return 1;}else{return 0;} }
+	case(TYPE_STRING,TYPE_ARRAY){ return tobin(length(num)); }
+}
+
 function frombool(bl){if(bl){return 1;}else{return 0;}}
 
 
@@ -319,7 +369,9 @@ function frombool(bl){if(bl){return 1;}else{return 0;}}
 function CatchInfiniteLoop(maxtries){
 	let tries = GetCommonData("Tries",0);
 	if(tries==0){ TReset; }
-	tries++; if(tries>maxtries){SetCommonData("Tries",0);break;}
+	tries++;
+	SetCommonData("Tries",tries);
+	if(tries>maxtries){SetCommonData("Tries",0);break;}
 	task TReset{ yield; SetCommonData("Tries",0); }
 }
 
@@ -339,7 +391,7 @@ function MakeArray(size, value){
 
 
 
-function isint(n){return n%1==0;}
+function isint(n){return trunc(n)==n;}
 
 
 /////////////////////////////////////////////////////////////////////

@@ -1,6 +1,8 @@
 //Gets root directory of the script
 function GetRootDir {
-	//if(GetCommonData("ScriptRootDirectory","")!=""){return GetCommonData("ScriptRootDirectory",NULL);}
+	//if(GetCommonData("ScriptRootDirectory","")!=""){
+		// return GetCommonData("ScriptRootDirectory",NULL);
+	// }
 	let dir = SplitString(GetCurrentScriptDirectory,"/"); 
 	let i = length(dir)-1;
 	while(dir[i-2]!="th_dnh_ph3"){i--;}
@@ -15,13 +17,16 @@ function GetRootDir {
 let root = GetRootDir;
 let dirroot = root~"/";
 let dirstage = root~"/";
-let dirgizmo = root~"/Gizmo's Touhou Boss Sprite Library/spriteimg/";
-let dirimg = root~"/img/";
-let direffect = root~"/img/Effect/";
-let dirportrait = root~"/img/Portrait/";
+
 let dirlib = root~"/Library/";
+let dirimg = root~"/img/";
 let dirse = root~"/se/";
 let dirsys = root~"/system/";
+
+let dirgizmo = root~"/Gizmo's Touhou Boss Sprite Library/spriteimg/";
+let direffect = root~"/img/Effect/";
+let dirportrait = root~"/img/Portrait/";
+let dircut = root~"/Library/Cutin/";
 let dirbgm = root~"/bgm/";
 let dirdat = root~"/data/";
 let dirshot = root~"/shot/";

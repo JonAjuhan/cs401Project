@@ -10,8 +10,8 @@
 #include "./Index.txt"
 
 let timer = 37; //37 //47
-let drate = 48; //24
-let mlife = 4000; //2000
+let drate = 72; //24
+let mlife = 3000; //2000
 
 let volumetweak = 0.75;
 

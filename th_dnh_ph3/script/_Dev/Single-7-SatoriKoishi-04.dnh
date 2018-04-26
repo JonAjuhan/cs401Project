@@ -1,0 +1,407 @@
+#TouhouDanmakufu[Single]
+#ScriptVersion[3]
+#Title["(Satori & Koishi Spell 1)"]
+#Text["series 7: scales with difficulty"]
+
+#System["./system/Andi_System.txt"]
+#Background["./system/Background/Satori/BG_work.txt"]
+
+#include "./Index.txt"
+
+let timer = 47; //37 //47
+let drate = 48; //24
+let mlife = 4000; //2000
+
+let volumetweak = 1; //.75
+
+let bsatori;
+let bkoishi;
+let kx; let ky;
+
+@Event{
+	alternative(GetEventType())
+	case(EV_REQUEST_LIFE){				SetScriptResult(mlife);		}
+	case(EV_REQUEST_SPELL_SCORE){		SetScriptResult(5000000);	}
+	case(EV_REQUEST_TIMER) {			SetScriptResult(timer*60);	}
+	case(EV_REQUEST_IS_DURABLE_SPELL) {	SetScriptResult(GetCommonData("IsSurvival",false));	}
+}
+@Initialize{
+	if(noPlural){ 
+		SetDifficultyD(HARD);
+		SetBGM("Hartmann's Youkai Girl@Magnum Opus",17.12,298.97); 
+	}
+	alternative(rank)
+	case(RANK_EASY){	SetCommonData("CurrentSC", "Trauma \"Sepulchre of Consciousness\"");}
+	case(RANK_NORM){	SetCommonData("CurrentSC", "Trauma \"Sepulchre of Consciousness\"");}
+	case(RANK_HARD){	SetCommonData("CurrentSC", "Trauma \"Sepulchre of Consciousness\"");}
+	others         {	SetCommonData("CurrentSC", "Trauma \"Sepulchre of Consciousness\"");}
+	alternative(rank)
+	case(RANK_EASY){	SetCommonData("CurrentSC2","Impulse \"Youkai Flower Crown\"");}
+	case(RANK_NORM){	SetCommonData("CurrentSC2","Impulse \"Youkai Flower Crown\"");}
+	case(RANK_HARD){	SetCommonData("CurrentSC2","Impulse \"Youkai Flower Crown\"");}
+	others         {	SetCommonData("CurrentSC2","Impulse \"Youkai Flower Crown\"");}
+	SetCommonData("IsSurvival",false);
+	
+	// SetShotAutoDeleteClip(64,96,64,32);
+	SetShotAutoDeleteClip(32,96,32,32);
+	
+	SetCommonData("BossNameColor",[255,64,196]);
+	bsatori = CreateBoss("Satori Komeiji");
+	SetCommonData("BossNameColor",[128,255,128]);
+	bkoishi = CreateBoss("Koishi Komeiji");
+	ObjMove_SetPosition(bkoishi,GetCommonData("Boss2_X",cy),GetCommonData("Boss2_Y",-120));
+	renderSatoriSA(bsatori);
+	renderKoishiSA(bkoishi);
+	
+	MainTask;
+	
+
+}
+@MainLoop{
+	if(ObjEnemy_GetInfo(bsatori,INFO_LIFE)<=0 && !finishing){
+		finishing = true;
+		DropItemsSpellEnd;
+		SetCommonData("Boss2_X",ObjMove_GetX(bkoishi));	SetCommonData("Boss2_Y",ObjMove_GetY(bkoishi));
+		TBreakSpell([]);
+	}
+	kx=ObjMove_GetX(bkoishi); ky=ObjMove_GetY(bkoishi);
+	SetBossHitbox(bsatori,ex,ey);
+	SetBossHitbox(bkoishi,kx,ky);
+	frame++;
+	yield;
+}
+
+
+task MainTask {
+	ObjEnemy_SetDamageRate(bsatori,0,0);
+	// ObjMove_SetDestAtFrame(bsatori, cx, cy-100, 60); //cy-120
+	ObjMove_SetDestAtFrame(bsatori, cx, cy-60, 60); //cy-120
+	ObjMove_SetDestAtFrame(bkoishi, cx*1.1, cy-150, 60); //cy-120
+	
+	yield;
+
+	// SetSpellCardA1(GetCommonData("CurrentSC",""), [255,64,196], NAZRIN, dircut~"Cutin_Satori.png");
+	SetSpellCardA1(1, [255,64,196], NAZRIN, dircut~"Cutin_Satori.png");
+	
+	// ObjCutin_SetSpellcardS4(GetCommonData("CurrentSC",""), dircut~"Cutin_Satori.png",NAZRIN,255,64,196);	
+	// ObjCutin_SetSpellcardS4(GetCommonData("CurrentSC2",""),dircut~"Cutin_Koishi.png",NAZRIN,128,255,128);	
+	
+	
+	ObjEnemyBossScene_StartSpell(objScene);
+	ObjEnemyBossScene_SetSpellTimer(objScene,timer*60); //5760
+	
+	// SetCaution;
+	// TSpellImmune;
+	// SetBossBlur(true);
+	Aura(bsatori,255,64,128,64);
+	// Aura(bkoishi,64,255,128,64);
+	
+	// AuraRainbow(boss,64,64,64);
+	// SetMagicCircleAlpha(64,64);
+
+	// wait(90);
+	wait(20);
+	
+	// Tmovement(cx-120,cx+120, cy-90,cy-60, 60,240, [MOVE_PLAYERBIAS,2,0,MOVE_MAXSPEED,1.5] );
+	ObjEnemy_SetDamageRate(bsatori,drate,drate/3);
+	frame = 0;
+	
+	
+	TShootSatori;
+	TShootKoishi;
+	// TPhilosophyOfAHatedPerson;
+	
+}
+
+
+
+
+
+
+//adapted from Ginko
+task TShootSatori{
+	let r; let R; let s; let S; let v; let j;
+	alternative(rank)
+	case(RANK_EASY){ r=30; R=-60; s=1.724; S=16.189; v = 1.2; j = 3; }
+	case(RANK_NORM){ r=30; R=-30; s=1.724; S=16.189; v = 1.4; j = 3; }
+	case(RANK_HARD){ r=30; R=-30; s=1.724; S=16.189; v = 1.4; j = 4; }
+	case(RANK_LUNA){ r=50; R=-70; s=2.524; S=16.189; v = 1.6; j = 2; }
+	// case(RANK_EASY){ r=30; R=-60; s=1.724; S=24.200; v = 1.2; j = 3; }
+	// case(RANK_LUNA){ r=30; R=-60; s=4.724; S=24.200; v = 2.9; j = 3; }
+
+	// let bsp; let bac; let bmsp;
+	let spd; let acc; let mspd; let del;
+	alternative(rank)
+	case(RANK_EASY){ spd = 6; acc = -0.15; mspd = 1; del = 2*45; }
+	case(RANK_NORM){ spd = 6; acc = -0.15; mspd = 1; del = 2*45; }
+	case(RANK_HARD){ spd = 6; acc = -0.15; mspd = 1; del = 2*45; }
+	case(RANK_LUNA){ spd = 6; acc = -0.15; mspd = 1; del = 2*45; }
+	// case(RANK_HARD){ spd = 3; acc = -0.05; mspd = 1; bsp = 3; bac = -0.2; bmsp = 1; }
+	// case(RANK_HARD){ spd = 2; acc = -0.1; mspd = 1; bsp = 3; bac = -0.2; bmsp = 1; }
+	
+	let bsp; let bac; let bmsp;
+	alternative(rank)
+	case(RANK_EASY){ bsp = 3; bac = -0.2; bmsp = 1; }
+	case(RANK_NORM){ bsp = 3; bac = -0.2; bmsp = 1; }
+	case(RANK_HARD){ bsp = 3; bac = -0.2; bmsp = 1; }
+	case(RANK_LUNA){ bsp = 3; bac = -0.2; bmsp = 1; }
+	
+	while(!Obj_IsDeleted(bsatori)&&!finishing){
+		let angle = rand(0,360);
+
+		wait(20);
+		let a=0;
+		let t=0; //0
+		loop(8000){ //8000
+			t++;
+			if(t%400==399){ //==99
+				ascent(j in 0..2){
+					ascent(i in 0..16){
+						let shot = CreateShotA2(ex,ey,bsp,22.5*i+11.25*j,  bac,bmsp,  BUBBLE_RED+500+j*(BLUE-RED),  30-10*(-1)^i);
+						// O_SetPropertyAtAccel(shot,RENDER_SCALE, 0.5, 180);
+						TPulseScale(shot);
+						task TPulseScale(shot){
+							// OS_SetIntersectionEnable(shot,false);
+							// let dummy = CreateDummyShot(0,0);
+							let t = 0; let scl = 1;
+							let tmax = 60;
+							let a = ObjMove_GetAngle(shot);
+							let r = OS_GetCollisionRadius(shot);
+							let x; let y;
+							while(!Obj_IsDeleted(shot)){
+								// let tan0 = 0;
+								// let tan1 = 180;
+								//1000,90
+								x=ObjMove_GetX(shot);y=ObjMove_GetY(shot);
+								scl = hermite(1,1, -2,2,  (t/tmax)%1);
+								// ObjRender_SetScaleXYZ(shot,scl,scl,1);
+								OC_SetIntersectionRadius(shot,r*scl);
+								if(isoffC(shot,-r,-r,sx+r,sy+r)){Obj_Delete(shot);}
+								yield; t++;
+							}
+							// Obj_Delete(dummy);
+						}
+					}
+					// SE_Play(se_kira01,100);
+					SE_Play(se_chime2,100);
+					// wait(12*18*(1-j));
+					wait(18);
+				}
+				wait(11*18 - 60);
+				SE_Play(se_charge,80);
+				ascent(i in 0..60){
+					// let eff = EffectParticleInA2(px+rand(-30,30),py+rand(-30,30),6+i/90*6,rand(0,360),"HEXAGON",(90-i)/2,0.5,0, 255-255,255-64,255-196);
+					// ObjRender_SetBlendType(eff,BLEND_SUBTRACT);
+					EffectParticleInA2(px+rand(-30,30),py+rand(-30,30),6+i/90*6,rand(0,360),"HEXAGON",(90-i)/2,0.5,0, 255,64,196);					
+					yield;
+				}
+			}
+			
+			if(t%j==0){
+				let types = [ZPEL_RED,ZPEL_MAGENTA,ZPEL_BLUE,ZPEL_PURPLE];
+				ascent(i in 0..j){
+					let a0 = (a+v/j*i);
+					let a1 = S*a0; let a2 = s*a0;
+					ascent(k in 0..4){
+						let U = (-1)^k;
+						let V = (-1)^(trunc(k/2));
+						let dx = U*(cos(a1)*r+cos(a2)*R);
+						let dy = V*(sin(a1)*r+sin(a2)*R);
+						let type = types[k];
+						
+						let A  = U*a0+k%2*180;
+						let A2 = V*a0+k%2*180;
+						// let vary = (|GetAngularDistance((A+A2)%180,90)|)/90;
+						// let vary2 = (dy+50)/50;
+						// let del1 = del+del*(vary)+i;
+						// let yac1 = yac+yac*vary*yco*vary2;
+						let shot = CreateShotA2(px+dx,py+dy,spd, A ,acc,mspd,type,10); //del=10
+						let angdist = (|GetAngularDistance(A,getangle(px+dx,py+dy,px,py))|);
+						// TDel(shot,60-30*angdist/180,BUBBLE_RED+500+k%2*(BLUE-RED));
+						TDel(shot,60-30*angdist/180,HEART_RED+500+k%2*(BLUE-RED));
+						
+						task TDel(shot,del,type){
+							OS_SetIntersectionEnable(shot,false);
+							ObjRender_SetAlpha(shot,128);
+							ObjShot_SetSpellResist(shot,true);
+							
+							//TODO:
+							//Use a mask to multiply this layer's alpha by half
+							Obj_SetRenderPriorityI(shot,PRI_SHOT-1);
+							
+							wait(del);
+							OS_SetIntersectionEnable(shot,true);
+							ObjShot_SetGraphic(shot,type);
+							// ObjRender_SetColor(shot,32,32,32);
+							OS_TintShot(shot,16);
+							ObjRender_SetAlpha(shot,255);
+							ObjShot_SetSpellResist(shot,false);
+							
+							// ObjMove_AddPatternA2(shot,0,NO_CHANGE,NO_CHANGE, 0.05,0.05,spd);
+							ObjMove_AddPatternA2(shot,0,NO_CHANGE,NO_CHANGE, 0.05,0,spd);
+							ObjShot_SetDeleteFrame(shot,120);
+							
+							SE_Play(se_splash,80);
+						}
+						
+					}
+				}     
+
+				a=a+v*j;
+				angle += rand(0,360);
+			}
+			// loop(j){yield;}			
+			
+			if(t%3==0){
+				SE_Play(se_shot1,60*volumetweak);
+				SE_Play(se_shot2,60*volumetweak);
+			}
+			
+			// yield;
+		}
+		// wait(60);
+	}
+}
+
+
+
+
+
+
+task TShootKoishi{
+	
+	let N; let spd; let R; let r; let del;
+	alternative(rank)
+	case(RANK_EASY){ N = 8;  spd = 1;   R = 150; r = 10; del = 6; }
+	case(RANK_NORM){ N = 8;  spd = 1;   R = 150; r = 10; del = 6; }
+	case(RANK_HARD){ N = 12; spd = 1.5; R = 150; r = 10; del = 6; }
+	case(RANK_LUNA){ N = 12; spd = 2;   R = 150; r = 10; del = 6; }
+	let da = 360/N;
+	
+	wait(45);
+	// SetSpellCardA1(GetCommonData("CurrentSC2",""), [128,255,128], NAZRIN, dircut~"Cutin_Koishi.png");
+	SetSpellCardA1(2, [128,255,128], NAZRIN, dircut~"Cutin_Koishi.png");
+	
+	
+	
+	
+	while(!Obj_IsDeleted(bkoishi)&&!finishing){
+		O_SetPropertyAtFrame(bkoishi,RENDER_ALPHA,0,  120);
+		O_SetPropertyAtDelay(bkoishi,FLAG_INTERSECTION,false,60);
+		wait(120);
+		
+		OM_SetDestAtWrapF(bkoishi,px,py/2,[LFT,RGT,1,1.5,2.25,0.75],60);
+		wait(45);
+		O_SetPropertyAtFrame(bkoishi,RENDER_ALPHA,255,60);
+		O_SetPropertyAtDelay(bkoishi,FLAG_INTERSECTION,true,60);
+		wait(30);
+		
+		let dir = sign(kx-cx);
+		
+		let petals   = [PEL_WHITE   , PEL_YELLOW   , PEL_MAGENTA  , PEL_RED       ];
+		let corollas = [BALL_YELLOW , BALL_ORANGE  , BALL_WHITE   , BALL_YELLOW   ];
+		let colors = [ [255,255,150], [255,192, 64], [255,150,255], [255, 64, 64] ];
+		
+		ascent(j in 0..10){
+			let A = 90+270/10*j*dir;
+			let x = kx+R*cos(A);
+			let y = ky+R*sin(A);
+			
+			
+			let toss = rand(-1,1);
+			let a0=rand(0,360);
+			let type = randint(0,length(petals)-1);
+			
+			let c = colors[type];
+			loop(5){
+				EffectParticleA2(kx,ky,R/30,A+rand(-15,15),"HEART",30,0,0.5,c[0],c[1],c[2]);
+			}
+			
+			let shots = [];
+			let shot0 = CreateShotB2(x,y, 1*toss,-2, -0.01*toss,0.05, 0,3, corollas[type], 30);
+			// OR_SetColor(shot0,255,255,150);
+			OS_TintShot(shot0,255);
+			ascent(i in 0..N){
+				let a = a0+i*da;
+				let shot = CreateShotA1(x+r*cos(a),y+r*sin(a),0,a, petals[type], 30);
+				ObjShot_SetSpellResist(shot,true);
+				Obj_SetValue(shot,"IsPetal",true);
+				shots = shots~[shot];
+			}
+			TFlower(shot0,shots,r,3*toss);
+			task TFlower(shot0,shots,r,da){
+				while(!Obj_IsDeleted(shot0) && !isoffW(shot0,false,false,false,true)){
+					let a = OM_GetAngle(shot0);
+					let s = OM_GetSpeed(shot0);
+					let x = ObjMove_GetX(shot0)+s*cos(a);
+					let y = ObjMove_GetY(shot0)+s*sin(a);
+					ascent(i in 0..length(shots)){
+						let shot = shots[i];
+						let a = ObjMove_GetAngle(shot);
+						a+=da;
+						ObjMove_SetAngle(shot,a);
+						ObjMove_SetX(shot,x+r*cos(a));
+						ObjMove_SetY(shot,y+r*sin(a));
+					}
+					yield;
+				}
+				SE_Play(se_paf,50);
+				ascent(i in 0..length(shots)){
+					let shot = shots[i];
+					if(!Obj_IsDeleted(shot) && Obj_GetValueD(shot,"IsPetal",false)){
+						// ObjMove_SetSpeed(shot,2);
+						ObjShot_SetSpellResist(shot,false);
+						
+						let a = OM_GetAngle(shot);
+						let s = 3;
+						let dx = s*cos(a);
+						let dy = s*sin(a);
+						ObjMove_AddPatternB2(shot,0,dx,dy, -dx/360,-dy/180, dx/3,2);
+						
+						// BounceA1(shot,1,[LFT,RGT,TOP]);
+						TBounce(shot);
+					}
+					
+					task TBounce(shot){
+						while(!Obj_IsDeleted(shot)){
+							while(!mybounce(shot)){yield;}
+							wait(10);
+						}
+					}
+					function mybounce(shot){
+						if(!isoff(shot)){ return false; }
+						let x = OM_GetX(shot); let y = OM_GetY(shot);
+						if(y>sy){return false;}
+						if(Obj_IsDeleted(shot)){return true;}
+						let a;
+						let a0 = OM_GetAngle(shot);
+						if(y<0){
+							a = reflect(a0,0);
+						}else{
+							a = reflect(a0,90);
+						}
+						let s = ObjMove_GetSpeed(shot);
+						let dx = s*cos(a);
+						let dy = s*sin(a);
+						ObjMove_AddPatternB2(shot,0,dx,dy, -dx/180,-dy/60, dx/3,2);
+						return true;
+					}
+				}
+			}
+			
+			
+			SE_Play(se_chime,100);
+			wait(del);
+		}
+		
+	}
+}
+
+
+
+
+
+
+
+
+

@@ -28,6 +28,7 @@ let EV_FAIL_SPELL = EV_GAIN_SPELL+0.5; //defined separately in magic circle
 
 
 let SCRIPT_ALL="";
+let SCRIPT_OWN=":p";
 let SCRIPT_PACKAGE     = "PackageScriptID";
 let SCRIPT_SYSTEM      = "SystemScriptID"; 
 let SCRIPT_STAGE       = "StageScriptID";
@@ -45,6 +46,7 @@ let SCRIPT_ENDSCENE    = "EndSceneScriptID";
 let SCRIPT_MUSIC       = "MusicScriptID"; //same as system script
 
 function GetScriptID(type){
+	if(type==SCRIPT_OWN){return GetOwnScriptID;}
 	let id = GetCommonData(type,ID_INVALID);
 	return id;
 }
@@ -54,11 +56,11 @@ function SetScriptID(type){
 
 function Notify(type,event,args){
 	let id = GetScriptID(type);
-	// if(id==ID_INVALID || type==SCRIPT_ALL || xor(type==SCRIPT_PACKAGE,GetOwnScriptID==SCRIPT_PACKAGE) ) {
 	if(id==ID_INVALID || type==SCRIPT_ALL || ((type==SCRIPT_PACKAGE)!=(GetOwnScriptID==GetScriptID(SCRIPT_PACKAGE))) ) {
 		NotifyEventAll(event,args);
 	}
 	else{
 		NotifyEvent(id,event,args);
+		return GetScriptResult(id);
 	}
 }

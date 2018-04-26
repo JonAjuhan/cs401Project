@@ -118,32 +118,132 @@ task MainTask {
 	
 	arr = Arr_Init(size,NULL);
 	let i = 0;
+	// loop{
+		// loop(ops_per_frame){
+			// let v = Arr_Get(arr,i);
+			// Arr_Set(arr,i,v+1);
+			// i=(i+1)%size;
+		// }
+		// yield;
+	// }
+	
+	let INF00 = 1/0;
+	let IND00 = 0/0;
+	let QNAN0 = -(0/0);
+	
+	//IND00 = (-1)^0.5
+	//IND00 = INF00 * 0
+	
+	
+	// Define a >?> b as "a is less undefined than b".
+	// Theorem \#INF00:
+	// If a >?> b, then any operation with a,b as its operands
+	//  cannot return a value less undefined than b.
+
+	// INF00 >?> IND00 >?> QNAN0
+	
+	
+	
+	WriteLog("..........................................");
+	WriteLog("++++++++++++++++++++++++++++++++++++++++++");
+	WriteLog("==========================================");
+	WriteLog("##########################################");
+	// WriteLog((-1)^0.5); // = IND00
+	
+	// WriteLog(INF00*IND00*QNAN0);
+	// WriteLog(QNAN0*IND00*INF00);
+	
+	let a = INF00;
+	// let b = IND00;
+	let b = INF00;
+	// let c = QNAN0;
+	let c = 0;
+	
+	WriteLog(a*b*c);
+	WriteLog(b*c*a);
+	WriteLog(c*a*b);
+	WriteLog(a*c*b);
+	WriteLog(c*b*a);
+	WriteLog(b*a*c);
+	
+	
+	WriteLog("##########################################");
+	WriteLog("==========================================");
+	WriteLog("++++++++++++++++++++++++++++++++++++++++++");
+	WriteLog("..........................................");
+	
+	let INF = 1/0;
+	let UNDEFINED = 0/0;
+	
 	loop{
-		loop(ops_per_frame){
-			let v = Arr_Get(arr,i);
-			Arr_Set(arr,i,v+1);
-			i=(i+1)%size;
+		WriteLog("=============================");
+		WriteLog("Dividing << "~itoa(i*(-1)^i)~" >> by zero");
+		let n = i/0;
+		// let m = \#IND00; let m = 1\#IND00;
+		WriteLog("n:");
+		WriteLog(n);
+		WriteLog("ToString(n):");
+		WriteLog(ToString(n));
+		WriteLog("-n:");
+		WriteLog(-n);
+		// WriteLog("Absolute value of n:");
+		// WriteLog((|n|));
+		// WriteLog("Absolute value of -n:");
+		// WriteLog((|-n|));
+		WriteLog("1/n:");
+		WriteLog(1/n);
+		WriteLog("n/n:");
+		WriteLog(n/n);
+		WriteLog("n/(|n|):");
+		WriteLog(n/(|n|));
+		WriteLog("Parity of n:");
+		WriteLog((-1)^n);
+		WriteLog("sqrt(n):");
+		WriteLog(n^0.5);
+		WriteLog("IsInfinite:");
+		WriteLog(n*n==n && n!=1&&n!=0 || n!=n);
+		WriteLog("is positive:");
+		WriteLog(n>0);
+		WriteLog("greater than IND00:");
+		WriteLog(n>IND00);
+		WriteLog("Equals #IND00:");
+		WriteLog(InfEquals(n,IND00));
+		WriteLog("Equals #INF00:");
+		WriteLog(InfEquals(n,INF00));
+		WriteLog("Equals #QNAN0:");
+		WriteLog(InfEquals(n,QNAN0));
+		
+		WriteLog("ToString, char-by-char, of -n:");
+		ascent(i in 0..length(ToString(n))){
+			// WriteLog(tost(i) ~ "   " ~ ((ToString(n))[i]) );
+			WriteLog(ToString(n)[i]);
 		}
-		yield;
+		
+		
+		wait(30); i++;
+		WriteLog("=============================");
+	}
+	
+	function IsInfinite(n){
+		return (|n|) > (0/0);
+		if(n==1/0){return true;}
+		if(n==0/0){return true;}
+		
+		return false;
+	}
+	
+	function InfEquals(a,b){
+		return ToString(a)==ToString(b);
+	}
+	
+	function InfSign(n){
+		let str = ToString(n);
+		if(str[0]=='-'){ return -1*atoi(str[1]); }
+		else{ return atoi(str[0]); }
 	}
 	
 	
-	
-	
-	
-	let npf = 10;
-	loop{
-		loop(npf){
-			ascent(k in 0..size){
-				let v = Arr_Get(arr,k);
-				Arr_Set(arr,k,v);
-			}
-		}
-		yield;
-	}
-	
-	
-	let size2 = size*3; let arr2 = Arr_Init(size2,NULL); 
+	let size2 = size*3; let arr2 = Arr_Init(size2,NULL); let npf=100;
 	let j = 0;
 	loop{
 		

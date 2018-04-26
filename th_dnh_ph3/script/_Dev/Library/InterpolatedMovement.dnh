@@ -140,23 +140,23 @@ task ObjMove_SetDestAtHermiteS(obj,dest_x,dest_y,x_dir,x_angle,y_dir,y_angle,spe
         real ini_y = ObjRender_GetY(obj);
  
         while(t<1){
-                real scale = t/1;
-                real h1a = 2*scale^3 - 3*scale^2 + 1;
-                real h2a = -2*scale^3 + 3*scale^2;
-                real h3a = scale^3 - 2*scale^2 + scale;
-                real h4a = scale^3 - scale^2;
-                real fx = h1a*ini_x + h2a*dest_x + h3a*x_dir + h4a*x_angle;
-               
-                real h1b = 2*scale^3 - 3*scale^2 + 1;
-                real h2b = -2*scale^3 + 3*scale^2;
-                real h3b = scale^3 - 2*scale^2 + scale;
-                real h4b = scale^3 - scale^2;
-                real fy = h1b*ini_y + h2b*dest_y + h3b*y_dir + h4b*y_angle;
-               
-                ObjRender_SetPosition(obj,fx,fy,0);
-               
-                t+=speed/100;
-                yield;
+			real scale = t/1;
+			real h1a =  2*scale^3 - 3*scale^2 + 1;
+			real h2a = -2*scale^3 + 3*scale^2;
+			real h3a =    scale^3 - 2*scale^2 + scale;
+			real h4a =    scale^3 -   scale^2;
+			real fx = h1a*ini_x + h2a*dest_x + h3a*x_dir + h4a*x_angle;
+		   
+			real h1b =  2*scale^3 - 3*scale^2 + 1;
+			real h2b = -2*scale^3 + 3*scale^2;
+			real h3b =    scale^3 - 2*scale^2 + scale;
+			real h4b =    scale^3 -   scale^2;
+			real fy = h1b*ini_y + h2b*dest_y + h3b*y_dir + h4b*y_angle;
+		   
+			ObjRender_SetPosition(obj,fx,fy,0);
+		   
+			t+=speed/100;
+			yield;
         }
 }
  
@@ -168,23 +168,23 @@ task ObjMove_SetDestAtHermiteF(obj,dest_x,dest_y,x_dir,x_angle,y_dir,y_angle,fra
         real speed = (1-0)/frames;
  
         loop(frames){
-                real scale = t/1;
-                real h1a = 2*scale^3 - 3*scale^2 + 1;
-                real h2a = -2*scale^3 + 3*scale^2;
-                real h3a = scale^3 - 2*scale^2 + scale;
-                real h4a = scale^3 - scale^2;
-                real fx = h1a*ini_x + h2a*dest_x + h3a*x_dir + h4a*x_angle;
-               
-                real h1b = 2*scale^3 - 3*scale^2 + 1;
-                real h2b = -2*scale^3 + 3*scale^2;
-                real h3b = scale^3 - 2*scale^2 + scale;
-                real h4b = scale^3 - scale^2;
-                real fy = h1b*ini_y + h2b*dest_y + h3b*y_dir + h4b*y_angle;
-               
-                ObjRender_SetPosition(obj,fx,fy,0);
-               
-                t+=speed;
-                yield;
+			real scale = t/1;
+			real h1a =  2*scale^3 - 3*scale^2 + 1;
+			real h2a = -2*scale^3 + 3*scale^2;
+			real h3a =    scale^3 - 2*scale^2 + scale;
+			real h4a =    scale^3 -   scale^2;
+			real fx = h1a*ini_x + h2a*dest_x + h3a*x_dir + h4a*x_angle;
+		   
+			real h1b =  2*scale^3 - 3*scale^2 + 1;
+			real h2b = -2*scale^3 + 3*scale^2;
+			real h3b =    scale^3 - 2*scale^2 + scale;
+			real h4b =    scale^3 -   scale^2;
+			real fy = h1b*ini_y + h2b*dest_y + h3b*y_dir + h4b*y_angle;
+		   
+			ObjRender_SetPosition(obj,fx,fy,0);
+		   
+			t+=speed;
+			yield;
         }
 }
 

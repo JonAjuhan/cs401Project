@@ -38,9 +38,10 @@ task TPlural {
 	//params: boss scene object, lifebar number, filepath
 	ObjEnemyBossScene_Add(obj,0,dir~"Single-7-SatoriKoishi-Dialogue.dnh");
 	ObjEnemyBossScene_Add(obj,0,dir~"Single-7-SatoriKoishi-01.dnh");
+	ObjEnemyBossScene_Add(obj,0,dir~"Single-7-SatoriKoishi-04.dnh");
 	ObjEnemyBossScene_Add(obj,1,dir~"Single-7-SatoriKoishi-02.dnh");
-	ObjEnemyBossScene_Add(obj,2,dir~"Single-7-SatoriKoishi-03.dnh");
-	ObjEnemyBossScene_Add(obj,2,dir~"Single-7-SatoriKoishi-Explode.dnh");
+	ObjEnemyBossScene_Add(obj,1,dir~"Single-7-SatoriKoishi-03.dnh");
+	ObjEnemyBossScene_Add(obj,1,dir~"Single-7-SatoriKoishi-Explode.dnh");
 	
 	ObjEnemyBossScene_LoadInThread(obj);
 	
