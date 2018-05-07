@@ -1,124 +1,220 @@
 let csd = GetCurrentScriptDirectory;
 let sed = csd~"../se/";
 
-//let shot =  csd~"../se/shot.wav";
-//let chime =  csd~"../se/chime.wav";
+//////////////////////////////////////////////////////////////////////
+// Shots
+//////////////////////////////////////////////////////////////////////
+let se_shot =  sed~"shot.wav";  //the punchiest - louder than the others
 
-let se_shot =  csd~"../se/shot.wav";
-let se_chime = csd~"../se/chime.wav";
-let se_chime2 = csd~"../se/chime2.wav";
-let se_exshot = sed~"exattack.wav";
-
-let se_spellcard =  csd~"../se/spellcard.wav"; let spellcard=se_spellcard;
-let se_spellbreak = csd~"../se/spellbreak.wav"; let spellbreak=se_spellbreak;
-let se_caution = csd~"../se/caution.wav";
-let se_defeated = csd~"../se/defeated.wav"; let defeated=se_defeated;
-let se_pause = sed~"Touhou Pause.wav";
-
-let se_charge = csd~"../se/charge.wav";
-let se_charge2 = csd~"../se/charge2.wav";
-let se_charge3 = csd~"../se/charge3.wav";
-let se_charge3b = csd~"../se/charge3-2.wav";
-
-//Menu
-let se_select = sed~"select.wav";
-let se_confirm = sed~"selectok.wav";
-let se_cancel = sed~"selectcancel.wav";
-let se_invalid = sed~"selectinvalid.wav";
-
-let time1 = csd~"../se/se_timeout1.wav";
-let time2 = csd~"../se/se_timeout2.wav";
-let se_graze = sed~"graze.wav";
-
-let se_extend = csd~"../se/extend.wav";
-let se_item = sed~"item.wav";
-let se_item2 = sed~"item2.wav";
-
-let se_laser  = csd~"../se/se_lazer00.wav";
-let se_laser1 = csd~"../se/laser1.wav";
-let se_laser2 = csd~"../se/laser2.wav";
-let se_laser8 = csd~"../se/laser8.wav";
-
-let se_seal = csd~"../se/se_gun00.wav";
-let se_spark = csd~"../se/spark.wav";
-
-let bom_00 = csd~"../se/Hina/bom_00.wav";
-let se_smite = csd~"../se/smite.wav";
-let se_thunder = csd~"../se/thunder.wav";
-
-let se_swrlaser = csd~"../se/swrlaser.wav";
-let se_swrbeam = csd~"../se/swrbeam.wav";
-
-let se_explode = csd~"../se/explode.wav"; let explode = se_explode;
-let se_horn = csd~"../se/se_horn.wav"; let horn = se_horn;
-let se_hornshort = csd~"../se/se_hornshort.wav";
-
-let nyaa = csd~"../se/orin.wav"; let se_nyaa=nyaa;
-let awoo = csd~"../se/wolf.wav"; let se_awoo=awoo;
-let se_laugh = sed~"se_laugh.wav";
-
-let se_gap = csd~"../se/gap.wav";
-let se_gap2 = csd~"../se/gap2.wav";
-let se_gapshot = csd~"../se/gapshot.wav";
-
-let se_warp = csd~"../se/se_warp_n.wav";
-let se_warp_l = csd~"../se/se_warp_l.wav";
-let se_warp_r = csd~"../se/se_warp_r.wav";
-
-let se_vanish = sed~"vanish.wav";
-let se_sukima = sed~"se_sukima.wav";
-let se_shift = sed~"se_shift.wav";
-let se_split = sed~"split.wav";
-let se_glint = sed~"glint.wav";
-
-let se_splash = csd~"../se/se_water.wav";
-let se_anchor = csd~"../se/se_anchor.wav";
-
-let se_fam = csd~"../se/se_option.wav";
-let se_fam2 = csd~"../se/se_option_short.wav";
-let se_slash = csd~"../se/se_slash.wav";
-let se_ice = csd~"../se/ice.wav";
-
-let damage1 = csd~"../se/se_damage00.wav";
-let damage2 = csd~"../se/se_damage01.wav";
-let nodamage = csd~"../se/se_nodamage.wav";
-
-//variations of spellbreak se
-let se_tan00 = csd~"../se/se_tan00.wav";
-let se_tan01 = csd~"../se/se_tan01.wav";
-let se_tan02 = csd~"../se/se_tan02.wav";
-
-
-//variations of shot se
-let se_shot1 = csd~"../se/Shot1.wav";
-let se_shot2 = csd~"../se/Shot2.wav";
-let se_shot3 = csd~"../se/Shot3.wav";
-let se_shot4 = csd~"../se/Shot4.wav";
-let se_shot5 = csd~"../se/Shot5.wav";
-let se_shot6 = csd~"../se/Shot6.wav";
-let se_shot7 = csd~"../se/Shot7.wav";
-let se_shot8 = csd~"../se/Shot8.wav";
+let se_shot1 = sed~"Shot1.wav"; //quite soft
+let se_shot2 = sed~"Shot2.wav"; //kinda rolls the start
+let se_shot3 = sed~"Shot3.wav"; //muffled a bit
+let se_shot4 = sed~"Shot4.wav"; //different; higher-pitch, muffled whipcrack?
+let se_shot5 = sed~"Shot5.wav"; //different; distant gunshot? muffled
+let se_shot6 = sed~"Shot6.wav"; //distant se_shot?
+let se_shot7 = sed~"Shot7.wav"; //sounds more like an energy pellet sort of thing
+let se_shot8 = sed~"Shot8.wav"; //twangy, zingy, charge-shot-y, version of standard shot se
 function se_shotrand{ return sed~"shot"~itoa(rand(1,8))~".wav";}
 
+let se_tan00    = sed~"se_tan00.wav";
+let se_tan01    = sed~"se_tan01.wav";
+let se_tan02    = sed~"se_tan02.wav";
 
-//variations of chime se
-let se_kira01 = csd~"../se/se_kira01.wav";	//koish wave hi
-let se_kira02 = csd~"../se/se_kira02.wav";	//
+//////////////////////////////////////////////////////////////////////
+// Chimes
+//////////////////////////////////////////////////////////////////////
+let se_chime       = sed~"chime.wav";     //normal chime
+let se_chime2      = sed~"chime2.wav";    //flourish chime
+let se_chime3      = sed~"chime3.wav";    //flat chime
+
+let se_flourish    = sed~"se_kira01.wav"; //
+let se_kira        = sed~"se_kira02.wav";
+
+let se_kira01      = sed~"se_kira01.wav";	//long flourish
+let se_kira02      = sed~"se_kira02.wav";	//short flourish
+
+let se_wave        = sed~"hiwave.wav";	    //Koishi wave hi, resembles flourish but flatter
+let se_warn        = sed~"warn.wav";	    //resembles short flourish but lower
+
+//////////////////////////////////////////////////////////////////////
+// Charges
+//////////////////////////////////////////////////////////////////////
+let se_charge        = sed~"charge.wav";      //
+let se_charge1       = sed~"charge.wav";      //"Pulse" charge
+let se_charge2       = sed~"charge2.wav";     //"Gather" charge
+let se_charge3       = sed~"charge3.wav";     //"Round" charge
+
+let se_charge2b      = sed~"se_power0.wav";   //Longer, warblier "gather" charge
+let se_charge3b      = sed~"charge3-2.wav";   //Longer "round" charge
+//Aliases
+let se_charge_pulse  = sed~"charge.wav";
+let se_charge_gather = sed~"charge2.wav";
+let se_charge_round  = sed~"charge3.wav";
 
 
-let se_train = csd~"../se/train1.wav";
-let se_tracks= csd~"../se/train2.wav";
 
-let se_timestop = sed~"timestop.wav";
-let se_timestall= sed~"timestopshrink.wav";
+//////////////////////////////////////////////////////////////////////
+// Lasers
+//////////////////////////////////////////////////////////////////////
+
+let se_laser  = sed~"se_lazer00.wav";   //tEEEEEEEEEEEww
+let se_laser1 = sed~"laser1.wav";       //sounds a bit like a Seal
+let se_laser2 = sed~"laser2.wav";       //like se_laser but a bit flatter, maybe? might be the same
+
+//////////////////////////////////////////////////////////////////////
+// Other "shot" stuff
+//////////////////////////////////////////////////////////////////////
+
+let se_slash    = sed~"se_slash.wav";
+
+let se_seal     = sed~"se_gun00.wav"; //Fantasy Seal
+let se_spark    = sed~"spark.wav";    //Master Spark
+
+let se_swrlaser = sed~"swrlaser.wav";
+let se_swrbeam  = sed~"swrbeam.wav";
+
+let se_split    = sed~"split.wav";
+let se_exshot   = sed~"exattack.wav"; //sounds like kira02 sorta?
+
+
+
+//////////////////////////////////////////////////////////////////////
+// Effects
+//////////////////////////////////////////////////////////////////////
+let se_explode   = sed~"explode.wav";    //Okuu "crash" explosion
+
+let se_horn      = sed~"se_horn.wav"; 
+let se_hornshort = sed~"se_hornshort.wav";
+
+let se_splash     = sed~"se_water.wav";
+let se_anchor     = sed~"se_anchor.wav";
+
+
+let se_caution    = sed~"caution.wav";
+
+let se_bonus      = sed~"capture.wav"; //Spellcard bonus
+let se_bonus1     = sed~"bonus1.wav";  //Spawn piece - lower pitch
+let se_bonus2     = sed~"bonus2.wav";  //Spawn piece - higher pitch
+
+
+
+let se_fam        = sed~"se_option.wav";
+let se_fam2       = sed~"se_option_short.wav";
+let se_paf        = sed~"se_enep00.wav";   //normal enemy explode paf
+
+let se_warp       = sed~"se_warp_n.wav"; //SA ReimuA screen warp
+let se_warp_l     = sed~"se_warp_l.wav"; //left
+let se_warp_r     = sed~"se_warp_r.wav"; //right
+
+let se_gap        = sed~"gap.wav";       //Open gap
+let se_gap2       = sed~"gap2.wav";      //more... dramatic gap open???
+let se_gapshot    = sed~"gapshot.wav";   //swoosh
+
+let se_ice        = sed~"ice.wav";
+
+let se_vanish     = sed~"vanish.wav"; //Koishi vanish
+
+
+
+
+let se_train      = sed~"train1.wav";
+let se_tracks     = sed~"train2.wav";
+
+let se_timestop   = sed~"timestop.wav";
+
+
+
+
+
+//////////////////////////////////////////////////////////////////////
+// Others
+//////////////////////////////////////////////////////////////////////
+let se_nyaa         = sed~"orin.wav";
+let se_awoo         = sed~"wolf.wav";
+let se_laugh        = sed~"se_laugh.wav";
+let se_warnbeep     = sed~"timecount.wav";	//beep
+let se_warncritical = sed~"se_life1.wav";	//"last life" warning beeps
+
+//////////////////////////////////////////////////////////////////////
+// ???
+//////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////
+// Troll
+//////////////////////////////////////////////////////////////////////
+let se_theworld   = sed~"TrollSounds/za warudo.wav";
+
+//////////////////////////////////////////////////////////////////////
+// Highly irregular
+//////////////////////////////////////////////////////////////////////
+let se_smite = sed~"smite.wav";
+let se_thunder = sed~"thunder.wav";
+let se_glint = sed~"glint.wav";
+let se_shift = sed~"se_shift.wav";
+let se_sukima = sed~"se_sukima.wav"; //gap open? then some weird noise?
+let se_bubble     = sed~"bubble.wav";
+let se_timestall  = sed~"timestopshrink.wav";
 let se_timeunstall= sed~"timereversegrow.wav";
 
-let se_theworld = sed~"TrollSounds/za warudo.wav";
+//////////////////////////////////////////////////////////////////////
 
-let se_paf = csd~"../se/se_enep00.wav";   let paf = se_paf;
-let se_bubble = sed~"bubble.wav";
 
-let se_playershot = csd~"../se/playershot.wav";
+
+
+
+
+
+
+//////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////
+// System
+//////////////////////////////////////////////////////////////////////
+let se_spellcard    = sed~"spellcard.wav"; 
+let se_spellbreak   = sed~"spellbreak.wav";
+let se_defeated     = sed~"defeated.wav";  
+
+let se_extend       = sed~"extend.wav";
+let se_item         = sed~"item.wav";
+let se_item2        = sed~"item2.wav";
+
+let se_pause        = sed~"Touhou Pause.wav";
+let se_select       = sed~"select.wav";
+let se_confirm      = sed~"selectok.wav";
+let se_cancel       = sed~"selectcancel.wav";
+let se_invalid      = sed~"selectinvalid.wav";
+
+let se_time1        = sed~"se_timeout1.wav";
+let se_time2        = sed~"se_timeout2.wav";
+let se_graze        = sed~"graze.wav";
+
+let se_damage1         = sed~"se_damage00.wav";
+let se_damage2         = sed~"se_damage01.wav";
+let se_nodamage        = sed~"se_nodamage.wav";
+
+let se_playershot   = sed~"playershot.wav";
+let se_pitchuun     = sed~"se_pitchuun.wav";
+
+
+//////////////////////////////////////////////////////////////////////
+//Aliases (outdated, do not use)
+//////////////////////////////////////////////////////////////////////
+let explode=se_explode;
+let horn=se_horn;
+let paf=se_paf;
+let spellcard=se_spellcard;
+let spellbreak=se_spellbreak;
+let defeated=se_defeated;
+let nyaa=se_nyaa;
+let awoo=se_awoo;
+let time1=se_time1;
+let time2=se_time2;
+let damage1=se_damage1; 
+let damage2=se_damage2;
+let nodamage=se_nodamage;
+//////////////////////////////////////////////////////////////////////
+
 
 
 
@@ -150,7 +246,7 @@ function SE_Play(let path, let vl){
 		let name = path[length(path)-9..length(path)-4];
 		SetCommonData("SoundManage_"~name,seobj);
 		
-		loop(180){yield;} //120
+		loop(270){yield;} //180    //120
 		
 		//If the sound has been played again since starting this task,
 		//leave it loaded. Then the last one to use it unloads it.

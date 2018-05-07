@@ -39,7 +39,7 @@ let bsatori; let bkoishi;
 
 
 task MainTask {
-	if(noPlural){SetBGM("Hartmann's Youkai Girl@Magnum Opus",17.12,298.97);}
+	if(noPlural){SetBGM("Hartmann's Youkai Girl@Magnum Opus");}
 	
 	SE_Play(se_defeated,100);
 	ascent(b in 0..2){

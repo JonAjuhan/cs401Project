@@ -57,7 +57,8 @@ task InitPlural{
 task TStage {
 	let csd = GetCurrentScriptDirectory();
 
-	SetBGM("Last Remote@Magnum Opus",88.29,271.67);
+	// SetBGMLoop("Last Remote@Magnum Opus",88.29,271.67);
+	SetBGM("Last Remote@Magnum Opus");
 	if(noPackage){ ShowPointOfCollection; }
 	
 	FadeToBlack(0,0,60);
@@ -98,7 +99,7 @@ task TStage {
 			   dirimg~"ThirdEyes.png",[0,0,255,255]);
 	wait(240);	
 	
-	Notify(SCRIPT_BACKGROUND,EV_USER_STAGE+1,[true]);
+	Notify(SCRIPT_BACKGROUND,EV_USER_STAGE+1,[1]);
 	
 	
 	xarr = [0.4,0.6,0.25,0.5,0.75];
@@ -161,7 +162,6 @@ task TStage {
 	// StartScript(bossScript);
 	NotifyEvent(bossScript,EV_START_BOSS,[]);
 	
-	// SetBGM("Deaf to All But the Song",70.7, 141.38); //now done in dialogue single
 	while(!IsCloseScript(bossScript) && GetPlayerState() != STATE_END){
 		yield;
 	}

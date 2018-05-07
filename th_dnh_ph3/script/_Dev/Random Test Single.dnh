@@ -4,10 +4,11 @@
 #Text["blup"] 
 // #BGM["./bgm/bgm - Deaf to All but the Song.ogg"]
 #System["./system/Andi_System.txt"]
-// #Background["./system/Background/Mystia/BG_work.txt"]
+#Background["./system/Background/Satori/BG_work.txt"]
 
 #include "./Index.txt"
 #include "./Package/PackageFunctions.txt"
+#include "./Library/ExperimentalFunctions.txt"
 
 @Event
 {
@@ -17,7 +18,7 @@
 @Initialize
 {
 
-	boss = spawnBossBlank("Mystia Lorelai");
+	boss = CreateBossA1("Mystia Lorelai",[255,0,255]);
 	renderMystiaIN(boss,1);
 	
 	MainTask;
@@ -28,89 +29,488 @@
 	frame++;yield;
 }
 
-let type;
-let arr;
-let a0;let a1;let a2;let a3;let a4;let a5;let a6;let a7;let a8;let a9;
-
-function Arr_Init(n,v){
-	let a;
-	alternative(type)
-	case('V'){ a=""; a0=v; }
-	case('v'){ a=""; ascent(i in 0..n){ SetAVar(i,v); } }
-	case('n'){ a=[]; loop(n){a=a~[v];} }
-	case('o'){  
-		a=""; ascent(i in 0..n){ Obj_SetValue(a,itoa(i),v); }
-		Obj_SetValue(a,"length",n);
-	}
-	case('c'){  
-		a="arr"~itoa(GetNextHash);  ascent(i in 0..n){ SetCommonData(a~itoa(i),v); }
-		SetCommonData(a~"length",n);
-	}
-	case('a'){
-		a="arr"~itoa(GetNextHash);
-		if(!IsCommonDataAreaExists(a)){	CreateCommonDataArea(a); } else { ClearAreaCommonData(a); }
-		ascent(i in 0..n){ SetAreaCommonData(a,itoa(i),v); } 
-		SetAreaCommonData(a,"length",n);
-	}
-	return a;
-}
-
-function Arr_Set(a,i,v){
-	alternative(type)
-	case('V'){ a0=v; }
-	case('v'){ SetAVar(i,v); }
-	case('n'){ arr[i] = v; } //cheating a bit
-	case('o'){ Obj_SetValue(a,itoa(i),v); }
-	case('c'){ SetCommonData(a~itoa(i),v); }
-	case('a'){ SetAreaCommonData(a,itoa(i),v); }
-}
-function Arr_Get(a,i){
-	alternative(type)
-	case('V'){ return a0; }
-	case('v'){ return GetAVar(i); }
-	case('n'){ return a[i]; }
-	case('o'){ return Obj_GetValue(a,itoa(i)); }
-	case('c'){ return GetCommonData(a~itoa(i),NULL); }
-	case('a'){ return GetAreaCommonData(a,itoa(i),NULL); }
-}
-
-function Arr_Length(a){
-	alternative(type)
-	case('n'){ return length(a); }
-	case('o'){ return Obj_GetValue(a,"length"); }
-	case('c'){ return GetCommonData(a~"length",0); }
-	case('a'){ return GetAreaCommonData(a,"length",0); }
-}
-
-
-
-function GetAVar(i){
-	alternative(i)
-	case(0){return a0;}case(1){return a1;}case(2){return a2;}case(3){return a3;}case(4){return a4;}case(5){return a5;}case(6){return a6;}case(7){return a7;}case(8){return a8;}case(9){return a9;}
-}
-function SetAVar(i,v){
-	alternative(i)
-	case(0){a0=v;}case(1){a1=v;}case(2){a2=v;}case(3){a3=v;}case(4){a4=v;}case(5){a5=v;}case(6){a6=v;}case(7){a7=v;}case(8){a8=v;}case(9){a9=v;}
-}
-
-
-
-type = 'v';
-// V:    | 27 |    | 33    single variable
-// v: 13 |    | 13 | 12    10 variables w/alternative
-// n: 09 | 24 | 21 | 19    normal array
-// o: 14 | 16 | 16 | 15    object dictionary
-// c: 09 | 11 | 10 | 10    common data
-// a: 09 | 11 | 11 | 10    area common data
-
 
 
 
 task MainTask {
-	// if(noStage){SetBGM("Song of the Night Sparrow ~ Night Bird",145.8,292.4);}
+	// if(noStage){SetBGM("Song of the Night Sparrow ~ Night Bird");}
+	if(noStage){SetBGM("Flight of the Bamboo Cutter ~ Lunatic Princess");}
 	ObjMove_SetPosition(boss,cx+120,-120);
 	ObjMove_SetDestAtWeight(boss,cx,120,60,20);
-	SetShotAutoDeleteClip(8,8,8,8);
+	// SetShotAutoDeleteClip(8,8,8,8);
+	
+	wait(30);
+	let a = 0;
+	let ang = 0;
+	
+	
+	DebugTrace(0,["","","","",""],[]);
+	let count=0;
+	loop{
+		// let s = 2;
+		// let a = 0.05;
+		// let m = 1;
+		
+		let sA = [   2,   3,  -5,  10,rand(-5,5)];
+		let aA = [0.05,-0.5, 0.5,-0.5,rand(-0.1,0.1)];
+		let mA = [   1,   0,  50, -10,rand(-5,5)];
+		
+		count=4;
+		let s0 = sA[count%length(sA)];
+		let a0 = aA[count%length(aA)];
+		let m0 = mA[count%length(mA)];
+		
+		let s=s0;
+		let a=a0;
+		let m=m0;
+		
+		count++;
+		ang+=5;
+		
+		// let shot = ShotA2(cx,cy,s0,ang, a0,m0, KUNAI_RED,5);
+		let shot = ShotB2(cx,cy,s0,0, a0,0, m0,0, KUNAI_RED,5);
+		Manage(shot);
+		task Manage(shot){
+			let div = StraightLaserA1(cx,0,90,100,30,LAS_WHITE,999,120);
+			
+			
+			let xs = cx+15*s; let xa = cx+150*a; let xm = cx+15*m; let xr= cx;
+			let ys =      50; let ya =       70; let ym =      90; let yr=170;
+			let L_SM = StraightLaserA1(xs,ys,getangle(xs,ys,xm,ym),getdist(xs,ys,xm,ym),30,LAS_WHITE,999,120);
+			let L_SA = StraightLaserA1(xs,ys,getangle(xs,ys,xa,ya),getdist(xs,ys,xa,ya),30,LAS_WHITE,999,120);
+			let L_MA = StraightLaserA1(xm,ym,getangle(xm,ym,xa,ya),getdist(xm,ym,xa,ya),30,LAS_WHITE,999,120);
+			if(sgn(s)!=sgn(m)){ OR_SetColor(L_SM, 255,  0,255); }
+			if(sgn(s)!=sgn(a)){ OR_SetColor(L_SA, 255,255,  0); }
+			if(sgn(m)!=sgn(a)){ OR_SetColor(L_MA,   0,255,255); }
+			
+			let S = ShotA1(xs,ys,0,90-90*sgn(s0), KUNAI_RED   , 0); OS_TintShot(S,255);
+			let A = ShotA1(xa,ya,0,90-90*sgn(a0), KUNAI_GREEN , 0); OS_TintShot(A,255); //OR_SetAlpha(A,128);
+			let M = ShotA1(xm,ym,0,90-90*sgn(m0), KUNAI_BLUE  , 0); OS_TintShot(M,255);
+			let R = ShotA1(xr,yr,0,90           , KUNAI_WHITE , 0); OS_TintShot(R,255);
+			
+			
+			let L_RX = StraightLaserA1(xr,yr,getangle(xr,yr,cx,cy),getdist(xr,yr,cx,cy),30,LAS_WHITE,999,120);
+			
+			SE_Play(se_chime,100);
+			OS_SetDeleteFrame(shot,100);
+			let t=0;
+			while(!Obj_IsDeleted(shot)){
+				// s=OM_GetSpeed(shot); a=OM_GetAcceleration(shot); m=OM_GetMaxSpeed(shot);
+				s=OM_GetSpeedX(shot); a=OM_GetAccelerationX(shot); m=OM_GetMaxSpeedX(shot);
+				OM_SetX(S,cx+15*s);
+				OM_SetX(A,cx+150*a);
+				OM_SetX(M,cx+15*m);
+				
+				let r = cx + s0*t + 1/2*a0*t^2;
+				OM_SetX(R, r);
+				
+				let x = OM_GetX(shot);
+				OM_SetX(L_RX,r);
+				ObjStLaser_SetAngle(L_RX, getangle(r,yr,x,cy) );
+				ObjLaser_SetLength (L_RX, getdist (r,yr,x,cy) );
+				
+				if(GetVirtualKeyState(VK_SLOWMOVE)==KEY_PUSH){
+					SE_Play(se_flourish,40);
+					DebugTrace(20,["s0","a0","m0",""],[s0,a0,m0]);
+					DebugTrace(30,["s","a","m"],[s,a,m]);
+				}
+				
+				yield; t++;
+			}
+			
+			
+			
+			SE_Play(se_paf,100);
+			OS_Delete(S);
+			OS_Delete(A);
+			OS_Delete(M);
+			OS_Delete(R);
+		}
+		
+		
+		wait(120);
+	}
+	
+	
+	//          Speed/Angle Move:
+	//-------------------------
+	//          NO:
+	//          
+	//          sma|      |ams
+	//           sa|m    m|as
+	//           ms|a    a|sm
+	//            m|as  sa|m 
+	//          sam|      |msa
+	//             |      |  
+	//             |      |  
+	//-------------------------
+	//          YES:
+	//          
+	//           sm|a    a|ms
+	//           ma|s    s|am
+	//          msa|      |asm
+	//             |      |  
+	//             |      |  
+	//             |      |  
+	//             |      |  
+	//             |      |  
+	//-------------------------
+	//          
+	//          
+	//          
+//          X/Y Move:
+	//-------------------------
+	//          NO:
+	//          
+	//             |      |sma
+	//          sma|      |  
+	//           as|m     |  
+	//           ma|s    s|am
+	//           ms|a    a|sm
+	//             |     m|as
+	//             |      |  
+	//             |      |  
+	//             |      |  
+	//-------------------------
+	//          YES:
+	//          
+	//             |      |  
+	//             |      |  
+	//             |      |  
+	//             |      |  
+	//             |      |  
+	//-------------------------
+	//          
+	//          
+	//          
+	//          
+	//          
+	//          (Note that "a" here is really 10*a)
+	//          (And also only its sign actually matters)
+	//          
+	//          
+	//          
+	//          
+	//          What doesn't work:
+	//          
+	//          s < m < a < 0     sma|
+	//          s < a < 0 < m      sa|m
+	//          m < s < 0 < a      ms|a
+	//          m < 0 < a < s       m|as
+	//          a < 0 < s < m       a|sm
+	//          
+	//          
+	//          What does work:
+	//          s < m < 0 < a      sm|a
+	//          m < a < 0 < s      ma|s
+	//          m < s < a < 0     msa| 
+	//          a < 0 < m < s       a|ms
+	//          
+	//        
+	
+	loop{
+		
+		let N = 60;
+		let dy = 5*N/60;
+		
+		let x0 = px;
+		ascent(i in 0..N){
+			
+			let dx=rand(-5,5); let dy=rand(-3,-2);
+			
+			let s=sqrt(dx^2+dy^2);
+			let xya=atan2(dy,dx);
+			let delay = DELAY_RING+30;   //20+15*sin(frame*5)
+			// let r = 50+50*sin(frame*5);
+			let r = -50+25*sin(frame*5);
+			let x = x0+r/2*cos(a);
+			let y = sy+20-5*i;
+			a += r^2/100;
+			
+			let len = 100-20*sin(frame*5);
+			
+			// let graph = ICE_PURPLE - round(i/10);
+			let graph = KUNAI_RED;
+			
+			// let las = LooseLaserA1(x,y,0,xya, len,30,graph,delay);
+			let las = ShotA1(x,y,1,xya,graph,delay);
+			let del = 2*N + 2*(N-i);
+			// OM_AddPatternA2(las,del,1,NO_CHANGE, 0.05,0,3);
+			
+			TDelShot(las,i);
+			task TDelShot(las,i){
+				wait(90);
+				let x = OM_GetX(las); let y = OM_GetY(las);
+				let a = OM_GetAngle(las);
+				let dx = cos(a); let dy = sin(a);
+				
+				// let graph = ICE_PURPLE+500 - round(i/10);
+				// let graph = PEL_MAGENTA+500 - round(i/10);
+				// let graph = SUPP_MAGENTA - round(i/10);
+				let graph = SUPP_BLUE;
+				// let shot = ShotA2(x,y,3,a, 0.05,6, graph, 15+DELAY_RING);
+				// let sp = 4*sgn(dx);
+				// let ms = 0;
+				let sp = 4*dx;
+				let ms = sp/10;
+				let ac = (ms-sp)/60;
+				
+				graph = SCALE;
+				let k = floor(lerp(0,7,x/sx));
+				// graph += round((MAGENTA-RED)*lerp(0,1,x/sx));
+				// graph += round((MAGENTA-RED)*lerp(0,1,x/sx));
+				graph += k;
+				
+				let shot = ShotB2(x,y, sp,4*dy, ac, 0.05*(|dy|), ms,2,   graph, 15+DELAY_RING);
+				OS_TintShot(shot,255);
+				let dir = randSign;
+				
+				OM_SetMaxSpeedY(shot,-5*dir);
+				OM_SetMaxSpeedX(shot,3*dir);
+
+				OM_SetSpeedY(shot,0);
+				OM_SetSpeedX(shot,0);
+				
+				OM_SetAccelerationY(shot,-0.05*dir);
+				// OM_SetAccelerationY(shot,0.05);
+				OM_SetAccelerationX(shot,0.05*dir);
+				
+
+				// OM_SetMaxSpeedY(shot,-5);
+				// OM_SetMaxSpeedX(shot,3*dir);
+
+				// alternative(k)
+				// case(0){OM_SetSpeedX(shot,0);}case(1){OM_SetSpeedY(shot,-3);}case(2){OM_SetMaxSpeedX(shot,0);}case(3){OM_SetMaxSpeedY(shot,-3);}case(4){OM_SetAccelerationX(shot,0);}
+				// Debug(i, tost(sp)~"    "~tost(ms)~"       "~tost(ac));
+				// SE_Play(se_chime,60);
+			}
+			
+			// OM_SetAngularVelocity(shot,0.1*dx);
+			// OR_SetColor(shot,255,0,255);
+			
+			SE_Play(se_chime,60);
+			SE_Play(se_ice,60);
+			SE_Play(se_kira01,60);
+			SE_Play(se_kira02,60);
+			// wait(6);
+			yield;
+		}
+		
+		wait(120);
+		
+		TimeStopA1();
+		
+		wait(60);
+		loop(5){
+			ObjMove_SetDestAtWeight(boss,rand(cx*0.5,cx*1.5),rand(cy*0.25,cy*0.75),30,10);
+			wait(15);
+			let shot = ShotA1(ex,ey,3,getangle(ex,ey,px,py), KNIFE_RED,15);
+			wait(15);
+		}
+		wait(60);
+		
+		TimeResume();
+		
+		wait(120);
+		
+		
+		
+		
+	}
+	
+	
+	
+	
+	
+	
+	
+	loop{
+		
+		loop(10){
+			
+			let dx=rand(-5,5); let dy=rand(-3,-2);
+			
+			let s=sqrt(dx^2+dy^2);
+			let xya=atan2(dy,dx);
+			let delay = DELAY_RING+30;   //20+15*sin(frame*5)
+			let r = 50+50*sin(frame*5);
+			let x = ex+r*cos(a);
+			let y = ey+r*sin(a);
+			a += r^2/100;
+			
+			ascent(i in 0..1){ //3
+				let shot = ShotA1(x,y,s,a+120*i,ZPEL_YELLOW,delay);
+				
+				OM_SetAngularVelocity(shot,0.1*dx);
+				OR_SetColor(shot,255,0,255);
+			}
+			
+			SE_Play(se_chime,60);
+			wait(6);
+		}
+		
+		let shots = GetAllShotID;
+		ascent(i in 0..length(shots)){
+			let shot = shots[i];
+			OM_SetAngle(shot,GetAngleToPlayer(shot));
+			
+		}
+		wait(120);
+		
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	// StartSlow(TARGET_ALL,30);
+	
+	let numdeleted = 0;
+	let deletedbounces = 0;
+	
+	// delay_type = DELAY_GLOW;
+	// delay_type = DELAY_IMAGE;
+	// delay_subtype = dirshot~"img/AllStarShot_Andi.png";
+	// delay_type = DELAY_RING;
+	delay_type = DELAY_LINE;
+	
+	a = 0;
+	
+	loop{
+		
+		// let evhash = Notify(SCRIPT_ITEM, EV_SPAWN_ITEM, [ I_EXTEND, ex,ey, ex,ey-30 ]);
+		Debug(0,GetShotCount(TYPE_ENEMY));
+		// yield;
+		// let item = GetEventResult(evhash);
+		let dx=rand(-5,5); let dy=rand(-3,-2);
+		
+		let s=sqrt(dx^2+dy^2);
+		let xya=atan2(dy,dx);
+		// let item = CreateShotA1(ex,ey,s,a,ZPEL_YELLOW,0);
+		
+		
+		// let delay = 30;   //20+15*sin(frame*5)
+		let delay = DELAY_RING+30;   //20+15*sin(frame*5)
+		// let delay = 20+15*sin(frame*5);
+		let r = 50+50*sin(frame*5);
+		let x = ex+r*cos(a);
+		let y = ey+r*sin(a);
+		a += r^2/100;
+		
+		ascent(i in 0..1){ //3
+			// let shot = ShotA1(x,y,s,xya,ZPEL_YELLOW,delay);
+			let shot = ShotA1(x,y,s,a+120*i,ZPEL_YELLOW,delay);
+			
+			OM_SetAngularVelocity(shot,0.1*dx);
+			OR_SetColor(shot,255,0,255);
+			MyBounce(shot);
+		}
+		// ObjRender_SetAngleZ(item,180);
+		
+		// item = CreateShotA1(ex,ey,0,0,ZPEL_YELLOW,0);
+		
+		// OM_AddPatternB2(item,0, dx,dy, -dx/60,0.05, 0,3);
+		// OM_BounceA1(item,1,[BTM]);
+		// OM_BounceA1(item,-99999,[BTM,TOP,LFT,RGT]);
+		
+		task MyBounce(obj){
+			let n = 0; let x=-999999;let y=-999999;let a=OM_GetAngle(obj);
+			OR_SetAlpha(obj,64);
+			OS_SetIntersectionEnable(obj,false);
+			while(!Obj_IsDeleted(obj) && n < 2){
+				if(bounce2(obj)){
+					n++; x=OM_GetX(obj); y=OM_GetY(obj); a=OM_GetAngle(obj);
+					while(isoff(obj)){yield;}
+					// loop(3){yield;}
+				}
+				yield;
+			}
+			numdeleted++;
+			deletedbounces+=n;
+			Debug(1,numdeleted);
+			Debug(2,deletedbounces/numdeleted);
+			// let las = CreateStraightLaserA1(x,y,a+180,800,12,45,LAS_WHITE,30);
+			let las = CreateStraightLaserA1(x,y,a+180,800,12,60,LAS_WHITE,61);
+			SE_Play(se_kira01,40);
+			loop(30){DebugWarnShot(x+rand(-10,10),y+rand(-10,10));yield;}
+			SE_Play(se_laser1,60);
+			ascent(i in 0..15){
+				let s0 = 3+4*i/15;
+				let s1 = 2+2*i/15;
+				let ac = (s1-s0)/rand(45,75);
+				let shot = ShotA2(x+rand(-10,10),y+rand(-10,10),s0,a+180+rporm(5),ac,s1, ZPEL_WHITE+i, 20+DELAY_RING);
+			}
+			descent(i in 0..30){
+				ObjMove_SetPosition(las,x+rporm(2),y+rporm(2));
+				ObjStLaser_SetAngle(las,a+180+rand(-0.5,0.5));
+				ObjLaser_SetIntersectionWidth(las,12*(i/30)^0.5);
+				yield;
+			}
+			Obj_FadeDelete(las);
+		}
+		
+		// SE_Play(se_split,60);
+		SE_Play(se_chime,60);
+		// wait(60);
+		// wait(6);
+		wait(6);
+		
+	}
+	
+	
+	
+	
+	
+	
+	
+	loop{
+		
+		let evhash = Notify(SCRIPT_ITEM, EV_SPAWN_ITEM, [ I_EXTEND, ex,ey, ex,ey-30 ]);
+Debug(0,evhash);
+		yield;
+		let item = GetEventResult(evhash);
+		ObjRender_SetColor(item,255,0,255);
+		ObjRender_SetAngleZ(item,180);
+		
+		// item = CreateShotA1(ex,ey,0,0,ZPEL_YELLOW,0);
+		
+		let dx=rand(-5,5); let dy=rand(-3,-2);
+		OM_AddPatternB2(item,0, dx,dy, -dx/60,0.05, 0,3);
+		// OM_BounceA1(item,1,[BTM]);
+		OM_BounceB1(item,-99999,[BTM,TOP,LFT,RGT]);
+		MyBounce(item);
+		
+		task MyBounce(item){
+			while(!Obj_IsDeleted(item)){
+				if(bounce2(item)){
+					// while(isoff(item)){yield;}
+					loop(3){yield;}
+				}
+				yield;
+			}
+		}
+		
+		SE_Play(se_split,60);
+		// wait(60);
+		wait(6);
+		
+	}
+	
+	
+
+
+
+	
+	
+	
+	
 
 	let size = 10;
 	
@@ -142,7 +542,7 @@ task MainTask {
 
 	// INF00 >?> IND00 >?> QNAN0
 	
-	
+	/*
 	
 	WriteLog("..........................................");
 	WriteLog("++++++++++++++++++++++++++++++++++++++++++");
@@ -223,6 +623,8 @@ task MainTask {
 		wait(30); i++;
 		WriteLog("=============================");
 	}
+	
+	*/
 	
 	function IsInfinite(n){
 		return (|n|) > (0/0);
@@ -309,7 +711,7 @@ task MainTask {
 	SetEnemyPort(dirportrait~"Mystia_Vein.png",0);
 	SetDialogueTextA1("That's right jackass, whatcha gonna do[r]about it?",[255,128,255]);
 	
-	SetBGM("Deaf to All But the Song",70.7, 141.38);
+	SetBGM("Deaf to All But the Song");
 	SetSpeaker(0);
 	SetPlayerPort(dirportrait~"Mokou_Smug.png",0);
 	SetEnemyPort(dirportrait~"Mystia_Pout.png",0);
@@ -323,4 +725,98 @@ task MainTask {
 	Obj_Delete(boss);
 	CloseScript(GetOwnScriptID);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+let type;
+let arr;
+let a0;let a1;let a2;let a3;let a4;let a5;let a6;let a7;let a8;let a9;
+
+function Arr_Init(n,v){
+	let a;
+	alternative(type)
+	case('V'){ a=""; a0=v; }
+	case('v'){ a=""; ascent(i in 0..n){ SetAVar(i,v); } }
+	case('n'){ a=[]; loop(n){a=a~[v];} }
+	case('o'){  
+		a=""; ascent(i in 0..n){ Obj_SetValue(a,itoa(i),v); }
+		Obj_SetValue(a,"length",n);
+	}
+	case('c'){  
+		a="arr"~itoa(GetNextHash);  ascent(i in 0..n){ SetCommonData(a~itoa(i),v); }
+		SetCommonData(a~"length",n);
+	}
+	case('a'){
+		a="arr"~itoa(GetNextHash);
+		if(!IsCommonDataAreaExists(a)){	CreateCommonDataArea(a); } else { ClearAreaCommonData(a); }
+		ascent(i in 0..n){ SetAreaCommonData(a,itoa(i),v); } 
+		SetAreaCommonData(a,"length",n);
+	}
+	return a;
+}
+
+function Arr_Set(a,i,v){
+	alternative(type)
+	case('V'){ a0=v; }
+	case('v'){ SetAVar(i,v); }
+	case('n'){ arr[i] = v; } //cheating a bit
+	case('o'){ Obj_SetValue(a,itoa(i),v); }
+	case('c'){ SetCommonData(a~itoa(i),v); }
+	case('a'){ SetAreaCommonData(a,itoa(i),v); }
+}
+function Arr_Get(a,i){
+	alternative(type)
+	case('V'){ return a0; }
+	case('v'){ return GetAVar(i); }
+	case('n'){ return a[i]; }
+	case('o'){ return Obj_GetValue(a,itoa(i)); }
+	case('c'){ return GetCommonData(a~itoa(i),NULL); }
+	case('a'){ return GetAreaCommonData(a,itoa(i),NULL); }
+}
+
+function Arr_Length(a){
+	alternative(type)
+	case('n'){ return length(a); }
+	case('o'){ return Obj_GetValue(a,"length"); }
+	case('c'){ return GetCommonData(a~"length",0); }
+	case('a'){ return GetAreaCommonData(a,"length",0); }
+}
+
+
+
+function GetAVar(i){
+	alternative(i)
+	case(0){return a0;}case(1){return a1;}case(2){return a2;}case(3){return a3;}case(4){return a4;}case(5){return a5;}case(6){return a6;}case(7){return a7;}case(8){return a8;}case(9){return a9;}
+}
+function SetAVar(i,v){
+	alternative(i)
+	case(0){a0=v;}case(1){a1=v;}case(2){a2=v;}case(3){a3=v;}case(4){a4=v;}case(5){a5=v;}case(6){a6=v;}case(7){a7=v;}case(8){a8=v;}case(9){a9=v;}
+}
+
+
+
+type = 'v';
+// V:    | 27 |    | 33    single variable
+// v: 13 |    | 13 | 12    10 variables w/alternative
+// n: 09 | 24 | 21 | 19    normal array
+// o: 14 | 16 | 16 | 15    object dictionary
+// c: 09 | 11 | 10 | 10    common data
+// a: 09 | 11 | 11 | 10    area common data
 

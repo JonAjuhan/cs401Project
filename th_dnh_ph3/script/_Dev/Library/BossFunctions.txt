@@ -3,9 +3,20 @@
 //Boss functions
 ///////////////////////////////////////////////////////////////
 function CreateBoss(name){
+	let color = GetCommonData("BossNameColor",[255,180,255]);
+	return CreateBossA0(name,color);
+}
+function CreateBossA1(name,color){
+	return CreateBossA0(name,color);
+}
+
+
+//"Real" function used by the others, 
+//to allow for more easily adding features without breaking existing calls
+function CreateBossA0(name,color){
 	let boss;
-	if(length(GetAllEnemyID)==0){
-	// if(length(GetEnemyBossObjectID)==0){
+	let num = length(GetAllBossID);
+	if(num==0){
 		boss = ObjEnemy_Create(OBJ_ENEMY_BOSS);
 		SetCommonData("BossCount",1);
 		UpdatePositions;
@@ -13,18 +24,23 @@ function CreateBoss(name){
 		boss = ObjEnemy_Create(OBJ_ENEMY);
 		ObjEnemy_SetLife(boss,9999);
 		SetCommonData("BossCount",GetCommonData("BossCount",0)+1);
+		if(GetCommonData("Boss"~itoa(num)~"_X", NULL) != NULL){
+			ObjMove_SetX(boss,GetCommonData("Boss"~itoa(num)~"_X", NULL));
+			ObjMove_SetY(boss,GetCommonData("Boss"~itoa(num)~"_Y", NULL));
+			DeleteCommonData("Boss"~itoa(num)~"_X");
+			DeleteCommonData("Boss"~itoa(num)~"_Y");
+		}
 	}
 	Obj_SetValue(boss,FLAG_BOSS,true);
+	Obj_SetValue(boss,BOSS_INDEX,num);
 	Obj_SetValue(boss,META_SUBTYPE,OBJ_ENEMY_BOSS);
 	ObjEnemy_Regist(boss);
 	Obj_SetValue(boss,"IsUseCustAnimLib",false);
-	let c = GetCommonData("BossNameColor",[255,180,255]);
+	let c = color;
 	EnemyName(boss, name, c[0], c[1], c[2]);
+	Obj_SetValue(boss,CHARACTER_COLOR,c);
 	return boss;
 }
-
-
-
 
 
 
@@ -34,60 +50,31 @@ function spawnBossBlank(name){return CreateBoss(name);}
 
 
 let POSE_SET = -1; let POSE_END = 0;
-function SetAttackPose(dur){
-	if(Obj_GetValueD(boss,"IsUseCustAnimLib",true)){
-		if(dur>0){ObjAnim_SetAttackA2(boss, dur);}
-		else {ObjAnim_SetAttackA1(boss, dur==POSE_SET);}
+function SetPose(enem,dur){
+	if(Obj_GetValueD(enem,"IsUseCustAnimLib",true)){
+		if(dur>0){ObjAnim_SetAttackA2(enem, dur);}
+		else {ObjAnim_SetAttackA1(enem, dur==POSE_SET);}
 	}else{
-		if(dur==POSE_SET){Obj_SetValue(boss,"cast",1);}
-		else if(dur==POSE_END){Obj_SetValue(boss,"cast",0);}
+		if(dur==POSE_SET){Obj_SetValue(enem,"cast",1);}
+		else if(dur==POSE_END){Obj_SetValue(enem,"cast",0);}
 		else{
-			Obj_SetValue(boss,"cast",1);
+			Obj_SetValue(enem,"cast",1);
 			task Manage{
 				loop(dur){yield;}
-				Obj_SetValue(boss,"cast",0);
+				Obj_SetValue(enem,"cast",0);
 			}
 			Manage;
 		}
 	}
 }
 
-//Set boss to use "blurred" version of sprite, like Suwako or Murasa
-//Also disables her hitbox while blurred
-function SetBossBlur(blur){
-	let boss = GetEnemyBossObjectID();
-	Obj_SetValue(boss,FLAG_INTERSECTION,!blur);	
-	if(Obj_GetValueD(boss,"DisplayName","")=="Andi"){
-		let yoff; let frames; let frame; if(blur){yoff=255;}else{yoff=0;}
-		let types = [ANIM_IDLE,ANIM_MOVE,ANIM_MOVEEND,ANIM_ATTACK,ANIM_ATTACKEND]; let type;
-		let rows  = [0,1,1,2,2]; let row;
-		ascent(t in 0..length(types)){
-			type = types[t]; row = rows[t]; frames = GetAnimationFrames(boss, type);
-			ascent(i in 0..length(frames)){ frame = frames[i]; frame[1] = 1+80*row+yoff; frame[3] = 80*(row+1)+yoff; frames[i] = frame; }
-			Obj_SetValue(boss,"anim_"~type,frames);
-		}
-	}
-	else{
-		if(blur){
-			ObjRender_SetAlpha(boss,64);
-			let obj = CreateSprite2(dirimg~"mist.png", 24, [0, 0, 128, 128], [64, 64]);
-			Obj_SetValue(boss,"BlurObject",obj);
-			ObjRender_SetColor(obj, 255, 0, 64); ObjRender_SetAlpha(obj, 255 );
-			ObjRender_SetBlendType(obj, BLEND_ADD_ARGB);
-			task TFollow{     let i=0;
-				while(!Obj_GetValueD(boss,FLAG_INTERSECTION,true)&&!Obj_IsDeleted(obj)) {
-					ObjRender_SetPosition(obj, ex, ey, 0);
-					ObjRender_SetAngleZ(obj, i);
-					i++; yield;
-				} Obj_Delete(obj);
-			}
-			TFollow; return obj;
-		}else{
-			ObjRender_SetAlpha(boss,255);
-			if(Obj_IsValueExists(boss,"BlurObject")){Obj_Delete(Obj_GetValue(boss,"BlurObject"));}
-		}
-	}
+
+
+
+function SetAttackPose(dur){
+	SetPose(boss,dur);
 }
+
 
 function SetBossHitbox(enem,ex,ey){
 	let boss = GetEnemyBossObjectID[0];
@@ -130,6 +117,20 @@ task UpdatePositions {
 }
 
 
+//Store coordinates of boss objects
+//so additional bosses can retain their position between singles
+sub SaveBossPositions{
+	let bosses = GetAllBossID();
+	ascent(i in 0..length(bosses)){
+		if(!Obj_IsDeleted(bosses[i])){
+			let ind = Obj_GetValueD(bosses[i],BOSS_INDEX,i+1);
+			SetCommonData("Boss"~itoa(ind)~"_X", ObjMove_GetX(bosses[i]));
+			SetCommonData("Boss"~itoa(ind)~"_Y", ObjMove_GetY(bosses[i]));
+		}
+	}
+}
+
+
 
 
 //Sparen, originally
@@ -166,6 +167,57 @@ task EnemyName(obj, name, r, g, b){ //Blurred originally
 	wait(12);//"It can only handle 12 yields, currently, before the script is closed."
 	Obj_Delete(text);
 }
+
+
+
+
+
+
+
+//Set boss to use "blurred" version of sprite, like Suwako or Murasa
+//Also disables her hitbox while blurred
+function SetBossBlur(blur){
+	let boss = GetEnemyBossObjectID();
+	Obj_SetValue(boss,FLAG_INTERSECTION,!blur);	
+	if(Obj_GetValueD(boss,"DisplayName","")=="Andi"){
+		let yoff; let frames; let frame; if(blur){yoff=255;}else{yoff=0;}
+		let types = [ANIM_IDLE,ANIM_MOVE,ANIM_MOVEEND,ANIM_ATTACK,ANIM_ATTACKEND]; let type;
+		let rows  = [0,1,1,2,2]; let row;
+		ascent(t in 0..length(types)){
+			type = types[t]; row = rows[t]; frames = GetAnimationFrames(boss, type);
+			ascent(i in 0..length(frames)){ frame = frames[i]; frame[1] = 1+80*row+yoff; frame[3] = 80*(row+1)+yoff; frames[i] = frame; }
+			Obj_SetValue(boss,"anim_"~type,frames);
+		}
+	}
+	else{
+		if(blur){
+			ObjRender_SetAlpha(boss,64);
+			// let obj = CreateSprite2(dirimg~"mist.png", 24, [0, 0, 128, 128], [64, 64]);
+			let obj = CreateSprite2(dirimg~"shield1.png", 24, [0, 0, 128, 128], [64, 64]);
+			Obj_SetValue(boss,"BlurObject",obj);
+			// ObjRender_SetColor(obj, 255, 0, 64); ObjRender_SetAlpha(obj, 255 );
+			ObjRender_SetBlendType(obj, BLEND_ADD_ARGB);
+			task TFollow{     
+				let i=0;
+				while(!Obj_GetValueD(boss,FLAG_INTERSECTION,true)&&!Obj_IsDeleted(obj)) {
+					ObjRender_SetPosition(obj, ex, ey, 0);
+					ObjRender_SetAngleZ(obj, i);
+					i++; yield;
+				} Obj_Delete(obj);
+			}
+			TFollow; return obj;
+		}else{
+			ObjRender_SetAlpha(boss,255);
+			if(Obj_IsValueExists(boss,"BlurObject")){Obj_Delete(Obj_GetValue(boss,"BlurObject"));}
+		}
+	}
+}
+
+
+
+
+
+
 
 
 //Alternative lifebar style, circular around boss
@@ -244,6 +296,14 @@ task LifeCircle(renderObj, enemyObj){
 		yield;
 	}
 }
+
+
+
+
+
+
+
+
 
 
 

@@ -56,7 +56,8 @@ task InitPlural{
 task TStage {
 	let csd = GetCurrentScriptDirectory();
 
-	SetBGM("Song of the Night Sparrow ~ Night Bird",145.8,292.4);
+	// SetBGMLoop("Song of the Night Sparrow ~ Night Bird",145.8,292.4);
+	SetBGM("Song of the Night Sparrow ~ Night Bird");
 	ShowPointOfCollection;
 	
 	FadeToBlack(0,0,60);
@@ -186,7 +187,7 @@ task TStage {
 	// StartScript(bossScript);
 	NotifyEvent(bossScript,EV_START_BOSS,[]);
 	
-	// SetBGM("Deaf to All But the Song",70.7, 141.38); //now done in dialogue single
+	// SetBGMLoop("Deaf to All But the Song",70.7, 141.38); //now done in dialogue single
 	while(!IsCloseScript(bossScript) && GetPlayerState() != STATE_END){
 		yield;
 	}

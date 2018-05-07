@@ -1,0 +1,441 @@
+#include "./../Library/Resources.txt"
+#include "./../Library/DirPaths.txt"
+#include "./../Library/EventList.txt"
+#include "./../Library/MiscConstants.txt"
+#include "./../Library/selibrary.txt"
+#include "./../Library/ExtendedDNF.txt"
+
+
+//EV_END_BOSS_STEP, EV_TIMEOUT, EV_
+
+
+
+
+
+
+//actual one
+let dirCurrent = GetCurrentScriptDirectory();
+let typeEnd = 0;
+let END_FAILED = 1;
+let END_SUCCESS = 2;
+let bMiss = false;
+let bSurvival = false;
+let bLastSpell = false;
+let timer;
+// let text = ObjText_Create();
+
+// let mc_finishing = false;
+
+let mc_count = 0;
+
+let quality;
+
+
+@Initialize{
+	TInitialize;
+}
+@Event{
+	alternative(GetEventType())
+	case(EV_END_BOSS_STEP){
+		if(bMiss || (timer==0 && !bSurvival) ){ 
+			typeEnd = END_FAILED;
+		}
+		else{ 
+			typeEnd = END_SUCCESS; 
+		}
+	}
+	case(EV_TIMEOUT){
+		if(!bSurvival){  typeEnd = END_FAILED;  }
+		else{            typeEnd = END_SUCCESS; }
+	}
+	case(EV_GAIN_SPELL){ typeEnd = END_SUCCESS; }
+	case(EV_FAIL_SPELL){ typeEnd = END_FAILED;  }
+
+}
+@MainLoop{
+	yield;
+}
+
+
+
+
+task TInitialize{
+	if(!IsCloseScript(GetScriptID(SCRIPT_MAGICCIRCLE))){CloseScript(GetOwnScriptID);return;}
+	SetScriptID(SCRIPT_MAGICCIRCLE);
+	
+	loop(5){yield;}
+	let objScene = GetEnemyBossSceneObjectID();
+	while(objScene==ID_INVALID){
+		yield;
+		objScene = GetEnemyBossSceneObjectID();
+	}
+	
+	let bosses = GetAllBossID();
+	let alpha = 64 + 64/length(bosses);
+	// let rad = 1.2*( 128+128/length(bosses) );
+	let rad = 1.2*( 64+192/length(bosses) );
+	
+	quality = GetAreaCommonData("CONFIG","Effect Quality",2);
+	
+	ascent(i in 0..length(bosses)){
+		let boss = bosses[i];
+		if(Obj_GetValueD(boss,"EnableMagicCircle",true)){
+			let color = Obj_GetValueD(boss,CHARACTER_COLOR, [255,255,255] );
+			TMagicCircle(boss, 1.5*(-1)^i, 0+45*i,  2, rad, alpha, color);
+			if( length(bosses) < quality ){
+				TMagicCircle(boss, 1.5*(-1)^i,90+45*i,  2, rad, alpha, color);
+			}
+			if( i+2 < quality ){
+				TMagicCircle(boss,  -1*(-1)^i, 0+45*i,  2, rad, alpha, color);
+				TMagicCircle(boss,  -1*(-1)^i,90+45*i,  2, rad, alpha, color);
+			}
+		}
+	}
+		
+}
+
+
+
+
+
+task TMagicCircle(centerObj, rotspd,rotoff, distort, mRad, maxalpha, color){
+	let dir = (|rotspd|)/rotspd;
+	
+	
+	let obj = ObjPrim_Create(OBJ_PRIMITIVE_2D);
+		
+	//頂点奇数：偶数：円の外側、円の内側
+	//Might need to be a power of 2?
+	// let numVert = 16+16*quality - 4*mc_count; //64
+	let numVert = 16+16*quality - 2*ceil(max(0,10-quality)*mc_count/2); //64
+	if(numVert<32){return;} //minimum needed to not look like crap
+	let Rads = [];
+	loop(numVert/2){
+		// Rads = Rads ~ [rand(0,512)];
+		Rads = Rads ~ [0];
+		Rads = Rads ~ [100];
+	}
+
+	mc_count++;
+	let path = dirsys~"img/magiccircle_00.png";
+	
+	ObjPrim_SetPrimitiveType(obj, PRIMITIVE_TRIANGLESTRIP);
+	ObjPrim_SetVertexCount(obj, numVert);
+	ObjRender_SetBlendType(obj, BLEND_ADD_RGB);
+	Obj_SetRenderPriorityI(obj, PRI_MAGICCIRCLE); //30
+	ObjPrim_SetTexture(obj, path);
+	ascent(i in 0..numVert / 2){
+		let I = i * 2;
+		let left = i * 128;
+		//Determines which part of the texture each vertex is "anchored" to, I think?
+		ObjPrim_SetVertexUVT(obj, I+0, left,  0);
+		ObjPrim_SetVertexUVT(obj, I+1, left, 64);
+	}
+
+	// loop(5){yield;}
+	let objScene = GetEnemyBossSceneObjectID();
+	while(objScene==ID_INVALID){
+		yield;
+		objScene = GetEnemyBossSceneObjectID();
+	}
+	let objBoss = GetEnemyBossObjectID()[0];
+	let timerOrg = ObjEnemyBossScene_GetInfo(objScene, INFO_ORGTIMERF); //176400 ?
+	if(timerOrg >= 60*ObjEnemyBossScene_GetInfo(objScene, INFO_TIMERF)){timerOrg/=60;}
+	bLastSpell = ObjEnemyBossScene_GetInfo(objScene, INFO_IS_LAST_SPELL);
+	bSurvival = ObjEnemyBossScene_GetInfo(objScene, INFO_IS_DURABLE_SPELL);
+	
+	
+	// let mRad = 512 * 1.2; //was on this for quite a while // let mRad = 256 * 1.2;
+	let alpha = 0;
+	maxalpha = maxalpha/255;
+	let effalpha = alpha;
+	let frame = 0;
+	let angleRender = 0;
+	// let hiding = false;
+	
+	let R=color[0]; let G=color[1]; let B=color[2];	
+	R=2*R-255; G=2*G-255; B=2*B-255; //So they'll average with 255 to give the default values
+	let R_norm = (R+192)/2; let G_norm = (G+192)/2; let B_norm = (B+255)/2;
+	let R_last = (R+255)/2; let G_last = (G+192)/2; let B_last = (B+192)/2;
+
+	
+	sub UpdateAlpha{
+		if(bLastSpell){
+			ObjRender_SetColor(obj, R_last * effalpha, G_last * effalpha, B_last * effalpha);
+		}else{
+			ObjRender_SetColor(obj, R_norm * effalpha, G_norm * effalpha, B_norm * effalpha);
+		}
+		ObjRender_SetPosition(obj, cx, cy, 0);
+		ObjRender_SetAngleZ(obj, angleRender);
+	}
+	
+	let dx0=0;
+	let dy0=0;
+	let dp0=0;
+	
+	let cx = ObjRender_GetX(centerObj); 
+	let cy = ObjRender_GetY(centerObj);
+	let cx1=cx;let cy1=cy;let cx0=cx;let cy0=cy;
+	
+	let drift = 0;
+	
+	let DriftDur = 30;
+	let Thresh = 100;
+
+	while(typeEnd == 0){
+		
+		
+		alpha = min(alpha+1/120, maxalpha);
+		
+		
+		cx0=cx1; cy0=cy1;
+		cx1 = ObjRender_GetX(centerObj);
+		cy1 = ObjRender_GetY(centerObj);
+		
+		let dx = (cx1-cx0); //4
+		let dy = (cy1-cy0); //4
+		// let dp = (dx^2+dy^2)^0.5;
+		let dp = max((|dx|),(|dy|));
+		
+		
+		
+		
+		
+		// if(dp < 30){
+		// if(dp < 30 || dp0 <= 1){
+		if(dp < Thresh && drift == 0){
+			dx0=dx; dy0=dy; dp0=dp; //use current speed
+			dx = (cx1-cx)/4; dy = (cy1-cy)/4; //realign to boss
+			effalpha = alpha - dp * 3/255;
+		}else{
+			// if(drift==0){ drift=DriftDur; }
+			if(dp >= Thresh){ drift=DriftDur; }
+			drift--;
+			if(drift > 0){
+				dx=dx0; dy=dy0; dp=dp0; //keep using previous speed
+			}else{
+				//Realign to boss
+				let a = getangle(cx,cy,cx1,cy1);
+				dp = ((cx1-cx)^2+(cy1-cy)^2)^0.5;
+				dx = (dp+mRad*0.75)*cos(a);
+				dy = (dp+mRad*0.75)*sin(a);
+			}
+			
+			effalpha = (alpha - dp0 * 3/255) * (drift/DriftDur)^0.5;
+		}
+		
+		if(!Obj_IsDeleted(centerObj)){
+			cx += dx; // dx/4
+			cy += dy; // dy/4
+		}
+
+		
+		
+		
+		
+		angleRender += 360/numVert/4 * dir;
+
+		timer = ObjEnemyBossScene_GetInfo(objScene, INFO_TIMERF);
+		let rRate = timer / timerOrg;
+		bMiss = ( ObjEnemyBossScene_GetInfo(objScene, INFO_PLAYER_SHOOTDOWN_COUNT) > 0
+		           || ObjEnemyBossScene_GetInfo(objScene, INFO_PLAYER_SPELL_COUNT) > 0 );
+		
+		
+		// let rad = mRad * (timer/timerOrg)^0.15; //overall radius
+		// let wid = rad/10; //width of circle
+		// let wid = mRad * (timer/timerOrg)^0.25/10; //width of circle
+		// let wid = mRad * (timer/timerOrg)^0.25/10; //width of circle
+		let rad = mRad * (timer/timerOrg)^0.5; //overall radius
+		let wid = (30+rad/10)/2; //width of circle
+		
+		let rx = rad-distort*wid*cos(rotoff+frame*rotspd);
+		let ry = rad-distort*wid*sin(rotoff+frame*rotspd);
+		let a = rx; let b = ry;
+		
+		ascent(i in 0..numVert / 2){
+			let I = i * 2;
+			let angle = 360 / (numVert / 2 - 1) * i;
+			
+			//Ellipse radius
+			let t = angle; //theta
+			let r = a*b / ( b^2*cos(t)^2 + a^2*sin(t)^2 )^0.5;
+			
+			//Alright, let's try doing this in absolute terms
+			Rads[I]   = r;
+			Rads[I+1] = r-wid;
+
+			//Outer circle (shrinks inward)
+			let vx1 = Rads[I] * cos(angle);
+			let vy1 = Rads[I] * sin(angle);
+			ObjPrim_SetVertexPosition(obj, I+0, vx1, vy1, 0);
+			// ObjPrim_SetVertexPosition(obj, I+0, vx1*Rads[I], vy1*Rads[I], 0);	
+			//Inner circle
+			let vx2 = Rads[I+1] * cos(angle);
+			let vy2 = Rads[I+1] * sin(angle);			
+			ObjPrim_SetVertexPosition(obj, I+1, vx2, vy2, 0);
+
+		}
+		
+		
+
+		UpdateAlpha;
+		frame++;
+
+		yield;
+	}
+
+	//スペルカード取得失敗
+	//When spell ends
+	// if(typeEnd == END_FAILED){
+		// Obj_Delete(obj);
+		// NotifyEventAll(EV_FAIL_SPELL,[]); //tell system to show failure message
+		// yield;
+		// CloseScript(GetOwnScriptID());
+		// return;
+	// }
+
+	let contractdir = 1;
+	if(typeEnd == END_FAILED){
+		contractdir = -1;
+		NotifyEventAll(EV_FAIL_SPELL,[]); //tell system to show failure message
+	}
+	
+	// if(mc_finishing){
+		// Obj_Delete(obj);
+		// return;
+	// }
+	// mc_finishing = true;
+
+	let rRate = 1.0;
+	frame = 0;
+	// alpha = 1;
+	alpha = (1/mc_count);
+	effalpha = alpha;
+	let dalpha = -1/45 / mc_count;
+	//スペルカード取得成功 //Capture bonus collapse onto player
+	loop(105){
+		angleRender += 360 / numVert / 4;
+		let dx = (GetPlayerX() - cx) / 16;
+		let dy = (GetPlayerY() - cy) / 16;
+		cx += dx;
+		cy += dy;
+		if(frame >= 60){ //45
+			// alpha -= 1 / 45;
+			alpha += dalpha;
+			alpha = max(alpha, 0);
+			effalpha = alpha;
+		}
+
+		ascent(i in 0..numVert / 2) {
+			let I = i * 2;
+			let angle = 360 / (numVert / 2 - 1) * i;
+
+			let vx1 = Rads[I] * cos(angle);
+			let vy1 = Rads[I] * sin(angle);
+			ObjPrim_SetVertexPosition(obj, I + 0, vx1, vy1, 0);
+
+			let vx2 = Rads[I+1] * cos(angle);
+			let vy2 = Rads[I+1] * sin(angle);
+			ObjPrim_SetVertexPosition(obj, I + 1, vx2, vy2, 0);
+
+			let drOut = 0;
+			let drIn = 0;
+			if(frame <= 45) {
+				//魔方陣拡大
+				let rRateOut = 1.0;
+				drOut = (mRad * rRateOut - Rads[I]) / 8;
+
+				let rRateIn = rRateOut - 0.08;
+				if(rRateIn<0){rRateIn=0;}
+				drIn = (mRad * rRateIn - Rads[I+1]) / 8;
+			}
+			else {
+				cx = GetPlayerX();
+				cy = GetPlayerY();
+
+				rRate -= 1.0 / 60.0 * contractdir;
+				let rRateOut = rRate * sin(angle % 60);
+				drOut = (mRad * rRateOut - Rads[I]) / 16;
+
+				let rRateIn = rRate * sin(angle % 60)-0.08;
+				if(rRateIn<0){rRateIn=0;}
+				drIn=(mRad * rRateIn - Rads[I+1])/16;
+			}
+			Rads[I] = Rads[I] + drOut;
+			Rads[I + 1] = Rads[I + 1] + drIn;
+			
+		}
+		UpdateAlpha();
+		frame++;
+		yield;
+	}
+	Obj_Delete(obj);
+	CloseScript(GetOwnScriptID());
+
+	
+	
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function DRAWTEST(img,x,y) {
+	//let img = CSD~"../img/magiccircle_rb.png";
+	let boss = GetEnemyBossObjectID();
+	let objscene = GetEnemyBossSceneObjectID();
+	let objTest = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjPrim_SetTexture(objTest, img);
+
+	ObjSprite2D_SetSourceRect(objTest, 0, 0, 129, 129);
+	ObjRender_SetScaleXYZ(objTest,1,1,0);
+	Obj_SetRenderPriorityI(objTest,51);
+	ObjSprite2D_SetDestCenter(objTest);
+	ObjRender_SetPosition(objTest,x,y,0);
+	ObjRender_SetBlendType(objTest,BLEND_ADD_ARGB);
+	
+}
+
+
+task DRAWTEST2(path,x,y) {
+	path = dirsys~"img/magiccircle_00.png";
+	let numVert = 64;
+	let Rads = [];
+	loop(numVert){Rads = Rads ~ [0];}
+	
+	let obj = ObjPrim_Create(OBJ_PRIMITIVE_2D);
+	//ObjPrim_SetPrimitiveType(obj, PRIMITIVE_TRIANGLESTRIP);
+	ObjPrim_SetPrimitiveType(obj, PRIMITIVE_TRIANGLESTRIP);
+	ObjPrim_SetVertexCount(obj, numVert);
+	ObjRender_SetBlendType(obj, BLEND_ADD_RGB);
+	Obj_SetRenderPriority(obj, 0.3);
+	ObjPrim_SetTexture(obj, path);
+	
+	ascent(i in 0..numVert / 2)
+	{
+		let left = i * 128;
+		let I = i * 2;
+		ObjPrim_SetVertexUVT(obj, I + 0, left, 0);
+		ObjPrim_SetVertexUVT(obj, I + 1, left, 64);		
+	}
+	
+	
+	while(true){
+		ascent(i in 0..numVert/2) {
+			ObjPrim_SetVertexPosition(obj, 2*i,   px+50*cos(i*743/numVert), py+50*sin(i*743/numVert), 0);
+			ObjPrim_SetVertexPosition(obj, 2*i+1, px+40*cos(i*743/numVert), py+40*sin(i*743/numVert), 0);
+		}
+		yield;
+	}
+}

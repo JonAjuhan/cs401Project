@@ -70,7 +70,7 @@ task TStage{
 	
 	// SetBGM("Kid's Festival ~ Innocent Treasures",130.969,274);
 	// SetBGM(stageBGM,0,300.5);
-	SetBGM(stageBGM,66.910,115.2525);
+	SetBGM(stageBGM);
 
 	loop(60){yield;}//1秒くらいあれば、コンパイル完了すると思われる。
 	
@@ -177,7 +177,7 @@ task TStage{
 		yield;
 	}
 	//Start the boss plural
-	SetBGM(bossBGM,0,300.5);
+	SetBGM(bossBGM);
 	// StartScript(bossScript);
 	NotifyEvent(bossScript,EV_START_BOSS,[]);
 	while(!IsCloseScript(bossScript) && GetPlayerState() != STATE_END){

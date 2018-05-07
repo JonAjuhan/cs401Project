@@ -11,8 +11,11 @@ SetScriptID(SCRIPT_MUSIC);
 
 
 
-
-task SetBGM(title,loopstart,loopend){
+function SetBGM(title){
+	let looppos = GetSongLoop(title);
+	SetBGMLoop(title,looppos[0],looppos[1]);
+}
+task SetBGMLoop(title,loopstart,loopend){
 	SetCommonData("CurrentBGM",title); SetCommonData("MusicObject",music);
 	let vol = GetAreaCommonData("CONFIG","BGM Volume",1.00);
 	if(ObjSound_IsPlaying(music)){
@@ -26,6 +29,7 @@ task SetBGM(title,loopstart,loopend){
 	ObjSound_Load(music,dirbgm~"bgm - "~title~".ogg");
 	ObjSound_SetSoundDivision(music, SOUND_BGM);
 	ObjSound_SetLoopEnable(music,true);
+	if(loopend<=loopstart){let tmp=GetSongLoop(title);loopstart=tmp[0];loopend=tmp[1];}
 	ObjSound_SetRestartEnable(music,true);	
 	ObjSound_SetLoopTime(music,loopstart,loopend);
 	ObjSound_SetVolumeRate(music,100*vol);
@@ -40,13 +44,6 @@ task FadeBGM{
 	}
 	ObjSound_Stop(music);
 }
-
-
-
-
-
-
-
 
 
 
@@ -142,6 +139,25 @@ task ShowBGMTitle(title){
 	Obj_SetVisible(obj ,false);
 	Obj_SetVisible(obj2,false);
 }
+
+
+
+
+
+
+function GetSongLoop(song){
+	alternative(song)
+	case("Song of the Night Sparrow ~ Night Bird"){         return [145.8    , 292.4   ]; }
+	case("Deaf to All But the Song"){                       return [ 70.7    , 141.38  ]; }
+	case("Last Remote@Magnum Opus"){                        return [ 88.29   , 271.67  ]; }
+	case("Hartmann's Youkai Girl@Magnum Opus"){             return [ 17.12   , 298.97  ]; }
+	case("Bhava-Agra as Seen Through a Child's Mind"){      return [ 66.91   , 115.25  ]; }
+	case("Kid's Festival ~ Innocent Treasures"){            return [153.8865 , 297.23  ]; }
+	case("Flight of the Bamboo Cutter ~ Lunatic Princess"){ return [ 55.56   , 197.72  ]; }
+	
+	others{return [];}
+}
+
 
 
 

@@ -1,4 +1,4 @@
-// #include "./Resources.txt"
+#include "./Resources.txt"
 
 let EV_SPAWN_ITEM = EV_USER_SYSTEM+1;
 
@@ -12,18 +12,19 @@ let EV_RESUME_SONG = EV_USER_SYSTEM+13;
 let EV_START_SONG  = EV_USER_SYSTEM+14;
 let EV_DELETE_SONG = EV_USER_SYSTEM+15;
 
+let EV_START_BOSS = EV_USER_STAGE+10; //signal already-running plural to start boss
 
-// let EV_CHANGE_POWER = EV_USER_PLAYER+42069; //tell player script to reset options
 // let EV_CANCEL_PLAYER_DEATH = EV_USER_PLAYER+2; //NYI
 // let EV_GET_CONTINUE = EV_USER_PLAYER+2; //NYI
 
 // let EV_SET_DIFFICULTY = EV_USER+8; //unused, I do this with common data
 // let EV_FAM_DIE = EV_USER+3; //unused afaik
 
+//For a full list of built-in events, see:
+//http://www.geocities.co.jp/SiliconValley-Oakland/9951/pre/th_dnh_help_v3_data/description.html#Event
 
-let EV_START_BOSS = EV_USER_STAGE+10; //signal already-running plural to start boss
+let EV_FAIL_SPELL = EV_GAIN_SPELL+500; //since there doesn't seem to be one of these otherwise
 
-let EV_FAIL_SPELL = EV_GAIN_SPELL+0.5; //defined separately in magic circle
 
 
 
@@ -56,11 +57,62 @@ function SetScriptID(type){
 
 function Notify(type,event,args){
 	let id = GetScriptID(type);
+	let hash = cast(GetNextHash(),args);
+	args = args ~ [ hash ];
+	
 	if(id==ID_INVALID || type==SCRIPT_ALL || ((type==SCRIPT_PACKAGE)!=(GetOwnScriptID==GetScriptID(SCRIPT_PACKAGE))) ) {
 		NotifyEventAll(event,args);
 	}
 	else{
 		NotifyEvent(id,event,args);
-		return GetScriptResult(id);
 	}
+	return hash;
 }
+
+task SetEventResult(hash,result){
+	SetCommonData("EventResult"~itoa(hash), result);
+	yield; yield;
+	DeleteCommonData("EventResult"~itoa(hash));
+}
+
+function GetEventResult(hash){
+	let val = GetCommonData("EventResult"~itoa(hash), NULL);
+	DeleteCommonData("EventResult"~itoa(hash));
+	return val;
+}
+
+function GetEventResults(hashes){
+	let vals = [];
+	ascent(i in 0..length(hashes)){
+		vals = vals ~ [ GetEventResult(hashes[i]) ];
+	}
+	return vals;
+}
+
+
+
+let NEXT_HASH = 1;
+function GetNextHash{
+	let hash = NEXT_HASH;
+	NEXT_HASH = NEXT_HASH%2048+1;
+	// let hash = GetCommonData("NextHash",1);
+	// SetCommonData("NextHash",hash%2048+1);
+	return hash;
+}
+
+
+
+
+
+
+
+
+// function MatchArrayType(arr,v){
+	// if(length(arr)==0){ return v; }
+	// let u = arr[0];
+	// let tA = Obj_GetType(u);
+	// let tV = Obj_GetType(v);
+	// if(tA==tV){ return v; }
+	// if(tA==
+// }
+

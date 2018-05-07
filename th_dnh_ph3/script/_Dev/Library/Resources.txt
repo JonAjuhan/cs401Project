@@ -1,3 +1,5 @@
+// #include "./ExtendedDNF.txt"
+
 let CSD = GetCurrentScriptDirectory;
 
 
@@ -18,32 +20,13 @@ let finishing = false;
 SetAutoDeleteObject(true); //default to true instead of false
 
 
-
-//(384, 448)
-let sx = GetStgFrameWidth(); let sy = GetStgFrameHeight();
+//Position variables - updated each frame
+//sx,sy = stage width, stage height
+//cx,cy = center x,y
+//enemy x,y; player x,y
+let sx = GetStgFrameWidth(); let sy = GetStgFrameHeight(); //(384, 448)
 let cx = sx/2; let cy = sy/2;
 let ex=0; let ey=0; let px=0; let py=0;
-
-
-
-
-// //To detect when some other task has messed with the thing a task is using
-// function SetHash(obj,k){
-	// let h = itoa(ObjRender_GetX(obj))~itoa(ObjRender_GetY(obj))~itoa(frame%90+10); //~tost(Obj_GetValueD(obj,k,randint(10,99)));
-	// Obj_SetValue(obj,k~"_hash",h);
-	// return h;
-// }
-// function GetHash(obj,k){
-	// return Obj_GetValueD(obj,k~"_hash",itoa(frame%90+10));
-// }
-
-function GetNextHash{
-	let hash = GetCommonData("NextHash",1);
-	SetCommonData("NextHash",hash%255+1);
-	return hash;
-}
-
-
 
 
 
@@ -71,8 +54,8 @@ function getdistance(x0,y0,x1,y1){return ((x0-x1)^2 + (y0-y1)^2)^0.5;}
 
 function GetAngleTo(let object1, let object2) { return atan2(ObjMove_GetY(object2)-ObjMove_GetY(object1), ObjMove_GetX(object2)-ObjMove_GetX(object1));}
 
-//more conventional typeof
-// function typeof(obj){return O_GetType(obj);}
+
+
 //check whether an object is safe to dereference
 function isnull(obj){
 	//do something		//if it hasn't been set
@@ -88,6 +71,7 @@ function isnull(obj){
 //Elegant, but undefined at 0
 // function sign(n){ return n/(|n|); }
 //Best of both worlds
+function sgn(n){  let s = n/((|n|)+1); return floor(s)-floor(-s); }
 function sign(n){ let s = n/((|n|)+1); return floor(s)-floor(-s); }
 
 // function altSign(i) { return 2*(i%2-0.5); }  //Alternates between 1 and -1
@@ -97,8 +81,11 @@ function randSign() { return (round(rand(0,1)))*2-1; }  //Returns 1 or -1
 // function altRange(i,a,b){let r=b-a; i%=r; i+=a; return i;}
 function altRange(i,a,b){ return i%(round(b-a)+1)+a; }
 
-function randint(min,max){ return trunc(rand(min,max+1)); }  //Random integer from a..b inclusive
+function randint(a,b){ return min(trunc(rand(a,b)),b-1); }  //Random integer from [a..b)
 function randarr(arr){ return arr[randint(0,length(arr)-1)]; }  //random value from an array
+
+function porm(n){ return n*randSign; } //"Plus OR Minus"
+function rporm(n){ return rand(-n,n); }
 
 //For when zero messes things up
 function toNZ(num){if(num==0){return 1;}else{return num;}}
@@ -153,7 +140,7 @@ function qerp(start,control,end,t){return (1 - t)^2 * start + 2*(1-t)*t * contro
 function bqerp(x0,y0,x1,y1,x2,y2,t){return [qerp(x0,x1,x2,t),qerp(y0,y1,y2,t)];}
 //Lerp between two angles, taking the shortest path
 function lerpa(starta,enda,t){return starta+t*getadist(starta,enda);}
-
+//Erotic Role-Playing... uh, general intERPolation
 function erp(points,t){
 	if(length(points)==3){return qerp(points[0],points[1],points[2],t);}
 	return (1-t) *erp(slice(points,0,length(points)-1),t)
@@ -188,12 +175,18 @@ function reflect(angle, mirror){ return 2*mirror-angle; }
 
 //smarter, easier-to-remember tostring
 function tost(n){
-	alternative(typeof(n))
-	case(TYPE_NUMBER){
-		if((|n|)%1==0){return itoa(n);}else{return rtos("0.00",n);}
+	let str = ToString(n);
+	let arr = SplitString(n,'.');
+	if(length(arr)==2){ 
+		if( ator(arr[1])==0 ){
+			str = arr[0];
+		}
+		else if( rtoa(ator(n))==rtoa(n) ){
+			let end = min(2,length(arr[1]));
+			str = arr[0]~"."~arr[1][0..end];
+		}
 	}
-	// case(TYPE_ARRAY){ return atost(n); }
-	others{ return ToString(n); }
+	return str;
 }
 //array to string
 function atost(n){
@@ -212,6 +205,80 @@ function atost(n){
 	}
 } 
 
+///////////////////////////////////////////////
+//Primitive types
+let TYPE_INT = 9;
+let TYPE_REAL = 2; let TYPE_NUMBER = 2;
+let TYPE_BOOL = 2+10;
+let TYPE_CHAR = -1;
+let TYPE_ARRAY = 10;
+let TYPE_STRING = 3; //10+1;
+//Improved typeof function
+// -Lumps int and real together
+// -Distinguishes between array and string
+// -Distinguishes between real and bool
+// -Lump enemy and boss together
+function typeof(obj){
+	alternative(Obj_GetType(obj))
+	case(TYPE_INT){return TYPE_NUMBER;}
+	case(TYPE_REAL){
+		if(!(ToString(obj)!="true"&&ToString(obj)!="false")){return TYPE_BOOL;}
+		else{ return TYPE_NUMBER; }
+	}
+	case(TYPE_ARRAY){
+		if(length(obj) > 0){
+			let contents = typeof(obj[0]); //recursive
+			if(contents==TYPE_CHAR){return TYPE_STRING;}
+			else{return TYPE_ARRAY;}
+		}else{return TYPE_ARRAY;}
+	}
+	case(TYPE_CHAR){return TYPE_CHAR;}
+	case(OBJ_ENEMY,OBJ_ENEMY_BOSS){return OBJ_ENEMY;}
+	others{return Obj_GetType(obj);}
+}
+//////////////////////////////
+
+
+function cast(v,type){
+// let call = TraceHead(["v","t","Tv","Tt"],[tost(v),tost(type),tost(typeof(v)),tost(typeof(type))]);	
+	let r;
+	alternative(typeof(type))
+	case(TYPE_NUMBER){ 
+		let s = ToString(v); //for the sake of convenience
+		alternative(type)
+		case(TYPE_INT){     r = atoi(s); }
+		case(TYPE_REAL){    r = ator(s); }
+		case(TYPE_STRING){  r = s; }
+		case(TYPE_BOOL){    r = (s=="true" || atoi(s)!=0); }
+		case(TYPE_CHAR){    r = s[0]; }
+		others{ r = NULL; }
+	}
+	case(TYPE_ARRAY,TYPE_STRING){
+		if(length(type)>0){ r = cast(v,typeof(type[0])); }
+		else{ r = []; }
+	}
+	others{
+		r = NULL;
+	}
+// TraceTail(r,call);
+	return r;
+}
+
+
+
+//String to hash
+function stoh(s){
+	let t = 0;
+	ascent(i in 0..length(s)){
+		t += s[i]+0; //cast each char to an int by adding 0
+	}
+	return t;
+}
+
+
+
+
+
 //null value for unknown types - use gettype or provide type directly
 //I'm not sure if this actually matters, though, NULL might work for everything
 function GetNullValue(type){
@@ -227,8 +294,15 @@ function GetNullValue(type){
 //Aliases emulating other conventions
 function sqrt(n){return (|n|)^0.5;}
 function abs(n){return (|n|);}
+
 //Ternary operator - does not short-circuit! for convenience only
 function tern(cond, iftrue, iffalse){ if(cond){return iftrue;}else{return iffalse;} }
+// From Japanese documentation at http://www.geocities.co.jp/SiliconValley-Oakland/9951/pre/th_dnh_help_v3.html
+// // use array instead of ternary operator 
+// let g = [ 7 , - 5 ] [b == 10 ]; / / g is -5 if b is 10
+// //I'm guessing this works by treating false/true as 0/1 and getting the corresponding array element
+
+
 function xor(a,b){ return (a&&!b)||(b&&!a); }
 
 function sec(n) { return 1/cos(n); }
@@ -239,6 +313,7 @@ function mean(arr){
 	let n=length(arr); let total=0; ascent(i in 0..n){total+=arr[i];} return total/n;
 }
 
+//Linear search function
 //Check if an array contains the value, and if so, return its index - linear search
 function checkarr(arr,targ) {
 	if(length(arr)<1){return -1;}
@@ -265,6 +340,10 @@ function isoffW(obj,lft,top,rgt,btm){
 //is off clip
 function isoffC(obj,L,T,R,B){
 	let x = ObjMove_GetX(obj); let y = ObjMove_GetY(obj);
+	return (x<L || y<T || x>R || y > B);
+}
+//is position off clip
+function isPoffC(x,y,L,T,R,B){
 	return (x<L || y<T || x>R || y > B);
 }
 
@@ -430,29 +509,6 @@ function noPackage{return GetHighestScriptType!="Package"; }
 
 
 
-/////////////////////////////////////////////////////////
-
-let LFT = 999900; let TOP = 999901; let RGT = 999902; let BTM = 999903; let NON = 999904; let CLIP = 999910;
-
-//Bounce a shot/something just once
-//Use this repeatedly if you want to do something when it bounces
-function bounce(obj) {
-	let x = ObjMove_GetX(obj); let y = ObjMove_GetY(obj);
-	if(y<sy && y>0 && x>0 && x<sx){return false;}
-	let a = ObjMove_GetAngle(obj);
-	if(x<0||x>sx) { a=reflect(a,90); }
-	if(y<0||y>sy) { a=reflect(a,0 ); }
-	ObjMove_SetAngle(obj,a);
-	return true;
-}
-//Again, use this repeatedly to do something when it wraps
-function wrap(obj) {
-	let x = ObjMove_GetX(obj); let y = ObjMove_GetY(obj);
-	if(y<sy && y>0 && x>0 && x<sx){return false;}	
-	if(x<0||x>sx){ObjMove_SetX(obj,cx+(cx-x));}
-	if(y<0||y>sy){ObjMove_SetY(obj,cy+(cy-y));}
-	return true;
-}
 
 
 function wrappos(x,y){
@@ -470,49 +526,6 @@ function wraprange(val,lower,upper){
 
 
 
-//Same deal for if you only want it to bounce off certain walls
-function bounceW(obj,walls) {
-	let x = ObjMove_GetX(obj); let y = ObjMove_GetY(obj);
-	if(y<sy && y>0 && x>0 && x<sx){return false;}
-	
-	let lft=false; let top=false; let rgt=false; let btm=false;
-	ascent(i in 0..length(walls)){alternative(walls[i])case(LFT){lft=true;}case(TOP){top=true;}case(RGT){rgt=true;}case(BTM){btm=true;} }
-	
-	// let lft=checkarr(walls,0)!=-1; let top = checkarr(walls,1)!=-1; let rgt = checkarr(walls,2)!=-1; let btm = checkarr(walls,3)!=-1;
-	
-	let a = ObjMove_GetAngle(obj);
-	if((lft&&x<0)||(rgt&&x>sx)) { a=reflect(a,90); }
-	if((top&&y<0)||(btm&&y>sy)) { a=reflect(a,0 ); }
-	ObjMove_SetAngle(obj,a);
-	// let speed = ObjMove_GetSpeed(obj);
-	// let vx = cos(angle)*speed;
-	// let vy = sin(angle)*speed;
-	// if(x<=0 &&lft) { vx*=-1; }
-	// if(y<=0 &&top) { vy*=-1; }
-	// if(x>=sx&&rgt) { vx*=-1; }
-	// if(y>=sy&&btm) { vy*=-1; }
-	// ObjMove_AddPatternB1(obj,0,vx,vy);
-	return true;
-}
-function wrapW(shot,walls) {
-	let x = ObjMove_GetX(shot); let y = ObjMove_GetY(shot);
-	if(y<sy && y>0 && x>0 && x<sx){return false;}
-	
-	let lft=false; let top=false; let rgt=false; let btm=false;
-	ascent(i in 0..length(walls)){alternative(walls[i])case(LFT){lft=true;}case(TOP){top=true;}case(RGT){rgt=true;}case(BTM){btm=true;} }
-	
-	// let lft=checkarr(walls,0)!=-1; let top = checkarr(walls,1)!=-1; let rgt = checkarr(walls,2)!=-1; let btm = checkarr(walls,3)!=-1;
-	if(x<=0 &&lft) { ObjMove_SetX(shot,sx); }
-	if(y<=0 &&top) { ObjMove_SetX(shot,sy); }
-	if(x>=sx&&rgt) { ObjMove_SetY(shot, 0); }
-	if(y>=sy&&btm) { ObjMove_SetY(shot, 0); }
-	
-	//if(x<0||x>sx){ObjMove_SetX(shot,cx+(cx-x));}
-	//if(y<0||y>sy){ObjMove_SetY(shot,cy+(cy-y));}
-	return true;
-}
-
-
 
 
 
@@ -526,14 +539,7 @@ function GetDistanceToLine(x,y, x0,y0,x1,y1) { //x,y used to be last two params
 
 
 
-function CreateDummyShot(x,y){
-	let shot = CreateShotA1(x,y,0,0,0,0);
-	ObjShot_SetSpellResist(shot,true);
-	ObjShot_SetAutoDelete(shot,false);
-	Obj_SetValue(shot,FLAG_DUMMY,true);
-	Obj_SetValue(shot,"NoInfluence",true);
-	return shot;
-}
+
 
 
 
@@ -561,6 +567,64 @@ function CreateSprite(x, y, img, source, priority){
 	ObjSprite2D_SetDestCenter(obj);
 	ObjRender_SetPosition(obj, x, y, 0);
 	return obj;
+}
+
+
+function SetDebugText(line, s){
+	SetAreaCommonData("DEBUG_TEXT", rtos("00", line), ToString(s));
+	SetAreaCommonData("DEBUG", "DEBUG_TEXT_CHANGED", true);
+}
+function Debug(line, s){
+	SetAreaCommonData("DEBUG_TEXT", rtos("00", line), tost(s));
+	SetAreaCommonData("DEBUG", "DEBUG_TEXT_CHANGED", true);
+}
+
+function DebugTrace(line,labels,vals){
+	ascent(i in 0..max(length(labels),length(vals))){
+		let lbl = ""; if(length(labels)>i){ lbl=labels[i]; }
+		let val = ""; if(length(vals)>i){ val=tost(vals[i]); }
+		let spc = vtos( itoa(10-length(lbl))~"s" , "" )~"	";
+		Debug(line+i,lbl~spc~val);
+	}
+}
+
+
+
+
+//Write values to log in a fairly nice format
+//Can be used as a rudimentary stack trace
+function Trace(labels,vals){
+	let call = GetCommonData("TraceCalls",0); SetCommonData("TraceCalls",call+1);
+	WriteLog(">>>>>>>>" ~ " #"~itoa(call));
+	ascent(i in 0..length(vals)){
+		let lbl = ""; if(length(labels)>i){ lbl=labels[i]; }
+		WriteLog(lbl~"		"~vals[i]);
+	}
+	WriteLog("^>>>>>>^");
+	task TReset{yield;DeleteCommonData("TraceCalls");}TReset;
+}
+
+
+//Stack Trace
+//Call TraceHead before recursing and TraceTail after recursing
+function TraceHead(labels,vals){
+	let call = GetCommonData("TraceCalls",0); SetCommonData("TraceCalls",call+1);
+	let cspace = vtos( itoa(8*call)~"s" , "" );
+	WriteLog(">>>>>>>>>>>>>>>>" ~ " # "~itoa(call)~cspace~" PUSH");
+	ascent(i in 0..length(vals)){
+		let lbl = ""; if(length(labels)>i){ lbl=labels[i]; }
+		let spc = vtos( itoa(10-length(lbl))~"s" , "" )~"	";
+		WriteLog(lbl~spc~vals[i]);
+	}
+	return call;
+}
+function TraceTail(retval,call){
+	let spc = vtos( itoa(10-length("return"))~"s" , "" )~"	";
+	let cspace = vtos( itoa(8*call)~"s" , "" );
+	WriteLog("return"~spc~tost(retval));
+	WriteLog("<<<<<<<<<<<<<<<<" ~ " # "~itoa(call)~cspace~" POP");
+	SetCommonData("TraceCalls",GetCommonData("TraceCalls",1)-1);
+	return retval;
 }
 
 

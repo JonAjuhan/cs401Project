@@ -178,8 +178,8 @@ function MagicCircle(){
 		
 		let cx = 0;
 		let cy = 0;
-		//let maxRadius = 256 * 1.2;
-		let maxRadius = 512 * 1.2;
+		let maxRadius = 512 * 1.2; //was on this for quite a while
+		// let maxRadius = 256 * 1.2;
 		//let alpha = 0;
 		let alpha = Obj_GetValueD(obj,"MinAlpha",0)/255;
 		let maxalpha = Obj_GetValueD(obj,"MaxAlpha",255)/255;
@@ -229,6 +229,10 @@ function MagicCircle(){
 			{
 				let indexVert = iVert * 2;
 				let angle = 360 / (countVertex / 2 - 1) * iVert;
+				
+				//Alright, let's try doing this in absolute terms
+				// listRadius[indexVert] =     maxRadius * (timer/timerOrg)^0.15;
+				// listRadius[indexVert + 1] = maxRadius * (timer/timerOrg)^0.15;
 
 				//Outer circle (shrinks inward)
 				let vx1 = listRadius[indexVert] * cos(angle);
@@ -249,8 +253,7 @@ function MagicCircle(){
 				//Contract inner
 				if(frame > 45){//内側
 					let rRateIn = rRate - 0.08;
-					if(bMiss)
-					{
+					if(bMiss){
 						rRateIn = rRate - 0.04;
 					}
 					if(rRateIn < 0){rRateIn=0;}
@@ -261,6 +264,8 @@ function MagicCircle(){
 				//	listRadius[indexVert + 1] = maxRadius/2+frame/2*rRateIn;
 				
 				}else{listRadius[indexVert + 1] = listRadius[indexVert + 1] + 1;}
+				
+				
 
 			}
 
@@ -273,7 +278,6 @@ function MagicCircle(){
 		//スペルカード取得失敗
 		//When spell ends
 		if(typeEnd == END_FAILED){
-	//BREAK(nyaa,se_explode);
 			Obj_Delete(obj);
 			// NotifyEventAll(EV_USER_STAGE+3,[]); //tell system to show failure message
 			NotifyEventAll(EV_FAIL_SPELL,[]); //tell system to show failure message
@@ -284,7 +288,7 @@ function MagicCircle(){
 		let rRate = 1.0;
 		frame = 0;
 		alpha = 1;
-		//スペルカード取得成功
+		//スペルカード取得成功 //Capture bonus collapse onto player
 		loop(105)
 		{
 			angleRender += 360 / countVertex / 4;
@@ -292,32 +296,27 @@ function MagicCircle(){
 			let dy = (GetPlayerY() - cy) / 16;
 			cx += dx;
 			cy += dy;
-			if(frame >= 45)
-			{
+			if(frame >= 45){
 				alpha -= 1 / 45;
 				alpha = max(alpha, 0);
 			}
 
 			
-			ascent(iVert in 0..countVertex / 2)
-			{
+			ascent(iVert in 0..countVertex / 2) {
 				let indexVert = iVert * 2;
 				let angle = 360 / (countVertex / 2 - 1) * iVert;
 
 				let vx1 = listRadius[indexVert] * cos(angle);
 				let vy1 = listRadius[indexVert] * sin(angle);
 				ObjPrim_SetVertexPosition(obj, indexVert + 0, vx1, vy1, 0);
-	//
 
 				let vx2 = listRadius[indexVert+1] * cos(angle);
 				let vy2 = listRadius[indexVert+1] * sin(angle);
 				ObjPrim_SetVertexPosition(obj, indexVert + 1, vx2, vy2, 0);
-	//
 
 				let drOut = 0;
 				let drIn = 0;
-				if(frame <= 45)
-				{
+				if(frame <= 45) {
 					//魔方陣拡大
 					let rRateOut = 1.0;
 					drOut = (maxRadius * rRateOut - listRadius[indexVert]) / 8;
@@ -326,8 +325,7 @@ function MagicCircle(){
 					if(rRateIn<0){rRateIn=0;}
 					drIn = (maxRadius * rRateIn - listRadius[indexVert+1]) / 8;
 				}
-				else
-				{
+				else {
 					cx = GetPlayerX();
 					cy = GetPlayerY();
 
@@ -341,6 +339,7 @@ function MagicCircle(){
 				}
 				listRadius[indexVert] = listRadius[indexVert] + drOut;
 				listRadius[indexVert + 1] = listRadius[indexVert + 1] + drIn;
+				
 			}
 
 			UpdateAlpha();

@@ -7,7 +7,7 @@
 #include "./Library/selibrary.txt"  //constants for sound effects
 #include "./Library/DirPaths.txt"	//Constants for directories and function to get root script directory
 #include "./Library/Difficulty.txt"	//Difficulty system
-#include "./Library/MiscConstants.txt" //Misc constants
+#include "./Library/MiscConstants.txt" //Misc constants: RPriorities,
 #include "./Library/EventList.txt" //Constants for events
 #include "./Library/ItemFunctions.txt" //Interface with item script
 #include "./system/ItemConst.txt" //Constants for item IDs

@@ -52,8 +52,12 @@ Module.symvers
 Mkfile.old
 dkms.conf
 
-# I don't know what this is supposed to be
+# MacOS Desktop Services store
 *.DS_Store*
+.DS_Store
+._.DS_Store
+**/.DS_Store
+**/._.DS_Store
 
 # Screenshots
 *Screenshot*

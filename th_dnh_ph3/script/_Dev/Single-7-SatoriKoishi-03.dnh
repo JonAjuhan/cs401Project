@@ -29,7 +29,7 @@ let kx; let ky;
 @Initialize{
 	if(noPlural){ 
 		SetDifficultyD(HARD); 
-		SetBGM("Hartmann's Youkai Girl@Magnum Opus",17.12,298.97); 
+		SetBGM("Hartmann's Youkai Girl@Magnum Opus"); 
 	}
 	alternative(rank)
 	case(RANK_EASY){	SetCommonData("CurrentSC","Anguish \"Deafening Silence of a Single Mind\"");}

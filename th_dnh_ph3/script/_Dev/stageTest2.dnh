@@ -50,7 +50,7 @@ let bossBGM;
 task TStage {
 	let csd = GetCurrentScriptDirectory();
 
-	SetBGM("Song of the Night Sparrow ~ Night Bird",145.8,292.4);
+	SetBGM("Song of the Night Sparrow ~ Night Bird");
 	ShowPointOfCollection;
 
 	loop(60){yield;}//1�b���炢�����΁A�R���p�C�����������Ǝv�������B
@@ -177,7 +177,7 @@ task TStage {
 	}
 	//Start the boss plural
 	StartScript(bossScript);
-	SetBGM("Deaf to All But the Song",70.7, 141.38);
+	SetBGM("Deaf to All But the Song");
 	while(!IsCloseScript(bossScript) && GetPlayerState() != STATE_END){
 		yield;
 	}

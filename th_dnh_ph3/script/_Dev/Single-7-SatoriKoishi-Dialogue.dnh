@@ -42,7 +42,7 @@ task MainTask {
 	ObjMove_SetPosition(bkoishi, 0,-120);
 	ObjMove_SetDestAtWeight(bsatori,cx*0.8,cy*0.66,60,20);
 	ObjMove_SetDestAtWeight(bkoishi,cx*1.2,cy*0.66,60,20);
-	if(noStage){SetBGM("Last Remote@Magnum Opus",88.29,271.67);}
+	if(noStage){SetBGM("Last Remote@Magnum Opus");}
 	
 	let SATORI = 0; let KOISHI = 1; let MOKOU = 2; 
 	let initialized = [false,false,false];
@@ -86,7 +86,7 @@ task MainTask {
 	Say(MOKOU, "Smug",0,"Dear pesky plumbers,");
 	Say(MOKOU, "Smug",0,"The Mokoulings and I have taken over [r]Gensokyo!");
 	Say(KOISHI,"Surprise",0,"Nani?");
-	SetBGM("Hartmann's Youkai Girl@Magnum Opus",17.12,298.97);
+	SetBGM("Hartmann's Youkai Girl@Magnum Opus");
 	Say(SATORI,"Smug",120,"Your next line is... [r]\"I wonder what's for dinner?\"");
 	Say(MOKOU, "Normal",60,"I wonder what's for-");
 	Say(MOKOU, "Sweatdrop",60,"Nani?!");

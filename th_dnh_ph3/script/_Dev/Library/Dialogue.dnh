@@ -1,5 +1,14 @@
 #include "./InterpolatedMovement.dnh"
 
+//furigana:
+//let text = "[ruby rb = \" Reimu Hakurei \ "rt = \" is finished \ "]"
+//
+// &nbsp;	(Blank)
+// &quot;	"
+// &osb;	[
+// &csb;	]
+
+
 let portrait_player = [];
 let portrait_enemy = [];
 

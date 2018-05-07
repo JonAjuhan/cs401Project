@@ -1,15 +1,18 @@
+// #include "./../Index.txt"
 #include "./ItemConst.txt"
+#include "./../Library/Resources.txt"
 #include "./../Library/MiscConstants.txt"
+#include "./../Library/DirPaths.txt"
 #include "./../Library/EventList.txt"
 #include "./../Library/selibrary.txt"
 
-let CSD = GetCurrentScriptDirectory();
+// let CSD = GetCurrentScriptDirectory();
 
 @Initialize{
 	SetCommonData("ItemScriptID",GetOwnScriptID);
 	SetDefaultBonusItemEnable(false);
 	SetItemRenderPriorityI(PRI_ITEM); //well below shots
-	LoadItemData(CSD~"item_data.txt");
+	LoadItemData(dirsys~"item_data.txt");
 	
 	let PoC = GetStgFrameHeight*0.25;
 	SetPlayerAutoItemCollectLine(PoC);
@@ -42,7 +45,7 @@ let r = 48; //64
 			y1 = args[4];
 		}
 		let item = TItem(type,x,y,x1,y1);
-		SetScriptResult(item);
+		SetEventResult(args[length(args)-1],item);
 	}
 	
 	case(EV_GET_ITEM){
@@ -242,4 +245,4 @@ task ItemScore(type,item){
 }
 
 
-function wait(n){loop(n){yield;}}
+// function wait(n){loop(n){yield;}}

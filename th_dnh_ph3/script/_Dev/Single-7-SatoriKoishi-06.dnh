@@ -1,0 +1,412 @@
+#TouhouDanmakufu[Single]
+#ScriptVersion[3]
+#Title["(Satori & Koishi Spell 3_C)"]
+#Text["Mokou version (uses Kaguya-like danmaku)"]
+
+#System["./system/Andi_System.txt"]
+#Background["./system/Background/Satori/BG_work.txt"]
+
+#include "./Index.txt"
+
+let timer = 49; //37 //47
+let drate = 24; //24
+let mlife = 3000; //2000
+let issurv = false;
+
+let volumetweak = 1; //.75
+
+let bsatori;
+let bkoishi;
+let kx; let ky;
+
+let colorS = [255, 64,196];
+let colorK = [128,255,128];
+
+@Event{
+	alternative(GetEventType())
+	case(EV_REQUEST_LIFE){				SetScriptResult(mlife);		}
+	case(EV_REQUEST_SPELL_SCORE){		SetScriptResult(5000000);	}
+	case(EV_REQUEST_TIMER) {			SetScriptResult(timer);	    }
+	case(EV_REQUEST_IS_DURABLE_SPELL) {	SetScriptResult(issurv);	}
+}
+@Initialize{
+	if(noPlural){ 
+		SetDifficultyD(HARD);
+		// SetBGMLoop("Hartmann's Youkai Girl@Magnum Opus",17.12,298.97); 
+		SetBGM("Flight of the Bamboo Cutter ~ Lunatic Princess"); 
+	}
+	alternative(rank)
+	case(RANK_EASY){	SetCommonData("CurrentSC", "Recollection \"Jeweled Tree of Hourai\"");}
+	case(RANK_NORM){	SetCommonData("CurrentSC", "Recollection \"Jeweled Tree of Hourai\"");}
+	case(RANK_HARD){	SetCommonData("CurrentSC", "Recollection \"Jeweled Tree of Hourai\"");}
+	others         {	SetCommonData("CurrentSC", "Recollection \"Jeweled Tree of Hourai\"");}
+	// alternative(rank)
+	// case(RANK_EASY){	SetCommonData("CurrentSC2","Affection \"Unconscious Love\"");}
+	// case(RANK_NORM){	SetCommonData("CurrentSC2","Affection \"Unconscious Love\"");}
+	// case(RANK_HARD){	SetCommonData("CurrentSC2","Affection \"Unconscious Love\"");}
+	// others         {	SetCommonData("CurrentSC2","Affection \"Unconscious Love\"");}
+	
+	SetShotAutoDeleteClip(64,180,64,32);
+	
+	SetCommonData("BossNameColor",[255,64,196]);
+	bsatori = CreateBoss("Satori Komeiji");
+	SetCommonData("BossNameColor",[128,255,128]);
+	bkoishi = CreateBoss("Koishi Komeiji");
+	ObjMove_SetPosition(bkoishi,GetCommonData("Boss2_X",cx),GetCommonData("Boss2_Y",-120));
+	renderSatoriSA(bsatori);
+	renderKoishiSA(bkoishi);
+	
+	MainTask;
+	
+
+}
+@MainLoop{
+	if(ObjEnemy_GetInfo(bsatori,INFO_LIFE)<=0 && !finishing){
+		finishing = true;
+		DropItemsSpellEnd;
+		SetCommonData("Boss2_X",ObjMove_GetX(bkoishi));	SetCommonData("Boss2_Y",ObjMove_GetY(bkoishi));
+		TBreakSpell([]);
+	}
+	kx=ObjMove_GetX(bkoishi); ky=ObjMove_GetY(bkoishi);
+	SetBossHitbox(bsatori,ex,ey);
+	SetBossHitbox(bkoishi,kx,ky);
+	frame++;
+	yield;
+}
+
+
+task MainTask {
+	ObjEnemy_SetDamageRate(bsatori,0,0);
+	// ObjMove_SetDestAtFrame(bsatori, cx, cy-100, 60); //cy-120
+	ObjMove_SetDestAtFrame(bsatori, cx, cy-60, 60); //cy-120
+	ObjMove_SetDestAtFrame(bkoishi, cx*1.1, cy-150, 60); //cy-120
+	
+	yield;
+
+	// SetSpellCardA1(1, [255,64,196], NAZRIN, dircut~"Cutin_Satori.png");
+	// SetSpellCardA1(2, [128,255,128], NAZRIN, dircut~"Cutin_Koishi.png");
+	SetSpellCardA1(1, colorS, NAZRIN, dircut~"Cutin_Satori.png");
+	
+	
+	
+	ObjEnemyBossScene_StartSpell(objScene);
+	ObjEnemyBossScene_SetSpellTimer(objScene,timer*60); //5760
+	
+	// SetCaution;
+	// TSpellImmune;
+	// SetBossBlur(true);
+	Aura(bsatori,255,64,128,64);
+	Aura(bkoishi,64,255,128,64);
+	
+	// AuraRainbow(boss,64,64,64);
+	// SetMagicCircleAlpha(64,64);
+
+	// wait(90);
+	wait(20);
+	
+	// Tmovement(cx-120,cx+120, cy-90,cy-60, 60,240, [MOVE_PLAYERBIAS,2,0,MOVE_MAXSPEED,1.5] );
+	ObjEnemy_SetDamageRate(bsatori,drate,drate/3);
+	frame = 0;
+	
+	
+	TShootSatori;
+	// TShootKoishi;
+	
+}
+
+
+
+
+
+
+
+task TShootSatori{
+	let a = 0;
+	
+	wait(45);
+	
+	let J;
+	alternative(rank)
+	case(RANK_EASY){ J = 1; }
+	case(RANK_NORM){ J = 3; }
+	case(RANK_HARD){ J = 4; }
+	case(RANK_LUNA){ J = 5; }
+	
+	
+	
+	while(!finishing){
+		
+		let x0 = px;
+		let y0 = sy+20;
+		
+		let M = 7; //7
+		SE_Play(dirse~"Misc/Luminaire_lasers.wav",100); //60
+		ascent(i in 0..M){
+			
+			let a = 270+lerp(-30,30,i/M);
+			let las = StraightLaserA1(x0,sy+20, a, 800,30, LAS_PURPLE - i, 90,50);
+
+			let eA = getangle(ex,ey,x0,sy+20);
+			let eD = getdist (ex,ey,x0,sy+20);
+			let las2= StraightLaserA1(ex,ey, eA, eD,30, LAS_PURPLE - i, 90,50);
+			
+			Manage(las,a,x0);
+			task Manage(las,a0,x0){
+				let da = a0-270;
+				ascent(i in 0..60){
+					let a = 270+da*2*cos(i*90/60+10);
+					ObjStLaser_SetAngle(las, a);
+					let dx = 100*cos(a)+(10*sin(i*90/60))^2 * da/300;
+					ObjMove_SetX(las,x0+dx);
+					
+					eA = getangle(ex,ey,x0+dx,sy+20);
+					eD = getdist (ex,ey,x0+dx,sy+20);
+					ObjStLaser_SetAngle(las2,eA);
+					ObjLaser_SetLength(las2,eD);
+					
+					yield;
+				}
+			}
+			
+		}
+		wait(60);
+		
+		
+		// OM_SetDestAtWrapF(bkoishi,x0,sy+20,[LFT,RGT,TOP,BTM,1,1.5,2.25,0.75],60);
+		OM_SetDestAtWrapF(bkoishi,x0,sy,[LFT,RGT,TOP,BTM],60);
+		O_SetPropertyAtFrame(bkoishi,RENDER_ALPHA,0,60);
+		
+		
+		
+		let N = 60;
+		let dy = 5*N/60;
+		
+		ascent(i in 0..N){
+			
+			
+			let color = MAGENTA - floor(i/(N/6)+0.5);
+			
+			let dx=rand(-5,5); let dy=rand(-3,-2);
+			
+			let s=sqrt(dx^2+dy^2);
+			let xya=atan2(dy,dx);
+			let delay = DELAY_RING+30;   //20+15*sin(frame*5)
+			// let r = 50+25*sin(frame*5);
+			let r = -50+25*sin(frame*5);
+			
+			// let x = x0+r/2*cos(a);
+			// let x = x0;
+			let x = x0-r/4*cos(a);
+			let y = y0-5*i;
+			a += r^2/100;
+			
+			// let len = 100-20*sin(frame*5);
+			let len = 100-20*sin(frame*5) + r/2*cos(a);
+			
+			// let graph = ICE_PURPLE - round(i/10);
+			let graph = ICE+color;
+			
+			// let las = LooseLaserA1(x,y,0,xya, len,30,graph,delay);
+			let las = LooseLaserA1(x,y,0,xya, len,30,graph,rand(30,60));
+			let del = 2*N + 2*(N-i);
+			OM_AddPatternA2(las,del,1,NO_CHANGE, 0.05,0,3);
+			// OM_AddPatternA2(las,del,-1,NO_CHANGE, -0.05,0,-3);
+			
+			ascent(j in 0..J){
+				// TDelShot(las,ICE_PURPLE+500-round(i/10),del,j);				
+				TDelShot(las,ICE+color+500,del,j);				
+			}
+			task TDelShot(las,graph,del,j){
+				if(j==0){
+					wait(60);
+					let a0 = OM_GetAngle(las);
+					ascent(i in 0..30){
+						OM_SetAngle(las,a0+(i/30*rand(0,1))^0.5*randSign * 1.5);
+						yield;
+					}
+					OM_SetAngle(las,a0);
+				}else{
+					wait(90);					
+				}
+				
+				
+				let x = OM_GetX(las); let y = OM_GetY(las);
+				let a = OM_GetAngle(las)+rand(-j,j)*10;
+				let dx = cos(a); let dy = sin(a);
+				
+				let s = 4-j/J;
+				let tdx = 60+60*j/J;
+				let tdy = 90+120*j/J;
+				
+				let xsp = s*dx;
+				let xms = xsp/10+rand(-0.1,0.1);
+				let xac = (xms-xsp)/tdx; //60
+				
+				let ysp = s*dy;
+				let yms = 2+rand(0,0.1);
+				// let yac = 0.05*(|dy|);
+				let yac = (yms-ysp)/tdy; //90+60*etc
+
+				//What if I were to change only the acceleration and/or delay?
+				
+				// let shot = ShotB2(x,y, xsp,ysp, xac, yac, xms,yms,   graph, 15+DELAY_RING);
+				let delay = 10;
+				if(j==0){delay+=DELAY_RING;}else{delay+=DELAY_HIDE;}
+				// let shot = ShotB2(x,y, xsp,ysp, xac, yac, xms,yms,   graph, delay);
+				xsp = s*cos(a); ysp = s*sin(a);
+				let shot = ShotB2(x,y, xsp,ysp, xac, yac, xms,yms,   graph, delay);
+				
+				if(j!=0){return;}
+				
+				SE_Play(se_chime,60);
+				SE_Play(se_kira02,60);
+				
+				// wait(del-90);
+				wait(del-90-15);
+				
+				// let len = ObjLaser_GetLength(las);
+				// let x0 = x-len*cos(a); let y0 = y-len*sin(a);
+				loop(15){
+					let a1 = a+rand(-0.5,0.5);
+					// let a1 = a+rand(-5,5);
+					ObjMove_SetAngle(las,a1);
+					// let x1 = x0+len*cos(a); let y1 = y0+len*sin(a);
+					// ObjRender_SetPosition(las,x1,y1,0);
+					// ObjRender_SetX(las,x1); ObjRender_SetY(las,y1);
+					yield;
+				}
+				ObjMove_SetAngle(las,a);
+				// ObjMove_SetPosition(las,x,y);
+				
+				SE_Play(se_ice,40);
+				SE_Play(se_kira,40);
+				SE_Play(se_chime,40);
+				
+				// SE_Play(se_slash,60);
+				SE_Play(se_laser1,40);
+				SE_Play(se_laser2,40);
+			}
+			
+			
+			// let a2 = 270+(-1)^i*(25+45*i/N);
+			let a2 = 270+(-1)^i*(rand(0,25)+45*i/N);
+			let x2 = x0+(-1)^i*(cx/N*i); let y2 = y0;
+			let extend = rand(30,60);
+			let retr = -( 1 - (1-i/N)*0.75 );
+			let las2 = LooseLaserA1(x2,y2,retr,a2, len,30,graph,extend);
+			OR_SetColor(las2,192,192,192);
+			// OR_SetAlpha(las2,150);
+			
+			// x2 = x2/10;
+			x2 = x0;
+			let dir = sgn(x-x0);
+			a2  = getangle(x2,y2, x,y);
+			len = len * ( 1-(i/N)/2 );
+			retr = 3*(|retr|);
+			extend = 60;
+			let las3 = LooseLaserA1(x,y,0,a2+180, len,30,graph,extend);
+			OM_AddPatternA2(las3,del,NO_CHANGE,NO_CHANGE, retr/60, 0,  retr*rand(i/N,10));
+			OR_SetColor(las3,192,192,192);
+			OR_SetAlpha(las3,64);
+
+
+			
+			SE_Play(se_chime,60);
+			SE_Play(se_ice,60);
+			SE_Play(se_kira01,60);
+			SE_Play(se_kira02,60);
+			SE_Play(se_laser,45);
+			SE_Play(se_laser1,45);
+			yield;
+		}
+		
+		wait(90);
+		
+		O_SetPropertyAtAccel(bkoishi,RENDER_ALPHA,255, 30);
+		ObjMove_SetDestAtWeight(bkoishi,x0,sy/4, 30, 20);
+		SE_Play(se_flourish,80);
+		SE_Play(se_chime2,80);
+		
+		// SE_Play(se_kira02,80);
+		
+		wait(90);
+		wait(60);
+		
+		// MakeTree(cx,0,90,sy,100,100);
+		// MakeTree(cx,0,getangle(cx,0,px,py),200,50,100,100);
+		
+		// wait(250);
+		
+		
+	}
+}
+
+
+
+
+
+
+task MakeTree(x0,y0,a0,D,R,N,dur){
+	let a = a0;
+	let x1=x0+D*cos(a0); let y1=y0+D*sin(a0);
+	let dx = (x1-x0)/N;
+	let dy = (y1-y0)/N;
+	
+	let dG = N/6;
+	
+	ascent(i in 0..N){
+		
+		// let xs=rand(-5,5); let ys=rand(-3,-2);
+		let xs = dx+3*cos(frame*13); let ys = dy+3*sin(frame*13);
+		
+		// let s=sqrt(xs^2+ys^2); //what is this even doing?
+		let xya=atan2(ys,xs);
+		let delay = DELAY_RING+30;   //20+15*sin(frame*5)
+		let r = -50+25*sin(frame*5);
+		
+		let x = x0+dx*i + r/2*cos(a);
+		let y = y0+dy*i + r/2*sin(a);
+		
+		a += r^2/100;
+		
+		let len = R-R/5*sin(frame*5);
+		
+		let graph = ICE_PURPLE - round(i/dG);
+		
+		let las = LooseLaserA1(x,y,0,xya, len,30,graph,delay);
+		let del = 2*N + 2*(N-i);
+		OM_AddPatternA2(las,del,1,NO_CHANGE, 0.05,0,3);
+		
+		TDelShot(las,ICE_PURPLE+500-round(i/10),del);
+		task TDelShot(las,graph,del){
+			wait(90);
+			let x = OM_GetX(las); let y = OM_GetY(las);
+			let a = OM_GetAngle(las);
+			let dx = cos(a); let dy = sin(a);
+			
+			let sp = 4*dx; //4
+			let ms = sp/10;
+			let ac = (ms-sp)/60; //15
+			
+			let shot = ShotB2(x,y, sp,2*dy, ac, 0.05*(|ys|), ms,2,   graph, 15+DELAY_RING);
+			
+			SE_Play(se_chime,60);
+			SE_Play(se_kira02,60);
+			
+			wait(del-90);
+			
+			SE_Play(se_ice,40);
+			SE_Play(se_kira,40);
+			SE_Play(se_chime,40);
+			
+		}
+		
+		
+		SE_Play(se_chime,60);
+		SE_Play(se_ice,60);
+		SE_Play(se_kira01,60);
+		SE_Play(se_kira02,60);
+		// yield;
+		waitr(dur/N,i);
+	}
+}

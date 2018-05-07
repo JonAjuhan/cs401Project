@@ -1,6 +1,8 @@
 //REQUIRES:
-//Resources.txt
-//Cutin.txt
+#include "./Resources.txt"
+#include "./ExtendedDNF.txt"
+// #include "./Cutin/Cutin.txt"
+
 //?
 
 
@@ -8,19 +10,21 @@
 
 //Basic spellcard declaration, no cutin image
 function SetSpellCard() {
+	SE_Play(se_spellcard,100);
 	let c = GetCommonData("SpellcardDeclareColor",[255,128,128]);
 	ObjCutin_SetSpellcardS3(GetCommonData("CurrentSC",""), c[0],c[1],c[2]);
 	if(length(Obj_GetValueD(GetEnemyBossObjectID[0], "Spellcards", [])) < 2){
 		let diff = GetCommonData("Difficulty","Normal");
 		ObjCutin_LaunchS3("AYA", "", diff);
-		TMagicCircle();
+		// TMagicCircle();
 	}
-	NotifyEventAll(EV_REQUEST_SPELL_SCORE,"");
+	NotifyEventAll(EV_REQUEST_SPELL_SCORE,[]);
 }
 
 
 //Spellcard declaration with image, name, color
 function SetSpellCardA1(NameOrIndex,c,style,img) {
+	SE_Play(se_spellcard,100);
 	let name="";
 	if(typeof(NameOrIndex)==TYPE_NUMBER || NameOrIndex==""){
 		name= GetCommonData("CurrentSC"~itoa(NameOrIndex),GetCommonData("CurrentSC",""));
@@ -33,11 +37,7 @@ function SetSpellCardA1(NameOrIndex,c,style,img) {
 	if(length(Obj_GetValueD(GetEnemyBossObjectID[0], "Spellcards", [])) < 2){
 		let diff = GetCommonData("Difficulty","Normal");
 		ObjCutin_LaunchS3(style, img, diff);
-		TMagicCircle();
-	// }else if(GetCommonData("RepeatCutin",true)){
-		// let diff = GetCommonData("Difficulty","Normal");
-		// ObjCutin_LaunchS3(style, img, diff);
-		// SE_Play(se_spellcard,100);
+		// TMagicCircle();
 	}else{SE_Play(se_spellcard,100);}
 	NotifyEventAll(EV_REQUEST_SPELL_SCORE,[]);
 	// ObjEnemyBossScene_StartSpell(objScene);
@@ -49,38 +49,41 @@ function SetSpellCardA1(NameOrIndex,c,style,img) {
 
 //Spellcard declaration with cutin image
 function SetSpellCardA2(style,img) {
+	SE_Play(se_spellcard,100);
 	let c = GetCommonData("SpellcardDeclareColor",[255,128,128]);
 	ObjCutin_SetSpellcardS4(GetCommonData("CurrentSC",""),img,style, c[0],c[1],c[2]);
 	if(length(Obj_GetValueD(GetEnemyBossObjectID[0], "Spellcards", [])) < 2){
 		let diff = GetCommonData("Difficulty","Normal");
 		ObjCutin_LaunchS3(style, img, diff);
-		TMagicCircle();
+		// TMagicCircle();
 	}
-	NotifyEventAll(EV_REQUEST_SPELL_SCORE,"");
+	NotifyEventAll(EV_REQUEST_SPELL_SCORE,[]);
 }
 
 
 //
 function SetSurvivalCard() {
+	SE_Play(se_spellcard,100);
 	let c = GetCommonData("SpellcardDeclareColor",[255,128,128]);
 	ObjCutin_SetSpellcardS5(GetCommonData("CurrentSC",""),"","", c[0],c[1],c[2], true);
 	if(length(Obj_GetValueD(GetEnemyBossObjectID[0], "Spellcards", [])) < 2){
 		let diff = GetCommonData("Difficulty","Normal");
 		ObjCutin_LaunchS3("AYA", "", diff);
-		TMagicCircle();
+		// TMagicCircle();
 	}
-	NotifyEventAll(EV_REQUEST_SPELL_SCORE,"");
+	NotifyEventAll(EV_REQUEST_SPELL_SCORE,[]);
 }
 //
 function SetSurvivalCardA2(style,img) {
+	SE_Play(se_spellcard,100);
 	let c = GetCommonData("SpellcardDeclareColor",[255,128,128]);
 	ObjCutin_SetSpellcardS5(GetCommonData("CurrentSC",""),img,style, c[0],c[1],c[2], true);
 	if(length(Obj_GetValueD(GetEnemyBossObjectID[0], "Spellcards", [])) < 2){
 		let diff = GetCommonData("Difficulty","Normal");
 		ObjCutin_LaunchS3(style, img, diff);
-		TMagicCircle();
+		// TMagicCircle();
 	}
-	NotifyEventAll(EV_REQUEST_SPELL_SCORE,"");
+	NotifyEventAll(EV_REQUEST_SPELL_SCORE,[]);
 }
 //
 function SetCaution() {
@@ -93,6 +96,7 @@ function SetCaution() {
 let BREAK_DELAY = 999901; let BREAK_DEAD = 999902;
 //"standardized" TFinalize
 task TBreakSpell(args) {
+	SaveBossPositions;
 	let del=checkarr(args,BREAK_DELAY);if(del==-1){del=15;}else{del=args[del+1];}
 	let ded=checkarr(args,BREAK_DEAD);
 	if(ded==-1){
@@ -103,6 +107,8 @@ task TBreakSpell(args) {
 		//SetAutoDeleteObject(false);
 	}
 	let boss = GetEnemyBossObjectID[0];
+	
+	
 	DeleteShotAllOut(TYPE_ALL, TYPE_ITEM, ObjMove_GetX(boss), ObjMove_GetY(boss),del);
 	// DeleteShotAll(TYPE_ALL, TYPE_ITEM);
 	//AfterImageCircle(ex,ey,[255,255,255,255],1,20,30,BLEND_ADD_ARGB,79);
@@ -117,14 +123,15 @@ task TBreakSpell(args) {
 	return;
 }
 task TBreakNonspell(args) {
+	SaveBossPositions;
 	let doeffect = checkarr(args,NULL)==-1;
 	if(doeffect){
 		SE_Play(spellbreak,100);
-		//AfterImageCircle(ex,ey,[255,255,255,255],1,20,30,BLEND_ADD_ARGB,79);
 		let eff = GlowCircle(ex,ey,[255,255,255,255],1,20,30);
 		Obj_SetRenderPriorityI(eff,79);
 	}
 	let boss = GetEnemyBossObjectID[0];
+	
 	let del=checkarr(args,BREAK_DELAY); if(del==-1){del=15;}else{del=args[del+1];}
 	// DeleteShotAll(TYPE_ALL, TYPE_FADE);
 	DeleteShotAllOut(TYPE_ALL, TYPE_ITEM, ObjMove_GetX(boss), ObjMove_GetY(boss), del); 	
@@ -557,8 +564,10 @@ task FadeToBlack(delin,dur,delout){
 }
 
 
-
-function SetBGM(title,loopstart,loopend){
+function SetBGM(title){
+	Notify(SCRIPT_MUSIC,EV_SET_SONG,[title]);
+}
+function SetBGMLoop(title,loopstart,loopend){
 	// NotifyEvent(GetCommonData("SystemScriptID",NULL),EV_SET_SONG,[title,loopstart,loopend]);
 	NotifyEventAll(EV_SET_SONG,[title,rtoa(loopstart),rtoa(loopend)]);
 }
@@ -980,77 +989,159 @@ function AimWrap(x0,y0,x1,y1,wall) {
 //----------------------------------------------------------------
 //Bounce off the walls of the stage frame
 //Changes only angle
-task OM_BounceA1(shot, bounces, walls) {
-	while(isOffScreen(shot)&&!Obj_IsDeleted(shot)){yield;} //wait for shot to move away from walls
-	let lft=checkarr(walls,LFT)!=-1; let top = checkarr(walls,TOP)!=-1; let rgt = checkarr(walls,RGT)!=-1; let btm = checkarr(walls,BTM)!=-1;
-	let x = ObjMove_GetX(shot); let y = ObjMove_GetY(shot);
-	let x0 = 0; let y0 = 0; let x1 = sx; let y1 = sy;
-	let clip=checkarr(walls,CLIP);
-	if(clip!=-1){
-		x0=walls[clip+1];
-		y0=walls[clip+2];
-		x1=walls[clip+3];
-		y1=walls[clip+4];
+/////////////////////////////////////////////////////////
+let LFT = 999900; let TOP = 999901; let RGT = 999902; let BTM = 999903; let NON = 999904; let CLIP = 999910;
+//Bounce a shot/something just once
+//Use this repeatedly if you want to do something when it bounces
+function bounce(obj) {
+	let x = ObjMove_GetX(obj); let y = ObjMove_GetY(obj);
+	if(y<sy && y>0 && x>0 && x<sx){return false;}
+	if(!OM_IsXYMove(obj)){
+		let a = ObjMove_GetAngle(obj);
+		if(x<0||x>sx) { a=reflect(a,90); }
+		if(y<0||y>sy) { a=reflect(a,0 ); }
+		ObjMove_SetAngle(obj,a);
+	}else{
+		let dx=OM_GetSpeedX(obj); let dy=OM_GetSpeedY(obj);
+		if(x<0||x>sx) { dx*=-1; }
+		if(y<0||y>sy) { dy*=-1; }
+		OM_SetSpeedX(obj,dx); OM_SetSpeedY(obj,dy);
 	}
-	//WriteLog("x0="~itoa(x0)~" y0="~itoa(y0)~" x1="~itoa(x1)~" y1="~itoa(y1));
-	
-	while(bounces!=0 && !Obj_IsDeleted(shot)) {
-		//Wait for shot to reach boundary
-		while( x>x0 && y>y0 && x<x1 && y<y1 ) { 
-			yield;
-			x = ObjMove_GetX(shot); y = ObjMove_GetY(shot);
-		}
-
-		let offLft=(x<=x0); let offTop=(y<=y0); let offRgt=(x>=x1); let offBot=(y>=y1);
-	
-		let a = ObjMove_GetAngle(shot);
-		if(offLft&&lft) { a=reflect(a,90); }
-		if(offTop&&top) { a=reflect(a,0 ); }
-		if(offRgt&&rgt) { a=reflect(a,90); }
-		if(offBot&&btm) { a=reflect(a,0 ); }
-		ObjMove_SetAngle(shot,a);
-
-		yield; //wait for bullet to move away from bound before checking again
-		x = ObjMove_GetX(shot); y = ObjMove_GetY(shot);
-		bounces--;
-	}
-	return;
+	return true;
 }
-task OM_WrapA1(shot, wraps, walls) {
-	let lft=checkarr(walls,LFT)!=-1; let top = checkarr(walls,TOP)!=-1; let rgt = checkarr(walls,RGT)!=-1; let btm = checkarr(walls,BTM)!=-1;
-	//let clip = checkarr(walls,CLIP); //if(clip!=-1){clip = walls[clip+1];}else{clip=0;}
-	let x = ObjMove_GetX(shot); let y = ObjMove_GetY(shot);
-	let x0 = 0; let y0 = 0; let x1 = sx; let y1 = sy;
-	let clip=checkarr(walls,CLIP);
-	if(clip!=-1){x0=walls[clip+1];y0=walls[clip+2];x1=walls[clip+3];y1=walls[clip+4];}
-	
-	while(wraps!=0 && !Obj_IsDeleted(shot)) {
-		//Wait for shot to reach boundary
-		while( x>x0 && y>y0 && x<x1 && y<y1 ) { 
-			yield;
-			x = ObjMove_GetX(shot); y = ObjMove_GetY(shot);
+//Again, use this repeatedly to do something when it wraps
+function wrap(obj) {
+	let x = ObjMove_GetX(obj); let y = ObjMove_GetY(obj);
+	if(y<sy && y>0 && x>0 && x<sx){return false;}	
+	if(x<0||x>sx){ObjMove_SetX(obj,cx+(cx-x));}
+	if(y<0||y>sy){ObjMove_SetY(obj,cy+(cy-y));}
+	return true;
+}
+//This one also changes x/y acceleration. If you use it on a non-XYmove shot, it changes angv.
+function bounce2(obj){
+	let b = isoff(obj); if(!b){return false;}
+	let x = OM_GetX(obj); let y = OM_GetY(obj);
+	if(OM_IsXYMove(obj)){
+		let xs = OM_GetSpeedX(obj); let ys = OM_GetSpeedY(obj);
+		let xa = OM_GetAccelerationX(obj); let ya = OM_GetAccelerationY(obj);
+		let xm = OM_GetMaxSpeedX(obj); let ym = OM_GetMaxSpeedY(obj);
+		let bx = (x<0||x>sx); let by = (y<0||y>sy);
+		if(by){
+			OM_SetMaxSpeedY(obj,-ym);
+			OM_SetSpeedY(obj,-ys);
+			OM_SetAccelerationY(obj,-ya);
 		}
-
-		let offLft = (x<=x0); 
-		let offTop = (y<=y0); 
-		let offRgt = (x>=x1); 
-		let offBot = (y>=y1);
-		
-		if(offLft&&lft) { x+=2*(cx-x); }
-		if(offTop&&top) { y+=2*(cy-y); }
-		if(offRgt&&rgt) { x+=2*(cx-x); }
-		if(offBot&&btm) { y+=2*(cy-y); }
-		ObjMove_SetPosition(shot,x,y);
-		
-		yield; //wait for bullet to move away from bound before checking again
-		x = ObjMove_GetX(shot); y = ObjMove_GetY(shot);
-		wraps--;
+		if(bx){
+			OM_SetMaxSpeedX(obj,-xm);
+			OM_SetSpeedX(obj,-xs);
+			OM_SetAccelerationX(obj,-xa);
+		}
+		return (bx||by);
+	}else{
+		let angv = OM_GetAngularVelocity(obj);
+		OM_SetAngularVelocity(obj,-angv);
+		return bounce(obj);
 	}
-	return;
+}
+//Same deal for if you only want it to bounce off certain walls
+function bounceW(obj,walls) {
+	let x = ObjMove_GetX(obj); let y = ObjMove_GetY(obj);
+	if(y<sy && y>0 && x>0 && x<sx){return false;}
+	
+	let lft=false; let top=false; let rgt=false; let btm=false;
+	ascent(i in 0..length(walls)){
+		alternative(walls[i])
+		case(LFT){lft=true;}
+		case(TOP){top=true;}
+		case(RGT){rgt=true;}
+		case(BTM){btm=true;} 
+	}
+	let off = false;
+	if((lft&&x<0)||(rgt&&x>sx)) { off=true; }
+	if((top&&y<0)||(btm&&y>sy)) { off=true; }
+	if(off){ bounce(obj); }
+	return off;
+}
+function wrapW(shot,walls) {
+	let x = ObjMove_GetX(shot); let y = ObjMove_GetY(shot);
+	if(y<sy && y>0 && x>0 && x<sx){return false;}
+	let lft=false; let top=false; let rgt=false; let btm=false;
+	ascent(i in 0..length(walls)){
+		alternative(walls[i])
+		case(LFT){lft=true;}
+		case(TOP){top=true;}
+		case(RGT){rgt=true;}
+		case(BTM){btm=true;} 
+	}
+	// if(x<=0 &&lft) { ObjMove_SetX(shot,sx); }
+	// if(y<=0 &&top) { ObjMove_SetX(shot,sy); }
+	// if(x>=sx&&rgt) { ObjMove_SetY(shot, 0); }
+	// if(y>=sy&&btm) { ObjMove_SetY(shot, 0); }
+	if(x<0&&lft||rgt&&x>sx){ObjMove_SetX(shot,cx+(cx-x));}
+	if(y<0&&top||btm&&y>sy){ObjMove_SetY(shot,cy+(cy-y));}
+	return true;
 }
 
-function BounceA1(shot, bounces, walls){OM_BounceA1(shot, bounces, walls);}
-function WrapA1(shot, bounces, walls){OM_WrapA1(shot, bounces, walls);}
+
+task OM_BounceA1(obj,bounces){
+	while(bounces>0){
+		while(!bounce(obj)){yield;} bounces--;
+		while(isoff(obj)){yield;}
+	}
+}
+task OM_BounceB1(obj,bounces,walls){
+	while(bounces>0){
+		while(!bounceW(obj,walls)){yield;} bounces--;
+		while(isoff(obj)){yield;}
+	}
+}
+task OM_WrapA1(obj,wraps){
+	while(wraps>0){
+		while(!wrap(obj)){yield;} wraps--;
+		while(isoff(obj)){yield;}
+	}
+}
+task OM_WrapB1(obj,wraps,walls){
+	while(wraps>0){
+		while(!wrapW(obj,walls)){yield;} wraps--;
+		while(isoff(obj)){yield;}
+	}
+}
+// task OM_WrapB1(shot, wraps, walls) {
+	// let lft=checkarr(walls,LFT)!=-1; let top = checkarr(walls,TOP)!=-1; let rgt = checkarr(walls,RGT)!=-1; let btm = checkarr(walls,BTM)!=-1;
+	// //let clip = checkarr(walls,CLIP); //if(clip!=-1){clip = walls[clip+1];}else{clip=0;}
+	// let x = ObjMove_GetX(shot); let y = ObjMove_GetY(shot);
+	// let x0 = 0; let y0 = 0; let x1 = sx; let y1 = sy;
+	// let clip=checkarr(walls,CLIP);
+	// if(clip!=-1){x0=walls[clip+1];y0=walls[clip+2];x1=walls[clip+3];y1=walls[clip+4];}
+	
+	// while(wraps!=0 && !Obj_IsDeleted(shot)) {
+		// //Wait for shot to reach boundary
+		// while( x>x0 && y>y0 && x<x1 && y<y1 ) { 
+			// yield;
+			// x = ObjMove_GetX(shot); y = ObjMove_GetY(shot);
+		// }
+
+		// let offLft = (x<=x0); 
+		// let offTop = (y<=y0); 
+		// let offRgt = (x>=x1); 
+		// let offBot = (y>=y1);
+		
+		// if(offLft&&lft) { x+=2*(cx-x); }
+		// if(offTop&&top) { y+=2*(cy-y); }
+		// if(offRgt&&rgt) { x+=2*(cx-x); }
+		// if(offBot&&btm) { y+=2*(cy-y); }
+		// ObjMove_SetPosition(shot,x,y);
+		
+		// yield; //wait for bullet to move away from bound before checking again
+		// x = ObjMove_GetX(shot); y = ObjMove_GetY(shot);
+		// wraps--;
+	// }
+	// return;
+// }
+
+function BounceA1(shot, bounces, walls){OM_BounceB1(shot, bounces, walls);}
+function WrapA1(shot, bounces, walls){OM_WrapB1(shot, bounces, walls);}
 
 
 
@@ -1586,6 +1677,12 @@ task ObjRender_SetMoveFromBackground(obj, time, startscale, endscale){
 
 
 
+
+
+
+
+
+
 function WarnShot(shot) {
 	let warn = CreateShotA1(ObjMove_GetX(shot),ObjMove_GetY(shot),0,0,ObjShot_GetImageID(shot),15);
 	ObjShot_SetIntersectionEnable(warn,false);
@@ -1626,6 +1723,17 @@ function OS_TintShot(shot,brightness){
 	color = [brightness+color[0],brightness+color[1],brightness+color[2]];
 	setcolor(shot,color);
 }
+
+//Make object appear to flip, allowing graphic/etc 
+//to be changed when it is fully invisible to avoid jarring effect
+task OR_FlipX(obj,t){
+	let s0 = OR_GetScaleX(obj);
+	ascent(i in 0..t){
+		OR_SetScaleX(obj, s0*(|cos(i*180/t)|) );
+		yield;
+	}
+}
+
 
 function SetMagicCircleAlpha(m,s){
 	MCircNextAlpha = m; //80
@@ -1678,9 +1786,9 @@ function OS_Tremble(shot,xmag,ymag,dur){
 			my = ObjMove_GetY(shot);
 			rx = mx+sin(10*i*xdir)*cos(20*i*xdir)*xmag;
 			ry = my+sin(20*i*ydir)*cos(10*i*ydir)*ymag;
+			if(Obj_IsValueExists(shot,FLAG_CHECKINFO)){UpdateGraphic;}
 			ObjMove_SetPosition(rshot,rx,ry);
 			ObjMove_SetAngle(rshot,ObjMove_GetAngle(shot));
-			if(Obj_IsValueExists(shot,"UpdateRender")){UpdateGraphic;}
 			yield;
 		}	
 		Obj_SetVisible(shot,true);
@@ -1689,12 +1797,18 @@ function OS_Tremble(shot,xmag,ymag,dur){
 	
 	
 	function UpdateGraphic{
-		//No getter for color, so stick it in the shot's dictionary when you set it
-		let color = Obj_GetValueD(shot,"Color",[255,255,255,Obj_GetValueD(shot,"Alpha",255)]);
-		ObjRender_SetColor(rshot,color[0],color[1],color[2]);
-		if(length(color)>3){ObjRender_SetAlpha(rshot,color[3]);}
-		else{ObjRender_SetAlpha(rshot,Obj_GetValueD(shot,"Alpha",255));}
-		ObjRender_SetScaleXYZ(rshot,ObjRender_GetScaleX(shot),ObjRender_GetScaleY(shot),1);
+		Obj_Delete(rshot);
+		rshot = CopyShot(shot);
+		ObjShot_SetIntersectionEnable(rshot,false);
+		ObjShot_SetSpellResist(rshot,ObjShot_IsSpellResist(shot));
+		if(!Obj_GetValue(shot,FLAG_CHECKINFO)){Obj_DeleteValue(shot,FLAG_CHECKINFO);}
+		return;
+		// //No getter for color, so stick it in the shot's dictionary when you set it
+		// let color = Obj_GetValueD(shot,"Color",[255,255,255,Obj_GetValueD(shot,"Alpha",255)]);
+		// ObjRender_SetColor(rshot,color[0],color[1],color[2]);
+		// if(length(color)>3){ObjRender_SetAlpha(rshot,color[3]);}
+		// else{ObjRender_SetAlpha(rshot,Obj_GetValueD(shot,"Alpha",255));}
+		// ObjRender_SetScaleXYZ(rshot,ObjRender_GetScaleX(shot),ObjRender_GetScaleY(shot),1);
 	}
 	
 }
@@ -2048,8 +2162,211 @@ task ObjMove_SetDestAtScale(obj,destX,destY,time,scaleincr){
 
 //How many shots can you dodge in the stopped time?
 let TimeFlowing = true;
-setdat("TimeFlowing",true);
 let TimeCenter = NULL;
+
+function OM_Freeze(obj){
+	if(!Obj_GetValueD(obj,FLAG_FREEZE,false)){
+		if(!Obj_GetValueD(obj,FLAG_XYMOVE,false)){ SetArrProps(TimeProps_SA,0); }
+		else{ SetArrProps(TimeProps_XY,0); }
+		// SetArrProps( [TimeProps_SA,TimeProps_XY][Obj_GetValueD(obj,FLAG_XYMOVE,false)], 0 ); //yiss ternary operator so sexy
+		SetArrProps(TimeProps_F1,true);
+		SetArrProps(TimeProps_F2,false);
+		if(Obj_GetType(obj)==OBJ_SHOT){SetArrProps(TimeProps_Sh,0);}
+		
+		function SetArrProps(props,v){
+			ascent(i in 0..length(props)){
+				let prop = props[i];
+				let orig = O_GetProperty(obj,prop);
+				O_SetProperty(obj,prop,0);
+				Obj_SetValue(obj,prop,orig);
+			}
+		}
+		Obj_SetValue(obj,FLAG_FREEZE,true);
+	}
+}
+function OM_Resume(obj){
+	if(Obj_GetValueD(obj,FLAG_FREEZE,false)){
+		if(!Obj_GetValueD(obj,FLAG_XYMOVE,false)){ SetArrProps(TimeProps_SA); }
+		else{ SetArrProps(TimeProps_XY); }
+		// SetArrProps( [TimeProps_SA,TimeProps_XY][Obj_GetValueD(obj,FLAG_XYMOVE,false)] ); //yiss ternary operator so sexy
+		SetArrProps(TimeProps_F1);
+		SetArrProps(TimeProps_F2);
+		if(Obj_GetType(obj)==OBJ_SHOT){SetArrProps(TimeProps_Sh);}
+		
+		function SetArrProps(props){
+			ascent(i in 0..length(props)){
+				let prop = props[i];
+				let orig = Obj_GetValueD(obj,prop,O_GetProperty(obj,prop));
+				O_SetProperty(obj,prop,orig);
+			}
+		}
+		Obj_SetValue(obj,FLAG_FREEZE,false);
+	}
+}
+
+//Properties to manipulate to stop time
+let TimeProps_SA = []; 
+let TimeProps_XY = []; 
+let TimeProps_Sh = [];
+let TimeProps_F1 = []; //true when frozen
+let TimeProps_F2 = []; //false when frozen
+let RebuildTimeProps=true;
+
+sub BuildTimePropertyArray{
+	TimeProps_SA=[];TimeProps_XY=[];TimeProps_F1=[];TimeProps_F2=[];TimeProps_Sh=[];
+	TimeProps_SA=TimeProps_SA ~ [MOVE_MAXSPEED,MOVE_SPEED,MOVE_ACCEL];		
+	TimeProps_SA=TimeProps_SA ~ [MOVE_ANGV]; //don't set angle to zero!
+	
+	TimeProps_XY=TimeProps_XY ~ [MOVE_XMAXSPEED];		
+	TimeProps_XY=TimeProps_XY ~ [MOVE_YMAXSPEED];		
+	TimeProps_XY=TimeProps_XY ~ [MOVE_XSPEED];		
+	TimeProps_XY=TimeProps_XY ~ [MOVE_YSPEED];		
+	TimeProps_XY=TimeProps_XY ~ [MOVE_XACCEL];		
+	TimeProps_XY=TimeProps_XY ~ [MOVE_YACCEL];		
+	
+	// TimeProps_Sh=TimeProps_Sh ~ [SHOT_DELETEFRAME];
+	TimeProps_F1=TimeProps_F1 ~ [FLAG_SPELLRESIST];
+	TimeProps_F2=TimeProps_F2 ~ [FLAG_INTERSECTION];
+	RebuildTimeProps=false;
+}
+
+
+
+//
+//TODO: Look into using render targets to forcibly freeze specific render priorities (background)
+task TimeStopA1{
+	let shots;
+	if(RebuildTimeProps){BuildTimePropertyArray;}
+	
+
+	//ZA WARUDO!
+	sub StopAll{
+		shots = GetShotIdInCircleA2(cx,cy,9999,TARGET_ALL);
+		ascent(i in 0..length(shots)){
+			let shot = shots[i];
+			OM_Freeze(shot);
+		}
+	}
+	
+	function ToHold(state){ 
+		alternative(state)
+		case(KEY_HOLD,KEY_PUSH){return KEY_HOLD;} 
+		case(KEY_FREE,KEY_PULL){return KEY_FREE;}
+	}
+	
+	let OSpd = GetPlayerSpeed;
+	let OLft = ToHold(GetVirtualKeyState(VK_LEFT));
+	let ORgt = ToHold(GetVirtualKeyState(VK_RIGHT));
+	let OFoc = ToHold(GetVirtualKeyState(VK_SLOWMOVE));
+	let OTime = ObjEnemyBossScene_GetInfo(objScene,INFO_TIMERF);
+	let OX = ObjRender_GetX(GetPlayerObjectID); let OY = ObjRender_GetY(GetPlayerObjectID);
+	
+	TEffect;
+	TimeFlowing = false;
+	SetCommonData("IsTimeFlowing",false);	
+	SetCommonData("IsTimeStop",true);
+	SetCommonData("TimeRate",0);
+	
+	//Toki yo tomare!
+	StopAll;
+	while(!TimeFlowing){
+		frame--;
+		if(OSpd[0]==0 && GetPlayerSpeed[0]!=0){OSpd=GetPlayerSpeed;}
+		SetPlayerSpeed(0,0);
+		ObjRender_SetPosition(GetPlayerObjectID,OX,OY,0);
+		SetVirtualKeyState(VK_LEFT,OLft);
+		SetVirtualKeyState(VK_RIGHT,ORgt);
+		SetVirtualKeyState(VK_UP,KEY_FREE);
+		SetVirtualKeyState(VK_DOWN,KEY_FREE);
+		SetVirtualKeyState(VK_SHOT,KEY_FREE);
+		SetVirtualKeyState(VK_BOMB,KEY_FREE);
+		SetVirtualKeyState(VK_SLOWMOVE,OFoc);
+		ObjEnemyBossScene_SetSpellTimer(objScene,OTime);
+		if(GetPlayerInvincibilityFrame>0){SetPlayerInvincibilityFrame(GetPlayerInvincibilityFrame+1);}
+		//if(GetPlayerDownStateFrame>0){SetPlayerDownStateFrame(GetPlayerDownStateFrame+1);}
+		
+		// if(GetShotCount(TARGET_ALL) != length(shots)){
+		StopAll;
+		// }
+		
+		yield;
+	}
+
+	//Soshite, toki wo ugokidasu.
+	// if(GetCommonData("StopShots",NULL)!=NULL){shots = shots ~ GetCommonData("StopShots"); DeleteCommonData("StopShots");}
+	ascent(i in 0..length(shots)){
+		let shot = shots[i];
+		OM_Resume(shot);
+	}
+	if(OSpd[0]!=0 && OSpd[1]!=0){SetPlayerSpeed(OSpd[0],OSpd[1]);}
+	
+	SetCommonData("IsTimeFlowing",true);
+	SetCommonData("IsTimeStop",false);
+	SetCommonData("TimeRate",1);
+	//Done
+	
+	//Manages invert effect
+	task TEffect{
+		SE_Play(se_timestop,100);
+		let circ = CreateSprite(cx,cy,dirimg~"circle.png",[0,0,256,256],73); let scl;
+		ObjRender_SetBlendType(circ,BLEND_ALPHA);
+		ObjRender_SetAlpha(circ,128);
+		let hamon = CreateSprite(cx,cy,dirimg~"ripple_rgb.png",[0,0,480,480],73);
+		ObjRender_SetBlendType(hamon,BLEND_INV_DESTRGB);
+		//setdat("TimeEffect",[circ,hamon]);
+		ascent(i in 0..60){
+			scl = i*6/60; //4/45 
+			ObjRender_SetScaleXYZ(circ,scl,scl,1); 
+			ObjRender_SetScaleXYZ(hamon,scl,scl,1);
+			if(TimeCenter!=NULL){
+				setrpos(circ,getrx(TimeCenter),getry(TimeCenter),0);
+				setrpos(hamon,getrx(TimeCenter),getry(TimeCenter),0);
+			}
+			yield;
+		}
+		while(!TimeFlowing){yield;}
+		descent(i in 0..30){
+			scl = i*6/30; 
+			ObjRender_SetScaleXYZ(circ,scl,scl,1); 
+			ObjRender_SetScaleXYZ(hamon,scl,scl,1);
+			if(TimeCenter!=NULL){
+				setrpos(circ,getrx(TimeCenter),getry(TimeCenter),0);
+				setrpos(hamon,getrx(TimeCenter),getry(TimeCenter),0);
+			}
+			yield;
+		}
+		Obj_Delete(circ);
+		Obj_Delete(hamon);
+		//remdat("TimeEffect");
+	}
+}
+function TimeResume{
+	TimeFlowing = true;
+}
+//Freeze additional shots in time, and unfreeze them when time resumes
+function TimeAddShots(shots){
+	let shot;
+	ascent(i in 0..length(shots)){
+		shot = shots[i];
+		setval(shot,"StopSpeed",getsp(shot));
+		setval(shot,"StopAcceleration",getvald(shot,"Acceleration",0));
+		setval(shot,"StopAngularVelocity",getvald(shot,"AngularVelocity",0));
+		setval(shot,"StopSpellResist",ObjShot_IsSpellResist(shot));
+		setval(shot,"StopIntersection",Obj_GetValueD(shot,"IsIntersectionEnable",true));
+		ObjMove_SetSpeed(shot,0);
+		ObjMove_SetAcceleration(shot,0);
+		ObjMove_SetAngularVelocity(shot,0);
+		ObjShot_SetSpellResist(shot,true);
+		ObjShot_SetIntersectionEnable(shot,false);
+	}
+	setdat("StopShots",getdatd("StopShots",[]) ~ shots);
+}
+
+
+
+
+
+
 
 task TimeStop{
 	let shots = GetShotIdInCircleA2(cx,cy,9999,TARGET_ALL);
@@ -2155,27 +2472,29 @@ task TimeStop{
 		//remdat("TimeEffect");
 	}
 }
-function TimeResume{
-	TimeFlowing = true;
-}
-//Freeze additional shots in time, and unfreeze them when time resumes
-function TimeAddShots(shots){
-	let shot;
-	ascent(i in 0..length(shots)){
-		shot = shots[i];
-		setval(shot,"StopSpeed",getsp(shot));
-		setval(shot,"StopAcceleration",getvald(shot,"Acceleration",0));
-		setval(shot,"StopAngularVelocity",getvald(shot,"AngularVelocity",0));
-		setval(shot,"StopSpellResist",ObjShot_IsSpellResist(shot));
-		setval(shot,"StopIntersection",Obj_GetValueD(shot,"IsIntersectionEnable",true));
-		ObjMove_SetSpeed(shot,0);
-		ObjMove_SetAcceleration(shot,0);
-		ObjMove_SetAngularVelocity(shot,0);
-		ObjShot_SetSpellResist(shot,true);
-		ObjShot_SetIntersectionEnable(shot,false);
-	}
-	setdat("StopShots",getdatd("StopShots",[]) ~ shots);
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2374,8 +2693,41 @@ function PagodaLaser(x,y,a,maxlength,maxwidth,dur,color,delay,scale,effimg) {
 
 
 
+//Simpler function, manages glow for a sun created as a normal shot
+function SunGlow(shot){
+	let obj = CreateSprite(ObjMove_GetX(shot),ObjMove_GetY(shot),dirimg~"Sun2.png",[0,0,255,255],PRI_SHOT+1);
+	ObjRender_SetBlendType(obj,BLEND_ADD_RGB);
+	Manage;
+	return obj;
+	
+	task Manage{
+		let c = OR_GetColor(shot);
+		let R = c[0]; let G = c[1]; let B = c[2];
+		while(!Obj_IsDeleted(shot)){
+			let x = ObjMove_GetX(shot); let y = ObjMove_GetY(shot);
+			ObjRender_SetPosition(obj,x,y,0);
+			
+			// ObjRender_SetAngleZ(obj,-5*frame);			
+			
+			let A = OR_GetAlpha(shot)/255  * ( 1 - ((|sin(frame*15)|)^2)/2 );
+			ObjRender_SetColor(obj,R*A,G*A,B*A);
+			
+			let scl = OR_GetScale(shot); //?
+			ObjRender_SetScaleXYZ(obj,scl/2,scl/2,1);
+			
+			let r = 64*scl;
+			ObjShot_SetIntersectionCircleA1(shot,r);
+			
+			yield;
+		}
+		Obj_Delete(obj);
+	}
+}
+
+
+
 //Extra-advanced sun function for all your crazy movement needs (heavily tweaked version of　an already heavily tweaked version of Frenticpony's)
-function CreateSunShotA1(x, y, speed, angle, type, initScale, sizePerFrame, endScale, texture2, texture, r, g, b){
+function CreateSunShot(x, y, speed, angle, type, initScale, sizePerFrame, endScale, texture2, texture, r, g, b){
     let loc_scale = initScale;
     let growToInit = 0;
 	let rad = 128 * endScale;
@@ -2531,10 +2883,23 @@ function CreateSunShotA1(x, y, speed, angle, type, initScale, sizePerFrame, endS
 		
     }
 }
+
+//Simpler header more consistent with other shot functions
+function SunShotA1(x,y,s,a, scl,c,del){
+	let path1=dirimg~"Sun.png";
+	let path2=dirimg~"Sun2.png";
+	let init = 0;
+	let end  = scl;
+	let per  = (end-init)/del;
+	return CreateSunShot(x,y,s,a,"GROW",init,per,end,path2,path1,c[0],c[1],c[2]);
+}
+
+
+
 //For when you don't want to bother specifying the texture
 function CreateSunShotA2(x, y, speed, angle, type, initScale, sizePerFrame, endScale, enableGlow, r, g, b) {
 	let path2; if(!enableGlow){path2="NONE";}else{path2=CSD~"../img/Sun2.png";}
-	return CreateSunShotA1(x, y, speed, angle, type, initScale, sizePerFrame, endScale, path2, CSD~"../img/Sun.png", r, g, b)
+	return CreateSunShot(x, y, speed, angle, type, initScale, sizePerFrame, endScale, path2, CSD~"../img/Sun.png", r, g, b);
 }
 //------------------------------------------------------------
 //Utsuho caution cutin.

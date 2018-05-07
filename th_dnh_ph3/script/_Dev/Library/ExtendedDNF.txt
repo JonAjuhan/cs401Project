@@ -1,14 +1,21 @@
+#include "./Resources.txt"
+#include "./../shot/AllStarShot_Const_Andi.txt"
+#include "./../system/ItemConst.txt"
 
-
-let FLAG_CHECKINFO = "Check";
+let FLAG_CHECK = "Check";                                       let FLAG_CHECKINFO = FLAG_CHECK;
 let FLAG_DUMMY = "IsDummy";
 let FLAG_XYMOVE = "UseXYSystem";
 let FLAG_INTERSECTION = "IsIntersectionEnable";
 let FLAG_SPELLRESIST = "IsSpellResist";
-let SHOT_GRAPHIC = "Graphic";
+let FLAG_DELAYLASER = "IsDelayLaser";
+let FLAG_FREEZE = "IsFrozen";
+
 let FLAG_BOSS = "IsBoss";
+let CHARACTER_COLOR = "ThemeColor"; //the color "associated" with the character an obj represents
+let BOSS_INDEX = "BossIndex";
 
 let META_SUBTYPE = "Subtype";
+let MOD_FRAME = "LastSetAtFrame";
 
 
 let MOVE_POS = "Position";
@@ -41,16 +48,25 @@ let RENDER_BCOL = "B";
 let RENDER_POS = "RenderPosition";
 let RENDER_X = "RenderX";
 let RENDER_Y = "RenderY";
+let RENDER_Z = "RenderZ";
 let RENDER_ANGLE = "AngleZ";
 let RENDER_ANGLEX = "AngleX";
 let RENDER_ANGLEY = "AngleY";
+let RENDER_ANGLEZ = "AngleZ";
 let RENDER_SCALE = "Scale"; //"overall" scale
 let RENDER_SCALEX = "ScaleX";
 let RENDER_SCALEY = "ScaleY";
+let RENDER_SCALEZ = "ScaleZ";
+let RENDER_SCALEXYZ = "ScaleXYZ"; //tells to use indiv SCALEX/etc
 
 let RENDER_PRIORITY = "RenderPriority";
 
 let MOVE_Z = "MoveZ"; //experimental
+
+let SHOT_GRAPHIC = "Graphic";
+let SHOT_DELETEFRAME = "DeleteFrame";
+let LASER_RWIDTH = "LaserRenderWidth";
+let LASER_IWIDTH = "LaserIntersectionWidth"; let LASER_CWIDTH = LASER_IWIDTH;
 
 let COL_RADIUS = "CollisionRadius";
 let COL_SCALE = "CollisionScale";
@@ -64,9 +80,9 @@ function O_SetProperty(obj,k,v){
 	alternative(k)
 	case(FLAG_INTERSECTION){ Obj_SetValue(obj,FLAG_INTERSECTION,v); if(O_GetType(obj)==OBJ_SHOT){ObjShot_SetIntersectionEnable(obj,v);} }
 	case(FLAG_SPELLRESIST){ Obj_SetValue(obj,FLAG_SPELLRESIST,v); if(O_GetType(obj)==OBJ_SHOT){ObjShot_SetSpellResist(obj,v);} }
-	case(MOVE_POS){ if(O_GetType(v)==TYPE_ARRAY&&length(v)>1){ObjMove_SetX(obj,v[0]); ObjMove_SetY(obj,v[1]);} }
-	case(MOVE_X){ ObjMove_SetX(obj,v); }
-	case(MOVE_Y){ ObjMove_SetY(obj,v); }
+	case(MOVE_POS){ OM_SetX(obj,v[0]); OM_SetY(obj,v[1]); } //todo?
+	case(MOVE_X){   OM_SetX(obj,v); }
+	case(MOVE_Y){   OM_SetY(obj,v); }
 	case(MOVE_SPEED){       OM_SetSpeed(obj,v); }
 	case(MOVE_ACCEL){       OM_SetAcceleration(obj,v); }
 	case(MOVE_MAXSPEED){    OM_SetMaxSpeed(obj,v); }
@@ -78,31 +94,36 @@ function O_SetProperty(obj,k,v){
 	case(MOVE_MAXANGV){     OM_SetMaxAngularVelocity(obj,v); }
 	case(MOVE_XSPEED){      OM_SetSpeedX(obj,v); }
 	case(MOVE_YSPEED){      OM_SetSpeedY(obj,v); }
-	// case(MOVE_XACCEL){}
-	// case(MOVE_YACCEL){}
+	case(MOVE_XACCEL){    OM_SetAccelerationX(obj,v); }
+	case(MOVE_YACCEL){    OM_SetAccelerationY(obj,v); }
+	case(MOVE_XMAXSPEED){ OM_SetMaxSpeedX(obj,v); }
+	case(MOVE_YMAXSPEED){ OM_SetMaxSpeedY(obj,v); }
 	case(RENDER_ALPHA){     OR_SetAlpha(obj,v); }
 	case(RENDER_COLOR){     OR_SetColor(obj,v[0],v[1],v[2]); }
-	case(RENDER_RCOL){ let c = OR_GetColor(obj); OR_SetColor(obj,v   ,c[1],c[2]); }
-	case(RENDER_GCOL){ let c = OR_GetColor(obj); OR_SetColor(obj,c[0],v   ,c[2]); }
-	case(RENDER_BCOL){ let c = OR_GetColor(obj); OR_SetColor(obj,c[0],c[1],v   ); }
+	case(RENDER_RCOL){ let c=OR_GetColor(obj); OR_SetColor(obj,v   ,c[1],c[2]); }
+	case(RENDER_GCOL){ let c=OR_GetColor(obj); OR_SetColor(obj,c[0],v   ,c[2]); }
+	case(RENDER_BCOL){ let c=OR_GetColor(obj); OR_SetColor(obj,c[0],c[1],v   ); }
 	case(RENDER_SCALE){     OR_SetScale(obj,v); }
 	case(RENDER_SCALEX){    OR_SetScaleX(obj,v); }
 	case(RENDER_SCALEY){    OR_SetScaleY(obj,v); }
-	case(RENDER_ANGLE){  ObjRender_SetAngleZ(obj,v); } //todo
-	case(RENDER_ANGLEX){ ObjRender_SetAngleX(obj,v); } //todo
-	case(RENDER_ANGLEY){ ObjRender_SetAngleY(obj,v); } //todo
-	case(RENDER_PRIORITY){ O_SetRenderPriorityI(obj,v); }
+	case(RENDER_SCALEXYZ){  OR_SetScaleXYZ(obj,v[0],v[1],v[2]); }
+	case(RENDER_ANGLE){  OR_SetAngleZ(obj,v); }
+	case(RENDER_ANGLEX){ OR_SetAngleX(obj,v); }
+	case(RENDER_ANGLEY){ OR_SetAngleY(obj,v); }
+	case(COL_RADIUS){ OC_SetIntersectionRadius(obj,v); }
+	case(COL_SCALE){  OS_SetScaleXYZ(obj,v,v,1); } //todo?
 	case(MOVE_Z){ OM_SetZ(obj,v); }
+	case(RENDER_PRIORITY){ O_SetRenderPriorityI(obj,v); }
 	others{ Obj_SetValue(obj,k,v); }
 }
 function O_GetProperty(obj,k){
 	let v;
 	alternative(k)
-	case(FLAG_INTERSECTION){ v = Obj_GetValueD(obj,FLAG_INTERSECTION,v); }
-	case(FLAG_SPELLRESIST){ v = Obj_GetValueD(obj,FLAG_INTERSECTION,v); }
-	case(MOVE_POS){ v = [ObjMove_GetX(obj), ObjMove_GetY(obj)]; }
-	case(MOVE_X){ v = ObjMove_GetX(obj); }
-	case(MOVE_Y){ v = ObjMove_GetY(obj); }
+	case(FLAG_INTERSECTION){ v = Obj_GetValueD(obj,FLAG_INTERSECTION,true); }
+	case(FLAG_SPELLRESIST){ v = Obj_GetValueD(obj,FLAG_SPELLRESIST,false); }
+	case(MOVE_POS){ v = [OM_GetX(obj), OM_GetY(obj)]; }
+	case(MOVE_X){   v = OM_GetX(obj); }
+	case(MOVE_Y){   v = OM_GetY(obj); }
 	case(MOVE_SPEED){        v = OM_GetSpeed(obj); }
 	case(MOVE_ACCEL){        v = OM_GetAcceleration(obj); }
 	case(MOVE_MAXSPEED){     v = OM_GetMaxSpeed(obj); }
@@ -114,8 +135,10 @@ function O_GetProperty(obj,k){
 	case(MOVE_MAXANGV){      v = OM_GetMaxAngularVelocity(obj); }
 	case(MOVE_XSPEED){       v = OM_GetSpeedX(obj); }
 	case(MOVE_YSPEED){       v = OM_GetSpeedY(obj); }
-	// case(MOVE_XACCEL){}
-	// case(MOVE_YACCEL){}
+	case(MOVE_XACCEL){       v = OM_GetAccelerationX(obj); }
+	case(MOVE_YACCEL){       v = OM_GetAccelerationY(obj); }
+	case(MOVE_XMAXSPEED){    v = OM_GetMaxSpeedX(obj); }
+	case(MOVE_YMAXSPEED){    v = OM_GetMaxSpeedY(obj); }
 	case(RENDER_ALPHA){      v = OR_GetAlpha(obj); }
 	case(RENDER_COLOR){      v = OR_GetColor(obj); }
 	case(RENDER_RCOL){       v = OR_GetColor(obj)[0]; }
@@ -124,15 +147,55 @@ function O_GetProperty(obj,k){
 	case(RENDER_SCALE){      v = OR_GetScale(obj); }
 	case(RENDER_SCALEX){     v = OR_GetScaleX(obj); }
 	case(RENDER_SCALEY){     v = OR_GetScaleY(obj); }
-	case(RENDER_ANGLE){  v = ObjRender_GetAngleZ(obj); }
-	case(RENDER_ANGLEX){ v = ObjRender_GetAngleX(obj); }
-	case(RENDER_ANGLEY){ v = ObjRender_GetAngleY(obj); }
-	case(RENDER_PRIORITY){   v = O_GetRenderPriorityI(obj); }
+	case(RENDER_ANGLE){      v = OR_GetAngleZ(obj); }
+	case(RENDER_ANGLEX){     v = OR_GetAngleX(obj); }
+	case(RENDER_ANGLEY){     v = OR_GetAngleY(obj); }
+	case(COL_RADIUS){        v = OC_GetIntersectionRadius(obj); }
+	case(COL_SCALE){ v = Obj_GetValueD(obj,COL_SCALE,OR_GetScale(obj)); } //todo
 	case(MOVE_Z){ v = OM_GetZ(obj); }
+	case(RENDER_PRIORITY){   v = O_GetRenderPriorityI(obj); }
 	others{v=Obj_GetValueD(obj,k,NULL);}
 	
 	return v;
 }
+
+task O_SetPattern(obj,k,v,t){
+	let n = 0;
+	while(Obj_IsValueExists(obj,"Pattern"~k~itoa(n))){n++;}
+	Obj_SetValue(obj,"Pattern"~k~itoa(n),v);
+	Obj_SetValue(obj,"PatternFrame"~k~itoa(n),frame+t);
+	Obj_SetValue(obj,"NumPatterns",Obj_GetValueD(obj,"NumPatterns",0)+1);
+	if(t<=0){ return; }
+	loop(t){yield;}
+	O_SetProperty(obj,k,v);
+	Obj_DeleteValue(obj,"Pattern"~k~itoa(n));
+	Obj_DeleteValue(obj,"PatternFrame"~k~itoa(n));
+	Obj_SetValue(obj,"NumPatterns",Obj_GetValueD(obj,"NumPatterns",0)-1);
+}
+function O_GetPattern(obj,k){
+	let pats = [];
+	let n = Obj_GetValueD(obj,"NumPatterns",0);
+	let i = 0;
+	while(i < n){
+		if(Obj_IsValueExists(obj,"Pattern"~k~itoa(i))){
+			let pat = Obj_GetValue(obj, "Pattern"~k~itoa(i));
+			let t = Obj_GetValueD(obj, "PatternFrame"~k~itoa(i), NULL);
+			pats = pats ~ [ [pat,t] ];
+		}
+		i++;
+	}
+	return pats;
+}
+
+
+function O_SetProperties(obj,k,v){
+	ascent(i in 0..length(k)){
+		O_SetProperty(obj,k[i],v[i]);
+	}
+}
+
+
+
 
 let PROP_VALUE = 0;     let PROP_RVALUE = 10;
 let PROP_SPEED = 1;     let PROP_RSPEED = 11;
@@ -300,41 +363,7 @@ task O_SetPropertyAtWeight(obj,k,v,frame,weight){
 //Object Functions
 //////////////////////////////////////////////////////////////////
 
-//Primitive types
-let TYPE_INT = 9;
-let TYPE_REAL = 2; let TYPE_NUMBER = 2;
-let TYPE_BOOL = 2+10;
-let TYPE_CHAR = -1;
-let TYPE_ARRAY = 10;
-let TYPE_STRING = 10+1;
-//only here in case something breaks without them
-// let OBJ_INT=TYPE_INT;let OBJ_REAL=TYPE_REAL;let OBJ_NUMBER=TYPE_NUMBER;
-// let OBJ_BOOL=TYPE_BOOL;let OBJ_CHAR=TYPE_CHAR;let OBJ_ARRAY=TYPE_ARRAY;
-// let OBJ_STRING=TYPE_STRING;
 
-//Improved typeof function
-// -Lumps int and real together
-// -Distinguishes between array and string
-// -Distinguishes between real and bool
-// -Lump enemy and boss together
-function typeof(obj){
-	alternative(Obj_GetType(obj))
-	case(TYPE_INT){return TYPE_NUMBER;}
-	case(TYPE_REAL){
-		if(!(ToString(obj)!="true"&&ToString(obj)!="false")){return TYPE_BOOL;}
-		else{ return TYPE_NUMBER; }
-	}
-	case(TYPE_ARRAY){
-		if(length(obj) > 0){
-			let contents = typeof(obj[0]); //recursive
-			if(contents==TYPE_CHAR){return TYPE_STRING;}
-			else{return TYPE_ARRAY;}
-		}else{return TYPE_ARRAY;}
-	}
-	case(TYPE_CHAR){return TYPE_CHAR;}
-	case(OBJ_ENEMY,OBJ_ENEMY_BOSS){return OBJ_ENEMY;}
-	others{return Obj_GetType(obj);}
-}
 
 function O_GetType(obj){return typeof(obj);}
 
@@ -403,9 +432,15 @@ function GetAllBossID{
 // Render Object Functions
 //////////////////////////////////////////////////////////////////
 
-
-
-
+function OR_SetAngle(obj,a){ Obj_SetValue(obj,RENDER_ANGLE,a); ObjRender_SetAngleZ(obj,a);}
+function OR_SetAngleZ(obj,a){Obj_SetValue(obj,RENDER_ANGLE,a); ObjRender_SetAngleZ(obj,a);}
+function OR_SetAngleX(obj,a){Obj_SetValue(obj,RENDER_ANGLEX,a);ObjRender_SetAngleX(obj,a);}
+function OR_SetAngleY(obj,a){Obj_SetValue(obj,RENDER_ANGLEY,a);ObjRender_SetAngleY(obj,a);}
+function OR_SetAngleXYZ(obj,x,y,z){OR_SetAngleX(obj,x);OR_SetAngleY(obj,y);OR_SetAngleZ(obj,z);}
+function OR_GetAngle(obj){  return Obj_GetValueD(obj,RENDER_ANGLE, ObjRender_GetAngleZ(obj)); }
+function OR_GetAngleZ(obj){ return Obj_GetValueD(obj,RENDER_ANGLE, ObjRender_GetAngleZ(obj)); }
+function OR_GetAngleX(obj){ return Obj_GetValueD(obj,RENDER_ANGLEX,ObjRender_GetAngleX(obj)); }
+function OR_GetAngleY(obj){ return Obj_GetValueD(obj,RENDER_ANGLEY,ObjRender_GetAngleY(obj)); }
 
 
 //Andi - COLOR/ALPHA FUNCTIONS
@@ -417,9 +452,9 @@ function OR_SetAlpha(obj, alpha){
 	alternative(ObjRender_GetBlendType(obj))
 	case(BLEND_ADD_RGB,BLEND_SUBTRACT,BLEND_MULTIPLY,BLEND_SHADOW){
 		C = Obj_GetValueD(obj,RENDER_COLOR,[255,255,255]);
-		R = Obj_GetValueD(obj,"R",C[0]);
-		G = Obj_GetValueD(obj,"G",C[1]);
-		B = Obj_GetValueD(obj,"B",C[2]);
+		R = Obj_GetValueD(obj,RENDER_RCOL,C[0]);
+		G = Obj_GetValueD(obj,RENDER_GCOL,C[1]);
+		B = Obj_GetValueD(obj,RENDER_BCOL,C[2]);
 		A = alpha/255;
 		Obj_SetValue(obj,RENDER_COLOR,[R,G,B,alpha]);
 	}
@@ -437,10 +472,14 @@ function ObjRender_SetTrueAlpha(obj,alpha){ OR_SetAlpha(obj,alpha); }
 //Efficient. Always use one of these. 
 function OR_SetColor(obj,r,g,b){
 	ObjRender_SetColor(obj,r,g,b);
-	Obj_SetValue(obj,"R",r);
-	Obj_SetValue(obj,"G",g);
-	Obj_SetValue(obj,"B",b);
+	Obj_SetValue(obj,RENDER_RCOL,r);
+	Obj_SetValue(obj,RENDER_GCOL,g);
+	Obj_SetValue(obj,RENDER_BCOL,b);
 	Obj_SetValue(obj,RENDER_COLOR,[r,g,b]);
+}
+function OR_SetColorArr(obj,c){
+	OR_SetColor(obj,c[0],c[1],c[2]);
+	if(length(c)>3){ OR_SetAlpha(obj,c[3]); }
 }
 function OR_SetColorRGB(obj,r,g,b){ OR_SetColor(obj,r,g,b); }
 function OR_SetColorRGBA(obj,r,g,b,a){
@@ -449,6 +488,29 @@ function OR_SetColorRGBA(obj,r,g,b,a){
 	Obj_SetValue(obj,RENDER_COLOR,[r,g,b,a]);
 }
 function ObjRender_SetTrueColor(obj,r,g,b){ OR_SetColor(obj,r,g,b); }
+//Set color without changing stored values
+function OR_SetTempColor(obj,r,g,b){ ObjRender_SetColor(obj,r,g,b); }
+//Set alpha regardless of blend type without changing stored values
+function OR_SetTempAlpha(obj, alpha){
+	let C; let R; let G; let B; let A;
+	alternative(ObjRender_GetBlendType(obj))
+	case(BLEND_ADD_RGB,BLEND_SUBTRACT,BLEND_MULTIPLY,BLEND_SHADOW){
+		C = Obj_GetValueD(obj,RENDER_COLOR,[255,255,255]);
+		R = Obj_GetValueD(obj,RENDER_RCOL,C[0]);
+		G = Obj_GetValueD(obj,RENDER_GCOL,C[1]);
+		B = Obj_GetValueD(obj,RENDER_BCOL,C[2]);
+		A = alpha/255;
+	}
+	alternative(ObjRender_GetBlendType(obj))
+	case(BLEND_ALPHA)   {ObjRender_SetAlpha(obj, alpha);}
+	case(BLEND_ADD_ARGB){ObjRender_SetAlpha(obj, alpha);}
+	case(BLEND_ADD_RGB) {ObjRender_SetColor(obj, R*A, G*A, B*A);}
+	case(BLEND_SUBTRACT){ObjRender_SetColor(obj, R*A, G*A, B*A);}
+	case(BLEND_MULTIPLY){ObjRender_SetColor(obj, R*A, G*A, B*A);}
+	case(BLEND_SHADOW)  {ObjRender_SetColor(obj, R*A, G*A, B*A);}
+	others{ObjRender_SetAlpha(obj, alpha);}
+}
+
 
 //Attempt to compensate for the lack of such functions.
 //Efficient as long as value was properly stored, or after the first time.
@@ -459,9 +521,9 @@ function OR_GetAlpha(obj){
 		if(length(C) > 3){ Obj_SetValue(obj,RENDER_ALPHA,C[3]); return C[3]; }
 		let A = Obj_GetValueD(obj,RENDER_ALPHA,-1);
 		if(A!=-1){ return A;}
-		let R = Obj_GetValueD(obj,"R",C[0]); 
-		let G = Obj_GetValueD(obj,"G",C[1]); 
-		let B = Obj_GetValueD(obj,"B",C[2]);
+		let R = Obj_GetValueD(obj,RENDER_RCOL,C[0]); 
+		let G = Obj_GetValueD(obj,RENDER_GCOL,C[1]); 
+		let B = Obj_GetValueD(obj,RENDER_BCOL,C[2]);
 		A = max(R,max(G,B)); //Use the largest RGB value
 		Obj_SetValue(obj,RENDER_ALPHA,A); Obj_SetValue(obj,"A",A);
 		Obj_SetValue(obj,RENDER_COLOR,[R,G,B,A]);
@@ -501,12 +563,12 @@ task OR_SetScaleAtFrame(obj,sx1,sy1,time){
 	}
 }
 
-//set "overall" scale - needs testing
+//set "overall" scale
 function OR_SetScale(obj,scale){
-	let sclx = ObjRender_GetScaleX(obj);
-	let scly = ObjRender_GetScaleY(obj);
+	let sclx = OR_GetScaleX(obj);
+	let scly = OR_GetScaleY(obj);
 	let ratio = (|sclx/scly|);
-	ObjRender_SetScaleXYZ(obj,scale*ratio*sign(sclx),scale/ratio*sign(scly),ObjRender_GetScaleZ(obj));
+	OR_SetScaleXYZ(obj,scale*ratio*sign(sclx),scale/ratio*sign(scly),ObjRender_GetScaleZ(obj));
 	Obj_SetValue(obj,RENDER_SCALE,scale);
 	return scale;
 }
@@ -530,6 +592,14 @@ function OR_SetScaleY(obj,scaley){
 	Obj_SetValue(obj,RENDER_SCALEY,scaley);
 }
 function OR_GetScaleY(obj){return Obj_GetValueD(obj,RENDER_SCALEY,ObjRender_GetScaleY(obj));}
+
+function OR_SetScaleXYZ(obj,x,y,z){
+	Obj_SetValue(obj,RENDER_SCALEX,x);
+	Obj_SetValue(obj,RENDER_SCALEY,y);
+	Obj_SetValue(obj,RENDER_SCALEZ,z);
+	ObjRender_SetScaleXYZ(obj,x,y,z);
+}
+
 
 
 function OR_GetX(obj){return ObjRender_GetX(obj);}
@@ -584,23 +654,357 @@ function O_GetRenderPriority(obj){
 
 
 
+
+function ShotA1(x,y,s,a,g,d){
+	let shot = ObjShot_Create(OBJ_SHOT);
+	OM_SetPosition(shot,x,y);
+	OM_SetSpeed(shot,s); OM_SetAngle(shot,a);
+	ObjShot_SetGraphic(shot,g);
+	ManageShotDelay(shot,d,delay_type,delay_arr);
+	return shot;
+}
+function ShotA2(x,y,s,a, ac,ms,  g,d){
+	let shot = ObjShot_Create(OBJ_SHOT);
+	OM_SetPosition(shot,x,y);
+	OM_SetSpeed(shot,s); OM_SetAngle(shot,a);
+	OM_SetAcceleration(shot,ac); OM_SetMaxSpeed(shot,ms);
+	ObjShot_SetGraphic(shot,g);
+	ManageShotDelay(shot,d,delay_type,delay_arr);
+	return shot;
+}
+
+function ShotB1(x,y,xs,ys,g,d){
+	let shot = ObjShot_Create(OBJ_SHOT);
+	OM_SetPosition(shot,x,y);
+	OM_SetSpeedX(shot,xs); OM_SetSpeedY(shot,ys);
+	ObjShot_SetGraphic(shot,g);
+	ManageShotDelay(shot,d,delay_type,delay_arr);
+	return shot;
+}
+function ShotB2(x,y,xs,ys, xa,ya, xm,ym,  g,d){
+	let shot = ObjShot_Create(OBJ_SHOT);
+	OM_SetPosition(shot,x,y);
+	Obj_SetValue(shot,FLAG_XYMOVE,true);
+	Obj_SetValue(shot,MOVE_XSPEED,xs); Obj_SetValue(shot,MOVE_YSPEED,ys);
+	Obj_SetValue(shot,MOVE_XACCEL,xa); Obj_SetValue(shot,MOVE_YACCEL,ya);
+	Obj_SetValue(shot,MOVE_XMAXSPEED,xm); Obj_SetValue(shot,MOVE_YMAXSPEED,ym);
+	ObjMove_AddPatternB2(shot,0,xs,ys,xa,ya,xm,ym);
+	Obj_SetValue(shot,MOVE_XSPEED~MOD_FRAME,frame);
+	Obj_SetValue(shot,MOVE_YSPEED~MOD_FRAME,frame);
+	ObjShot_SetGraphic(shot,g);
+	ManageShotDelay(shot,d,delay_type,delay_arr);
+	return shot;
+}
+
+
+
+function LooseLaserA1(x,y,s,a, len,wid,g,d){
+	let shot = ObjShot_Create(OBJ_LOOSE_LASER);
+	OM_SetPosition(shot,x,y);
+	OM_SetSpeed(shot,s); OM_SetAngle(shot,a);
+	ObjShot_SetGraphic(shot,g);
+	ObjLaser_SetLength(shot,len);
+	ObjLaser_SetRenderWidth(shot,wid);
+	ObjLaser_SetIntersectionWidth(shot,max(3, floor((wid - 12) / 3)));
+	ObjLaser_SetGrazeInvalidFrame(shot, 9);
+	ObjLaser_SetInvalidLength(shot,15,15);
+	ManageLooseLaserDelay(shot,d,delay_type,delay_arr);
+	return shot;
+}
+
+function CurveLaserA1(x,y,s,a, len,wid,g,d){
+	let shot = ObjShot_Create(OBJ_CURVE_LASER);
+	OM_SetPosition(shot,x,y);
+	OM_SetSpeed(shot,s); OM_SetAngle(shot,a);
+	ObjShot_SetGraphic(shot,g);
+	ObjLaser_SetLength(shot,len);
+	ObjLaser_SetRenderWidth(shot,wid);
+	ObjLaser_SetIntersectionWidth(shot,max(3, floor((wid - 12) / 3)));
+	ObjLaser_SetGrazeInvalidFrame(shot, 9);
+	ObjLaser_SetInvalidLength(shot,15,15);
+	ObjCrLaser_SetTipDecrement(shot, 0);
+	ManageLooseLaserDelay(shot,d,delay_type,delay_arr);
+	return shot;
+}
+
+function StraightLaserA1(x,y,a,len,wid,  g,delay,delete){
+	let shot = ObjShot_Create(OBJ_STRAIGHT_LASER);
+	OM_SetPosition(shot,x,y);
+	ObjStLaser_SetAngle(shot,a);
+	ObjShot_SetGraphic(shot,g);
+	ObjLaser_SetLength(shot,len);
+	ObjLaser_SetRenderWidth(shot,wid); 
+	ObjLaser_SetIntersectionWidth(shot,max(3, floor((wid - 12) / 3)));
+	Obj_SetValue(shot,LASER_RWIDTH,wid);
+	Obj_SetValue(shot,LASER_IWIDTH,max(3, floor((wid - 12) / 3)));
+	ObjLaser_SetGrazeInvalidFrame(shot, 9);
+	OS_SetDeleteFrame(shot,delete);
+	if(delete <= delay){ Obj_SetValue(shot,FLAG_DELAYLASER,true); }
+	ManageStraightLaserDelay(shot,delay,delay_type,delay_arr);
+	return shot;
+}
+
+
+
+
+
+
+
+
+
+let DELAY_MANUAL      = 9000000; //Don't register the shot
+let DELAY_FADE        = 9010000; //Regist immediately and fade in
+let DELAY_GLOW        = 9020000; //Simple light effect
+let DELAY_RING        = 9030000; //GLOW plus a circle effect
+let DELAY_LINE        = 9040000; //RING plus a line between it and the boss (or CD "DelayHub" obj)
+let DELAY_IMAGE       = 9050000; //Arbitrary image; put path in delay_subtype, rect in delay_arr
+let DELAY_HIDE        = 9060000; //Wait to register the shot, but don't show any effect
+
+let delay_type = DELAY_RING; //Default type, override by adding the const to the delay argument
+let delay_subtype = "";
+let delay_arr = [];
+
+let delay_las_extend_rate = 800/60;
+
+
+task ManageShotDelay(shot,del,type,arr){
+	if(del>=DELAY_MANUAL){
+		let tmp=del;
+		del = del%10000;
+		type = tmp-del;
+	}
+	
+	alternative(type)
+	case(DELAY_MANUAL){ return; }
+	case(DELAY_FADE){
+		let obj = shot;
+		ObjShot_Regist(obj); 
+		ObjShot_SetIntersectionEnable(obj,false);
+		let scl = 2;
+		let alpha = 0;
+		let alpha_subtract = 0;
+		let d0 = del;
+		while(del > 0){
+			alpha_subtract = Obj_GetValueD(obj, "DelayAlpha", 0);
+			// let c = OR_GetColor(shot);
+			// OR_SetColor(obj,c[0],c[1],c[2]);
+			OR_SetTempAlpha(obj,alpha-alpha_subtract);
+			ObjRender_SetScaleXYZ(obj,scl,scl,scl);
+			alpha += 255/d0;
+			scl -= 1/d0;
+			del--;
+			yield;
+		}
+		OR_SetTempAlpha(obj,OR_GetAlpha(obj)-Obj_GetValueD(obj, "DelayAlpha", 0));
+		ObjShot_SetIntersectionEnable(obj, OS_IsIntersectionEnable(shot));
+	}
+	case(DELAY_HIDE){
+		wait(del);
+		ObjShot_Regist(shot);
+	}
+	case(DELAY_GLOW){
+		let x = ObjMove_GetX(shot); let y = ObjMove_GetY(shot);
+		let cloudgraph = GLOW+GetShotColor(ObjShot_GetImageID(shot));
+		let a = ObjMove_GetAngle(shot);
+		let obj = CreateShotA1(x,y,0,a, cloudgraph, 0);
+		OS_SetIntersectionEnable(obj,false);
+		// ObjRender_SetScaleXYZ(obj,0,0,0);
+		let s0 = 2+del/15; let s1 = 1; let ds = (s1-s0)/del; del=(|del|);
+		ascent(i in 0..del){
+			OR_SetScale(obj, s0+ds*i );
+			let c = OR_GetColor(shot);
+			OR_SetColor(obj,c[0],c[1],c[2]);
+			OR_SetAlpha(obj, 255*i/del);
+			ObjRender_SetAngleZ(obj,a+i*360/del);
+			yield;
+		}
+		Obj_Delete(obj);
+		ObjShot_Regist(shot);
+	}
+	case(DELAY_RING){
+		ManageShotDelay(shot,del,DELAY_GLOW,[]);
+		let x = ObjMove_GetX(shot); let y = ObjMove_GetY(shot);
+		let path = direffect~"Ring.png";
+		let obj = CreateSprite(x,y,path,[0,0,63,63],PRI_SHOT+1); //todo
+		ObjRender_SetBlendType(obj,BLEND_ADD_RGB);
+		
+		let c0 = GetShotDataInfoA1(ObjShot_GetImageID(shot),TYPE_ENEMY,INFO_DELAY_COLOR);
+		let r0 = c0[0]; let g0 = c0[1]; let b0 = c0[2];
+		OR_SetColor(obj,r0,g0,b0);
+		
+		// ObjRender_SetScaleXYZ(obj,0,0,0);
+		let s0 = (2+del/15)/3; let s1 = 0; let ds = (s1-s0)/del; del=(|del|);
+		ascent(i in 0..del){
+			OR_SetScale(obj, s0+ds*i );
+			let c = OR_GetColor(shot);
+			OR_SetColor(obj,(r0+c[0])/2,(g0+c[1])/2,(b0+c[2])/2);
+			// OR_SetAlpha(obj, 255*i/del);
+			yield;
+		}
+		Obj_Delete(obj);
+		// ObjShot_Regist(shot);
+		// ManageShotDelay(shot,6,DELAY_FADE,[]);
+	}
+	case(DELAY_IMAGE){
+		let x = ObjMove_GetX(shot); let y = ObjMove_GetY(shot);
+		let path = delay_subtype;
+		let rect = GetCommonData("DelayRect",[0,0,GetTextureWidth(path)-1,GetTextureHeight(path)-1]);
+		let w = rect[2]-rect[0]; let h = rect[3]-rect[1];
+		
+		let obj = CreateSprite(x,y,path,rect,PRI_SHOT+1);
+		ObjRender_SetBlendType(obj,GetCommonData("DelayBlend",BLEND_ADD_RGB));
+		
+		let c0 = GetShotDataInfoA1(ObjShot_GetImageID(shot),TYPE_ENEMY,INFO_DELAY_COLOR);
+		let r0 = c0[0]; let g0 = c0[1]; let b0 = c0[2];
+		OR_SetColor(obj,r0,g0,b0);
+		
+		OR_SetAngleZ(obj,OM_GetAngle(shot));
+		
+		
+		// ObjRender_SetScaleXYZ(obj,0,0,0);
+		let s0 = (2+del/15)/3; let s1 = 0; let ds = (s1-s0)/del; del=(|del|);
+		ascent(i in 0..del){
+			ObjRender_SetScaleXYZ(obj, (s0+ds*i)*64/w, (s0+ds*i)*64/h, 1 );
+			let c = OR_GetColor(shot);
+			// OR_SetColor(obj,r0*c[0]/255,g0*c[1]/255,b0*c[2]/255);
+			OR_SetColor(obj,(r0+c[0])/2,(g0+c[1])/2,(b0+c[2])/2);
+			// OR_SetAlpha(obj, 255*i/del);
+			yield;
+		}
+		Obj_Delete(obj);
+		// ObjShot_Regist(shot);
+		ManageShotDelay(shot,6,DELAY_FADE,[]);
+		ManageShotDelay(shot,6,DELAY_GLOW,[]);
+	}
+	case(DELAY_LINE){
+		ManageShotDelay(shot,del,DELAY_RING,[]);
+		// ManageShotDelay(shot,del,DELAY_GLOW);
+		let cobj = GetCommonData("DelayHub",boss);
+		let dx0=rand(-4,4); let dy0=rand(-4,4);
+		let dx1=rand(-2,2); let dy1=rand(-2,2);
+		let x0 = OM_GetX(cobj)+dx0;  let y0 = OM_GetY(cobj)+dy0;
+		let x  = OM_GetX(shot)+dx1;  let y  = OM_GetY(shot)+dy1;
+		let a  = getangle(x0,y0,x,y);
+		let d  = getdistance(x0,y0,x,y);
+		let obj = CreateStraightLaserA1(x0,y0,a,d,40,del,LAS_C_WHITE,del+1);
+		ObjStLaser_SetSource(obj,false);
+		descent(i in 0..del){
+			x0 = OM_GetX(cobj)+dx0;  y0 = OM_GetY(cobj)+dy0;
+			x  = OM_GetX(shot)+dx1;  y  = OM_GetY(shot)+dy1;
+			a  = getangle(x0,y0,x,y);
+			d  = getdistance(x0,y0,x,y);
+			ObjMove_SetPosition(obj,x0,y0);
+			ObjStLaser_SetAngle(obj,a);
+			ObjLaser_SetLength(obj,d);
+			OR_SetAlpha(obj,255*(i/del)^2);
+			yield;
+		}
+		Obj_Delete(obj);
+	}	
+}
+
+task ManageLooseLaserDelay(obj,del,type,arr){
+	if(del>=DELAY_MANUAL){
+		let tmp=del;
+		del = del%10000;
+		type = tmp-del;
+	}
+	if(type==DELAY_MANUAL){return;}
+	//Just the one type for now
+	ObjShot_Regist(obj);
+	let len = ObjLaser_GetLength(obj);
+	let dL = len/del;
+	loop(del){
+		ObjMove_SetSpeed(obj,dL);		
+		// ObjMove_SetSpeed(obj,-dL);		
+		yield;
+	}
+	OM_SetSpeed(obj,Obj_GetValueD(obj,MOVE_SPEED,OM_GetSpeed(obj)));
+	// OM_SetSpeed(obj,-Obj_GetValueD(obj,MOVE_SPEED,OM_GetSpeed(obj)));
+	
+}
+
+task ManageStraightLaserDelay(obj,del,type,arr){
+	if(del>=DELAY_MANUAL){
+		let tmp=del;
+		del = del%10000;
+		type = tmp-del;
+	}
+	if(type==DELAY_MANUAL){return;}
+	//Just the one type for now
+	ObjShot_Regist(obj);
+	
+	let len = ObjLaser_GetLength(obj);
+	let extenddel = delay_las_extend_rate/len;
+	let dL = len/extenddel;
+	ManageExtend;
+	task ManageExtend{
+		ascent(i in 0..extenddel){
+			ObjLaser_SetLength(obj,dL*i);
+			yield;
+		}
+		ObjLaser_SetLength(obj,len);
+	}
+	
+	OS_SetIntersectionEnable(obj,false);
+	let rwid = Obj_GetValueD(obj,LASER_RWIDTH,30);
+	let cwid = Obj_GetValueD(obj,LASER_IWIDTH,6);
+	ObjLaser_SetRenderWidth(obj, cwid/3 );
+	
+	wait(del);
+	
+	let expanddur;
+	if(!Obj_GetValueD(obj,FLAG_DELAYLASER,false)){
+		rwid = Obj_GetValueD(obj,LASER_RWIDTH,rwid);
+		OS_SetIntersectionEnable(obj,true);
+		expanddur = 5;
+		
+		ascent(i in 0..expanddur){
+			ObjLaser_SetRenderWidth(obj, (rwid-cwid/3) * (i/expanddur)^0.5 );
+			yield;
+		}
+		
+	}else{
+		rwid = 0;
+		expanddur = Obj_GetValueD(obj,SHOT_DELETEFRAME,del)-del;
+		if(expanddur == 0){return;}
+		
+		let da = OR_GetAlpha(obj)/expanddur;
+		ascent(i in 0..expanddur){
+			ObjLaser_SetRenderWidth(obj, (rwid-cwid/3) * (i/expanddur)^0.5 );
+			OR_SetAlpha(obj,da*i);
+			yield;
+		}
+		
+	}
+	ObjLaser_SetRenderWidth(obj, rwid );
+	
+}
+
+
+
+
+
+
+
+
 function PrepareShotA1(x,y,s,a,graph){
 	let shot = ObjShot_Create(OBJ_SHOT);
-	ObjMove_SetPosition(shot,x,y);
-	ObjMove_SetSpeed(shot,s);
-	ObjMove_SetAngle(shot,a);
+	OM_SetPosition(shot,x,y);
+	OM_SetSpeed(shot,s);
+	OM_SetAngle(shot,a);
 	ObjShot_SetGraphic(shot,graph);
 	return shot;
 }
 function PrepareShotA2(x,y,s,a,acc,mspd,graph){
 	let shot = ObjShot_Create(OBJ_SHOT);
-	ObjMove_SetPosition(shot,x,y);
-	ObjMove_SetSpeed(shot,s);
-	ObjMove_SetAngle(shot,a);
-	ObjMove_SetAcceleration(shot,acc);
-	ObjMove_SetMaxSpeed(shot,mspd);
+	OM_SetPosition(shot,x,y);
+	OM_SetSpeed(shot,s);
+	OM_SetAngle(shot,a);
+	OM_SetAcceleration(shot,acc);
+	OM_SetMaxSpeed(shot,mspd);
 	ObjShot_SetGraphic(shot,graph);
-	Obj_SetValue(shot,"Acceleration",acc); Obj_SetValue(shot,"MaxSpeed",mspd);
+	Obj_SetValue(shot,MOVE_ACCEL,acc); Obj_SetValue(shot,MOVE_MAXSPEED,mspd);
 	return shot;
 }
 
@@ -616,6 +1020,27 @@ function CheckShot(shot,r){
 		ObjShot_SetDeleteFrame(shot,0);
 	}
 }
+
+
+
+function GetAllShotId{
+	return GetShotIdInCircleA2(cx,cy,800,TARGET_ENEMY);
+}
+function GetAllShotID{return GetShotIdInCircleA2(cx,cy,800,TARGET_ENEMY);}
+function GetShotIDInCircleA2(x,y,r,targ){return GetShotIdInCircleA2(x,y,r,targ);}
+
+
+
+
+function CreateDummyShot(x,y){
+	let shot = CreateShotA1(x,y,0,0,0,0);
+	ObjShot_SetSpellResist(shot,true);
+	ObjShot_SetAutoDelete(shot,false);
+	Obj_SetValue(shot,FLAG_DUMMY,true);
+	Obj_SetValue(shot,"NoInfluence",true);
+	return shot;
+}
+
 
 
 ////////////////////////////////////////////////////////////////////
@@ -674,7 +1099,21 @@ function CopyShot(shot){
 }
 
 function ObjShot_Delete(shot){ObjShot_SetDeleteFrame(shot,0);}
+function OS_Delete(shot){ObjShot_SetDeleteFrame(shot,0);}
 
+function OS_SetDeleteFrame(shot,f){
+	Obj_SetValue(shot,SHOT_DELETEFRAME,f);
+	ObjShot_SetDeleteFrame(shot,f);
+}
+
+
+function OS_SetSpellResist(shot,v){
+	ObjShot_SetSpellResist(shot,v);
+	Obj_SetValue(shot,FLAG_SPELLRESIST,v);
+}
+function OS_IsSpellResist(shot){
+	return Obj_GetValueD(shot,FLAG_SPELLRESIST,false);
+}
 
 
 function OS_GetDelayColor(shot) {
@@ -683,6 +1122,7 @@ function OS_GetDelayColor(shot) {
 	if(id==0){ return [0,0,0]; }
 	return GetShotDataInfoA1(id,TARGET_ENEMY,INFO_DELAY_COLOR);
 }
+function OS_GetID(shot){return ObjShot_GetImageID(shot);}
 
 function OS_GetCollisionRadius(shot) {
 	if(isnull(shot)){return 0;}
@@ -690,6 +1130,12 @@ function OS_GetCollisionRadius(shot) {
 	// let scl = OR_GetScale(shot);
 	let scl = 1;
 	return base*scl;
+}
+
+function OS_GetBaseHitbox(shot) {
+	if(isnull(shot)){return 0;}
+	let base = GetShotDataInfoA1(max(1,ObjShot_GetImageID(shot)),TARGET_ENEMY,INFO_COLLISION);
+	return base;
 }
 
 
@@ -700,14 +1146,24 @@ function OS_GetCollisionRadius(shot) {
 
 
 
+function OM_IsXYMove(obj){
+	if(Obj_IsValueExists(obj,FLAG_XYMOVE)){return Obj_GetValue(obj,FLAG_XYMOVE);}
+	if(Obj_IsValueExists(obj,MOVE_XSPEED)||Obj_IsValueExists(obj,MOVE_YSPEED)){return true;}
+	// if(ObjMove_GetAngle(obj)==0&&ObjMove_GetSpeed(obj)==0&&OM_GetAcceleration(obj)==0){
+	return false;
+}
+
+
+
+
 //for moving shit what don't do ObjMove
 task Obj_AddPatternA1(obj,fr,s,a){
 	wait(fr);
-	Obj_SetValue(obj,"Speed",s);
-	Obj_SetValue(obj,"Angle",a);
-	ObjRender_SetAngleZ(obj,a);
+	Obj_SetValue(obj,MOVE_SPEED,s);
+	Obj_SetValue(obj,MOVE_ANGLE,a);
+	OR_SetAngleZ(obj,a);
 	let dx = s*cos(a); let dy = s*sin(a);
-	while(!Obj_IsDeleted(obj) && Obj_GetValueD(obj,"Speed",s)==s && Obj_GetValueD(obj,"Angle",a)==a){
+	while(!Obj_IsDeleted(obj) && Obj_GetValueD(obj,MOVE_SPEED,s)==s && Obj_GetValueD(obj,MOVE_ANGLE,a)==a){
 		ObjRender_SetX(obj,ObjRender_GetX(obj)+dx);
 		ObjRender_SetY(obj,ObjRender_GetY(obj)+dy);
 		yield;
@@ -823,18 +1279,20 @@ function OM_SetSpeed(obj,val){
 	Obj_SetValue(obj,FLAG_XYMOVE,false);
 }
 function OM_GetSpeed(obj){
-	let s;
-	alternative(Obj_GetValueD(obj,FLAG_XYMOVE,false))
-	case(false){
-		s=Obj_GetValueD(obj,MOVE_SPEED,ObjMove_GetSpeed(obj));
-	}
-	case(true){
+	if(!Obj_GetValueD(obj,FLAG_XYMOVE,false)){
+		return ObjMove_GetSpeed(obj);
+	}else{
 		let dx = OM_GetSpeedX(obj);
 		let dy = OM_GetSpeedY(obj);
-		s = (|dx^2+dy^2|)^0.5
+		return (|dx^2+dy^2|)^0.5
 	}
-	return s;
 }
+
+
+
+
+
+
 function OM_SetAngle(obj,val){
 	ObjMove_SetAngle(obj,val);
 	Obj_SetValue(obj,MOVE_ANGLE,val);
@@ -844,7 +1302,8 @@ function OM_GetAngle(obj){
 	let a;
 	alternative(Obj_GetValueD(obj,FLAG_XYMOVE,false))
 	case(false){
-		a=Obj_GetValueD(obj,MOVE_ANGLE,ObjMove_GetAngle(obj));		
+		// a=Obj_GetValueD(obj,MOVE_ANGLE,ObjMove_GetAngle(obj));		
+		a=ObjMove_GetAngle(obj);		
 	}
 	case(true){
 		let dx = OM_GetSpeedX(obj);
@@ -862,7 +1321,10 @@ function OM_SetMaxSpeed(obj,val){
 	ObjMove_SetMaxSpeed(obj,val);
 	Obj_SetValue(obj,MOVE_MAXSPEED,val);
 }
-function OM_GetMaxSpeed(obj){return Obj_GetValueD(obj,MOVE_MAXSPEED,99);}
+function OM_GetMaxSpeed(obj){
+	// return Obj_GetValueD(obj,MOVE_MAXSPEED,99*sgn(OM_GetSpeed(obj)));
+	return Obj_GetValueD(obj,MOVE_MAXSPEED,99*sgn(OM_GetAcceleration(obj)));
+}
 function OM_SetAngularVelocity(obj,val){
 	ObjMove_SetAngularVelocity(obj,val);
 	Obj_SetValue(obj,MOVE_ANGV,val);
@@ -1004,40 +1466,207 @@ function OM_AddPatternB2(obj,del,xspd,yspd,xacc,yacc,xmspd,ymspd){
 }
 
 
-function OM_GetX(obj){return ObjMove_GetX(obj);}
-function OM_GetY(obj){return ObjMove_GetY(obj);}
-function OM_GetA(obj){return ObjMove_GetAngle(obj);}
+function OM_SetPosition(obj,x,y){ObjMove_SetX(obj,x);ObjMove_SetY(obj,y);}
 function OM_SetX(obj,v){ObjMove_SetX(obj,v);}
+function OM_GetX(obj){return ObjMove_GetX(obj);}
 function OM_SetY(obj,v){ObjMove_SetY(obj,v);}
-function OM_SetA(obj){return ObjMove_GetAngle(obj);}
+function OM_GetY(obj){return ObjMove_GetY(obj);}
+function OM_SetA(obj,v){ObjMove_SetAngle(obj,v);}
+function OM_GetA(obj){return ObjMove_GetAngle(obj);}
 
-function OM_SetSpeedX(obj,s){
+
+
+
+
+
+
+
+
+
+//XY move setters
+
+function OM_SetSpeedX(obj,xs){
 	Obj_SetValue(obj,FLAG_XYMOVE,true);
-	Obj_SetValue(obj,MOVE_XSPEED,s);
-	// ObjMove_AddPatternB1(obj,0,s,OM_GetSpeedY(obj));
-	ObjMove_AddPatternB1(obj,0,s,NO_CHANGE);
+	Obj_SetValue(obj,MOVE_XSPEED,xs);
+	Obj_SetValue(obj,MOVE_XSPEED~MOD_FRAME,frame);
+	let ys=OM_GetSpeedY(obj);
+	let xa=OM_GetAccelerationY(obj); let ya=OM_GetAccelerationY(obj);
+	let xm=OM_GetMaxSpeedX(obj); let ym=OM_GetMaxSpeedY(obj);
+	// ObjMove_AddPatternB2(obj,0,xs,ys,xa,ya,xm,ym);
+	ObjMove_AddPatternB2(obj,0,xs,NO_CHANGE,NO_CHANGE,NO_CHANGE,xm,ym);
+	// ObjMove_AddPatternB1(obj,0,xs,NO_CHANGE);
+	// ObjMove_AddPatternB2(obj,0,xs,NO_CHANGE,NO_CHANGE,NO_CHANGE,NO_CHANGE,NO_CHANGE);
 }
-function OM_SetSpeedY(obj,s){
+function OM_SetSpeedY(obj,ys){
 	Obj_SetValue(obj,FLAG_XYMOVE,true);
-	Obj_SetValue(obj,MOVE_YSPEED,s);
-	// ObjMove_AddPatternB1(obj,0,OM_GetSpeedX(obj),s);
-	ObjMove_AddPatternB1(obj,0,NO_CHANGE,s);
+	Obj_SetValue(obj,MOVE_YSPEED,ys);
+	Obj_SetValue(obj,MOVE_YSPEED~MOD_FRAME,frame);
+	let xs=OM_GetSpeedX(obj);
+	let xa=OM_GetAccelerationY(obj); let ya=OM_GetAccelerationY(obj);
+	let xm=OM_GetMaxSpeedX(obj); let ym=OM_GetMaxSpeedY(obj);
+	// ObjMove_AddPatternB2(obj,0,xs,ys,xa,ya,xm,ym);
+	ObjMove_AddPatternB2(obj,0,NO_CHANGE,ys,NO_CHANGE,NO_CHANGE,xm,ym);
+	// ObjMove_AddPatternB1(obj,0,NO_CHANGE,ys);
+	// ObjMove_AddPatternB2(obj,0,NO_CHANGE,ys,NO_CHANGE,NO_CHANGE,NO_CHANGE,NO_CHANGE);
 }
-function OM_GetSpeedX(obj){return Obj_GetValueD(obj,MOVE_XSPEED,OM_GetSpeed(obj)*cos(ObjMove_GetAngle(obj)));}
-function OM_GetSpeedY(obj){return Obj_GetValueD(obj,MOVE_YSPEED,OM_GetSpeed(obj)*sin(ObjMove_GetAngle(obj)));}
+function OM_SetAccelerationX(obj,xa){
+	Obj_SetValue(obj,FLAG_XYMOVE,true);
+	Obj_SetValue(obj,MOVE_XACCEL,xa);
+	let xs=OM_GetSpeedX(obj); let ys=OM_GetSpeedY(obj);
+	let ya=OM_GetAccelerationY(obj);
+	let xm=OM_GetMaxSpeedX(obj); let ym=OM_GetMaxSpeedY(obj);
+	// ObjMove_AddPatternB2(obj,0,xs,ys,xa,ya,xm,ym);
+	ObjMove_AddPatternB2(obj,0,NO_CHANGE,NO_CHANGE,xa,NO_CHANGE,xm,ym);
+	// ObjMove_AddPatternB2(obj,0,NO_CHANGE,NO_CHANGE,xa,NO_CHANGE,NO_CHANGE,NO_CHANGE);
+}
+function OM_SetAccelerationY(obj,ya){
+	Obj_SetValue(obj,FLAG_XYMOVE,true);
+	Obj_SetValue(obj,MOVE_YACCEL,ya);
+	let xs=OM_GetSpeedX(obj); let ys=OM_GetSpeedY(obj);
+	let xa=OM_GetAccelerationX(obj);
+	let xm=OM_GetMaxSpeedX(obj); let ym=OM_GetMaxSpeedY(obj);
+	// ObjMove_AddPatternB2(obj,0,xs,ys,xa,ya,xm,ym);
+	ObjMove_AddPatternB2(obj,0,NO_CHANGE,NO_CHANGE,NO_CHANGE,ya,xm,ym);
+	// ObjMove_AddPatternB2(obj,0,NO_CHANGE,NO_CHANGE,NO_CHANGE,ya,NO_CHANGE,NO_CHANGE);
+}
+function OM_SetMaxSpeedX(obj,xm){
+	Obj_SetValue(obj,FLAG_XYMOVE,true);
+	Obj_SetValue(obj,MOVE_XMAXSPEED,xm);
+	let xs=OM_GetSpeedX(obj); let ys=OM_GetSpeedY(obj);
+	let xa=OM_GetAccelerationX(obj); let ya=OM_GetAccelerationY(obj);
+	let ym=OM_GetMaxSpeedY(obj);
+	// ObjMove_AddPatternB2(obj,0,xs,ys,xa,ya,xm,ym);
+	ObjMove_AddPatternB2(obj,0,NO_CHANGE,NO_CHANGE,NO_CHANGE,NO_CHANGE,xm,ym);
+	// ObjMove_AddPatternB2(obj,0,NO_CHANGE,NO_CHANGE,NO_CHANGE,NO_CHANGE,xm,NO_CHANGE);
+}
+function OM_SetMaxSpeedY(obj,ym){
+	Obj_SetValue(obj,FLAG_XYMOVE,true);
+	Obj_SetValue(obj,MOVE_XMAXSPEED,ym);
+	let xs=OM_GetSpeedX(obj); let ys=OM_GetSpeedY(obj);
+	let xa=OM_GetAccelerationX(obj); let ya=OM_GetAccelerationY(obj);
+	let xm=OM_GetMaxSpeedX(obj);
+	// ObjMove_AddPatternB2(obj,0,xs,ys,xa,ya,xm,ym);
+	ObjMove_AddPatternB2(obj,0,NO_CHANGE,NO_CHANGE,NO_CHANGE,NO_CHANGE,xm,ym);
+	// ObjMove_AddPatternB2(obj,0,NO_CHANGE,NO_CHANGE,NO_CHANGE,NO_CHANGE,NO_CHANGE,ym);
+}
+
+
+//XY move getters
+
+function OM_GetSpeedX(obj){
+	if(Obj_IsValueExists(obj,MOVE_XSPEED)){
+		let a = OM_GetAccelerationX(obj);
+		let t = frame-Obj_GetValueD(obj,MOVE_XSPEED~MOD_FRAME,frame);
+		let m = OM_GetMaxSpeedX(obj);
+		let s = Obj_GetValue(obj,MOVE_XSPEED);
+		return s + 0.5*a*t^2;
+	}else{
+		if(Obj_GetValueD(obj,FLAG_XYMOVE,false)){
+			return NULL; //shouldn't happen
+		}else{
+			return ObjMove_GetSpeed(obj)*cos(ObjMove_GetAngle(obj));
+		}
+	}
+}
+function OM_GetSpeedY(obj){
+	if(Obj_IsValueExists(obj,MOVE_YSPEED)){
+		let a = OM_GetAccelerationY(obj);
+		let t = frame-Obj_GetValueD(obj,MOVE_YSPEED~MOD_FRAME,frame);
+		return Obj_GetValue(obj,MOVE_YSPEED) + 0.5*a*t^2;
+	}else{
+		if(Obj_GetValueD(obj,FLAG_XYMOVE,false)){
+			return NULL; //shouldn't happen
+		}else{
+			return ObjMove_GetSpeed(obj)*sin(ObjMove_GetAngle(obj));
+		}
+	}
+}
+
+function OM_GetAccelerationX(obj){
+	if(Obj_IsValueExists(obj,MOVE_XACCEL)){
+		return Obj_GetValue(obj,MOVE_XACCEL);
+	}else{
+		if(Obj_GetValueD(obj,FLAG_XYMOVE,false)){
+			return NULL; //shouldn't happen
+		}else{
+			return OM_GetAcceleration(obj)*cos(ObjMove_GetAngle(obj));
+		}
+	}
+}
+function OM_GetAccelerationY(obj){
+	if(Obj_IsValueExists(obj,MOVE_YACCEL)){
+		return Obj_GetValue(obj,MOVE_YACCEL);
+	}else{
+		if(Obj_GetValueD(obj,FLAG_XYMOVE,false)){
+			return NULL; //shouldn't happen
+		}else{
+			return OM_GetAcceleration(obj)*sin(ObjMove_GetAngle(obj));
+		}
+	}
+}
+
+function OM_GetMaxSpeedX(obj){
+	if(Obj_IsValueExists(obj,MOVE_XMAXSPEED)){
+		return Obj_GetValue(obj,MOVE_XMAXSPEED);
+	}else{
+		let a = 99*sgn(OM_GetAccelerationX(obj));
+		if(a!=0){return a;}
+		return OM_GetMaxSpeed(obj)*cos(ObjMove_GetAngle(obj));
+	}
+}
+
+function OM_GetMaxSpeedY(obj){
+	if(Obj_IsValueExists(obj,MOVE_YMAXSPEED)){
+		return Obj_GetValue(obj,MOVE_YMAXSPEED);
+	}else{
+		let a = 99*sgn(OM_GetAccelerationY(obj));
+		if(a!=0){return a;}
+		return OM_GetMaxSpeed(obj)*sin(ObjMove_GetAngle(obj));
+	}
+}
+
+
+
+
+
+// function OM_GetSpeedX(obj){return Obj_GetValueD(obj,MOVE_XSPEED,OM_GetSpeed(obj)*cos(OM_GetAngle(obj)));}
+// function OM_GetSpeedY(obj){return Obj_GetValueD(obj,MOVE_YSPEED,OM_GetSpeed(obj)*sin(OM_GetAngle(obj)));}
+// function OM_GetAccelerationX(obj){return Obj_GetValueD(obj,MOVE_XACCEL,OM_GetAcceleration(obj)*cos(OM_GetAngle(obj)));}
+// function OM_GetAccelerationY(obj){return Obj_GetValueD(obj,MOVE_YACCEL,OM_GetAcceleration(obj)*sin(OM_GetAngle(obj)));}
+// function OM_GetMaxSpeedX(obj){
+	// return Obj_GetValueD(obj,MOVE_XMAXSPEED,99*sgn(OM_GetAccelerationX(obj)));
+// }
+// function OM_GetMaxSpeedY(obj){
+	// return Obj_GetValueD(obj,MOVE_YMAXSPEED,99*sgn(OM_GetAccelerationY(obj)));
+// }
 
 
 
 
 task OM_Still(obj,time){
-	ObjMove_SetAcceleration(obj,0);
-	let s0 = ObjMove_GetSpeed(obj);
-	let dS = s0/time;
-	descent(i in 0..time){
-		ObjMove_SetSpeed(obj,dS*i);
-		yield;
+	if(!OM_IsXYMove(obj)){
+		OM_SetAcceleration(obj,0);
+		let s0 = ObjMove_GetSpeed(obj);
+		let dS = s0/time;
+		descent(i in 0..time){
+			OM_SetSpeed(obj, s0*(i/time)^2 );
+			yield;
+		}
+		OM_SetSpeed(obj,0);
+		OM_SetAcceleration(obj,0);
+		OM_SetAngularVelocity(obj,0);
+	}else{
+		OM_SetAccelerationX(obj,0); OM_SetAccelerationY(obj,0);
+		let xs0 = OM_GetSpeedX(obj); let dxs = xs0/time;
+		let ys0 = OM_GetSpeedY(obj); let dys = ys0/time;
+		descent(i in 0..time){
+			OM_SetSpeedX(obj, xs0*(i/time)^2 ); 
+			OM_SetSpeedY(obj, ys0*(i/time)^2 );
+			yield;
+		}
+		OM_SetSpeedX(obj,0); OM_SetSpeedY(obj,0);
+		OM_SetAccelerationX(obj,0); OM_SetAccelerationY(obj,0);
 	}
-	ObjMove_SetAngularVelocity(obj,0);
 }
 function ObjMove_Still(obj,time){OM_Still(obj,time);}
 
@@ -1067,7 +1696,7 @@ function OM_SetZ(obj,z){
 	if(!Obj_IsValueExists(obj,RENDER_PRIORITY)){
 		Obj_SetValue(obj,RENDER_PRIORITY,pri);
 	}
-	Obj_SetRenderPriorityI(obj,pri-10*t);
+	Obj_SetRenderPriorityI(obj,pri-5*t); //10*t
 	
 	ObjRender_SetColor(obj, r-r/2*t, g-g/2*t, b-b/2*t );
 	// ObjRender_SetColor(obj, r-r/2*(|t|), g-g/2*(|t|), b-b/2*(|t|) );
@@ -1103,95 +1732,6 @@ function OM_GetZ(obj){
 
 
 
-
-//////////////////////////////////////////////////////////////////
-// Laser Object Functions
-//////////////////////////////////////////////////////////////////
-
-task ObjStLaser_SetAngularVelocity(las,angv){
-	Obj_SetValue(las,"AngularVelocity",angv);
-	while(!Obj_IsDeleted(las) && Obj_GetValueD(las,"AngularVelocity",angv)==angv){
-		ObjStLaser_SetAngle(las,ObjStLaser_GetAngle(las)+angv);
-		yield;
-	}
-}
-task ObjStLaser_SetAngularAcceleration(las,anga){
-	Obj_SetValue(las,"AngularAcceleration",anga);
-	let angv = Obj_GetValueD(las,"AngularVelocity",0);
-	while(!Obj_IsDeleted(las) && Obj_GetValueD(las,"AngularAcceleration",0)==anga ){
-		angv = Obj_GetValueD(las,"AngularVelocity",0);
-		if( (|angv|) < (|Obj_GetValueD(las,"MaxAngularVelocity",3)|) ){
-			ObjStLaser_SetAngularVelocity(las,angv+anga);
-			Obj_SetValue(las,"AngularVelocity",angv+anga);
-		}
-		yield;
-	}
-}
-function ObjStLaser_SetMaxAngularVelocity(las,mangv){OM_SetMaxAngularVelocity(las,mangv);}
-
-function ObjStLaser_SetTipPosition(las,x,y){
-	let x0 = ObjMove_GetX(las);	let y0 = ObjMove_GetY(las);
-	let len = getdistance(x0,y0,x,y);
-	let ang = getangle(x0,y0,x,y);
-	ObjLaser_SetLength(las,len);
-	ObjStLaser_SetAngle(las,ang);
-}
-
-task ObjLaser_SetExtendVelocity(las,extv){
-	Obj_SetValue(las,"ExtendVelocity",extv);
-	while(!Obj_IsDeleted(las) && Obj_GetValueD(las,"ExtendVelocity",0)==extv && Obj_GetValueD(las,"MaxExtendLength",0)>=ObjLaser_GetLength(las)){
-		ObjLaser_SetLength(las,ObjLaser_GetLength(las)+extv);
-		yield;
-	}
-}
-task ObjLaser_SetExtendAcceleration(las,exta){
-	Obj_SetValue(las,"ExtendAcceleration",exta);
-	let extv = Obj_GetValueD(las,"ExtendVelocity",0);
-	while(!Obj_IsDeleted(las) && Obj_GetValueD(las,"ExtendAcceleration",0)==exta ){
-		extv = Obj_GetValueD(las,"ExtendVelocity",0);
-		if( (|extv|) < (|Obj_GetValueD(las,"MaxExtendVelocity",2)|) ){
-			ObjLaser_SetExtendVelocity(las,extv+exta);
-			Obj_SetValue(las,"ExtendVelocity",extv+exta);
-		}
-		yield;
-	}
-}
-function ObjLaser_SetMaxExtendVelocity(las,mextv){
-	Obj_SetValue(las,"MaxExtendVelocity",mextv);
-}
-function ObjLaser_SetMaxExtendLength(las,mextl){
-	Obj_SetValue(las,"MaxExtendLength",mextl);
-}
-
-task ObjLaser_SetExpandVelocity(las,expv){
-	Obj_SetValue(las,"ExpandVelocity",expv); let width;
-	while(!Obj_IsDeleted(las) && Obj_GetValueD(las,"ExpandVelocity",0)==expv){
-		width = Obj_GetValueD(las,"Width",15);
-		if(width < Obj_GetValueD(las,"MaxExpandWidth",50)) {
-			ObjLaser_SetRenderWidth(las,width+expv);
-			ObjLaser_SetIntersectionWidth(las,(width+expv)/3);
-			Obj_SetValue(las,"Width",width+expv);
-		}
-		yield;
-	}
-}
-task ObjLaser_SetExpandAcceleration(las,expa){
-	Obj_SetValue(las,"ExpandAcceleration",expa);
-	let expv = Obj_GetValueD(las,"ExpandVelocity",0);
-	while(!Obj_IsDeleted(las) && Obj_GetValueD(las,"ExpandAcceleration",0)==expa ){
-		expv = Obj_GetValueD(las,"ExpandVelocity",0);
-		if( (|expv|) < (|Obj_GetValueD(las,"MaxExpandVelocity",3)|) ){
-			ObjLaser_SetExpandVelocity(las,expv+expa);
-		}
-		yield;
-	}
-}
-function ObjLaser_SetMaxExpandVelocity(las,mexpv){
-	Obj_SetValue(las,"MaxExpandVelocity",mexpv);
-}
-function ObjLaser_SetMaxExpandWidth(las,mexpw){
-	Obj_SetValue(las,"MaxExpandWidth",mexpw);
-}
 
 
 
@@ -1362,3 +1902,148 @@ function OS_SetIntersectionEnable(obj,intersect){
 function OS_IsIntersectionEnable(obj){
 	return OC_IsIntersectionEnable(obj); 
 }
+
+
+
+function OS_SetScale(obj,scl){
+	let sclx = OR_GetScaleX(obj);
+	let scly = OR_GetScaleY(obj);
+	let ratio = (|sclx/scly|);
+	OS_SetScaleXYZ(obj,scl*ratio*sign(sclx),scl/ratio*sign(scly),ObjRender_GetScaleZ(obj));
+	Obj_SetValue(obj,RENDER_SCALE,scl);
+	Obj_SetValue(obj,COL_SCALE,scl);
+}
+function OS_SetScaleXYZ(obj,xscl,yscl,zscl){
+	let v = max(xscl,yscl);
+	let base = OS_GetBaseHitbox(obj);
+	Obj_SetValue(obj,COL_SCALE,v/base);
+	Obj_SetValue(obj,COL_RADIUS,v);
+	
+	OR_SetScaleXYZ(obj,xscl,yscl,zscl);
+		
+	if(!Obj_IsValueExists(obj,"CollisionManagerHash")){
+		ManageCollisionRadius(obj,v);
+	}
+	
+	task ManageCollisionRadius(obj,r){
+		if(typeof(obj)==OBJ_SHOT){ ObjShot_SetIntersectionEnable(obj,false); }
+		let dummy = CreateDummyShot(0,0);
+		Obj_SetValue(obj,"CollisionObject",dummy);
+		Obj_SetValue(dummy,COL_RADIUS,r);
+		if(O_GetType(obj)==OBJ_SHOT){
+			Obj_SetValue(dummy,COL_SCALE,r/OS_GetCollisionRadius(obj));
+		}
+		
+		let hash = GetNextHash;
+		Obj_SetValue(obj,"CollisionManagerHash",hash);
+		// while(!Obj_IsDeleted(obj)&&Obj_GetValueD(obj,"CollisionManagerHash",0)==hash){
+		while(!Obj_IsDeleted(obj)){
+			let x = ObjMove_GetX(obj); let y = ObjMove_GetY(obj);
+			ObjMove_SetPosition(dummy,x,y);
+			r = Obj_GetValueD(obj,COL_RADIUS,r);
+			ObjShot_SetIntersectionCircleA1(dummy,r);
+			yield;
+		}
+		Obj_Delete(dummy);
+		ObjShot_SetIntersectionEnable(obj,Obj_GetValueD(obj,FLAG_INTERSECTION,true));
+	}
+}
+
+
+
+
+
+
+
+
+
+
+//////////////////////////////////////////////////////////////////
+// Laser Object Functions
+//////////////////////////////////////////////////////////////////
+
+task ObjStLaser_SetAngularVelocity(las,angv){
+	Obj_SetValue(las,"AngularVelocity",angv);
+	while(!Obj_IsDeleted(las) && Obj_GetValueD(las,"AngularVelocity",angv)==angv){
+		ObjStLaser_SetAngle(las,ObjStLaser_GetAngle(las)+angv);
+		yield;
+	}
+}
+task ObjStLaser_SetAngularAcceleration(las,anga){
+	Obj_SetValue(las,"AngularAcceleration",anga);
+	let angv = Obj_GetValueD(las,"AngularVelocity",0);
+	while(!Obj_IsDeleted(las) && Obj_GetValueD(las,"AngularAcceleration",0)==anga ){
+		angv = Obj_GetValueD(las,"AngularVelocity",0);
+		if( (|angv|) < (|Obj_GetValueD(las,"MaxAngularVelocity",3)|) ){
+			ObjStLaser_SetAngularVelocity(las,angv+anga);
+			Obj_SetValue(las,"AngularVelocity",angv+anga);
+		}
+		yield;
+	}
+}
+function ObjStLaser_SetMaxAngularVelocity(las,mangv){OM_SetMaxAngularVelocity(las,mangv);}
+
+function ObjStLaser_SetTipPosition(las,x,y){
+	let x0 = ObjMove_GetX(las);	let y0 = ObjMove_GetY(las);
+	let len = getdistance(x0,y0,x,y);
+	let ang = getangle(x0,y0,x,y);
+	ObjLaser_SetLength(las,len);
+	ObjStLaser_SetAngle(las,ang);
+}
+
+task ObjLaser_SetExtendVelocity(las,extv){
+	Obj_SetValue(las,"ExtendVelocity",extv);
+	while(!Obj_IsDeleted(las) && Obj_GetValueD(las,"ExtendVelocity",0)==extv && Obj_GetValueD(las,"MaxExtendLength",0)>=ObjLaser_GetLength(las)){
+		ObjLaser_SetLength(las,ObjLaser_GetLength(las)+extv);
+		yield;
+	}
+}
+task ObjLaser_SetExtendAcceleration(las,exta){
+	Obj_SetValue(las,"ExtendAcceleration",exta);
+	let extv = Obj_GetValueD(las,"ExtendVelocity",0);
+	while(!Obj_IsDeleted(las) && Obj_GetValueD(las,"ExtendAcceleration",0)==exta ){
+		extv = Obj_GetValueD(las,"ExtendVelocity",0);
+		if( (|extv|) < (|Obj_GetValueD(las,"MaxExtendVelocity",2)|) ){
+			ObjLaser_SetExtendVelocity(las,extv+exta);
+			Obj_SetValue(las,"ExtendVelocity",extv+exta);
+		}
+		yield;
+	}
+}
+function ObjLaser_SetMaxExtendVelocity(las,mextv){
+	Obj_SetValue(las,"MaxExtendVelocity",mextv);
+}
+function ObjLaser_SetMaxExtendLength(las,mextl){
+	Obj_SetValue(las,"MaxExtendLength",mextl);
+}
+
+task ObjLaser_SetExpandVelocity(las,expv){
+	Obj_SetValue(las,"ExpandVelocity",expv); let width;
+	while(!Obj_IsDeleted(las) && Obj_GetValueD(las,"ExpandVelocity",0)==expv){
+		width = Obj_GetValueD(las,"Width",15);
+		if(width < Obj_GetValueD(las,"MaxExpandWidth",50)) {
+			ObjLaser_SetRenderWidth(las,width+expv);
+			ObjLaser_SetIntersectionWidth(las,(width+expv)/3);
+			Obj_SetValue(las,"Width",width+expv);
+		}
+		yield;
+	}
+}
+task ObjLaser_SetExpandAcceleration(las,expa){
+	Obj_SetValue(las,"ExpandAcceleration",expa);
+	let expv = Obj_GetValueD(las,"ExpandVelocity",0);
+	while(!Obj_IsDeleted(las) && Obj_GetValueD(las,"ExpandAcceleration",0)==expa ){
+		expv = Obj_GetValueD(las,"ExpandVelocity",0);
+		if( (|expv|) < (|Obj_GetValueD(las,"MaxExpandVelocity",3)|) ){
+			ObjLaser_SetExpandVelocity(las,expv+expa);
+		}
+		yield;
+	}
+}
+function ObjLaser_SetMaxExpandVelocity(las,mexpv){
+	Obj_SetValue(las,"MaxExpandVelocity",mexpv);
+}
+function ObjLaser_SetMaxExpandWidth(las,mexpw){
+	Obj_SetValue(las,"MaxExpandWidth",mexpw);
+}
+

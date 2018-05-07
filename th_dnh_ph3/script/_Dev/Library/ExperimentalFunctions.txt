@@ -97,6 +97,40 @@ function ObjMove_SetSpeedAtExpression(obj,expr){
 
 
 
+function ascii(d){
+	//Stuff that's hard to put in the array normally
+	let tmp = "\\_"; 
+	let bsl=tmp[0];
+	let fsl = bsl; // '/';
+	let rsb = ''; //tmp = "\]_"; let rsb = tmp[0];
+	let lsb = '['; // '[';
+	let dqt = '\''; // '"';
+	let sqt = '\''; // '\'';
+	
+	let chmin = 32; //control characters aren't in array
+	let chs=[ ' ', '!', dqt, '#', '$', '%', '&', sqt, '(', ')', '*', '+', ',', '-', '.', fsl,
+	      '0','1', '2', '3', '4', '5', '6', '7', '8', '9', ':', ';', '<', '=', '>', '?', '@',
+		  'A','B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q',
+		  'R','S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', lsb, bsl, rsb, '^', '_', '`', 'a', 'b',
+		  'c','d', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's',
+		  't','u', 'v', 'w', 'x', 'y', 'z', '{', '|', '}', '~', '' ];
+	let c;
+	if(0<d-32&&d-32<length(chs)){
+		c=chs[d-32];
+	}else{
+		c='';
+	}
+	return c;
+}
+
+function RandomString(size){
+	let s = "";
+	loop(size){
+		s = s ~ [ ascii(randint(32,127)) ];
+	}
+	return s;
+}
+
 
 
 /////////////////////////////////////////////////////////////

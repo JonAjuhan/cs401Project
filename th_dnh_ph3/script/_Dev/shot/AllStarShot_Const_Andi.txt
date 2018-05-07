@@ -25,7 +25,7 @@ let BALL_O         = 17;     //	|FB|~~~|	-Small balls w/ Outer layer
 let BALL           = 33;     // |FB|~~~|	-Small balls
 let PEL            = 49;     // |FP|~~~|	-Pellets
 let KUNAI          = 65;     // |FP|~~~|	-Kunai
-let ICE	           = 81;     // |FP|-.~|	-Ice shots
+let ICE=81;let GEM = 81;     // |FP|-.~|	-Ice shots
 let CARD           = 97;     // |FP|~.~|	-Card/amulet/ofuda
 let SUPP           = 113;    // |FP|~~%|	-Reisen "suppository" shots
 let DARKPEL_Z      = 129;    // |F?|~.%|	-ZUN-style dark pellets
@@ -56,6 +56,7 @@ let ARROW          = 363;    // |8:|~~~|	-Arrow shots
 //------------------------------|==|---|  
 let ZPEL           = 371;    // |FP|~~$|	-ZUN pellets
 let TWIN           = 387;    // |8*|*.~|	-PC98-style twin needle shots  [BLACK<-!ORANGE]
+let HEART_S        = 395;    // |8.|~.~|    -Small Koishi hearts
 let RSS            = 420;    // |8.|~.?|	-RSS "suicide" bullets
 let DPEL           = 428;    // |8`|~~~|	-Default pellets
 let DSTAR          = 436;    // |8`|~~?|	-Default stars
@@ -79,7 +80,7 @@ let GREEN    = 4;
 let AQUA     = 5;
 let BLUE     = 6;
 let MAGENTA  = 7;
-//May vary depending on shot
+//Vary by shot - see type column in above table
 //Generic         Pel-type            Ball-type           Dot-type
 let DRED   =  8;  let P_DRED   =  8;  let B_DRED   =  8;  let D_LRED    =  8;
 let GOLD   =  9;  let P_GOLD   =  9;  let B_YGREEN =  9;  let L_LYELLOW =  9;
@@ -95,6 +96,50 @@ let RED_5 = 1;
 let YELLOW_5 = 2;
 let GREEN_5 = 3;
 let BLUE_5 = 4;
+
+
+
+
+//Reverse-engineers a shot's color constant (or similar) from its delay color
+function GetShotColor(id){
+	let c = GetShotDataInfoA1(id,TARGET_ENEMY,INFO_DELAY_COLOR);
+	if(length(c)<3){ return WHITE; }
+	let r=c[0]; let g=c[1]; let b=c[2];
+	if( (r+g+b)/3 > 250 ){ return WHITE; }
+	if(r==g&&g==b){ return GRAY; }
+	if(  r>2*g && r>2*b ){ return RED; }
+	if(  g>2*r && g>2*b ){ return GREEN; }
+	if(  b>2*r && b>2*g ){ return BLUE; }
+	if(  r>2*g && b>2*g ){ return MAGENTA; }
+	if(  r>2*b && g>2*b ){ return YELLOW; }
+	if(  g>2*r && b>2*r ){ return AQUA; }
+	if( r>=2*g && g>2*b ){ return ORANGE; }
+	if(r>g&&r>b){return RED;}
+	if(g>r&&g>b){return GREEN;}
+	if(b>r&&b>g){return BLUE;}
+}
+function GetBaseShotType(id){
+	let R  = GetShotDataInfoA1( id,TARGET_ENEMY,INFO_RECT);
+	let r = GetShotDataInfoA1(id-1,TARGET_ENEMY,INFO_RECT);
+	while(r[0]==R[0]&&r[1]==R[1]&&r[2]==R[2]&&r[3]==R[3]){
+		id--;
+		R=r;
+		r=GetShotDataInfoA1(id-1,TARGET_ENEMY,INFO_RECT);
+	}
+	return id;
+	// let c = GetShotDataInfoA1(id,TARGET_ENEMY,INFO_DELAY_COLOR);
+	// let r=c[0];let g=c[1];let b=c[2];
+	// while(!(r==g&&g==b)){
+		// id--;
+		// c = GetShotDataInfoA1(id,TARGET_ENEMY,INFO_DELAY_COLOR); 
+		// r=c[0];g=c[1];b=c[2];
+	// }
+	// return id;
+}
+
+
+
+
 
 
 ///////////////////////////////////////////////////////////////////////////////////
@@ -194,22 +239,22 @@ let KUNAI_PURPLE  = 79;
 let KUNAI_GRAY    = 80;
 
 //Ice pellets - P
-let ICE_WHITE 	= 81;
-let ICE_RED     = 82;
-let ICE_ORANGE  = 83;
-let ICE_YELLOW  = 84;
-let ICE_GREEN   = 85;
-let ICE_AQUA    = 86;
-let ICE_BLUE    = 87;
-let ICE_MAGENTA = 88;
-let ICE_DRED    = 89;
-let ICE_GOLD    = 90;
-let ICE_YGREEN  = 91;
-let ICE_DGREEN  = 92;
-let ICE_DAQUA   = 93;
-let ICE_LBLUE   = 94;
-let ICE_PURPLE  = 95;
-let ICE_GRAY    = 96;
+let ICE_WHITE   = 81;     let GEM_WHITE   = 81;
+let ICE_RED     = 82;     let GEM_RED     = 82;
+let ICE_ORANGE  = 83;     let GEM_ORANGE  = 83;
+let ICE_YELLOW  = 84;     let GEM_YELLOW  = 84;
+let ICE_GREEN   = 85;     let GEM_GREEN   = 85;
+let ICE_AQUA    = 86;     let GEM_AQUA    = 86;
+let ICE_BLUE    = 87;     let GEM_BLUE    = 87;
+let ICE_MAGENTA = 88;     let GEM_MAGENTA = 88;
+let ICE_DRED    = 89;     let GEM_DRED    = 89;
+let ICE_GOLD    = 90;     let GEM_GOLD    = 90;
+let ICE_YGREEN  = 91;     let GEM_YGREEN  = 91;
+let ICE_DGREEN  = 92;     let GEM_DGREEN  = 92;
+let ICE_DAQUA   = 93;     let GEM_DAQUA   = 93;
+let ICE_LBLUE   = 94;     let GEM_LBLUE   = 94;
+let ICE_PURPLE  = 95;     let GEM_PURPLE  = 95;
+let ICE_GRAY    = 96;     let GEM_GRAY    = 96;
 
 //Cards (ofuda) - P
 let CARD_GRAY    = 97;
@@ -551,6 +596,16 @@ let TWIN_AQUA    = 392;
 let TWIN_BLUE    = 393;
 let TWIN_MAGENTA = 394;
 
+//Small Koishi hearts - .
+let HEART_S_GRAY    = 395;
+let HEART_S_RED     = 396;
+let HEART_S_ORANGE  = 397;
+let HEART_S_YELLOW  = 398;
+let HEART_S_GREEN   = 399;
+let HEART_S_AQUA    = 400;
+let HEART_S_BLUE    = 401;
+let HEART_S_MAGENTA = 402;
+
 //RSS "suicide" bullets
 let RSS_GRAY    = 420;
 let RSS_RED     = 421;
@@ -612,6 +667,7 @@ let FLOWDOT_DBLUE   = 466;
 let FLOWDOT_PURPLE  = 467;
 let FLOWDOT_GRAY    = 468;
 
+let SUN = 469;
 
 
 
