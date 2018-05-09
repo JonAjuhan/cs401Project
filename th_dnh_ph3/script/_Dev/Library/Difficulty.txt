@@ -8,7 +8,8 @@ let EXTRA=3.01;		//Now challenge Extra Stage...
 //Other difficulties
 let PHANTASM=4.01;	//Now challenge next phantasm... (Yukari only.)
 let LAST_WORD=5;	//Spell Practice-only cards, with very high challenge.
-let AFTEREXTRA=4.02; let OVERDRIVE=10;	//Someone just made these up.
+let OVERDRIVE=5;	//I think this is an occasional thing in Ten Desires?
+let AFTEREXTRA=4.02; //Someone just made this up.
 
 
 //Default value - this is how to change the difficulty for now

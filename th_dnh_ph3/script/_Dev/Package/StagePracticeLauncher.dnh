@@ -1,0 +1,92 @@
+// #TouhouDanmakufu[Stage]
+#ScriptVersion[3]
+#Title["Practice Launcher"]
+#Text["For launching singles from package."]
+// #Image["./ExRumia(�����u�~�b�h�i�C�g�����@���G�v).jpg"]
+
+#include "./../Index.txt"
+#System["./../system/Andi_System.txt"]
+#Background["./../system/Background/Satori/BG_work.txt"]
+
+
+// let bossScript;
+// let stageBGM;
+// let bossBGM;
+
+@Loading{
+	// let csd = GetCurrentScriptDirectory();
+
+	// bossScript = LoadScriptInThread(csd~"./Plural-7-Mystia.dnh");
+
+	// stageBGM = csd~"bgm/bgm - Song of the Night Sparrow ~ Night Bird.ogg";
+	// LoadSound(stageBGM);
+
+	// bossBGM  = csd~"bgm/bgm - Deaf to All but the Song.ogg";
+	// LoadSound(bossBGM);
+
+	SetCommonData("InitialPlayerPower",400);
+}
+
+@Initialize{
+	// SetCommonData("IsStage",true);
+	// TStage();
+	
+	if(GetScriptArgumentCount > 0){
+		RunScript(GetScriptArgument(0));
+	}
+	
+}
+
+@MainLoop{
+	// CheckGameOver;
+	yield;
+}
+
+@Finalize{
+}
+
+
+@Event{
+	alternative(GetEventType)
+	case(EV_REQUEST_RUN_SCRIPT){
+		let args = GetEventArgument(0);
+		RunScript(args);
+	}
+}
+
+task RunScript(args){
+	let path = args[0];
+	
+	SetCommonData("IsPackage",false);
+	SetCommonData("IsStage",false);
+	SetCommonData("IsPlural",false);
+	
+	let obj = ObjEnemyBossScene_Create();
+	ObjEnemyBossScene_Add(obj,0,path);
+	ObjEnemyBossScene_LoadInThread(obj);
+	
+	
+	ObjEnemyBossScene_Regist(obj);
+	
+	
+	while(!Obj_IsDeleted(obj)){yield;}
+	
+	// loop(240){yield;}
+	loop(90){yield;}
+	
+	SetCommonData("IsPackage",true);
+	
+	
+	CloseStgScene();
+	CloseScript(GetOwnScriptID());
+	
+	
+	// let id = LoadScript(path);
+	// StartScript(id);
+	// while(!IsCloseScript(id)){yield;}
+	// CloseStgScene();
+	// CloseScript(GetOwnScriptID());
+}
+
+
+

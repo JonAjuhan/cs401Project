@@ -1,13 +1,57 @@
+// #include "./Resources.txt"
 #include "./EventList.txt"
-//Used by system script - 
+#include "./DirPaths.txt"
 //others interface with functions in Functions.txt
 //with same names/parameters as these
-//that notify system script to actually call these ones.
+//that notify this script to actually call these ones.
 
-let music = GetCommonData("MusicObject",ObjSound_Create);
-SetCommonData("MusicObject",music);
 
-SetScriptID(SCRIPT_MUSIC);
+let music;
+
+@Initialize{
+	SetScriptID(SCRIPT_MUSIC);
+	music = GetCommonData("MusicObject",ObjSound_Create);
+	SetCommonData("MusicObject",music);
+}
+
+@Event{
+	alternative(GetEventType)
+	case(EV_SET_SONG){
+		let args = GetEventArgument(0);
+		let title = args[0];
+		let loopstart; let loopend;
+		if(length(args)>2){
+			loopstart = ator(args[1]);
+			loopend = ator(args[2]);
+		}else{
+			let tmp = GetSongLoop(title);
+			loopstart = tmp[0]; loopend = tmp[1];
+		}
+		SetBGMLoop(title,loopstart,loopend);	
+	}
+	case(EV_FADE_SONG){
+		FadeBGM();
+	}
+	// case(EV_STOP_SONG,EV_PAUSE_ENTER){
+	case(EV_STOP_SONG, 16){
+		ObjSound_Stop(music);
+	}
+	// case(EV_START_SONG,EV_PAUSE_LEAVE){
+	case(EV_START_SONG,17){
+		ObjSound_Play(music);
+	}
+}
+
+@MainLoop{
+	yield;
+}
+
+
+
+
+
+
+
 
 
 
@@ -25,7 +69,10 @@ task SetBGMLoop(title,loopstart,loopend){
 		}
 		ObjSound_Stop(music);
 	}
-	ShowBGMTitle("BGM - "~title);
+	// if(!(noStage&&noPlural&&noSingle&&!noPackage)){
+	if(GetCommonData("IsStage",false)||GetCommonData("IsPlural",false)||GetCommonData("IsSingle",false)){
+		ShowBGMTitle("BGM - "~title);
+	}
 	ObjSound_Load(music,dirbgm~"bgm - "~title~".ogg");
 	ObjSound_SetSoundDivision(music, SOUND_BGM);
 	ObjSound_SetLoopEnable(music,true);
@@ -73,11 +120,12 @@ task ShowBGMTitle(title){
 	if(tmp!=""){ title = tmp; SetCommonData("BGMTitle",""); };
 	tmp = GetCommonData("BGMSubtitle","");
 	if(tmp!=""){ subtitle = tmp; SetCommonData("BGMSubtitle",""); };	
+	let sx = GetStgFrameWidth; let sy = GetStgFrameHeight;
 	//let obj = makeText(sx-15,sy-20,16,[0,0,255],ALIGNMENT_RIGHT, 0, title);
 	let obj  = GetCommonData("BGMTitleObject",ObjText_Create);
 	SetCommonData("BGMTitleObject",obj);
 	Obj_SetVisible(obj,true);
-	ObjRender_SetPosition(obj, -15,sy-32,0); //-16
+	ObjRender_SetPosition(obj, -15,GetStgFrameHeight-32,0); //-16
 	ObjText_SetMaxWidth(obj,sx);
 	ObjText_SetHorizontalAlignment(obj,ALIGNMENT_RIGHT);
 	ObjText_SetText(obj,title);
@@ -85,7 +133,7 @@ task ShowBGMTitle(title){
 	let obj2 = GetCommonData("BGMSubtitleObject",ObjText_Create);
 	SetCommonData("BGMSubtitleObject",obj2);
 	Obj_SetVisible(obj2,true);
-	ObjRender_SetPosition(obj2,-15,sy- 16,0); //
+	ObjRender_SetPosition(obj2,-15,GetStgFrameHeight- 16,0); //
 	ObjText_SetMaxWidth(obj2,sx);
 	ObjText_SetHorizontalAlignment(obj2,ALIGNMENT_RIGHT);
 	ObjText_SetText(obj2,subtitle);
@@ -129,7 +177,8 @@ task ShowBGMTitle(title){
 		ObjRender_SetAlpha(obj2,200-2*i);
 		yield;
 	}
-	wait(180); //120
+	loop(180){yield;} //120
+	function qerp(start,control,end,t){return (1 - t)^2 * start + 2*(1-t)*t * control + t^2 * end;}
 	ascent(i in 0..120){ //120
 		// ObjRender_SetX(obj,-(15+sx/120*i) );
 		ObjRender_SetX(obj ,qerp(-15,-15+(0.15*sx),-15-sx,i/120));
@@ -154,8 +203,9 @@ function GetSongLoop(song){
 	case("Bhava-Agra as Seen Through a Child's Mind"){      return [ 66.91   , 115.25  ]; }
 	case("Kid's Festival ~ Innocent Treasures"){            return [153.8865 , 297.23  ]; }
 	case("Flight of the Bamboo Cutter ~ Lunatic Princess"){ return [ 55.56   , 197.72  ]; }
+	case("Flawless Clothing of the Celestials"){            return [ 36.06   , 100.05  ]; }
 	
-	others{return [];}
+	others{return [0,0];}
 }
 
 

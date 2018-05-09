@@ -16,9 +16,14 @@ function SetSpellCard() {
 	if(length(Obj_GetValueD(GetEnemyBossObjectID[0], "Spellcards", [])) < 2){
 		let diff = GetCommonData("Difficulty","Normal");
 		ObjCutin_LaunchS3("AYA", "", diff);
-		// TMagicCircle();
 	}
 	NotifyEventAll(EV_REQUEST_SPELL_SCORE,[]);
+}
+
+sub StartSpell{
+	let objScene = GetEnemyBossSceneObjectID();
+	ObjEnemyBossScene_StartSpell(objScene);
+	ObjEnemyBossScene_SetSpellTimer(objScene,ObjEnemyBossScene_GetInfo(objScene,INFO_ORGTIMERF));
 }
 
 
@@ -28,16 +33,27 @@ function SetSpellCardA1(NameOrIndex,c,style,img) {
 	let name="";
 	if(typeof(NameOrIndex)==TYPE_NUMBER || NameOrIndex==""){
 		name= GetCommonData("CurrentSC"~itoa(NameOrIndex),GetCommonData("CurrentSC",""));
+	}else{ name = NameOrIndex; }
+	
+	if(length(c)==0){
+		let bosses = GetAllBossID(); 
+		let boss;
+		if(typeof(NameOrIndex)==TYPE_NUMBER){ boss = bosses[NameOrIndex%length(bosses)]; }
+		else{
+			boss = bosses[  length(Obj_GetValueD(bosses[0],"Spellcards",[]))%length(bosses)  ]; 
+		}
+		c=Obj_GetValueD(boss,CHARACTER_COLOR,c);
 	}
-	// else if(NameOrIndex==""){name=GetCommonData("CurrentSC",""); }
+	
 	if(length(c)==0){c=GetCommonData("SpellcardDeclareColor",[255,128,128]);}
-	// let issurvival = Notify(SCRIPT_SYSTEM,EV_REQUEST_IS_DURABLE_SPELL,[]);
-	let issurvival = GetCommonData("IsSurvival",false);
+
+	let objScene = GetEnemyBossSceneObjectID();
+	let issurvival = ObjEnemyBossScene_GetInfo(objScene,INFO_IS_DURABLE_SPELL);
 	ObjCutin_SetSpellcardS5(name,img,style, c[0],c[1],c[2], issurvival);
 	if(length(Obj_GetValueD(GetEnemyBossObjectID[0], "Spellcards", [])) < 2){
 		let diff = GetCommonData("Difficulty","Normal");
 		ObjCutin_LaunchS3(style, img, diff);
-		// TMagicCircle();
+		StartSpell;
 	}else{SE_Play(se_spellcard,100);}
 	NotifyEventAll(EV_REQUEST_SPELL_SCORE,[]);
 	// ObjEnemyBossScene_StartSpell(objScene);
@@ -565,7 +581,8 @@ task FadeToBlack(delin,dur,delout){
 
 
 function SetBGM(title){
-	Notify(SCRIPT_MUSIC,EV_SET_SONG,[title]);
+	// Notify(SCRIPT_MUSIC,EV_SET_SONG,[title]);
+	NotifyEventAll(EV_SET_SONG,[title]);
 }
 function SetBGMLoop(title,loopstart,loopend){
 	// NotifyEvent(GetCommonData("SystemScriptID",NULL),EV_SET_SONG,[title,loopstart,loopend]);
@@ -1735,9 +1752,16 @@ task OR_FlipX(obj,t){
 }
 
 
-function SetMagicCircleAlpha(m,s){
-	MCircNextAlpha = m; //80
-	Obj_SetValue(objSpellCircle,"MaxAlpha",s); //64
+function SetMagicCircleAlpha(a,ma){
+	// // MCircNextAlpha = m; //80
+	// Obj_SetValue(objSpellCircle,"MaxAlpha",s); //64
+	let bosses = GetAllBossID();
+	ascent(i in 0..length(bosses)){
+		Obj_SetValue(bosses[i],"MagicCircleAlpha",a);
+		Obj_SetValue(bosses[i],"MagicCircleMaxAlpha",ma);
+		// if(ma==0){ Obj_SetValue(bosses[i],"EnableMagicCircle",false); }
+		Obj_SetValue(bosses[i],FLAG_CHECK,false);
+	}
 }
 
 //smooth out the movement from ObjMove_SetDestAtFrame

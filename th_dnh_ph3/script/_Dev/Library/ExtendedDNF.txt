@@ -1,6 +1,7 @@
 #include "./Resources.txt"
 #include "./../shot/AllStarShot_Const_Andi.txt"
 #include "./../system/ItemConst.txt"
+#include "./TypeFunctions.txt"
 
 let FLAG_CHECK = "Check";                                       let FLAG_CHECKINFO = FLAG_CHECK;
 let FLAG_DUMMY = "IsDummy";

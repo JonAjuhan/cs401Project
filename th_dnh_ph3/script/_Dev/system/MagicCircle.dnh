@@ -24,9 +24,9 @@ let bLastSpell = false;
 let timer;
 // let text = ObjText_Create();
 
-// let mc_finishing = false;
 
 let mc_count = 0;
+let initializing = true;
 
 let quality;
 
@@ -37,6 +37,8 @@ let quality;
 @Event{
 	alternative(GetEventType())
 	case(EV_END_BOSS_STEP){
+		bMiss = ( ObjEnemyBossScene_GetInfo(objScene, INFO_PLAYER_SHOOTDOWN_COUNT) > 0
+		           || ObjEnemyBossScene_GetInfo(objScene, INFO_PLAYER_SPELL_COUNT) > 0 );
 		if(bMiss || (timer==0 && !bSurvival) ){ 
 			typeEnd = END_FAILED;
 		}
@@ -50,9 +52,15 @@ let quality;
 	}
 	case(EV_GAIN_SPELL){ typeEnd = END_SUCCESS; }
 	case(EV_FAIL_SPELL){ typeEnd = END_FAILED;  }
+	
+	case(EV_ADD_MAGICCIRCLE){
+		let a = GetEventArgument(0);
+		TMagicCircle(a[0],a[1],a[2],a[3],a[4],a[5],a[6], [ a[7],a[8],a[9] ] );
+	}
 
 }
 @MainLoop{
+	timer = ObjEnemyBossScene_GetInfo(objScene, INFO_TIMERF);
 	yield;
 }
 
@@ -63,7 +71,7 @@ task TInitialize{
 	if(!IsCloseScript(GetScriptID(SCRIPT_MAGICCIRCLE))){CloseScript(GetOwnScriptID);return;}
 	SetScriptID(SCRIPT_MAGICCIRCLE);
 	
-	loop(5){yield;}
+	// loop(5){yield;}
 	let objScene = GetEnemyBossSceneObjectID();
 	while(objScene==ID_INVALID){
 		yield;
@@ -71,34 +79,44 @@ task TInitialize{
 	}
 	
 	let bosses = GetAllBossID();
-	let alpha = 64 + 64/length(bosses);
-	// let rad = 1.2*( 128+128/length(bosses) );
-	let rad = 1.2*( 64+192/length(bosses) );
+	// let alpha0 = 64 + 64/length(bosses);
+	let alpha0 = 64 + 32/length(bosses);
+	
+	let rad0 = ( 64+192/length(bosses) );
 	
 	quality = GetAreaCommonData("CONFIG","Effect Quality",2);
 	
 	ascent(i in 0..length(bosses)){
 		let boss = bosses[i];
 		if(Obj_GetValueD(boss,"EnableMagicCircle",true)){
-			let color = Obj_GetValueD(boss,CHARACTER_COLOR, [255,255,255] );
-			TMagicCircle(boss, 1.5*(-1)^i, 0+45*i,  2, rad, alpha, color);
-			if( length(bosses) < quality ){
-				TMagicCircle(boss, 1.5*(-1)^i,90+45*i,  2, rad, alpha, color);
+			let rad = rad0 * Obj_GetValueD(boss,"MagicCircleTweak_Rad",1.2);
+			// let el = Obj_GetValueD(boss,"MagicCircleTweak_Ellipse",1.2);
+			let el = Obj_GetValueD(boss,"MagicCircleTweak_Ellipse",2);
+			let rs = Obj_GetValueD(boss,"MagicCircleTweak_RotSpd",1.2);
+			let alpha = Obj_GetValueD(boss,"MagicCircleMaxAlpha",alpha0);
+			let color = Obj_GetValueD(boss,"MagicCircleColor",Obj_GetValueD(boss,CHARACTER_COLOR, [255,255,255] ));
+			let mnum = Obj_GetValueD(boss,"MagicCircleCount", ceil(quality/length(bosses))+1 )-1; let num=0;
+			
+			// TMagicCircle(    boss,0, el*1.5*(-1)^i, 0+45*i,  2, rad, alpha, color); num++;
+			TMagicCircle(    boss,0, rs*1.5*(-1)^i, 0+45*i,  el, rad, alpha, color); num++;
+			if( num<mnum && length(bosses) < quality ){
+				TMagicCircle(boss,1, rs*1.5*(-1)^i,90+45*i,  el, rad, alpha, color); num++;
 			}
-			if( i+2 < quality ){
-				TMagicCircle(boss,  -1*(-1)^i, 0+45*i,  2, rad, alpha, color);
-				TMagicCircle(boss,  -1*(-1)^i,90+45*i,  2, rad, alpha, color);
+			if( num<mnum && i+2 < quality ){
+				TMagicCircle(boss,2, rs*-1*(-1)^i , 0+45*i,  el, rad, alpha, color); num++;
+				TMagicCircle(boss,3, rs*-1*(-1)^i ,90+45*i,  el, rad, alpha, color); num++;
 			}
 		}
 	}
-		
+	
+	initializing = false;
 }
 
 
 
 
 
-task TMagicCircle(centerObj, rotspd,rotoff, distort, mRad, maxalpha, color){
+task TMagicCircle(centerObj, circleindex, rotspd,rotoff, distort, mRad, maxalpha, color){
 	let dir = (|rotspd|)/rotspd;
 	
 	
@@ -107,11 +125,16 @@ task TMagicCircle(centerObj, rotspd,rotoff, distort, mRad, maxalpha, color){
 	//頂点奇数：偶数：円の外側、円の内側
 	//Might need to be a power of 2?
 	// let numVert = 16+16*quality - 4*mc_count; //64
-	let numVert = 16+16*quality - 2*ceil(max(0,10-quality)*mc_count/2); //64
-	if(numVert<32){return;} //minimum needed to not look like crap
+	// let numVert = 16+16*quality - 2*ceil(max(0,10-quality)*mc_count/2); //64
+	
+	//Use a good number of vertices at first, but cut back a bit for additional circles
+	let numVert = 32+16*quality - 2*ceil(max(0,10-quality)*mc_count/2); //64
+	if(numVert<32){ //minimum needed to not look like crap
+		if(initializing){ return; } //only abort circles added automatically
+		else{ numVert=16+16*quality; }
+	}
 	let Rads = [];
 	loop(numVert/2){
-		// Rads = Rads ~ [rand(0,512)];
 		Rads = Rads ~ [0];
 		Rads = Rads ~ [100];
 	}
@@ -138,7 +161,7 @@ task TMagicCircle(centerObj, rotspd,rotoff, distort, mRad, maxalpha, color){
 		yield;
 		objScene = GetEnemyBossSceneObjectID();
 	}
-	let objBoss = GetEnemyBossObjectID()[0];
+	// let objBoss = GetEnemyBossObjectID()[0];
 	let timerOrg = ObjEnemyBossScene_GetInfo(objScene, INFO_ORGTIMERF); //176400 ?
 	if(timerOrg >= 60*ObjEnemyBossScene_GetInfo(objScene, INFO_TIMERF)){timerOrg/=60;}
 	bLastSpell = ObjEnemyBossScene_GetInfo(objScene, INFO_IS_LAST_SPELL);
@@ -151,27 +174,87 @@ task TMagicCircle(centerObj, rotspd,rotoff, distort, mRad, maxalpha, color){
 	let effalpha = alpha;
 	let frame = 0;
 	let angleRender = 0;
-	// let hiding = false;
 	
-	let R=color[0]; let G=color[1]; let B=color[2];	
-	R=2*R-255; G=2*G-255; B=2*B-255; //So they'll average with 255 to give the default values
-	let R_norm = (R+192)/2; let G_norm = (G+192)/2; let B_norm = (B+255)/2;
-	let R_last = (R+255)/2; let G_last = (G+192)/2; let B_last = (B+192)/2;
+	let R;      let G;      let B;
+	let R_norm; let G_norm; let B_norm;
+	let R_last; let G_last; let B_last;
 
+	let DoGradient = false;
+	let dColor = [0,0,0]; 
+	let dR=0;   let dG=0;   let dB=0;
+	
+	timer = ObjEnemyBossScene_GetInfo(objScene, INFO_TIMERF);
+	let DoRadWithTimer = true;
+
+	BalanceColors;
+	sub BalanceColors{
+		R=color[0]; G=color[1]; B=color[2];
+		R=2*R-255; G=2*G-255; B=2*B-255; //So they'll average with 255 to give the default values
+		R_norm = (R+192)/2; G_norm = (G+192)/2; B_norm = (B+255)/2;
+		R_last = (R+255)/2; G_last = (G+192)/2; B_last = (B+192)/2;
+		if(DoGradient){
+			dR=dColor[0]-R; dG=dColor[1]-G; dB=dColor[2]-B;
+			// dR = (2*(R+dR)-192)-R; dG = (2*(G+dG)-192)-G; dB = (2*(B+dB)-255)-B; 
+		}
+	}
 	
 	sub UpdateAlpha{
-		if(bLastSpell){
-			ObjRender_SetColor(obj, R_last * effalpha, G_last * effalpha, B_last * effalpha);
+		if(!DoGradient){
+			if(bLastSpell){
+				ObjRender_SetColor(obj, R_last * effalpha, G_last * effalpha, B_last * effalpha);
+			}else{
+				ObjRender_SetColor(obj, R_norm * effalpha, G_norm * effalpha, B_norm * effalpha);
+			}
 		}else{
-			ObjRender_SetColor(obj, R_norm * effalpha, G_norm * effalpha, B_norm * effalpha);
+			ascent(i in 0..numVert/2){
+				let I=2*i;
+				// let t = sin( (360) / (numVert/2-1)*i );
+				let t = (| sin( (180) / (numVert/2-1)*i ) |)^2;
+				ObjPrim_SetVertexColor(obj,I+0, (R_norm+dR*t)*effalpha, (G_norm+dG*t)*effalpha, (B_norm+dB*t)*effalpha);
+				ObjPrim_SetVertexColor(obj,I+1, (R_norm+dR*t)*effalpha, (G_norm+dG*t)*effalpha, (B_norm+dB*t)*effalpha);
+			}
 		}
 		ObjRender_SetPosition(obj, cx, cy, 0);
 		ObjRender_SetAngleZ(obj, angleRender);
 	}
 	
+	UpdateCheck;
+	sub UpdateCheck{
+		let ext = ""; if(Obj_GetValueD(centerObj,"MagicCircleManageSeparate",false)){ ext=itoa(circleindex); }
+		if(Obj_GetValueD(centerObj,"MagicCircleAlpha"~ext,NO_CHANGE)!=NO_CHANGE){
+			alpha = Obj_GetValueD(centerObj,"MagicCircleAlpha"~ext,alpha*255)/255;
+		}
+		if(Obj_GetValueD(centerObj,"MagicCircleMaxAlpha"~ext,NO_CHANGE)!=NO_CHANGE){
+			maxalpha = Obj_GetValueD(centerObj,"MagicCircleMaxAlpha"~ext,maxalpha*255)/255;
+		}
+		if(Obj_IsValueExists(centerObj,"MagicCircleColor"~ext)){
+			color = Obj_GetValue(centerObj,"MagicCircleColor"~ext);
+			BalanceColors;
+		}
+		if(Obj_IsValueExists(centerObj,"MagicCircleGradient"~ext)){
+			// dColor = Obj_GetValue(centerObj,"MagicCircleGradient");
+			// DoGradient = (dColor[0]!=0 || dColor[1]!=0 || dColor[2]!=0);
+			dColor = Obj_GetValue(centerObj,"MagicCircleGradient"~ext);
+			DoGradient = (dColor[0]!=color[0] || dColor[1]!=color[1] || dColor[2]!=color[2]);
+			BalanceColors;
+		}
+		DoRadWithTimer = Obj_GetValueD(centerObj,"MagicCircleShrinkWithTimer"~ext,DoRadWithTimer);
+		
+		
+		if(Obj_GetValueD(centerObj,"MagicCircleCount",mc_count) < circleindex){
+			Obj_Delete(obj); mc_count--; if(mc_count > 0){ return; } //Todo: Allow adding more circles
+		}
+	}
+	
+	
+	
+	
 	let dx0=0;
 	let dy0=0;
 	let dp0=0;
+	
+	let rad=mRad; 
+	let wid=max(20,(30+rad/10)/2);
 	
 	let cx = ObjRender_GetX(centerObj); 
 	let cy = ObjRender_GetY(centerObj);
@@ -179,10 +262,14 @@ task TMagicCircle(centerObj, rotspd,rotoff, distort, mRad, maxalpha, color){
 	
 	let drift = 0;
 	
-	let DriftDur = 30;
-	let Thresh = 100;
-
 	while(typeEnd == 0){
+		
+		if(Obj_IsValueExists(centerObj,FLAG_CHECK)){
+			UpdateCheck;
+			if(Obj_GetValue(centerObj,FLAG_CHECK)==false){
+				task TReset{yield;Obj_DeleteValue(centerObj,FLAG_CHECK);}TReset;
+			}
+		}
 		
 		
 		alpha = min(alpha+1/120, maxalpha);
@@ -200,16 +287,13 @@ task TMagicCircle(centerObj, rotspd,rotoff, distort, mRad, maxalpha, color){
 		
 		
 		
-		
-		// if(dp < 30){
-		// if(dp < 30 || dp0 <= 1){
-		if(dp < Thresh && drift == 0){
+		//Smooth motion if boss suddenly changes position
+		if(dp < 100 && drift == 0){
 			dx0=dx; dy0=dy; dp0=dp; //use current speed
 			dx = (cx1-cx)/4; dy = (cy1-cy)/4; //realign to boss
 			effalpha = alpha - dp * 3/255;
 		}else{
-			// if(drift==0){ drift=DriftDur; }
-			if(dp >= Thresh){ drift=DriftDur; }
+			if(dp >= 100){ drift=30; }
 			drift--;
 			if(drift > 0){
 				dx=dx0; dy=dy0; dp=dp0; //keep using previous speed
@@ -219,10 +303,11 @@ task TMagicCircle(centerObj, rotspd,rotoff, distort, mRad, maxalpha, color){
 				dp = ((cx1-cx)^2+(cy1-cy)^2)^0.5;
 				dx = (dp+mRad*0.75)*cos(a);
 				dy = (dp+mRad*0.75)*sin(a);
+				alpha = alpha/4; //fade back in
 			}
-			
-			effalpha = (alpha - dp0 * 3/255) * (drift/DriftDur)^0.5;
+			effalpha = (alpha - dp0 * 3/255) * (drift/30)^0.5;
 		}
+		
 		
 		if(!Obj_IsDeleted(centerObj)){
 			cx += dx; // dx/4
@@ -235,18 +320,21 @@ task TMagicCircle(centerObj, rotspd,rotoff, distort, mRad, maxalpha, color){
 		
 		angleRender += 360/numVert/4 * dir;
 
-		timer = ObjEnemyBossScene_GetInfo(objScene, INFO_TIMERF);
-		let rRate = timer / timerOrg;
-		bMiss = ( ObjEnemyBossScene_GetInfo(objScene, INFO_PLAYER_SHOOTDOWN_COUNT) > 0
-		           || ObjEnemyBossScene_GetInfo(objScene, INFO_PLAYER_SPELL_COUNT) > 0 );
+		
+		// bMiss = ( ObjEnemyBossScene_GetInfo(objScene, INFO_PLAYER_SHOOTDOWN_COUNT) > 0
+		           // || ObjEnemyBossScene_GetInfo(objScene, INFO_PLAYER_SPELL_COUNT) > 0 );
+		
+		// let rad = mRad * (timer/timerOrg)^0.5; //overall radius
+		// let wid = (30+rad/10)/2; //width of circle
+		
+		if(DoRadWithTimer){
+			// timer = ObjEnemyBossScene_GetInfo(objScene, INFO_TIMERF);
+			let rRate = timer / timerOrg;
+			rad = mRad * (timer/timerOrg)^0.5; //overall radius
+			wid = (30+rad/10)/2; //width of circle
+		}
 		
 		
-		// let rad = mRad * (timer/timerOrg)^0.15; //overall radius
-		// let wid = rad/10; //width of circle
-		// let wid = mRad * (timer/timerOrg)^0.25/10; //width of circle
-		// let wid = mRad * (timer/timerOrg)^0.25/10; //width of circle
-		let rad = mRad * (timer/timerOrg)^0.5; //overall radius
-		let wid = (30+rad/10)/2; //width of circle
 		
 		let rx = rad-distort*wid*cos(rotoff+frame*rotspd);
 		let ry = rad-distort*wid*sin(rotoff+frame*rotspd);
@@ -361,8 +449,9 @@ task TMagicCircle(centerObj, rotspd,rotoff, distort, mRad, maxalpha, color){
 				if(rRateIn<0){rRateIn=0;}
 				drIn=(mRad * rRateIn - Rads[I+1])/16;
 			}
-			Rads[I] = Rads[I] + drOut;
+			Rads[I]     = Rads[I]     + drOut;
 			Rads[I + 1] = Rads[I + 1] + drIn;
+			
 			
 		}
 		UpdateAlpha();

@@ -1,4 +1,6 @@
 #include "./../Library/selibrary.txt"
+#include "./../Library/DirPaths.txt"
+#include "./../Library/EventList.txt"
 
 let CANCEL_CLOSE = 0;
 let CANCEL_SELECTLAST = 1;
@@ -182,7 +184,8 @@ function IsKey(vk){
 		SetCommonData("HOLDTIME_"~itoa(vk), 0)
 	}
 }
-function IsKeyPush(vk){ return (GetVirtualKeyState(vk)==KEY_PUSH); }
+// function IsKeyPush(vk){ return (GetVirtualKeyState(vk)==KEY_PUSH); }
+function IsKeyPush(vk){ return (GetVirtualKeyState(vk)==KEY_PULL); }
 
 
 
@@ -199,21 +202,46 @@ function MakeMenuText(bx, by, index, text, t_priority){
 	let obj = ObjText_Create();
 	ObjRender_SetPosition(obj, bx, by+i*24, 0);
 	Obj_SetRenderPriorityI(obj, t_priority+1);
-	ObjText_SetFontType(obj, "MS Gothic");
+	// ObjText_SetFontType(obj, "MS Gothic");
+	ObjText_SetFontType(obj, "THSpatial");
 	ObjText_SetFontSize(obj, 20);
 	ObjText_SetFontBold(obj, false);
 	ObjText_SetLinePitch(obj, 8);
 	ObjText_SetSidePitch(obj, -1);
 	ObjText_SetMaxWidth(obj, GetScreenWidth-32);
-	ObjText_SetFontBorderWidth(obj, 1);
-	ObjText_SetFontBorderColor(obj, 64, 64, 64);
-	ObjText_SetFontBorderType(obj, BORDER_SHADOW);
 	ObjText_SetText(obj, text);
+
+	ObjText_SetFontBorderType(obj, BORDER_FULL);
+	ObjText_SetFontBorderWidth(obj, 1);
+	// ObjText_SetFontBorderColor(obj, 64, 64, 64);
+	// ObjText_SetFontBorderColor(obj, 0, 0, 0);
+
+	let c = 64;
+	let v = 255-c;
+	
+	let t = (by+i*24)/GetScreenHeight; let T = 1-t;
+	t*=360; T*=360;
+	
+	let r = sin(t+0)  * 127 + 128;
+	let g = sin(t+120)* 127 + 128;
+	let b = sin(t+240)* 127 + 128;
+	
+	ObjText_SetFontColorTop(   obj, r,g,b);
+	ObjText_SetFontColorBottom(obj, r,g,b);
+	
+	// let R = (r/255 * g/255) * 255;
+	// let G = (g/255 * b/255) * 255;
+	// let B = (b/255 * r/255) * 255;
+	
+	let R = (r/255 * g/255 * b/512) * 255;
+	let G = (g/255 * b/255 * r/512) * 255;
+	let B = (b/255 * r/255 * g/512) * 255;
+	ObjText_SetFontBorderColor(obj,R,G,B);
 	
 	ObjText_SetAutoTransCenter(obj, false);
 	ObjText_SetTransCenter(obj, 0, 32);
-	// ObjRender_SetColor(obj, 255, 255, 255);
-	ObjRender_SetColor(obj, 128, 128, 128);
+	ObjRender_SetColor(obj, 255, 255, 255);
+	// ObjRender_SetColor(obj, 128, 128, 128);
 	
 	return obj;
 }
@@ -233,10 +261,363 @@ function ShowChoicesDisable(bx, by, disable_indexes, canceltype, t_priority){
 	let objSelects = MakeTextWindow(bx,by,texts,-1,canceltype,t_priority);
 	ascent(i in 0..length(objSelects)){
 		let obj = objSelects[i];
+		// ObjRender_SetColor(obj, 128,0,0);
 		ObjRender_SetColor(obj, 128,0,0);
 		ObjText_SetSidePitch(obj, 4);
 		ObjText_SetFontBold(obj,true);
 		ObjText_SetFontSize(obj,14);
 		ObjRender_SetY(obj,ObjRender_GetY(obj)+5);
+
+		ObjText_SetFontColorTop(obj,255,255,255);
+		ObjText_SetFontColorBottom(obj,255,255,255);
 	}
 }
+
+
+
+
+
+
+
+
+
+
+
+// function CreateSprite(x, y, img, source, priority){
+	// let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	// ObjPrim_SetTexture(obj, img);
+	// Obj_SetRenderPriorityI(obj, priority);
+	// ObjSprite2D_SetSourceRect(obj, source[0], source[1], source[2], source[3]);
+	// ObjSprite2D_SetDestCenter(obj);
+	// ObjRender_SetPosition(obj, x, y, 0);
+	// return obj;
+// }
+
+
+
+
+
+
+
+function MakeChoiceMainMenu(startindex){
+	let bx = 40;
+	let by = 200;
+	let priority = 10;
+	
+	let path = dirpack~"img/MenuSheet.png";
+	let pathback = dirpack~"img/SelectBack.png";
+	
+	let enable = [true,false,false,true,false,false,true,true,true];
+	
+	
+	let rects = [];
+	ascent(i in 0..9){
+		rects = rects ~ [ [0, 32*i, 255, 32*i+31] ];
+	}
+	
+	let objs = [];
+	ascent(i in 0..9){
+		let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+		ObjPrim_SetTexture(       obj, path);
+		Obj_SetRenderPriorityI(   obj, priority);
+		let r = rects[i];
+		ObjSprite2D_SetSourceRect(obj, r[0],r[1],r[2],r[3]);
+		ObjSprite2D_SetDestRect(obj,   bx+6*i,by+24*i,bx+255+6*i,by+24*i+31);
+		
+		ObjRender_SetColor(obj,128,128,128);
+		if(!enable[i]){ObjRender_SetColor(obj, 64, 64, 64);}
+		
+		objs=objs~[obj];
+	}
+	let backs = [];
+	ascent(i in 0..9){
+		let back = ObjPrim_Create(OBJ_SPRITE_2D);
+		ObjPrim_SetTexture(       back, pathback);
+		Obj_SetRenderPriorityI(   back, priority-1);
+		let r = rects[i];
+		ObjSprite2D_SetSourceRect(back, 0,0,255,31);
+		ObjSprite2D_SetDestRect(back,   bx+6*i,by+24*i,bx+196+6*i,by+24*i+31);
+		ObjRender_SetColor(back, 64,64,64);
+		backs=backs~[back];
+	}
+	
+	let bracksL = [];
+	let bracksR = [];
+	ascent(i in 0..9){
+		bracksL=bracksL~[MakeBracket(i,  0)];
+		bracksR=bracksR~[MakeBracket(i,196)];
+		
+	}
+
+	function MakeBracket(i,dx){
+		let brack = ObjPrim_Create(OBJ_SPRITE_2D);
+		ObjPrim_SetTexture(       brack, path);
+		Obj_SetRenderPriorityI(   brack, priority-1);
+		ObjSprite2D_SetSourceRect(brack, 577,129,591,143);
+		ObjSprite2D_SetDestCenter(brack);
+		// ObjRender_SetColor(brack, 128,128,128);
+		ObjRender_SetColor(brack, 64,64,64);
+		ObjRender_SetX(brack, bx+6*i+dx);
+		ObjRender_SetY(brack, by+3+24*i);
+		return brack;
+	}
+	
+	
+	
+	
+	let curs_dx =  0; //-6  //-12
+	let curs_dy =  9; //12
+	let cursor  = MakeCursorSprite;
+	let cursor2 = MakeCursorSprite;
+	ObjRender_SetColor(cursor, 128,128,128);
+	ObjRender_SetColor(cursor2,128,128,128);
+	
+	function MakeCursorSprite{
+		let cursor = ObjPrim_Create(OBJ_SPRITE_2D);
+		ObjPrim_SetTexture(cursor, path);
+		ObjSprite2D_SetSourceRect(cursor, 519,7,569,57);
+		ObjSprite2D_SetDestCenter(cursor);
+		Obj_SetRenderPriorityI(cursor,priority);
+		ObjRender_SetAlpha(cursor,0);
+		ObjRender_SetScaleXYZ(cursor,0.75,0.75,1);
+		ObjRender_SetX(cursor, bx +6*startindex+curs_dx);
+		// ObjRender_SetY(cursor, by+24*startindex+curs_dy);
+		ObjRender_SetY(cursor, -96);
+		return cursor;
+	}
+	ObjRender_SetX(cursor2, bx +6*startindex-curs_dx + 196);
+	
+	let select_count = length(objs);
+	let selectValue = startindex;
+	SetCommonData("SelectIndex",selectValue);
+	
+	FadeIn;
+	task FadeIn{
+		ascent(i in 0..30){ //8
+			let tmp = (i+1)/30;
+			ascent(i in 0..length(objs)){
+				ObjRender_SetAlpha(objs[i], tmp*255);
+				ObjRender_SetAlpha(backs[i], tmp*255);
+				ObjRender_SetAlpha(bracksL[i], tmp*255);
+				ObjRender_SetAlpha(bracksR[i], tmp*255);
+				ObjRender_SetAlpha(cursor,tmp*255);
+				ObjRender_SetAlpha(cursor2,tmp*255);
+			}
+			yield;
+		}
+	}
+	loop(8){yield;}
+	
+	let ani = 0;
+	let ani2 = 0;
+	
+	loop{
+		if(IsKey(VK_UP)) { 
+			SE_Play(se_select,100);
+			selectValue = (selectValue+select_count-1)%select_count;
+			SetCommonData("SelectIndex",selectValue);
+			ani=ani2;
+		}
+		else if(IsKey(VK_DOWN)) { 
+			SE_Play(se_select,100);
+			selectValue = (selectValue+1)%select_count; 
+			SetCommonData("SelectIndex",selectValue);
+			ani=ani2;
+		}
+		else if(IsKeyPush(VK_OK)) { 
+			// SE_Play(se_confirm,100); //do this in each option so some can be disabled
+			break; 
+		}
+		else if(IsKeyPush(VK_CANCEL)) {
+			SetCommonData("CancelIndex",selectValue);
+			SE_Play(se_cancel,100);
+			selectValue = select_count-1;
+		}
+		
+		ascent(i in 0..length(objs)){
+			if(selectValue == i) { 
+				ObjRender_SetColor(objs[i], 255, 255, 255);
+				ObjSprite2D_SetSourceRect(backs[i], 0-ani,0,255-ani%512,31);
+				ObjRender_SetColor(backs[i], 128, 128, 128);
+				Obj_SetVisible(bracksL[i],false); Obj_SetVisible(bracksR[i],false);
+			}
+			else { 
+				ObjRender_SetColor(objs[i], 128, 128, 128);
+				// ObjSprite2D_SetSourceRect(backs[i], 0-ani2,0,255-ani2,31);
+				ObjSprite2D_SetSourceRect(backs[i], 0,0,255,31);
+				ObjRender_SetColor(backs[i], 64,64,64);
+				Obj_SetVisible(bracksL[i],true);  Obj_SetVisible(bracksR[i],true);
+			}
+			if(!enable[i]){ObjRender_SetColor(objs[i], 64, 64, 64);}
+		}
+		
+		ani =  (ani +  2)%512;
+		ani2 = (ani2+0.5)%512;
+		let t = -cos(ani*180/64);		
+		ObjRender_SetX(cursor, bx +6*selectValue+curs_dx);
+		ObjRender_SetY(cursor, by+24*selectValue+16+curs_dy*t);
+		// ObjRender_SetAngleZ(cursor, 3*(ani2*360/512));
+		ObjRender_SetAngleZ(cursor, 3*(ani2*180/256));
+
+		// t =      cos(ani*180/64+196);
+		t = -cos(ani*180/64-64);
+		ObjRender_SetX(cursor2, bx +6*selectValue-curs_dx + 196);
+		ObjRender_SetY(cursor2, by+24*selectValue+16-t+curs_dy*t);
+		ObjRender_SetAngleZ(cursor2,3*(ani2*180/256)+180);
+		
+		yield;
+	}
+	
+	FadeOut;
+	task FadeOut{
+		descent(i in 0..8){
+			let tmp = (i+1)/8;
+			ascent(j in 0..length(objs)){
+				ObjRender_SetAlpha(objs[j],  tmp*255);
+				ObjRender_SetAlpha(backs[j], tmp*255);
+				ObjRender_SetAlpha(bracksL[j], tmp*255);
+				ObjRender_SetAlpha(bracksR[j], tmp*255);
+				ObjRender_SetAlpha(cursor,   tmp*255);
+				ObjRender_SetAlpha(cursor2,   tmp*255);
+			}
+			yield;
+		}
+		ascent(i in 0..length(objs)){Obj_Delete(objs[i]);}
+		ascent(i in 0..length(backs)){Obj_Delete(backs[i]);}
+		ascent(i in 0..length(bracksL)){Obj_Delete(bracksL[i]);}
+		ascent(i in 0..length(bracksR)){Obj_Delete(bracksR[i]);}
+		Obj_Delete(cursor);
+		Obj_Delete(cursor2);
+	}
+	
+	return( selectValue );
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function MakeManual(page){
+	let PageCount = 3;
+	// let priority = 10;
+	let priority = 10;
+	
+	let path = dirpack~"img/Manual_"~itoa(page)~".png";
+	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjPrim_SetTexture(       obj, path);
+	Obj_SetRenderPriorityI(   obj, priority);
+	ObjSprite2D_SetSourceRect(obj,0,0,640,480);
+	ObjSprite2D_SetDestRect(  obj,0,0,640,480);
+	
+	let shad = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjPrim_SetTexture(       shad, path);
+	Obj_SetRenderPriorityI(   shad, priority-1);
+	ObjSprite2D_SetSourceRect(shad,0,0,640,480);
+	ObjSprite2D_SetDestRect(  shad,2,2,642,482);
+	ObjRender_SetColor(shad,0,0,0);
+	
+	let pathbg = dirpack~"img/black.png";
+	let bg = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjPrim_SetTexture(       bg, pathbg);
+	Obj_SetRenderPriorityI(   bg, priority-2);
+	ObjSprite2D_SetSourceRect(bg,0,0,640,480);
+	ObjSprite2D_SetDestRect(  bg,0,0,640,480);
+	
+	
+	FadeIn;
+	task FadeIn{
+		ascent(i in 0..15){ //8
+			let tmp = (i+1)/15;
+			ObjRender_SetAlpha(obj,tmp*255);
+			ObjRender_SetAlpha(shad,tmp*255);
+			ObjRender_SetAlpha( bg,tmp*128);
+			yield;
+		}
+	}
+	loop(8){yield;}
+	
+	let next = -1;
+	
+	loop{
+		if(IsKeyPush(VK_LEFT) || IsKeyPush(VK_UP)) { 
+			if(page > 1){
+				SE_Play(se_confirm,100);
+				next = page-1;
+				break;
+			}else{
+				SE_Play(se_invalid,100);
+			}
+		}else if(IsKeyPush(VK_RIGHT) || IsKeyPush(VK_DOWN)) { 
+			if(page < PageCount){
+				SE_Play(se_confirm,100);
+				next = page+1;
+				break;
+			}else{
+				SE_Play(se_invalid,100);
+			}
+		}
+		else if(IsKeyPush(VK_CANCEL) || IsKeyPush(VK_OK)) {
+			SE_Play(se_cancel,100);
+			break;
+		}
+		
+		yield;
+	}
+	
+	FadeOut;
+	task FadeOut{
+		descent(i in 0..15){ //8
+			let tmp = (i+1)/15;
+			ObjRender_SetAlpha(obj,tmp*255);
+			ObjRender_SetAlpha(shad,tmp*255);
+			ObjRender_SetAlpha( bg,tmp*128);
+			yield;
+		}
+		Obj_Delete(obj);
+		Obj_Delete(shad);
+		Obj_Delete( bg);
+	}
+	
+	if(next!=-1){
+		MakeManual(next);
+	}
+	
+	return;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

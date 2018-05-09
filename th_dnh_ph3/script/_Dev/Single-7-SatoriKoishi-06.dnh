@@ -8,10 +8,10 @@
 
 #include "./Index.txt"
 
-let timer = 49; //37 //47
+// let timer = 49; //37 //47
 let drate = 24; //24
-let mlife = 3000; //2000
-let issurv = false;
+// let mlife = 3000; //2000
+// let issurv = false;
 
 let volumetweak = 1; //.75
 
@@ -24,10 +24,10 @@ let colorK = [128,255,128];
 
 @Event{
 	alternative(GetEventType())
-	case(EV_REQUEST_LIFE){				SetScriptResult(mlife);		}
+	case(EV_REQUEST_LIFE){				SetScriptResult(3000);		}
 	case(EV_REQUEST_SPELL_SCORE){		SetScriptResult(5000000);	}
-	case(EV_REQUEST_TIMER) {			SetScriptResult(timer);	    }
-	case(EV_REQUEST_IS_DURABLE_SPELL) {	SetScriptResult(issurv);	}
+	case(EV_REQUEST_TIMER) {			SetScriptResult(49);	    }
+	case(EV_REQUEST_IS_DURABLE_SPELL) {	SetScriptResult(false);	}
 }
 @Initialize{
 	if(noPlural){ 
@@ -89,8 +89,8 @@ task MainTask {
 	
 	
 	
-	ObjEnemyBossScene_StartSpell(objScene);
-	ObjEnemyBossScene_SetSpellTimer(objScene,timer*60); //5760
+	// ObjEnemyBossScene_StartSpell(objScene);
+	// ObjEnemyBossScene_SetSpellTimer(objScene,timer*60); //5760
 	
 	// SetCaution;
 	// TSpellImmune;

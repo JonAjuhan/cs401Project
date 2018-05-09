@@ -1,4 +1,5 @@
 // #include "./ExtendedDNF.txt"
+#include "./TypeFunctions.txt"
 
 let CSD = GetCurrentScriptDirectory;
 
@@ -205,64 +206,6 @@ function atost(n){
 	}
 } 
 
-///////////////////////////////////////////////
-//Primitive types
-let TYPE_INT = 9;
-let TYPE_REAL = 2; let TYPE_NUMBER = 2;
-let TYPE_BOOL = 2+10;
-let TYPE_CHAR = -1;
-let TYPE_ARRAY = 10;
-let TYPE_STRING = 3; //10+1;
-//Improved typeof function
-// -Lumps int and real together
-// -Distinguishes between array and string
-// -Distinguishes between real and bool
-// -Lump enemy and boss together
-function typeof(obj){
-	alternative(Obj_GetType(obj))
-	case(TYPE_INT){return TYPE_NUMBER;}
-	case(TYPE_REAL){
-		if(!(ToString(obj)!="true"&&ToString(obj)!="false")){return TYPE_BOOL;}
-		else{ return TYPE_NUMBER; }
-	}
-	case(TYPE_ARRAY){
-		if(length(obj) > 0){
-			let contents = typeof(obj[0]); //recursive
-			if(contents==TYPE_CHAR){return TYPE_STRING;}
-			else{return TYPE_ARRAY;}
-		}else{return TYPE_ARRAY;}
-	}
-	case(TYPE_CHAR){return TYPE_CHAR;}
-	case(OBJ_ENEMY,OBJ_ENEMY_BOSS){return OBJ_ENEMY;}
-	others{return Obj_GetType(obj);}
-}
-//////////////////////////////
-
-
-function cast(v,type){
-// let call = TraceHead(["v","t","Tv","Tt"],[tost(v),tost(type),tost(typeof(v)),tost(typeof(type))]);	
-	let r;
-	alternative(typeof(type))
-	case(TYPE_NUMBER){ 
-		let s = ToString(v); //for the sake of convenience
-		alternative(type)
-		case(TYPE_INT){     r = atoi(s); }
-		case(TYPE_REAL){    r = ator(s); }
-		case(TYPE_STRING){  r = s; }
-		case(TYPE_BOOL){    r = (s=="true" || atoi(s)!=0); }
-		case(TYPE_CHAR){    r = s[0]; }
-		others{ r = NULL; }
-	}
-	case(TYPE_ARRAY,TYPE_STRING){
-		if(length(type)>0){ r = cast(v,typeof(type[0])); }
-		else{ r = []; }
-	}
-	others{
-		r = NULL;
-	}
-// TraceTail(r,call);
-	return r;
-}
 
 
 

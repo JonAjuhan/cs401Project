@@ -6,6 +6,7 @@
 #include "./shot/AllStarShot_Const_Andi.txt"	//Rearranged version of AllStarShot
 #include "./Library/selibrary.txt"  //constants for sound effects
 #include "./Library/DirPaths.txt"	//Constants for directories and function to get root script directory
+#include "./Library/TypeFunctions.txt" //Allows working with types easily
 #include "./Library/Difficulty.txt"	//Difficulty system
 #include "./Library/MiscConstants.txt" //Misc constants: RPriorities,
 #include "./Library/EventList.txt" //Constants for events
@@ -24,7 +25,7 @@
 #include "./Library/ShaderFunctions.txt" //WIP
 //Other libraries
 #include "./Library/Dialogue.dnh" //Dialogue system
-#include "./Library/MagicCircle.txt" //kind of janky atm
+// #include "./Library/MagicCircle.txt" //kind of janky atm //replaced
 #include "./Library/LazyAlias.txt"	//shortened function names
 
 //Extra libraries

@@ -22,6 +22,7 @@ let dirlib = root~"/Library/";
 let dirimg = root~"/img/";
 let dirse = root~"/se/";
 let dirsys = root~"/system/";
+let dirpack = root~"/Package/";
 
 let dirgizmo = root~"/Gizmo's Touhou Boss Sprite Library/spriteimg/";
 let direffect = root~"/img/Effect/";

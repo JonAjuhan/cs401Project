@@ -37,9 +37,11 @@ let tR = 1/5;
 let alpha = 125;
 let value = 255; //brightness
 
+let Frame = 0;
+
 let objstagebg;
 
-// let frame = 0;
+// let Frame = 0;
 
 @Initialize {
 	// SetFogParam(100, 100, 255, 255, 255);
@@ -65,17 +67,17 @@ let objstagebg;
 		let args = GetEventArgument(0);
 		sMove = (args[0]!=0);
 	}
-	//Set R/P/Y at frame
+	//Set R/P/Y at Frame
 	case(EV_USER_STAGE+2) {
 		let args = GetEventArgument(0);
 		SetCameraAtFrame(args[0],args[1],args[2],args[3]);
 	}
-	//Set factors for movement of R/Y/P at frame
+	//Set factors for movement of R/Y/P at Frame
 	case(EV_USER_STAGE+3) {
 		let args = GetEventArgument(0);
 		SetCameraMoveAtFrame(args[0],args[1],args[2],args[3]);
 	}
-	//Set brightness at frame
+	//Set brightness at Frame
 	case(EV_USER_STAGE+4) {
 		let args = GetEventArgument(0);
 		SetBrightnessAtFrame(args[0],args[1]);
@@ -95,7 +97,7 @@ let objstagebg;
 	// }
 	bSpell = (objScene != ID_INVALID && ObjEnemyBossScene_GetInfo(objScene, INFO_IS_SPELL));
 	
-	frame++;
+	Frame++;
 	
 	yield;
 }  
@@ -145,14 +147,14 @@ task NormalBackground{
 		}
 		
 		if(sMove){
-			// Y += 0.01*sin(frame)*dY;
-			// Y += 0.01*sin(frame^2)*dY;
-			// P += 0.01*sin(frame/3)*dP;
-			// R += 0.01*sin(frame/5)*dR;
+			// Y += 0.01*sin(Frame)*dY;
+			// Y += 0.01*sin(Frame^2)*dY;
+			// P += 0.01*sin(Frame/3)*dP;
+			// R += 0.01*sin(Frame/5)*dR;
 			
-			Y += 0.01*sin(frame*tY)* dY *(|sin(frame*tY)|)^0.5;
-			P += 0.01*sin(frame*tP)* dP *(|sin(frame*tP)|)^0.5;
-			R += 0.01*sin(frame*tR)* dR *(|sin(frame*tR)|)^0.5;
+			Y += 0.01*sin(Frame*tY)* dY *(|sin(Frame*tY)|)^0.5;
+			P += 0.01*sin(Frame*tP)* dP *(|sin(Frame*tP)|)^0.5;
+			R += 0.01*sin(Frame*tR)* dR *(|sin(Frame*tR)|)^0.5;
 			
 			SetCameraYaw(Y);
 			SetCameraPitch(P);

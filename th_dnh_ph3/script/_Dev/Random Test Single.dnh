@@ -10,15 +10,19 @@
 #include "./Package/PackageFunctions.txt"
 #include "./Library/ExperimentalFunctions.txt"
 
+
 @Event
 {
 	alternative(GetEventType())
-	case(EV_REQUEST_LIFE){ SetScriptResult(1); }
+	case(EV_REQUEST_LIFE){              SetScriptResult(1000);         }
+	case(EV_REQUEST_SPELL_SCORE){       SetScriptResult(5000000);   }
+	case(EV_REQUEST_TIMER){             SetScriptResult(60);	    }
+	case(EV_REQUEST_IS_DURABLE_SPELL){  SetScriptResult(false);     }
 }
-@Initialize
-{
+@Initialize{
 
-	boss = CreateBossA1("Mystia Lorelai",[255,0,255]);
+	// boss = CreateBossA1("Mystia Lorelai",[255,0,255]);
+	boss = CreateBossA1("Flobadob Stumpypizzle",[255,0,255]);
 	renderMystiaIN(boss,1);
 	
 	MainTask;
@@ -26,6 +30,17 @@
 
 }
 @MainLoop{
+	
+	if(ObjEnemy_GetInfo(boss, INFO_LIFE) <= 0 && !finishing){
+		finishing = true;
+		DropItemsSpellEnd;
+		TBreakSpell([]);
+	}
+	else {
+		SetBossHitbox(boss,ex,ey);
+	}
+	
+	
 	frame++;yield;
 }
 
@@ -39,12 +54,63 @@ task MainTask {
 	ObjMove_SetDestAtWeight(boss,cx,120,60,20);
 	// SetShotAutoDeleteClip(8,8,8,8);
 	
+	// SetSpellCardA2(NAZRIN,dirlib~"Cutin/Cutin_Mystia.png");
+	// SetSpellCardA1("test sign \"test\"",[255,255,0],BYAKUREN,dirimg~"unzanface.png");
+	
+	// SetMagicCircleAlpha(NO_CHANGE,64);
+	// Obj_SetValue(boss,"MagicCircleColor",      [ 255,   0,   0]  );
+	// Obj_SetValue(boss,"MagicCircleGradient",   [-255, 255,-255]   );
+	Obj_SetValue(boss,"MagicCircleColor",      [ 255, 255,   0]  );
+	Obj_SetValue(boss,"MagicCircleGradient",   [   0, 255,   0]  );
+	Obj_SetValue(boss,"MagicCircleTweak_Ellipse",2);
+	Obj_SetValue(boss,"MagicCircleTweak_Rad",0.4);
+	// Obj_SetValue(boss,"MagicCircleCount",1);
+	Obj_SetValue(boss,"MagicCircleManageSeparate",true);
+	
+	Obj_SetValue(boss,FLAG_CHECK,true);
+	
+	TManageCircle;
+	task TManageCircle{
+		let i = 0;
+		while(!Obj_IsDeleted(boss)){
+			
+			// Obj_SetValue(boss,"MagicCircleColor"   ,   [ 128+128*cos(frame), 128+128*sin(frame),   0]  );
+			// Obj_SetValue(boss,"MagicCircleGradient",   [ 128+128*sin(frame), 128+128*cos(frame),   0]  );
+			
+			// ascent(i in 0..4){ //4
+				Obj_SetValue(boss,"MagicCircleColor"~itoa(i)   ,   [ 128+128*cos(frame), 128+128*sin(frame),   128+128*sin(frame+45*i) *cos(frame*i)    ]  );
+				Obj_SetValue(boss,"MagicCircleGradient"~itoa(i),   [ 128+128*sin(frame), 128+128*cos(frame),   128+128*sin(frame*(i+1))*cos(frame+45*i) ]  );
+			// }
+			
+			yield;
+			i++; i%=4;
+		}
+	}
+	
+	SetSpellCardA1("test sign \"test\"",[],BYAKUREN,dirimg~"unzanface.png");
+
+	yield;
+
+	// Obj_SetValue(GetPlayerObjectID,"MagicCircleShrinkWithTimer",false);
+	// Notify(SCRIPT_MAGICCIRCLE,EV_ADD_MAGICCIRCLE, [GetPlayerObjectID,0,  3, 0, 2, 100, 64,   255,  0,255  ] );
+	// Notify(SCRIPT_MAGICCIRCLE,EV_ADD_MAGICCIRCLE, [GetPlayerObjectID,1, -3,90, 2, 100, 64,     0,255,255  ] );
+	
+	// ascent(i in 0..4){
+		// NotifyEventAll(EV_ADD_MAGICCIRCLE, [GetPlayerObjectID,i,  3*(-0.75)^i, 45*i, 3, 300*(-0.75)^i,      64,  rand(0,255),rand(0,255),rand(0,255)  ] );		
+		// // Notify(SCRIPT_MAGICCIRCLE,EV_ADD_MAGICCIRCLE,[boss,i,  3*(-0.95)^i, 45*i, 2, 300,     64,  255,255,255  ] );
+	// }
+	// TMagicCircle(    boss,0, el*1.5*(-1)^i, 0+45*i,  2, rad, alpha, color);
+	
+	
+	
+	
+	
 	wait(30);
 	let a = 0;
 	let ang = 0;
 	
 	
-	DebugTrace(0,["","","","",""],[]);
+	DebugTrace(10,["","","","",""],[]);
 	let count=0;
 	loop{
 		// let s = 2;
@@ -109,11 +175,11 @@ task MainTask {
 				ObjStLaser_SetAngle(L_RX, getangle(r,yr,x,cy) );
 				ObjLaser_SetLength (L_RX, getdist (r,yr,x,cy) );
 				
-				if(GetVirtualKeyState(VK_SLOWMOVE)==KEY_PUSH){
-					SE_Play(se_flourish,40);
-					DebugTrace(20,["s0","a0","m0",""],[s0,a0,m0]);
-					DebugTrace(30,["s","a","m"],[s,a,m]);
-				}
+				// if(GetVirtualKeyState(VK_SLOWMOVE)==KEY_PUSH){
+					// SE_Play(se_flourish,40);
+					// DebugTrace(20,["s0","a0","m0",""],[s0,a0,m0]);
+					// DebugTrace(30,["s","a","m"],[s,a,m]);
+				// }
 				
 				yield; t++;
 			}

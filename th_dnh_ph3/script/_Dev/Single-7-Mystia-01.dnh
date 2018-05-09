@@ -17,7 +17,7 @@ let mlife = 2000; //2000
 	alternative(GetEventType())
 	case(EV_REQUEST_LIFE){				SetScriptResult(mlife);		}
 	case(EV_REQUEST_SPELL_SCORE){		SetScriptResult(5000000);	}
-	case(EV_REQUEST_TIMER) {			SetScriptResult(timer*60);	}
+	case(EV_REQUEST_TIMER) {			SetScriptResult(timer);	}
 	case(EV_REQUEST_IS_DURABLE_SPELL) {	SetScriptResult(false);		}
 }
 @Initialize
@@ -41,9 +41,7 @@ let mlife = 2000; //2000
 }
 @MainLoop
 {
-
-	if(ObjEnemy_GetInfo(boss, INFO_LIFE) <= 0 && !finishing)
-	{
+	if(ObjEnemy_GetInfo(boss, INFO_LIFE) <= 0 && !finishing){
 		finishing = true;
 		DropItemsSpellEnd;
 		TBreakSpell([]);
@@ -72,7 +70,11 @@ task MainTask {
 	//SetCaution;
 	// TSpellImmune;
 	Aura(boss,255,64,255,64);
-	SetMagicCircleAlpha(64,64);
+	SetMagicCircleAlpha(NO_CHANGE,64);
+	// Obj_SetValue(boss,"MagicCircleColor",[255,0,0]);
+	// Obj_SetValue(boss,"MagicCircleGradient",[255,-255,255]);
+	// Obj_SetValue(boss,"MagicCircleGradient",[-255,255,-255]);
+	Obj_SetValue(boss,FLAG_CHECK,false);
 
 	wait(90);
 		

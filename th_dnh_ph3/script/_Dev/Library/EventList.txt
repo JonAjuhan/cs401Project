@@ -1,4 +1,5 @@
-#include "./Resources.txt"
+// #include "./Resources.txt"
+#include "./TypeFunctions.txt"
 
 let EV_SPAWN_ITEM = EV_USER_SYSTEM+1;
 
@@ -12,7 +13,7 @@ let EV_RESUME_SONG = EV_USER_SYSTEM+13;
 let EV_START_SONG  = EV_USER_SYSTEM+14;
 let EV_DELETE_SONG = EV_USER_SYSTEM+15;
 
-let EV_START_BOSS = EV_USER_STAGE+10; //signal already-running plural to start boss
+let EV_START_BOSS  = EV_USER_STAGE+10; //signal already-running plural to start boss
 
 // let EV_CANCEL_PLAYER_DEATH = EV_USER_PLAYER+2; //NYI
 // let EV_GET_CONTINUE = EV_USER_PLAYER+2; //NYI
@@ -23,10 +24,18 @@ let EV_START_BOSS = EV_USER_STAGE+10; //signal already-running plural to start b
 //For a full list of built-in events, see:
 //http://www.geocities.co.jp/SiliconValley-Oakland/9951/pre/th_dnh_help_v3_data/description.html#Event
 
-let EV_FAIL_SPELL = EV_GAIN_SPELL+500; //since there doesn't seem to be one of these otherwise
+// let EV_FAIL_SPELL = EV_GAIN_SPELL+500; //since there doesn't seem to be one of these otherwise
+let EV_FAIL_SPELL = EV_USER_SYSTEM+66; //since there doesn't seem to be one of these otherwise
+
+// [centerObj, circleindex, rotspd,rotoff, distort, mRad, maxalpha, r,g,b]
+let EV_ADD_MAGICCIRCLE = EV_USER_SYSTEM+888; 
+
+
+let EV_REQUEST_RUN_SCRIPT = EV_USER_PACKAGE+17;
 
 
 
+//////////////////////////////////////////////////////////////////////////////////////////////
 
 let SCRIPT_ALL="";
 let SCRIPT_OWN=":p";

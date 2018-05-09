@@ -240,21 +240,32 @@ task CutinS3(Type, mimage, difficulty){
 		let Colors = [[r,g,b]];
 		
 		slots[num] = slots[num]+1;
-		
 		let isbeingdeleted = false;
+		
+		DEBUG = GetAreaCommonData("CONFIG","CheatEnable",false); 
+
 		
 		//These are long-looking common data group names
 		let SpellDataAttempt = SpellName~"|"~CutinDifficulty~"|"~GetPlayerID~"|"~"Attempt";
-		let SpellDataGet = SpellName~"|"~CutinDifficulty~"|"~GetPlayerID~"|"~"Get";
+		let SpellDataGet     = SpellName~"|"~CutinDifficulty~"|"~GetPlayerID~"|"~"Get";
 		//This is actually the common data retrieval
 		let SpellValueAttempt = GetAreaCommonData("cutin_History", SpellDataAttempt, 0);
-		let SpellValueGet = GetAreaCommonData("cutin_History", SpellDataGet, 0);
+		let SpellValueGet     = GetAreaCommonData("cutin_History", SpellDataGet,     0);
+		
+		//Still track history with cheats on, but separately
+		if(DEBUG){
+			SpellValueAttempt = GetAreaCommonData("cutin_History", SpellDataAttempt~"_Debug", SpellValueAttempt);
+			SpellValueGet     = GetAreaCommonData("cutin_History", SpellDataGet~"_Debug",     SpellValueGet);
+			SpellDataAttempt = SpellDataAttempt~"_Debug";
+			SpellDataGet     = SpellDataGet~"_Debug";
+			DEBUG = false; //temp
+		}
 		
 		
 		if(!IsReplay&&!DEBUG&&num==0){
-			SpellValueAttempt++;
+			SpellValueAttempt++; //
 			SetAreaCommonData("cutin_History", SpellDataAttempt, SpellValueAttempt);
-			SaveCommonDataAreaA1("cutin_History");
+			// SaveCommonDataAreaA1("cutin_History"); //Don't save it until the spell actually ends
 		}
 	
 	
@@ -282,7 +293,6 @@ task CutinS3(Type, mimage, difficulty){
 		let yoff = 0;
 		let newlines = length(ObjText_GetTextLengthCUL(SpellText))-1;
 		if(newlines>0){
-			// WriteLog("Newlines: "~itoa(newlines));
 			// ObjText_SetLinePitch(SpellText,0);
 			ObjText_SetLinePitch(SpellText,-2.5*(newlines/3));
 			let textheight = ObjText_GetTotalHeight(SpellText);
@@ -294,7 +304,8 @@ task CutinS3(Type, mimage, difficulty){
 		
 		
 		let SpellInfo = ObjPrim_Create(OBJ_SPRITE_LIST_2D);
-		let bonus = 0;
+		let sscore = ObjEnemyBossScene_GetInfo(GetEnemyBossSceneObjectID, INFO_SPELL_SCORE);
+		let bonus = sscore;
 		let count = GetNumSize(bonus);
 		let scount = max(2, GetNumSize(SpellValueAttempt));
 		ObjPrim_SetTexture(SpellInfo, SpellAttack_img);
@@ -409,39 +420,51 @@ task CutinS3(Type, mimage, difficulty){
 				DrawScoreBonus;
 				yield;
 			}
-			let timerf = ObjEnemyBossScene_GetInfo(GetEnemyBossSceneObjectID, INFO_ORGTIMERF);
-			let startdiff = timerf-(timerf-5*60);
-			while(!Obj_IsDeleted(boss) && !Obj_IsDeleted(SpellText)){
+			
+			let objScene = GetEnemyBossSceneObjectID;
+			
+			let otimerf = ObjEnemyBossScene_GetInfo(objScene, INFO_ORGTIMERF);
+			let startdiff = otimerf-(otimerf-5*60);
+			// while(!Obj_IsDeleted(boss) && !Obj_IsDeleted(SpellText)){
+			while(!Obj_IsDeleted(boss) && !Obj_IsDeleted(SpellText) && ObjEnemy_GetInfo(boss,INFO_LIFE) > 0 ){ //that did it
 				if(!isbeingdeleted){
 					ObjRender_SetAlpha(SpellBG, Alpha_HUD[0]);
 					ObjRender_SetAlpha(SpellText, Alpha_HUD[0]);
 				}
 				ObjRender_SetAlpha(SpellInfo, Alpha_HUD[0]);
 				
-			//	let modif = min(1, ((ObjEnemyBossScene_GetInfo(GetEnemyBossSceneObjectID, INFO_TIMERF))/(ObjEnemyBossScene_GetInfo(GetEnemyBossSceneObjectID, INFO_ORGTIMERF)-startdiff)));
-			//	bonus = ((sscore*0.20)+(sscore*((modif)*0.80)));
-				DrawScoreBonus;
+				if(num==0){
+					let timerf = ObjEnemyBossScene_GetInfo(objScene, INFO_TIMERF);
+					let modif = min(1, ((timerf) / (otimerf-startdiff)) );
+					bonus = ((sscore*0.20)+(sscore*((modif)*0.80)));
+					DrawScoreBonus;
+				}
+				// let modif = min(1, ((ObjEnemyBossScene_GetInfo(GetEnemyBossSceneObjectID, INFO_TIMERF))
+			                      // / (ObjEnemyBossScene_GetInfo(GetEnemyBossSceneObjectID, INFO_ORGTIMERF)-startdiff)));
+				
 				yield;
 			}
 			Obj_Delete(SpellText); //added
 			Obj_Delete(SpellInfo);
 			
-			if(bonus>=1&&ObjEnemyBossScene_GetInfo(GetEnemyBossSceneObjectID, INFO_TIMERF)>0){
-			//	GotSpellCard(bonus);
-			//	AddScore(bonus);
+			if(bonus>0 && ObjEnemyBossScene_GetInfo(GetEnemyBossSceneObjectID, INFO_TIMERF)>0){
+				// GotSpellCard(bonus);
+				// AddScore(bonus);
 				if(!IsReplay&&!DEBUG&&num==0){
 					SpellValueGet++;
 					SetAreaCommonData("cutin_History", SpellDataGet, SpellValueGet);
-					SaveCommonDataAreaA1("cutin_History");
+					// SaveCommonDataAreaA1("cutin_History");
 				}
 			}else{
-			//	FailedSpellCard;
+				// FailedSpellCard;
 			}
+			SaveCommonDataAreaA1("cutin_History");
 		}
 		
 	
 		sub DrawScoreBonus{
-			if(GetPlayerY<128+32*length(spells)){Alpha_HUD[0] = max(Alpha_HUD[0]-10, 85);}else{Alpha_HUD[0] = min(Alpha_HUD[0]+11, 255);}
+			if(GetPlayerY < 128+32*length(spells)){ Alpha_HUD[0] = max(Alpha_HUD[0]-10, 85); }
+			else{ Alpha_HUD[0] = min(Alpha_HUD[0]+11, 255); }
 			
 			ObjSpriteList2D_ClearVertexCount(SpellInfo);
 				
@@ -450,12 +473,13 @@ task CutinS3(Type, mimage, difficulty){
 			ObjRender_SetX(SpellInfo, 382-130);
 			ObjSpriteList2D_AddVertex(SpellInfo);
 			//Bonus Score
-			bonus = ObjEnemyBossScene_GetInfo(GetEnemyBossSceneObjectID, INFO_SPELL_SCORE);
+			// bonus = ObjEnemyBossScene_GetInfo(GetEnemyBossSceneObjectID, INFO_SPELL_SCORE);
+			// bonus = 10*trunc(bonus/10); //ensure ones digit is zero
 			count = GetNumSize(bonus);
-			let listNum = DigitToArray(min(99999999, bonus), count);
+			let listNum = DigitToArray(min(99999999, 10*trunc(bonus/10)), count);
 			let objScene = GetEnemyBossSceneObjectID;
 			if(ObjEnemyBossScene_GetInfo(objScene, INFO_PLAYER_SHOOTDOWN_COUNT) +
-			ObjEnemyBossScene_GetInfo(objScene, INFO_PLAYER_SPELL_COUNT) == 0){
+			   ObjEnemyBossScene_GetInfo(objScene, INFO_PLAYER_SPELL_COUNT)      == 0 ) {
 				ascent(iObj in 0 .. count){
 					let num = listNum[iObj];
 					ObjRender_SetX(SpellInfo, 382-94-(8*count) + iObj * 7);
