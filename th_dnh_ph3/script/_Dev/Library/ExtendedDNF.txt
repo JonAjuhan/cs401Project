@@ -77,7 +77,7 @@ let COL_SCALE = "CollisionScale";
 //////////////////////////////////////////////////////////////////////////////
 
 function O_SetProperty(obj,k,v){
-	if(typeof(v)==TYPE_NUMBER&&v==NO_CHANGE){O_SetProperty(obj,k,O_GetProperty(obj,k));return;}
+	if(typeof(v)==TYPE_CHAR && v==NO_CHANGE){ O_SetProperty(obj,k,O_GetProperty(obj,k));return;}
 	alternative(k)
 	case(FLAG_INTERSECTION){ Obj_SetValue(obj,FLAG_INTERSECTION,v); if(O_GetType(obj)==OBJ_SHOT){ObjShot_SetIntersectionEnable(obj,v);} }
 	case(FLAG_SPELLRESIST){ Obj_SetValue(obj,FLAG_SPELLRESIST,v); if(O_GetType(obj)==OBJ_SHOT){ObjShot_SetSpellResist(obj,v);} }

@@ -1,0 +1,355 @@
+//TODO! Have Satori's eye on the sidebar during gameplay, and Koishi's during replay
+
+//Also, make a single where this eye attacks the player.
+
+
+let ShowEye = true;
+let EyeClosed = false;
+let EyeMoving = false;
+
+let EyeEntered = false;
+
+let eyex0 = 458;
+let eyey0 = 258;
+let eyex;
+let eyey;
+
+let eye;
+let open;
+let veins;
+
+
+task SatoriEye{
+
+	let veinpath = dirpack~"img/TitleVeinsOnly.png";
+	let eyepath = dirpack~"img/TitleEyeHor.png";
+	
+	let recteye     = [376,176,562,360]; //186, 184
+	let recteyeball = [180,  7,359,187]; //180, 180
+	let recteyeslit = [180,213,359,393]; //180, 180
+	
+	
+	
+	eyex0 = 458;
+	eyey0 = 258;
+	eyex=eyex0;
+	eyey=eyey0;
+	
+	let aEye0 = -45;
+	let aEye1 = 5;
+	let aEye = aEye0;
+	
+	let blinking = false;
+	
+	// let dest = [ 0-eyex-0,0-eyey-120,639-eyex+30,479-eyey+30 ];
+	let dest = [ 0-eyex-0,0-eyey-120,639-eyex+30,479-eyey+30 ];
+	
+	
+	
+	function CreateVeinSprite(i){
+		let vein = ObjPrim_Create(OBJ_SPRITE_2D);
+		ObjPrim_SetTexture(vein, dirpack~"img/TitleVein"~itoa(i)~".png");
+		Obj_SetRenderPriorityI(vein, 1);
+		ObjSprite2D_SetSourceRect(vein, 0,0,639,479);
+		// ObjSprite2D_SetDestRect(vein,   0,0,639,479);
+		//Draw a bit past the edges of the screen to avoid seeing edge when moving
+		ObjSprite2D_SetDestRect(vein,   dest[0],dest[1],dest[2],dest[3]);
+		ObjRender_SetPosition(vein,eyex,eyey,0);
+		return vein;
+	}
+	veins = [];
+	ascent(i in 0..6){
+		veins = veins ~ [ CreateVeinSprite(i+1) ];
+		Obj_SetVisible(veins[i],false);
+	}
+	
+	eye = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjPrim_SetTexture(eye, eyepath);
+	Obj_SetRenderPriorityI(eye, 3);
+	// ObjSprite2D_SetSourceRect(eye, 376,176,562,360);
+	ObjSprite2D_SetSourceRect(eye, recteyeball[0],recteyeball[1],recteyeball[2],recteyeball[3]);
+	ObjSprite2D_SetDestCenter(eye);
+	ObjRender_SetX(eye,eyex);
+	ObjRender_SetY(eye,eyey);
+	Obj_SetVisible(eye,false);
+	
+	open = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjPrim_SetTexture(open, eyepath);
+	Obj_SetRenderPriorityI(open, 3);
+	ObjSprite2D_SetSourceRect(open, recteyeslit[0],recteyeslit[1],recteyeslit[2],recteyeslit[3]);
+	ObjSprite2D_SetDestCenter(open);
+	ObjRender_SetX(open,eyex);
+	ObjRender_SetY(open,eyey);
+	Obj_SetVisible(open,false);
+	
+	while(!EyeEntered){yield;}
+	
+	
+	
+	
+	
+	TiltEye; //Tilt to initial angle
+	
+	GapeEye;
+	BlinkEye;
+	TwitchVeins;
+	ascent(i in 0..6){SwayVein(i);}
+	loop(120){yield;}
+	SwivEye;
+	
+	
+	
+	while(ShowEye){yield;}
+	
+	Obj_Delete(eye);
+	Obj_Delete(open);
+	ascent(i in 0..length(veins)){ Obj_Delete(veins[i]); }
+	
+	
+	
+	
+	//--------------------------------------
+	
+	
+	
+	
+	
+	task TiltEye{ //Initial tilt
+		let i = 0;
+		while(aEye < aEye1){
+			let t = sin(i/120*90);
+			aEye += 45/120*t;
+			ObjRender_SetAngleZ(eye,aEye);
+			ObjRender_SetAngleZ(open,aEye);
+			yield; i++;
+		}
+	}
+	
+	
+	task BlinkEye{
+		loop( 240 * rand(0.5,1)^0.5 ){ yield; }
+		while(ShowEye){
+			// let ys = rand(0.9,0.6);
+			let ys = rand(0.9,0.6)^0.5;
+			let s0 = ObjRender_GetScaleY(open);
+			if(!EyeClosed){
+				blinking=true;
+				ascent(i in 0..15){
+					let t = sin(i/15*180);
+					ObjRender_SetScaleY(open, s0-s0*ys*t);
+					yield;
+				}
+				yield;
+				blinking=false;
+			}
+			loop( 240 * rand(0.5,1)^0.5 ){ yield; }
+		}
+	}
+	
+	task GapeEye{
+		while(ShowEye){
+			let s0 = ObjRender_GetScaleY(open);
+			let ys = rand(0.5,1.5);
+			let ds = ys-s0;
+			if(!blinking && !EyeClosed){
+				ascent(i in 0..15){
+					let t = sin(i/30*180);
+					ObjRender_SetScaleY(open, s0+ds*t);
+					yield;
+				}
+			}
+			yield;
+			loop( 240 * rand(0,1)^0.5 ){ yield; }
+		}
+	}
+	
+	task SwivEye{
+		loop( 120 * rand(0,1)^0.5 ){ yield; }
+		while(ShowEye){
+			let a0 = ObjRender_GetAngleZ(eye);
+			let a1 = aEye1 + rand(-20,20);
+			let da = a1-a0;
+			let T = round(rand(5,30) / rand(0.5,1)^0.5 );
+			if(!blinking){
+				ascent(i in 0..T){
+					let t = sin(i/T*90);
+					aEye = a0+da*t;
+					ObjRender_SetAngleZ(eye,  aEye);
+					ObjRender_SetAngleZ(open, aEye);
+					yield;
+				}
+			}
+			yield;
+			loop( 120 * rand(0,1)^0.5 ){ yield; }
+		}
+	}
+	
+	
+	
+	task TwitchVeins{
+		while(ShowEye){
+			let x1 = ( eyex0+rand(-20,20) + eyex )/2;
+			let y1 = ( eyey0+rand(-20,20) + eyey )/2;
+			// let T = round(rand(15,30));
+			// let T = round(rand(15,60)^0.5);
+			let T = round(60*rand(0.25,1)^0.5);
+			
+			if(!EyeMoving){
+				SetEyeDestAtFrame(x1,y1,T);
+				loop(T){yield;}
+			}
+			
+			yield;
+			// loop( 120 * rand(0.25,1)^2 ){ yield; }
+			// loop( ( (120 * rand(0.25,1)^2) + (120-T) )/2 ){ yield; }
+			loop( ( (120 * rand(0.25,1)^2) + (120-rand(0.25,0.75)*T) )/2 ){ yield; }
+		}
+	}
+	
+	
+	task SwayVein(j){
+		let vein = veins[j];
+		while(ShowEye){
+			
+			let a1 = rand(-5,5);
+			let a0 = ObjRender_GetAngleZ(veins[j]);
+			let da = a1-a0;
+			let T = round(rand(15,90) / rand(0.5,1)^0.5 );
+			
+			ascent(i in 0..T){
+				let t = sin(i/T*90);
+				
+				ObjRender_SetAngleZ(vein,a0+da*t);
+				yield;
+			}
+			yield;
+			loop( 120 * rand(0,1)^0.5 ){ yield; }
+		}
+	}
+	
+}
+
+
+
+
+
+//Rotate onto screen
+function EnterEye{
+	ascent(i in 0..6){Obj_SetVisible(veins[i],true);}
+	Obj_SetVisible(eye,true); Obj_SetVisible(open,true);
+	ascent(i in 0..120){
+		let t = (1-(i+1)/120)^2;
+		let a = -60*t;
+		let s = 1+2*t;
+		
+		function rotate(x,y,a){return [x*cos(a)-y*sin(a), x*sin(a)+y*cos(a)];}
+		let p = rotate(eyex0+GetScreenWidth*t,eyey0,a);
+		
+		ascent(j in 0..6){
+			ObjRender_SetPosition(veins[j],p[0],p[1],0);
+			ObjRender_SetAngleZ(  veins[j],a);
+			ObjRender_SetScaleXYZ(veins[j],s,s,1);
+		}
+		ObjRender_SetPosition(eye ,p[0],p[1],0);
+		ObjRender_SetAngleZ(  eye ,a-45);
+		ObjRender_SetScaleXYZ(eye ,s,s,1);
+		ObjRender_SetPosition(open,p[0],p[1],0);
+		ObjRender_SetAngleZ(  open,a-45);
+		ObjRender_SetScaleXYZ(open,s,s,1);
+		
+		yield;
+	}
+	EyeEntered = true;
+}
+
+
+
+//Close eye before loading, reopen after
+function CloseEye(time){
+	EyeClosed=true;
+	let s0 = ObjRender_GetScaleY(open);
+	Obj_SetValue(open,"ReopenScale",s0);
+	let ys = 0.9;
+	ascent(i in 0..time){
+		let t = sin(i/time*90);
+		ObjRender_SetScaleY(open, s0-s0*ys*t);
+		yield;
+	}
+}
+function OpenEye(time){
+	let s0 = Obj_GetValueD(open,"ReopenScale",1);
+	Obj_DeleteValue(open,"ReopenScale");
+	let ys = 0.9;
+	descent(i in 0..time){
+		let t = sin(i/time*90);
+		ObjRender_SetScaleY(open, s0-s0*ys*t);
+		yield;
+	}
+	yield;
+	EyeClosed=false;
+}
+
+function MoveEyeToSidebar{
+	eyex0 = 458 + 60;
+	eyey0 = 258 + 90;
+	SetEyeDestAtFrame(458 + 60, 258 + 90, 30);
+}
+function MoveEyeFromSidebar{
+	eyex0 = 458;
+	eyey0 = 258;
+	SetEyeDestAtFrame(458 +  0, 258 +  0, 30);
+}
+
+
+//TODO: Make veins into trianglestrips with one end fixed to edge of screen
+//and the rest stretching to eye
+
+//TODO: Use render targets to bulge veins toward eye?
+
+let ChangedEyeDest = false;
+
+task SetEyeDestAtFrame(x1,y1,T){
+	ChangedEyeDest = true;
+	let x0 = ObjRender_GetX(eye); let y0 = ObjRender_GetY(eye);
+	// let dx = x1 - x0;
+	// let dy = y1 - y0;
+	
+	let xs0 = 1+(|ObjRender_GetScaleX(veins[0]) - 1|); 
+	let ys0 = 1+(|ObjRender_GetScaleY(veins[0]) - 1|);
+	let dxs = x1/x0 - xs0;
+	let dys = y1/y0 - ys0;
+	// let xs = dxs + xs0 - 1.1;
+	// let ys = dys + ys0 - 1.1;
+	
+	ascent(i in 0..T){
+		// let t = sin(i/T*90);
+		let t = sin(i/T*90) * cos((T-i)/T*45);
+		
+		let dx = x1 - eyex;
+		let dy = y1 - eyey;
+		
+		eyex = (  (eyex+dx*t) + ((eyex + eyex0*(xs0+dxs*t))/2)  ) / 2;
+		eyey = (  (eyey+dy*t) + ((eyey + eyey0*(ys0+dys*t))/2)  ) / 2;
+		
+		
+		// dx = eyex-458; dy = eyey - 258;
+
+		ascent(j in 0..6){
+			ObjRender_SetX(veins[j],  eyex);
+			ObjRender_SetY(veins[j],  eyey);
+			
+			ObjRender_SetScaleX(veins[j],1+(|sin(eyex*10)*0.05|));
+			ObjRender_SetScaleY(veins[j],1+(|sin(eyey*10)*0.05|));
+		}
+		
+		ObjRender_SetX(eye,  eyex );
+		ObjRender_SetY(eye,  eyey );
+		ObjRender_SetX(open, eyex );
+		ObjRender_SetY(open, eyey );
+		
+		ChangedEyeDest=false;
+		yield;
+		if(ChangedEyeDest){break;}
+	}
+}
+

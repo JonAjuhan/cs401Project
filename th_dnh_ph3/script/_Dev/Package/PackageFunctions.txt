@@ -216,27 +216,34 @@ function MakeMenuText(bx, by, index, text, t_priority){
 	// ObjText_SetFontBorderColor(obj, 64, 64, 64);
 	// ObjText_SetFontBorderColor(obj, 0, 0, 0);
 
-	let c = 64;
-	let v = 255-c;
 	
-	let t = (by+i*24)/GetScreenHeight; let T = 1-t;
-	t*=360; T*=360;
+	//--------------------------------------------
+	//While somewhat pretty, this is horrendous.
+	//Retained for possible use elsewhere,
+	//but white text is much more readable!
+	// let c = 64;
+	// let v = 255-c;
 	
-	let r = sin(t+0)  * 127 + 128;
-	let g = sin(t+120)* 127 + 128;
-	let b = sin(t+240)* 127 + 128;
+	// let t = (by+i*24)/GetScreenHeight; let T = 1-t;
+	// t*=360; T*=360;
 	
-	ObjText_SetFontColorTop(   obj, r,g,b);
-	ObjText_SetFontColorBottom(obj, r,g,b);
+	// let r = sin(t+0)  * 127 + 128;
+	// let g = sin(t+120)* 127 + 128;
+	// let b = sin(t+240)* 127 + 128;
 	
-	// let R = (r/255 * g/255) * 255;
-	// let G = (g/255 * b/255) * 255;
-	// let B = (b/255 * r/255) * 255;
+	// ObjText_SetFontColorTop(   obj, r,g,b);
+	// ObjText_SetFontColorBottom(obj, r,g,b);
 	
-	let R = (r/255 * g/255 * b/512) * 255;
-	let G = (g/255 * b/255 * r/512) * 255;
-	let B = (b/255 * r/255 * g/512) * 255;
-	ObjText_SetFontBorderColor(obj,R,G,B);
+	// let R = (r/255 * g/255 * b/512) * 255;
+	// let G = (g/255 * b/255 * r/512) * 255;
+	// let B = (b/255 * r/255 * g/512) * 255;
+	// ObjText_SetFontBorderColor(obj,R,G,B);
+	//--------------------------------------------
+	
+	ObjText_SetFontColorTop(   obj,255,255,255);
+	ObjText_SetFontColorBottom(obj,255,255,255);
+	ObjText_SetFontBorderColor(obj,0,0,0);
+	
 	
 	ObjText_SetAutoTransCenter(obj, false);
 	ObjText_SetTransCenter(obj, 0, 32);
@@ -283,19 +290,6 @@ function ShowChoicesDisable(bx, by, disable_indexes, canceltype, t_priority){
 
 
 
-// function CreateSprite(x, y, img, source, priority){
-	// let obj = ObjPrim_Create(OBJ_SPRITE_2D);
-	// ObjPrim_SetTexture(obj, img);
-	// Obj_SetRenderPriorityI(obj, priority);
-	// ObjSprite2D_SetSourceRect(obj, source[0], source[1], source[2], source[3]);
-	// ObjSprite2D_SetDestCenter(obj);
-	// ObjRender_SetPosition(obj, x, y, 0);
-	// return obj;
-// }
-
-
-
-
 
 
 
@@ -307,16 +301,16 @@ function MakeChoiceMainMenu(startindex){
 	let path = dirpack~"img/MenuSheet.png";
 	let pathback = dirpack~"img/SelectBack.png";
 	
-	let enable = [true,false,false,true,false,false,true,true,true];
+	let enable = [true,GetAreaCommonData("SCORE","ExtraUnlocked",false),true,true,false,false,false,true,true,true];
 	
 	
 	let rects = [];
-	ascent(i in 0..9){
+	ascent(i in 0..10){
 		rects = rects ~ [ [0, 32*i, 255, 32*i+31] ];
 	}
 	
 	let objs = [];
-	ascent(i in 0..9){
+	ascent(i in 0..10){
 		let obj = ObjPrim_Create(OBJ_SPRITE_2D);
 		ObjPrim_SetTexture(       obj, path);
 		Obj_SetRenderPriorityI(   obj, priority);
@@ -330,7 +324,7 @@ function MakeChoiceMainMenu(startindex){
 		objs=objs~[obj];
 	}
 	let backs = [];
-	ascent(i in 0..9){
+	ascent(i in 0..10){
 		let back = ObjPrim_Create(OBJ_SPRITE_2D);
 		ObjPrim_SetTexture(       back, pathback);
 		Obj_SetRenderPriorityI(   back, priority-1);
@@ -343,7 +337,7 @@ function MakeChoiceMainMenu(startindex){
 	
 	let bracksL = [];
 	let bracksR = [];
-	ascent(i in 0..9){
+	ascent(i in 0..10){
 		bracksL=bracksL~[MakeBracket(i,  0)];
 		bracksR=bracksR~[MakeBracket(i,196)];
 		
@@ -619,5 +613,191 @@ function MakeManual(page){
 
 
 
+function MakeChoicePaged(bx, by, select_texts, startindex, perpage, canceltype, t_priority){
+	let baseWidth = GetStgFrameWidth;
+	let baseHeight = 96;
+	let baseX = GetStgFrameLeft;
+	let baseY = GetStgFrameTop + GetStgFrameHeight - baseHeight;
+	let baseTextX = baseX+16;
+	let baseTextY = baseY+10;
+	
+	let select_count = length(select_texts);
+	let page_count = ceil(select_count/perpage);
+	
+	let selectValue = startindex;
+	let selectPage = floor(startindex/perpage);
+	SetCommonData("SelectIndex",selectValue);
+	
+	let objSelects = [];
+	ascent(i in 0..select_count){
+		// let obj = MakeMenuText(bx+2*(i%perpage)+24*floor(i/perpage),by,i%perpage,select_texts[i],t_priority);
+		let obj = MakeMenuText(bx+1*(i%perpage),by,i%perpage,select_texts[i],t_priority);
+		ObjRender_SetColor(obj,128,128,128);
+		// Obj_SetVisible(obj,false);
+		objSelects = objSelects ~ [obj];
+	}
+	SetCommonData("obj",objSelects); //can retrieve it from another task
+	
+	let objPageIcons = [];
+	ascent(i in 0..page_count){
+		let obj = MakeSprite(dirpack~"img/MenuSheet.png",t_priority,[577,129,591,143],[7,7]);
+		ObjRender_SetPosition(obj, bx + 24*i, by-16, 0);
+		ObjRender_SetColor(obj,128,128,128);
+		// if(i!=selectPage){ ObjRender_SetColor(obj,128,128,128); }else{ ObjRender_SetColor(obj,255,255,255); }
+		objPageIcons = objPageIcons ~ [obj];
+	}
+	
+	
+	let bg = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjPrim_SetTexture(       bg, dirpack~"img/black.png");
+	Obj_SetRenderPriorityI(   bg, t_priority-1);
+	ObjSprite2D_SetSourceRect(bg,0,0,640,480);
+	ObjSprite2D_SetDestRect(  bg,0,0,640,480);
+	
+	FadeinBG;
+	task FadeinBG{
+		ascent(i in 0..8){
+			ObjRender_SetAlpha( bg,(i+1)/8*128);
+			yield;
+		}
+	}
+	
+	
+	
+	
+	sub FadeinPage{
+		selectPage = floor(selectValue/perpage);
+		ascent(i in 0..length(objPageIcons)){
+			let obj=objPageIcons[i];
+			if(i!=selectPage){ ObjRender_SetColor(obj,128,128,128); }else{ ObjRender_SetColor(obj,255,255,255); }
+		}
+		ascent(i in 0..8){
+			let tmp = (i+1)/8;
+			ascent(i in 0..length(objSelects)){
+				Obj_SetVisible(objSelects[i], floor(i/perpage)==selectPage);
+				ObjRender_SetAlpha(objSelects[i], tmp*255);
+			}
+			yield;
+		}
+	}
+	
+	FadeinPage;
+	
+	loop{
+		if(IsKey(VK_UP)) { 
+			SE_Play(se_select,100);
+			// selectValue = (selectValue+select_count-1)%select_count;
+			selectValue = selectPage*perpage+(selectValue%perpage+perpage-1)%perpage;
+			SetCommonData("SelectIndex",selectValue);
+			if(floor(selectValue/perpage)!=selectPage){FadeinPage;}
+		}
+		else if(IsKey(VK_DOWN)) { 
+			SE_Play(se_select,100);
+			// selectValue = (selectValue+1)%select_count; 
+			selectValue = selectPage*perpage+(selectValue%perpage+1)%perpage;
+			SetCommonData("SelectIndex",selectValue);
+			if(floor(selectValue/perpage)!=selectPage){FadeinPage;}
+		}
+		else if(IsKey(VK_RIGHT)) { 
+			SE_Play(se_select,100);
+			// if(selectPage < page_count-1){ selectValue = min(selectValue+perpage, select_count-1); }
+			// selectValue = (selectValue+perpage)%select_count;
+			let prevPage = selectPage;
+			selectPage = (selectPage+1)%page_count;
+			selectValue = min(select_count-1, selectPage*perpage + selectValue%perpage);
+			
+			SetCommonData("SelectIndex",selectValue);
+			// if(floor(selectValue/perpage)!=selectPage){FadeinPage;}
+			if(selectPage!=prevPage){FadeinPage;}
+		}
+		else if(IsKey(VK_LEFT)) { 
+			SE_Play(se_select,100);
+			// if(selectPage > 0){            selectValue = max(selectValue-perpage, selectValue%perpage ); }
+			// selectValue = (selectValue+select_count-perpage)%select_count;
+			let prevPage = selectPage;
+			selectPage = (selectPage+page_count-1)%page_count;
+			selectValue = min(select_count-1, selectPage*perpage + selectValue%perpage);
+			
+			SetCommonData("SelectIndex",selectValue);
+			// if(floor(selectValue/perpage)!=selectPage){FadeinPage;}
+			if(selectPage!=prevPage){FadeinPage;}
+		}
+		else if(IsKeyPush(VK_OK)) { 
+			// SE_Play(se_confirm,100); //do this in each option so some can be disabled
+			break; 
+		}
+		else if(IsKeyPush(VK_CANCEL)) {
+			SetCommonData("CancelIndex",selectValue);
+			if(canceltype!=3){ SE_Play(se_cancel,100); }
+			else{ SE_Play(se_invalid,100); }
+			alternative(canceltype)
+			case(CANCEL_CLOSE){ selectValue = -1; break; } //close menu
+			case(CANCEL_SELECTFIRST){ selectValue = 0; }
+			case(CANCEL_SELECTLAST){ selectValue = select_count-1; } //select last option
+			case(CANCEL_CONFIRMLAST){ //select last option, then confirm it
+				if(selectValue != select_count-1){ selectValue = select_count-1; }
+				else{ break; }
+			}
+			case(3){ } //disable cancel
+		}
+		
+		if(startindex!=-1){
+			ascent(i in 0..length(objSelects)){
+				if (selectValue == i) { ObjRender_SetColor(objSelects[i], 255, 255, 255); }
+				else { ObjRender_SetColor(objSelects[i], 128, 128, 128); }
+			}
+		}
+		yield;
+	}
+	
+	FadeOut;
+	task FadeOut{
+		descent(i in 0..8){
+			let tmp = (i+1)/8;
+			ascent(j in 0..length(objSelects)){
+				ObjRender_SetAlpha(objSelects[j], tmp*255);
+			}
+			ascent(j in 0..length(objPageIcons)){
+				ObjRender_SetAlpha(objPageIcons[j], tmp*255);
+			}
+			yield;
+			ObjRender_SetAlpha( bg,(i+1)/8*128);
+		}
+		ascent(i in 0..length(objSelects)){Obj_Delete(objSelects[i]);}
+		ascent(i in 0..length(objPageIcons)){Obj_Delete(objPageIcons[i]);}
+		Obj_Delete(bg);
+	}
+	
+	return( selectValue );
+}
 
+
+
+
+
+
+
+
+// function CreateSprite(x, y, img, source, priority){
+	// let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	// ObjPrim_SetTexture(obj, img);
+	// Obj_SetRenderPriorityI(obj, priority);
+	// ObjSprite2D_SetSourceRect(obj, source[0], source[1], source[2], source[3]);
+	// ObjSprite2D_SetDestCenter(obj);
+	// ObjRender_SetPosition(obj, x, y, 0);
+	// return obj;
+// }
+
+
+
+
+
+function MakeSprite (texture, priorityInt, source, center ) {
+	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjPrim_SetTexture(obj, texture);
+	Obj_SetRenderPriorityI(obj, priorityInt);
+	ObjSprite2D_SetSourceRect(obj, source[0], source[1], source[2], source[3]);
+	ObjSprite2D_SetDestRect(  obj, -center[0], -center[1], source[2]-source[0]-center[0], source[3]-source[1]-center[1]);
+	return obj;
+}
 

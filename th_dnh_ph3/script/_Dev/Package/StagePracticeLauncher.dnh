@@ -6,7 +6,7 @@
 
 #include "./../Index.txt"
 #System["./../system/Andi_System.txt"]
-#Background["./../system/Background/Satori/BG_work.txt"]
+#Background["./../system/Background/Satori/BG_work.txt"] //todo: determine background of provided script
 
 
 // let bossScript;
@@ -33,6 +33,8 @@
 	
 	if(GetScriptArgumentCount > 0){
 		RunScript(GetScriptArgument(0));
+	}else{
+		TWaitForScript;
 	}
 	
 }
@@ -53,6 +55,18 @@
 		RunScript(args);
 	}
 }
+
+
+
+task TWaitForScript{
+	let path = GetCommonData("PracticeScriptPath","");
+	while(path==""){yield; GetCommonData("PracticeScriptPath",""); }
+	RunScript([path]);
+}
+
+
+
+
 
 task RunScript(args){
 	let path = args[0];
@@ -80,12 +94,6 @@ task RunScript(args){
 	CloseStgScene();
 	CloseScript(GetOwnScriptID());
 	
-	
-	// let id = LoadScript(path);
-	// StartScript(id);
-	// while(!IsCloseScript(id)){yield;}
-	// CloseStgScene();
-	// CloseScript(GetOwnScriptID());
 }
 
 

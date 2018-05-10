@@ -15,20 +15,21 @@ function typeof(obj){
 	alternative(Obj_GetType(obj))
 	case(TYPE_INT){return TYPE_NUMBER;}
 	case(TYPE_REAL){
-		if(!(ToString(obj)!="true"&&ToString(obj)!="false")){return TYPE_BOOL;}
+		if(ToString(obj)=="true" || ToString(obj)=="false"){return TYPE_BOOL;}
 		else{ return TYPE_NUMBER; }
 	}
 	case(TYPE_ARRAY){
 		if(length(obj) > 0){
 			let contents = typeof(obj[0]); //recursive
 			if(contents==TYPE_CHAR){return TYPE_STRING;}
-			else{return TYPE_ARRAY;}
-		}else{return TYPE_ARRAY;}
+		}
+		return TYPE_ARRAY;
 	}
 	case(TYPE_CHAR){return TYPE_CHAR;}
 	// case(OBJ_ENEMY,OBJ_ENEMY_BOSS){return OBJ_ENEMY;}
 	case(103,104){return 103;}
 	others{return Obj_GetType(obj);}
+	// others{return atoi(ToString(Obj_GetType(obj)));} //alright listen up fucker
 }
 //////////////////////////////
 
@@ -38,7 +39,8 @@ function cast(v,type){
 	alternative(typeof(type))
 	case(TYPE_NUMBER){ 
 		let s = ToString(v); //for the sake of convenience
-		alternative(type)
+		// alternative(type)
+		alternative(atoi(ToString(type))) //alright fucker you wanna play ball?
 		case(TYPE_INT){     r = atoi(s); }
 		case(TYPE_REAL){    r = ator(s); }
 		case(TYPE_STRING){  r = s; }

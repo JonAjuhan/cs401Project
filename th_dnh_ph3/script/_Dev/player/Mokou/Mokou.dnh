@@ -322,7 +322,7 @@ task ResetOptions(isPowerUp){
 //-made options move between positions instead of teleporting
 task Fam(x1, y1, x2, y2, dir0, dDir){
 	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
-	Obj_SetRenderPriority(obj, 0.4);
+	Obj_SetRenderPriorityI(obj, 40);
 	ObjPrim_SetTexture(obj, Option);
 	ObjSprite2D_SetSourceRect(obj, 0, 0, 32, 32);
 	ObjSprite2D_SetDestCenter(obj);
@@ -662,7 +662,7 @@ task PlayerExplode{		//visual effect when player dies
 	let path = current ~ "Explode.png";
 	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
 	ObjRender_SetBlendType(obj, BLEND_ADD_RGB);
-	Obj_SetRenderPriority(obj, 0.60);
+	Obj_SetRenderPriorityI(obj, 60);
 	ObjPrim_SetTexture(obj, path);
 	ObjSprite2D_SetSourceRect(obj, 0, 0, 63, 63);
 	ObjSprite2D_SetDestRect(obj, -32, -32, 32, 32);
@@ -698,7 +698,7 @@ task TMagicCircle{
 		ObjPrim_SetPrimitiveType(obj, PRIMITIVE_TRIANGLESTRIP);
 		ObjPrim_SetVertexCount(obj, countVertex);
 		ObjRender_SetBlendType(obj, BLEND_ADD_RGB);
-		Obj_SetRenderPriority(obj, 0.60);
+		Obj_SetRenderPriorityI(obj, 60);
 		ObjPrim_SetTexture(obj, path);
 		ascent(iVert in 0..countVertex / 2){
 			let left = iVert * 128;
@@ -925,7 +925,9 @@ task Aura(i, scale){
 	ObjSprite2D_SetDestCenter(obj);
 	ObjRender_SetBlendType(obj, BLEND_ADD_RGB);
 	ObjRender_SetScaleXYZ(obj, 0, 0, 0);
-	Obj_SetRenderPriority(obj, 0.29);
+	// Obj_SetRenderPriorityI(obj, 29);
+	// Obj_SetRenderPriorityI(obj, 35);
+	Obj_SetRenderPriorityI(obj, 38);
 	
 	let s = 0;
 	while(s < scale){
@@ -986,7 +988,9 @@ task lotemas(x,y,Edscale,flame,r1,g1,b1,fractal){
 	// ObjRender_SetBlendType(obj, BLEND_ADD_RGB);
 	ObjRender_SetBlendType(obj, BLEND_MULTIPLY);
 	ObjPrim_SetTexture(obj, imgEff);
-	Obj_SetRenderPriority(obj, 0.26);
+	// Obj_SetRenderPriorityI(obj, 26);
+	// Obj_SetRenderPriorityI(obj, 32);
+	Obj_SetRenderPriorityI(obj, 37);
 	ObjSprite2D_SetSourceRect(obj, 0, 0, 256, 256);
 	ObjSprite2D_SetDestRect(obj, -128, -128, 128, 128);
 	ObjRender_SetAlpha(obj, 255);
@@ -1013,7 +1017,9 @@ task lotemasLite(x,y,Edscale,flame,r1,g1,b1,fractal){
 	let obj=ObjPrim_Create(OBJ_SPRITE_2D);
 	ObjRender_SetBlendType(obj, BLEND_ADD_RGB);
 	ObjPrim_SetTexture(obj, imgEff);
-	Obj_SetRenderPriority(obj, 0.26);
+	// Obj_SetRenderPriorityI(obj, 26);
+	// Obj_SetRenderPriorityI(obj, 32);
+	Obj_SetRenderPriorityI(obj, 37);
 	ObjSprite2D_SetSourceRect(obj, 0, 0, 256, 256);
 	ObjSprite2D_SetDestRect(obj, -128, -128, 128, 128);
 	ObjRender_SetAlpha(obj, 255);
@@ -1053,7 +1059,9 @@ task oltahmas(x,y,flame,r1,g1,b1){
 		ObjRender_SetBlendType(obj, BLEND_SUBTRACT);
 	}
 	ObjPrim_SetTexture(obj, imgEff);
-	Obj_SetRenderPriority(obj, 0.26);
+	// Obj_SetRenderPriorityI(obj, 26);
+	// Obj_SetRenderPriorityI(obj, 32);
+	Obj_SetRenderPriorityI(obj, 37);
 	ObjSprite2D_SetSourceRect(obj, 0, 0, 64, 64);
 	ObjSprite2D_SetDestRect(obj, -32, -32, 32, 32);
 	ObjRender_SetPosition(obj, x, y, 0);
