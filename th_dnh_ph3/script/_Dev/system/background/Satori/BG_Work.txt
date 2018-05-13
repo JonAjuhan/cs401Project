@@ -107,6 +107,7 @@ function SpriteCreate{
 	let obj = ObjPrim_Create(OBJ_SPRITE_3D);
 	ObjPrim_SetTexture(obj,current~"./stage01b.png");
 	Obj_SetRenderPriorityI(obj,20);
+	// Obj_SetRenderPriorityI(obj,21);
 	ObjRender_SetAngleX(obj,-40);
 	ObjSprite3D_SetSourceDestRect(obj,0,0,128,128);
 	ObjRender_SetScaleXYZ(obj,1.5,1.5,1.5);
@@ -181,6 +182,7 @@ task SpellBackground{
 
 	ObjRender_SetBlendType(obj[0], BLEND_ALPHA);
 	Obj_SetRenderPriorityI(obj[0], 20);
+	// Obj_SetRenderPriorityI(obj[0], 21);
 	ObjPrim_SetTexture(obj[0], path);
 
 	loop {

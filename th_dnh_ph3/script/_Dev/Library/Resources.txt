@@ -20,6 +20,9 @@ let finishing = false;
 
 SetAutoDeleteObject(true); //default to true instead of false
 
+Set2DCameraFocusX(GetStgFrameWidth/2); //Patch job for a weird issue
+Set2DCameraFocusY(GetStgFrameHeight/2); //This was also slightly off
+
 
 //Position variables - updated each frame
 //sx,sy = stage width, stage height

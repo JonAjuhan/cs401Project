@@ -986,18 +986,21 @@ task lotemas(x,y,Edscale,flame,r1,g1,b1,fractal){
 	let obj=ObjPrim_Create(OBJ_SPRITE_2D);
 	// ObjRender_SetBlendType(obj, BLEND_SUBTRACT);
 	// ObjRender_SetBlendType(obj, BLEND_ADD_RGB);
-	ObjRender_SetBlendType(obj, BLEND_MULTIPLY);
+	// ObjRender_SetBlendType(obj, BLEND_MULTIPLY);
+	ObjRender_SetBlendType(obj, BLEND_SHADOW);
 	ObjPrim_SetTexture(obj, imgEff);
 	Obj_SetRenderPriorityI(obj, 26);
+	// Obj_SetRenderPriorityI(obj, 20);
 	// Obj_SetRenderPriorityI(obj, 32);
 	// Obj_SetRenderPriorityI(obj, 37);
 	ObjSprite2D_SetSourceRect(obj, 0, 0, 256, 256);
 	ObjSprite2D_SetDestRect(obj, -128, -128, 128, 128);
 	ObjRender_SetAlpha(obj, 255);
 	ObjRender_SetPosition(obj, x, y, 0);
-	ascent(i in 0 .. flame){
+	ascent(i in 0..flame){
 		//if(Obj_IsDeleted(bossObj)==true){Obj_Delete(obj);}
-		ObjRender_SetColor(obj, alpha*r1, alpha*g1, alpha*b1);
+		// ObjRender_SetColor(obj, alpha*r1, alpha*g1, alpha*b1);
+		ObjRender_SetColor(obj, alpha*(1-r1), alpha*(1-g1), alpha*(1-b1));
 		ObjRender_SetScaleXYZ(obj,scale,scale,1.0);
 		ObjRender_SetAngleXYZ(obj,0,0,angle);
 		angle+=angleR;
@@ -1018,6 +1021,7 @@ task lotemasLite(x,y,Edscale,flame,r1,g1,b1,fractal){
 	ObjRender_SetBlendType(obj, BLEND_ADD_RGB);
 	ObjPrim_SetTexture(obj, imgEff);
 	Obj_SetRenderPriorityI(obj, 26);
+	// Obj_SetRenderPriorityI(obj, 20);
 	// Obj_SetRenderPriorityI(obj, 32);
 	// Obj_SetRenderPriorityI(obj, 37);
 	ObjSprite2D_SetSourceRect(obj, 0, 0, 256, 256);
@@ -1060,6 +1064,7 @@ task oltahmas(x,y,flame,r1,g1,b1){
 	}
 	ObjPrim_SetTexture(obj, imgEff);
 	Obj_SetRenderPriorityI(obj, 26);
+	// Obj_SetRenderPriorityI(obj, 20);
 	// Obj_SetRenderPriorityI(obj, 32);
 	// Obj_SetRenderPriorityI(obj, 37);
 	ObjSprite2D_SetSourceRect(obj, 0, 0, 64, 64);

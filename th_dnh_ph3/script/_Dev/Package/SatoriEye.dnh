@@ -314,6 +314,13 @@ task SetEyeDestAtFrame(x1,y1,T){
 	// let dx = x1 - x0;
 	// let dy = y1 - y0;
 	
+	let Dx = (|x1-x0|);
+	let Dy = (|y1-y0|);
+	let D = ((x1-x0)^2+(y1-y0)^2)^0.5;
+	
+	let scalex = T/90*( min(1,Dx/10) + min(1,D/20) )/2;
+	let scaley = T/90*( min(1,Dy/10) + min(1,D/20) )/2;
+	
 	let xs0 = 1+(|ObjRender_GetScaleX(veins[0]) - 1|); 
 	let ys0 = 1+(|ObjRender_GetScaleY(veins[0]) - 1|);
 	let dxs = x1/x0 - xs0;
@@ -338,8 +345,15 @@ task SetEyeDestAtFrame(x1,y1,T){
 			ObjRender_SetX(veins[j],  eyex);
 			ObjRender_SetY(veins[j],  eyey);
 			
-			ObjRender_SetScaleX(veins[j],1+(|sin(eyex*10)*0.05|));
-			ObjRender_SetScaleY(veins[j],1+(|sin(eyey*10)*0.05|));
+			// ObjRender_SetScaleX(veins[j],1+(|sin(eyex*10)*0.05|));
+			// ObjRender_SetScaleY(veins[j],1+(|sin(eyey*10)*0.05|));
+			
+			// ObjRender_SetScaleX(veins[j],1+0.05*(|sin(t*180)|));
+			// ObjRender_SetScaleY(veins[j],1+0.05*(|sin(t*180)|));
+			
+			ObjRender_SetScaleX(veins[j],1+(0.05*(|sin(t*180)|)+0.02*sin(eyex*10))*scalex  );
+			ObjRender_SetScaleY(veins[j],1+(0.05*(|sin(t*180)|)+0.02*sin(eyey*10))*scaley  );
+			
 		}
 		
 		ObjRender_SetX(eye,  eyex );

@@ -5,6 +5,7 @@
 
 //?
 
+//TODO: Function to distort screen like SampleE1 but in a wave
 
 //Functions to do things rather than be used by other functions
 
@@ -31,7 +32,9 @@ sub StartSpell{
 function SetSpellCardA1(NameOrIndex,c,style,img) {
 	SE_Play(se_spellcard,100);
 	let name="";
-	if(typeof(NameOrIndex)==TYPE_NUMBER || NameOrIndex==""){
+	if(   typeof(NameOrIndex)==TYPE_NUMBER 
+	   || typeof(NameOrIndex)==TYPE_STRING 
+	   && length(NameOrIndex)==0){
 		name= GetCommonData("CurrentSC"~itoa(NameOrIndex),GetCommonData("CurrentSC",""));
 	}else{ name = NameOrIndex; }
 	

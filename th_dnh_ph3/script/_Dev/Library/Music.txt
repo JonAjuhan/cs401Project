@@ -32,13 +32,13 @@ let music;
 	case(EV_FADE_SONG){
 		FadeBGM();
 	}
-	// case(EV_STOP_SONG,EV_PAUSE_ENTER){
-	case(EV_STOP_SONG, 16){
+	case(EV_STOP_SONG, 16){ //EV_PAUSE_ENTER
+		ObjSound_SetRestartEnable(music,true);
 		ObjSound_Stop(music);
 	}
-	// case(EV_START_SONG,EV_PAUSE_LEAVE){
-	case(EV_START_SONG,17){
+	case(EV_START_SONG,17){ //EV_PAUSE_LEAVE
 		ObjSound_Play(music);
+		ObjSound_SetRestartEnable(music,false);
 	}
 }
 
@@ -60,7 +60,6 @@ function SetBGM(title){
 	SetBGMLoop(title,looppos[0],looppos[1]);
 }
 task SetBGMLoop(title,loopstart,loopend){
-	SetCommonData("CurrentBGM",title); SetCommonData("MusicObject",music);
 	let vol = GetAreaCommonData("CONFIG","BGM Volume",1.00);
 	if(ObjSound_IsPlaying(music)){
 		descent(i in 0..60){
@@ -69,6 +68,13 @@ task SetBGMLoop(title,loopstart,loopend){
 		}
 		ObjSound_Stop(music);
 	}
+	// if(GetCommonData("CurrentBGM","") != title ){
+		// ObjSound_SetRestartEnable(music,false);
+		// Obj_Delete(music);
+		// music = ObjSound_Create;
+		// SetCommonData("MusicObject",music);
+	// }
+	SetCommonData("CurrentBGM",title); SetCommonData("MusicObject",music);
 	// if(!(noStage&&noPlural&&noSingle&&!noPackage)){
 	if(GetCommonData("IsStage",false)||GetCommonData("IsPlural",false)||GetCommonData("IsSingle",false)){
 		ShowBGMTitle("BGM - "~title);
@@ -77,7 +83,7 @@ task SetBGMLoop(title,loopstart,loopend){
 	ObjSound_SetSoundDivision(music, SOUND_BGM);
 	ObjSound_SetLoopEnable(music,true);
 	if(loopend<=loopstart){let tmp=GetSongLoop(title);loopstart=tmp[0];loopend=tmp[1];}
-	ObjSound_SetRestartEnable(music,true);	
+	// ObjSound_SetRestartEnable(music,true);	
 	ObjSound_SetLoopTime(music,loopstart,loopend);
 	ObjSound_SetVolumeRate(music,100*vol);
 	ObjSound_Play(music);	
@@ -195,6 +201,20 @@ task ShowBGMTitle(title){
 
 
 function GetSongLoop(song){
+	let musicarr = 
+	[
+		"Song of the Night Sparrow ~ Night Bird",
+		"Deaf to All But the Song",           
+		"Last Remote@Magnum Opus",           
+		"Hartmann's Youkai Girl@Magnum Opus",    
+		"Bhava-Agra as Seen Through a Child's Mind",
+		"Kid's Festival ~ Innocent Treasures",
+		"Flight of the Bamboo Cutter ~ Lunatic Princess",
+		"Flawless Clothing of the Celestials"
+	];
+	SetCommonData("MusicList",musicarr);
+	
+	
 	alternative(song)
 	case("Song of the Night Sparrow ~ Night Bird"){         return [145.8    , 292.4   ]; }
 	case("Deaf to All But the Song"){                       return [ 70.7    , 141.38  ]; }

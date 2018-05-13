@@ -1,10 +1,10 @@
 #TouhouDanmakufu[Single]
 #ScriptVersion[3]
-#Title["shit for testing random functions"]
-#Text["blup"] 
+#Title["TEST"]
+#Text["shit for testing random functions"] 
 // #BGM["./bgm/bgm - Deaf to All but the Song.ogg"]
 #System["./system/Andi_System.txt"]
-#Background["./system/Background/Satori/BG_work.txt"]
+// #Background["./system/Background/Satori/BG_work.txt"]
 
 #include "./Index.txt"
 #include "./Package/PackageFunctions.txt"
@@ -101,6 +101,40 @@ task MainTask {
 	// }
 	// TMagicCircle(    boss,0, el*1.5*(-1)^i, 0+45*i,  2, rad, alpha, color);
 	
+	
+	function PriTest(pri){
+		let obj = ObjText_Create;
+		ObjText_SetFontSize(obj,8);
+		// ObjText_SetFontType(obj,"THSpatial");
+		ObjText_SetFontBorderType(obj,BORDER_FULL);
+		ObjText_SetFontBorderColor(obj,0,0,0);
+		ObjText_SetFontBorderWidth(obj,1);
+		
+		let x = cx+50;
+		let Y = GetScreenHeight;
+		let y = Y*pri/100;
+		// x = sx-40;
+		// x = 320;
+		
+		// ObjRender_SetPosition(obj,sx-40,sy*pri/100,0);
+		ObjRender_SetPosition(obj, x,y,0);
+		ObjText_SetText(obj,tost(pri));
+		Obj_SetRenderPriorityI(obj,pri);
+		
+		// ObjRender_SetBlendType(obj,BLEND_ADD_ARGB);
+		
+		// let shot = CreateShotA1( x,y,0,0,DOT_YELLOW,0);
+		// Obj_SetRenderPriorityI(shot,pri);
+		
+		return obj;
+	}
+	
+	ascent(i in 0..100){
+		PriTest(i);
+	}
+	
+	// Set2DCameraFocusX(GetStgFrameWidth/2);
+	// Reset2DCamera;
 	
 	
 	
