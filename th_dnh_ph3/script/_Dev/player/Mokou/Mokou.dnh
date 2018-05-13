@@ -503,7 +503,7 @@ task RenderHitboxImage(plobj, offx, hitboxnum){
 	Obj_Delete(obj2);
 	IsHitboxActive = false;
 	
-	task PositionSet{
+	sub PositionSet{
 		ObjRender_SetPosition(obj, GetPlayerX, GetPlayerY, 0);
 		ObjRender_SetAngleZ(obj, ObjTime);
 		ObjRender_SetPosition(obj2, GetPlayerX, GetPlayerY, 0);

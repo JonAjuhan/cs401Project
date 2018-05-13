@@ -1697,7 +1697,7 @@ function OM_SetZ(obj,z){
 	if(!Obj_IsValueExists(obj,RENDER_PRIORITY)){
 		Obj_SetValue(obj,RENDER_PRIORITY,pri);
 	}
-	Obj_SetRenderPriorityI(obj,pri-5*t); //10*t
+	Obj_SetRenderPriorityI(obj,pri-0.5*t); // 5*t  //10*t
 	
 	ObjRender_SetColor(obj, r-r/2*t, g-g/2*t, b-b/2*t );
 	// ObjRender_SetColor(obj, r-r/2*(|t|), g-g/2*(|t|), b-b/2*(|t|) );
