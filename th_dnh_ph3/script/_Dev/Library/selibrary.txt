@@ -246,7 +246,9 @@ function SE_Play(let path, let vl){
 		let name = path[length(path)-9..length(path)-4];
 		SetCommonData("SoundManage_"~name,seobj);
 		
-		loop(270){yield;} //180    //120
+		// loop(270){yield;} //180    //120
+		loop(120){yield;}
+		while(ObjSound_IsPlaying(seobj)){yield;}
 		
 		//If the sound has been played again since starting this task,
 		//leave it loaded. Then the last one to use it unloads it.

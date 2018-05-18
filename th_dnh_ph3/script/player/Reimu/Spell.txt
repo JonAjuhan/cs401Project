@@ -1,0 +1,236 @@
+//Unused code for spell 1
+
+//	loop(20){
+//		bAlpha += 12.75;
+//		ObjRender_SetColor(obj,(bAlpha/255)*r,(bAlpha/255)*g,(bAlpha/255)*b);
+//		yield;
+//	}
+
+task TShake(frequency,duration,fadeTime){
+	let CX = GetStgFrameWidth/2;
+	let CY = GetStgFrameHeight/2;
+	let initDist = frequency;
+
+	loop(duration-fadeTime){
+		Set2DCameraFocusX(CX+rand(-frequency,frequency));
+		Set2DCameraFocusY(CY+rand(-frequency,frequency));
+		yield;
+	}
+	loop(fadeTime){
+		frequency -= (initDist/fadeTime);
+		Set2DCameraFocusX(CX+rand(-frequency,frequency));
+		Set2DCameraFocusY(CY+rand(-frequency,frequency));
+		yield;
+	}
+	Reset2DCamera;
+}
+task TBarrier1(angle,xoffset,yoffset,r,g,b){	//Duration: 140 frames (Evil Sealing Circle)
+	let bAlpha = 0;
+	let obj = ObjSpell_Create;
+	ObjSpell_SetDamage(obj,7);
+	ObjSpell_Regist(obj);
+	ObjPrim_SetTexture(obj,imgSpell);
+	ObjPrim_SetPrimitiveType(obj,PRIMITIVE_TRIANGLESTRIP);
+	ObjPrim_SetVertexCount(obj,4);
+	ObjPrim_SetVertexUVT(obj,0,0,0);
+	ObjPrim_SetVertexUVT(obj,1,0,50);
+	ObjPrim_SetVertexUVT(obj,2,50,0);
+	ObjPrim_SetVertexUVT(obj,3,50,50);
+	ObjPrim_SetVertexPosition(obj,0,-25,-250,0);
+	ObjPrim_SetVertexPosition(obj,1,-25,250,0);
+	ObjPrim_SetVertexPosition(obj,2,25,-250,0);
+	ObjPrim_SetVertexPosition(obj,3,25,250,0);
+	ObjRender_SetBlendType(obj,BLEND_ADD_RGB);
+	ObjRender_SetAngleZ(obj,angle+180);
+	ObjRender_SetScaleXYZ(obj,3,3,3);
+	ObjRender_SetPosition(obj,GetPlayerX+xoffset,GetPlayerY+yoffset,0);
+	TWork;
+	TClsn;
+
+	task TWork{
+		TAlpha;
+		loop(60){yield;}
+		TMove;
+		loop(50){yield;}
+		TAlpha2;
+		loop(30){yield;}
+		Obj_Delete(obj);
+	}
+	task TAlpha{
+		let bAlpha = 0;
+		loop(30){
+			bAlpha += 8.5;
+			ObjRender_SetColor(obj,(bAlpha/255)*r,(bAlpha/255)*g,(bAlpha/255)*b);
+			yield;
+		}
+	}
+	task TAlpha2{
+		let bAlpha = 255;
+		loop(30){
+			bAlpha -= 8.5;
+			ObjRender_SetColor(obj,(bAlpha/255)*r,(bAlpha/255)*g,(bAlpha/255)*b);
+			yield;
+		}
+	}
+	task TMove{
+		let x = ObjRender_GetX(obj);
+		let y = ObjRender_GetY(obj);
+		let bSpeed = 8;
+		loop(80){
+			x += bSpeed*cos(angle);
+			y += bSpeed*sin(angle);
+			ObjRender_SetPosition(obj,x,y,0);
+			bSpeed -= 0.1;
+			yield;
+		}
+	}
+	task TClsn{
+		while(!Obj_IsDeleted(obj)){
+			let bx = ObjRender_GetX(obj);
+			let by = ObjRender_GetY(obj);
+			ObjSpell_SetIntersectionLine(obj,bx+500*cos(angle+90),by+500*sin(angle+90),bx+500*cos(angle+270),by+500*sin(angle+270),75);
+			yield;
+		}
+	}
+}
+
+task TBarrier2(bSpeed,bScale){	//Duration: 180 frames (Duplex Barrier)
+	let px = GetPlayerX;
+	let py = GetPlayerY;
+	let bAngle = 0;
+	let obj = ObjSpell_Create;
+	ObjSpell_SetDamage(obj,4);
+	ObjSpell_Regist(obj);
+	ObjPrim_SetTexture(obj,imgBarrier);
+	ObjPrim_SetPrimitiveType(obj,PRIMITIVE_TRIANGLESTRIP);
+	ObjPrim_SetVertexCount(obj,4);
+	ObjPrim_SetVertexUVT(obj,0,129,129);
+	ObjPrim_SetVertexUVT(obj,1,129,256);
+	ObjPrim_SetVertexUVT(obj,2,256,129);
+	ObjPrim_SetVertexUVT(obj,3,256,256);
+	ObjPrim_SetVertexPosition(obj,0,-64,-64,0);
+	ObjPrim_SetVertexPosition(obj,1,-64,64,0);
+	ObjPrim_SetVertexPosition(obj,2,64,-64,0);
+	ObjPrim_SetVertexPosition(obj,3,64,64,0);
+	ObjRender_SetBlendType(obj,BLEND_ADD_RGB);
+	ObjRender_SetPosition(obj,px,py,0);
+	TScale;
+	TFade;
+	TScale;
+	TRotate;
+	TRenderClsn;
+	TEnd;
+
+	task TFade{
+		let bAlpha = 0;
+		loop(30){
+			bAlpha += 2.13;
+			ascent(i in 0..4){
+				ObjPrim_SetVertexColor(obj,i,bAlpha,bAlpha,bAlpha);
+			}
+			yield;
+		}
+		loop(120){yield;}
+		loop(30){
+			bAlpha -= 2.13;
+			ascent(i in 0..4){
+				ObjPrim_SetVertexColor(obj,i,bAlpha,bAlpha,bAlpha);
+			}
+			yield;
+		}
+	}
+
+	task TScale{
+		let baseScale = bScale;
+		bScale *= 1.2;
+		loop(70){
+			bScale -= (baseScale*1.2-baseScale)/70;
+			ObjRender_SetScaleXYZ(obj,bScale,bScale,1);
+			yield;
+		}
+	}
+
+	task TRotate{
+		bAngle = 0;
+		loop(180){
+			bAngle += bSpeed;
+			ObjRender_SetAngleZ(obj,bAngle);
+
+			yield;
+		}
+	}
+
+	task TRenderClsn{
+		while(!Obj_IsDeleted(obj)){
+			let bx = ObjRender_GetX(obj);
+			let by = ObjRender_GetY(obj);
+			ObjSpell_SetIntersectionLine(obj,bx+(64*bScale*cos(bAngle+270)),by+(64*bScale*sin(bAngle+270)),bx+(64*bScale*cos(bAngle+90)),by+(64*bScale*sin(bAngle+90)),64*bScale);
+
+			yield;
+		}
+	}
+
+	task TEnd{
+		loop(210){yield;}
+		Obj_Delete(obj);
+	}
+}
+
+task CollectItems(time){
+	loop(time){
+		CollectAllItems();
+		yield;
+	}
+}
+
+
+task TSpell1{	//Dream Sign "Evil Sealing Circle"
+		//Spell Effect Duration: 140 frames
+		//Player Invincibility: 180
+		//Total Spell Duration: 140 frames
+	let spellObj = GetSpellManageObject;
+	SetPlayerInvincibilityFrame(180);
+	TCircle;
+	TBlink;
+	PlaySound(1,100);
+	PlaySound(2,100);
+	TShake(10,140,60);
+	
+	CollectItems(140);
+
+	TBarrier1(0,20,0,255,128,128);		//Left, Red
+	TBarrier1(180,-20,0,255,100,100);	//Right, Red
+	TBarrier1(270,0,-20,128,128,255);	//Up, Blue
+	TBarrier1(90,0,20,128,100,255);		//Down, Blue
+
+	loop(112){yield;}
+	PlaySound(1,90);
+	loop(28){yield;}
+	Obj_Delete(spellObj);
+}
+
+task TSpell2{	//Dream Sign "Duplex Barrier"
+		//Spell Effect Duration: 180 frames
+		//Player Invincibility: 250 frames
+		//Total Spell Duration: 200 frames
+	let spellObj = GetSpellManageObject;
+	SetPlayerInvincibilityFrame(250);
+	TCircle;
+	TBlink;
+	SetPlayerSpeed(2.25,1);
+	PlaySound(1,100);
+	PlaySound(2,100);
+	TShake(5,180,30);
+	
+	CollectItems(180);
+
+	TBarrier2(0,2);		//Normal
+	TBarrier2(6,2.5);	//Rotate right
+	TBarrier2(-2,2.2);	//Rotate left
+
+	loop(140){yield;}
+	PlaySound(1,90);
+	loop(60){yield;}
+	SetPlayerSpeed(4.5,2);
+	Obj_Delete(spellObj);
+}

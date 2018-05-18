@@ -1,0 +1,314 @@
+let csd = GetCurrentScriptDirectory;
+let imgCircle = csd~"img/Circle.png";
+let imgMystia = csd~"img/Mystia.png";
+let imgReimu = csd~"img/Reimu.png"; //leftover, TODO remove
+let imgSpell = csd~"img/Spell.png";
+let imgBarrier = csd~"img/player00.png";
+let img;
+let sound = [];
+let shotData = csd~"MystiaShot.txt";
+let shotcount = -1;
+let optionShot = false;
+let circleID = [];
+
+// #include "script/default_system/Default_ShotConst.txt"
+
+function GetDist(x1,y1,x2,y2){
+	return ((x2-x1)^2+(y2-y1)^2)^0.5;
+}
+
+function GetAngle(x1,y1,x2,y2){
+	return atan2(y2-y1,x2-x1);
+}
+
+function Load{
+	LoadTexture(imgCircle);
+	LoadTexture(imgMystia);
+	LoadTexture(imgReimu);
+	LoadTexture(imgSpell);
+	LoadTexture(imgBarrier);
+	LoadPlayerShotData(shotData);
+
+	//0 - shot
+	//1 - bomb
+	//2 - bomb2
+	//3 - graze
+	//4 - hit
+	//5 - item
+	//6 - chime/song
+
+	let sndShot = ObjSound_Create;
+	ObjSound_SetSoundDivision(sndShot,SOUND_SE);
+	ObjSound_Load(sndShot,csd~"snd/se_plst00.wav");
+	sound = sound ~ [sndShot];
+
+	let sndBomb = ObjSound_Create;
+	ObjSound_SetSoundDivision(sndBomb,SOUND_SE);
+	ObjSound_Load(sndBomb,csd~"snd/se_slash.wav");
+	sound = sound ~ [sndBomb];
+
+	let sndBomb2 = ObjSound_Create;
+	ObjSound_SetSoundDivision(sndBomb2,SOUND_SE);
+	ObjSound_Load(sndBomb2,csd~"snd/se_power1.wav");
+	sound = sound ~ [sndBomb2];
+
+	let sndGraze = ObjSound_Create;
+	ObjSound_SetSoundDivision(sndGraze,SOUND_SE);
+	ObjSound_Load(sndGraze,csd~"snd/se_graze.wav");
+	sound = sound ~ [sndGraze];
+
+	let sndHit = ObjSound_Create;
+	ObjSound_SetSoundDivision(sndHit,SOUND_SE);
+	ObjSound_Load(sndHit,csd~"snd/se_pldead00.wav");
+	sound = sound ~ [sndHit];
+
+	let sndItem = ObjSound_Create;
+	ObjSound_SetSoundDivision(sndItem,SOUND_SE);
+	ObjSound_Load(sndItem,csd~"snd/se_item00.wav");
+	sound = sound ~ [sndItem];
+	
+	let sndSong = ObjSound_Create;
+	ObjSound_SetSoundDivision(sndSong,SOUND_SE);
+	ObjSound_Load(sndSong,csd~"snd/se_song.wav");
+	sound = sound ~ [sndSong];
+	
+}
+
+function PlaySound(sndID,volume){
+	ObjSound_SetVolumeRate(sound[sndID],volume);
+	ObjSound_Play(sound[sndID]);
+}
+
+
+
+
+
+
+
+task OptionShot{
+	optionShot = true;
+	yield;
+	optionShot = false;
+}
+
+task TShoot{
+	loop{
+		if(GetVirtualKeyState(VK_SHOT) == KEY_PUSH || GetVirtualKeyState(VK_SHOT) == KEY_HOLD && shotcount == -1 && alive){
+			shotcount = 0;
+		}
+		if(GetVirtualKeyState(VK_SLOWMOVE) == KEY_PUSH || GetVirtualKeyState(VK_SLOWMOVE) == KEY_HOLD){	//focused
+			opx = [opxposF[0],opxposF[1],opxposF[2],opxposF[3]];
+			opy = [opyposF[0],opyposF[1],opyposF[2],opyposF[3]];
+		}
+		else{											//unfocused
+			opx = [opxposU[0],opxposU[1],opxposU[2],opxposU[3]];
+			opy = [opyposU[0],opyposU[1],opyposU[2],opyposU[3]];
+		}
+		// if(shotcount == 0 || shotcount == 3 || shotcount == 6 || shotcount == 9){
+		if(shotcount%3==0){
+			Shot(GetPlayerX-11,GetPlayerY+10,20,1,1.75);	//16 x 16 image... -_-;
+			Shot(GetPlayerX+10,GetPlayerY+10,20,1,1.75);
+			Shot(GetPlayerX-11,GetPlayerY+30,20,1,1.75);
+			Shot(GetPlayerX+10,GetPlayerY+30,20,1,1.75);
+			// PlaySE(snd_shot);
+			PlaySound(0,100);
+		}
+		if(shotcount >= 0){
+			shotcount++;
+		}
+		if(shotcount >= 12){
+			shotcount = -1;
+		}
+		yield;
+	}
+}
+
+
+task TBlink{
+	let duration = GetPlayerInvincibilityFrame;
+	let frame = GetPlayerInvincibilityFrame;
+	let blinkFrame = 0;
+	loop(duration){
+		if (frame != GetPlayerInvincibilityFrame){break;}
+		frame --;
+		alternative(blinkFrame)
+		case(0,1){
+			ObjRender_SetColor(objPlayer,0,0,255);
+		}
+		case(2,3){
+			ObjRender_SetColor(objPlayer,255,255,255);
+		}
+		blinkFrame ++;
+		blinkFrame %= 4;
+		yield;
+	}
+	ObjRender_SetColor(objPlayer,255,255,255);
+}
+
+task TCircle{
+	let radius = 1;
+	let red = 255;
+	let green = 128;
+	let blue = 128;
+	let duration = GetPlayerInvincibilityFrame;
+	let obj = ObjPrim_Create(OBJ_PRIMITIVE_2D);
+
+	ascent(i in 0..length(circleID)){
+		Obj_Delete(circleID[i]);
+	}
+	circleID = circleID ~ [obj];
+
+	Obj_SetRenderPriority(obj,0.6);
+	ObjRender_SetBlendType(obj,BLEND_ADD_RGB);
+	ObjPrim_SetPrimitiveType(obj,PRIMITIVE_TRIANGLESTRIP);
+	ObjPrim_SetVertexCount(obj,130);
+	ObjPrim_SetTexture(obj,imgCircle);
+	ascent(i in 0..65){
+		ObjPrim_SetVertexUVT(obj,(i*2),i*4*(403/64),0);
+		ObjPrim_SetVertexUVT(obj,(i*2)+1,i*4*(403/64),65);
+	}
+	TAlpha;
+	TRotate;
+	// while(GetPlayerInvincibilityFrame()>0){
+	while(!Obj_IsDeleted(obj)){
+		Obj_SetVisible(obj,GetPlayerInvincibilityFrame()>0);
+		if(GetPlayerInvincibilityFrame()>0){
+			ascent(i in 0..65){
+				ObjPrim_SetVertexPosition(obj,(i*2),   radius*150*cos(i*360/64), radius*150*sin(i*360/64),0);
+				ObjPrim_SetVertexPosition(obj,(i*2)+1, radius*110*cos(i*360/64), radius*110*sin(i*360/64),0);
+			}
+		}
+		ObjRender_SetPosition(obj,GetPlayerX,GetPlayerY,0);
+		// radius = 1-(duration-GetPlayerInvincibilityFrame)/duration;
+		let rad1 = 1-(duration-GetPlayerInvincibilityFrame)/duration;
+		let drad = rad1-radius;
+		radius = radius + drad/10;
+		yield;
+	}
+	Obj_Delete(obj);
+
+	task TAlpha{ //TODO: make sure it isn't important for this to happen every time
+		let cAlpha = 0;
+		loop(80){
+			cAlpha += 2.8;
+			ascent(i in 0..130){
+				ObjPrim_SetVertexColor(obj,i,(cAlpha/255)*red,(cAlpha/255)*green,(cAlpha/255)*blue);
+			}
+			yield;
+		}
+	}
+	task TRotate{
+		let cAngle = 0;
+		while(!Obj_IsDeleted(obj)){
+			ObjRender_SetAngleZ(obj,cAngle);
+			cAngle -= 2;
+			if (cAngle < 0){cAngle += 360;}
+			yield;
+		}
+	}
+}
+
+
+
+task TGrazeEffect{
+	let px = GetPlayerX;
+	let py = GetPlayerY;
+	let x = px;
+	let y = py;
+	let scale = 1;
+	let direction = rand(0,360);
+
+	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjPrim_SetTexture(obj,imgReimu);
+	ObjRender_SetBlendType(obj,BLEND_ALPHA);
+	ObjSprite2D_SetSourceRect(obj,138,351,146,359);
+	ObjSprite2D_SetDestRect(obj,-4,-4,4,4);
+	ObjRender_SetAngleZ(obj,rand(0,360));
+	ObjRender_SetAlpha(obj,192);
+	ObjRender_SetPosition(obj,px,py,0);
+	loop(15){
+		x += 5*cos(direction);
+		y += 5*sin(direction);
+		ObjRender_SetPosition(obj,x,y,0);
+
+		scale -= 0.0667;
+		ObjRender_SetScaleXYZ(obj,scale,scale,1);
+
+		yield;
+	}
+
+	Obj_Delete(obj);
+}
+
+task TDeathEffect{	//10,322,74,386
+	let px = GetPlayerX;
+	let py = GetPlayerY;
+	let scale = 1;
+	let alpha = 255;
+	let frame = 0;
+
+	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjPrim_SetTexture(obj,imgReimu);
+	ObjRender_SetBlendType(obj,BLEND_ALPHA);
+	ObjSprite2D_SetSourceRect(obj,10,322,74,386);
+	ObjSprite2D_SetDestRect(obj,-32,-32,32,32);
+	ObjRender_SetPosition(obj,px,py,0);
+	loop(25){
+		frame ++;
+		scale += 0.16;
+		ObjRender_SetScaleXYZ(obj,scale,scale,1);
+		ObjRender_SetAlpha(obj,alpha);
+		alpha -= 10.2;
+
+		yield;
+	}
+	Obj_Delete(obj);
+}
+
+task THitbox{
+	let hbAngle = 0;
+	let hbScale = 0;
+	let objHitbox = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjPrim_SetTexture(objHitbox,imgReimu);
+	ObjRender_SetBlendType(objHitbox,BLEND_ALPHA);
+	ObjSprite2D_SetSourceRect(objHitbox,192,192,255,255);
+	ObjSprite2D_SetDestRect(objHitbox,-32,-32,32,32);
+	loop{
+		if (GetVirtualKeyState(VK_SLOWMOVE) == KEY_PUSH){
+			hbScale = 0;
+			hbAngle = 0;
+		}
+		if (GetVirtualKeyState(VK_SLOWMOVE) == KEY_PUSH || GetVirtualKeyState(VK_SLOWMOVE) == KEY_HOLD && hbScale < 100){
+			hbScale += 10;
+		}
+		if (GetVirtualKeyState(VK_SLOWMOVE) == KEY_PULL || GetVirtualKeyState(VK_SLOWMOVE) == KEY_FREE && hbScale > 0){
+			hbScale -= 10;
+		}
+		ObjRender_SetPosition(objHitbox,GetPlayerX,GetPlayerY,0);
+		ObjRender_SetAngleZ(objHitbox,hbAngle);
+		ObjRender_SetScaleXYZ(objHitbox,hbScale*0.01,hbScale*0.01,1);
+		hbAngle += 2;
+		yield;
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+	
+function CreateSprite(texture, source){
+	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjPrim_SetTexture(obj, texture);
+	// Obj_SetRenderPriorityI(obj, priorityInt);
+	ObjSprite2D_SetSourceRect(obj, source[0], source[1], source[2], source[3]);
+	ObjSprite2D_SetDestCenter(obj);
+	// ObjSprite2D_SetDestRect(  obj, -center[0], -center[1], source[2]-source[0]-center[0], source[3]-source[1]-center[1]);
+	return obj;
+}

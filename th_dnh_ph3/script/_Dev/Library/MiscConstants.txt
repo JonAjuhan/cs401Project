@@ -15,6 +15,8 @@ let PRI_BOSSLIFE = 71;
 let PRI_OVERLAY = 70; //Above 2D camera
 let PRI_OVER = 70; //for things like flashing messages, etc //was 60
 
+let PRI_CAMERA = 69; //highest priority affected by 2D camera
+
 let PRI_HITBOX = 63; //projection; may lower
 
 

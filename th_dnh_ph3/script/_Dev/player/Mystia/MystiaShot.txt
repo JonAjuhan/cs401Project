@@ -1,0 +1,29 @@
+// #PlayerShotData
+shot_image = "./img/Mystia.png"
+ShotData{ //Standard Shot
+	id = 1
+	rect = (0,144,18,162)
+	render = ALPHA
+	alpha = 90
+}
+ShotData{ //Shot Fade
+	id = 2
+	AnimationData{
+		animation_data = (1,0,201,16,217) //
+		animation_data = (1,17,200,34,218)
+		animation_data = (1,35,200,52,218) //
+	}
+	render = ADD
+	alpha = 90
+}
+ShotData{ //Night Sparrow (whatever you call this)
+	id = 3
+	AnimationData{
+		animation_data = (2,10,161,49,195)
+		animation_data = (2,58,161,97,195)
+		animation_data = (2,106,161,145,195)
+		animation_data = (2,154,161,193,195)
+	}
+	render = ALPHA
+	alpha = 255
+}

@@ -1,0 +1,257 @@
+#TouhouDanmakufu[Player]
+#ScriptVersion[3]
+#Title["Mystia Lorelai"]
+#Text["Mystia Lorelai[r]Speed: 5,2.5[r]Shot: ???[r]Spell 1: Vocal Sign \"Hooting in the Night\"[r]Spell 2: Night-Blindness \"Song of the Night Sparrow\"[r]Version 1.0?"]
+#Image["./img/Mystia_big.png"]
+#ReplayName["Mystia"]
+
+#include "./Function.txt"
+#include "./Spell.txt"
+#include "./DrawChar.txt"
+
+let objPlayer = GetPlayerObjectID;
+let alive = true;
+
+@Initialize{
+	SetPlayerAutoItemCollectLine(130);
+	// SetPlayerSpeed(4.5,2);
+	SetPlayerSpeed(5,2.5);
+	ObjPlayer_AddIntersectionCircleA1(objPlayer,0,0,1,20);
+
+	Load;
+	
+	SetCommonData("BorderOfLifeAndDeathNormal",      15); // 6 //12
+	SetCommonData("BorderOfLifeAndDeathExtended",    24); //12 //18
+	SetCommonData("BorderOfLifeAndDeathVeryExtended",60); //30 //60
+	let bolad = GetCommonData("BorderOfLifeAndDeathNormal",12);
+	SetCommonData("BorderOfLifeAndDeath",bolad);
+	SetPlayerRebirthFrame(bolad);
+
+
+	TShoot;
+	
+	Option(0);
+	Option(1);
+	Option(2);
+	Option(3);
+	
+	// TDraw;
+	TDrawChar;
+	THitbox;
+	TCircle; //
+}
+
+@MainLoop{
+	yield;
+}
+
+@Event{
+	alternative(GetEventType)
+	case(EV_REQUEST_SPELL){
+		if (GetPlayerSpell >= 1){
+			SetScriptResult(true);
+			SetPlayerSpell(GetPlayerSpell-1);
+			if (GetVirtualKeyState(VK_SLOWMOVE) == KEY_PUSH || GetVirtualKeyState(VK_SLOWMOVE) == KEY_HOLD){
+				// TSpell2;
+				TSpellFoc;
+			}
+			else{
+				// TSpell1;
+				TSpellUnf;
+			}
+		}
+		else{
+			SetScriptResult(false);
+		}
+	}
+	case(EV_PLAYER_SHOOTDOWN){
+		alive = false;
+	}
+	case(EV_PLAYER_REBIRTH){
+		alive = true;
+		SetPlayerSpell(3);
+		SetPlayerInvincibilityFrame(180);
+		// TCircle;
+		TBlink;
+	}
+	case(EV_GRAZE){
+		PlaySound(3,80);
+		TGrazeEffect;
+	}
+	case(EV_HIT){
+		PlaySound(4,80);
+		TDeathEffect;
+	}
+	case(EV_GET_ITEM){
+		PlaySound(5,80);
+		let itemType = GetEventArgument(0);
+		alternative(itemType)
+			case(ITEM_SPELL){
+				// WriteLog("ITEM_SPELL");
+			}
+			case(ITEM_SPELL_S){
+				// WriteLog("ITEM_SPELL_S");
+			}
+			case(ITEM_POWER){
+				// WriteLog("ITEM_POWER");
+			}
+			case(ITEM_POWER_S){
+				// WriteLog("ITEM_POWER_S");
+			}
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+let opxposU =  [-50, -15,  15,  50];   //unfocused
+let opyposU =  [  0, -50, -50,   0];   //unfocused
+let opxposF =  [-12, -12,  12,  12];   //focused
+let opyposF =  [-20, -40, -40, -20];   //focused
+let opx = opxposU;
+let opy = opyposU;
+
+task Option(id){
+	yield;
+	let count = 0;
+	let destinationx = GetPlayerX+opx[id];
+	let destinationy = GetPlayerY+opy[id];
+
+	let optioneffect = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjPrim_SetTexture(optioneffect,img_mystia);
+	ObjRender_SetBlendType(optioneffect,BLEND_ADD_RGB);	
+	// ObjSprite2D_SetSourceRect(optioneffect,128,203,141,216);
+	ObjSprite2D_SetSourceRect(optioneffect,128,203,142,217);
+	ObjSprite2D_SetDestCenter(optioneffect);
+	ObjRender_SetPosition(optioneffect,GetPlayerX,GetPlayerY,0);
+	
+	
+	let option = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjPrim_SetTexture(option,img_mystia);
+	ObjRender_SetBlendType(option,BLEND_ALPHA);	
+	// ObjSprite2D_SetSourceRect(optioneffect,112,203,125,216);
+	ObjSprite2D_SetSourceRect(optioneffect,112,203,126,217);
+	ObjSprite2D_SetDestCenter(option);
+	
+	ObjRender_SetPosition(optioneffect,GetPlayerX,GetPlayerY,0);
+	ObjRender_SetPosition(option,GetPlayerX,GetPlayerY,0);
+	
+	let distancetopoint = ((destinationx-ObjRender_GetX(option))^2+(destinationy-ObjRender_GetY(option))^2)^0.5;
+	let directiontopoint = atan2(destinationy-ObjRender_GetY(option),destinationx-ObjRender_GetX(option));
+	while(!Obj_IsDeleted(option)){
+		destinationx = GetPlayerX+opx[id];
+		destinationy = GetPlayerY+opy[id];
+		distancetopoint = ((destinationx-ObjRender_GetX(option))^2+(destinationy-ObjRender_GetY(option))^2)^0.5;
+		directiontopoint = atan2(destinationy-ObjRender_GetY(option),destinationx-ObjRender_GetX(option));
+		if (distancetopoint >= 0.5){
+			ObjRender_SetPosition(option,ObjRender_GetX(option)+cos(directiontopoint)*distancetopoint*0.4,ObjRender_GetY(option)+ sin(directiontopoint)*distancetopoint*0.4, 0);
+			ObjRender_SetPosition(optioneffect,ObjRender_GetX(optioneffect)+cos(directiontopoint)*distancetopoint*0.4,ObjRender_GetY(optioneffect)+ sin(directiontopoint)*distancetopoint*0.4, 0);
+		}
+		else{
+			ObjRender_SetPosition(option,destinationx,destinationy,0);
+			ObjRender_SetPosition(optioneffect,destinationx,destinationy,0);
+		}
+		if (GetVirtualKeyState(VK_SLOWMOVE) == KEY_PUSH || GetVirtualKeyState(VK_SLOWMOVE) == KEY_HOLD){
+			if (shotcount == 1){
+				Shot2(ObjRender_GetX(option),ObjRender_GetY(option),12,270,6.5,110);
+			}
+		}
+		else{
+			if (shotcount == 1){
+				alternative(id)
+				case(0){
+					Shot2(ObjRender_GetX(option),ObjRender_GetY(option),12,270,6.5,110);
+				}
+				case(1){
+					Shot2(ObjRender_GetX(option),ObjRender_GetY(option),12,270,6.5,110);
+				}
+				case(2){
+					Shot2(ObjRender_GetX(option),ObjRender_GetY(option),12,270,6.5,110);
+				}
+				case(3){
+					Shot2(ObjRender_GetX(option),ObjRender_GetY(option),12,270,6.5,110);
+				}
+			}
+		}
+		
+		ObjRender_SetAngleZ(option, count*11);
+		// ObjRender_SetAngleZ(optioneffect, count*11);
+		ObjRender_SetColor(optioneffect,255,255,255);
+		ObjRender_SetAlpha(optioneffect,90);
+		
+		count++;
+		yield;
+	}
+}
+task Shot(xpos,ypos,speed,graphic,damage){
+	let obj_shot = ObjShot_Create(OBJ_SHOT);
+	ObjMove_SetPosition(obj_shot,xpos,ypos);
+	ObjMove_SetSpeed(obj_shot,speed);
+	ObjMove_SetAngle(obj_shot,270);
+	ObjRender_SetAlpha(obj_shot,70);
+	ObjShot_SetGraphic(obj_shot,graphic);
+	ObjShot_SetDamage(obj_shot,damage);
+	ObjShot_SetPenetration(obj_shot,1);
+	ObjShot_Regist(obj_shot);
+	while(!Obj_IsDeleted(obj_shot)){
+		ypos -= speed;
+		yield;
+	}
+	ShotFade(xpos,ypos+20);
+}
+task Shot2(xpos,ypos,speed,angle,damage,alpha){
+	let obj_shot = ObjShot_Create(OBJ_SHOT);
+	ObjMove_SetPosition(obj_shot,xpos,ypos);
+	ObjMove_SetSpeed(obj_shot,0);
+	ObjMove_SetAngle(obj_shot,angle+270);
+	ObjRender_SetAlpha(obj_shot,alpha);
+	ObjShot_SetGraphic(obj_shot,3);
+	ObjShot_SetDamage(obj_shot,damage);
+	ObjShot_SetPenetration(obj_shot,1);
+	ObjShot_Regist(obj_shot);
+	while(!Obj_IsDeleted(obj_shot)){
+		xpos += speed*cos(angle);
+		ypos += speed*sin(angle);
+		ObjMove_SetPosition(obj_shot,xpos,ypos);
+		yield;
+	}
+}
+task ShotFade(getx,gety){
+	let obj_shot2 = ObjShot_Create(OBJ_SHOT);
+	let alpha = 200;
+	ObjMove_SetPosition(obj_shot2,getx,gety);
+	ObjMove_SetSpeed(obj_shot2,2);
+	ObjMove_SetAngle(obj_shot2,270);
+	ObjRender_SetAlpha(obj_shot2,90);
+	ObjShot_SetIntersectionEnable(obj_shot2,false);
+	ObjShot_SetGraphic(obj_shot2,2);
+	ObjShot_SetDamage(obj_shot2,0);
+	ObjShot_SetPenetration(obj_shot2,1);
+	ObjShot_SetItemChange(obj_shot2,false);
+	ObjShot_Regist(obj_shot2);
+	loop(10){
+		alpha -= 20;
+		ObjRender_SetAlpha(obj_shot2,alpha);
+		yield;
+	}
+	Obj_Delete(obj_shot2);
+}

@@ -30,7 +30,12 @@ let EV_FAIL_SPELL = EV_USER_SYSTEM+66; //since there doesn't seem to be one of t
 let EV_ADD_MAGICCIRCLE = EV_USER_SYSTEM+888; 
 
 
-let EV_REQUEST_RUN_SCRIPT = EV_USER_PACKAGE+17;
+let EV_FREEZE_STAGE = EV_USER_PACKAGE+495; //PauseStageScene from package, for args[0] frames
+let EV_MOVE_OBJECTS = EV_USER_PACKAGE+2468; // [ [objID,frame,x,y,time], [...], [...]  ]
+
+
+
+// let EV_REQUEST_RUN_SCRIPT = EV_USER_PACKAGE+17;
 
 
 
@@ -65,8 +70,26 @@ function SetScriptID(type){
 
 function Notify(type,event,args){
 	let id = GetScriptID(type);
-	let hash = cast(GetNextHash(),args);
-	args = args ~ [ hash ];
+	// let hash = cast(GetNextHash(),args);
+	let hash;
+	if(length(args)==0){ hash=GetNextHash(); }
+	// else{ hash = cast(GetNextHash(),args[0]); }
+	else{ hash = cast(GetNextHash(),args); }
+	
+	// WriteLog("hash,args,args[0]");
+	// WriteLog(hash);
+	// WriteLog(args);
+	// if(length(args)>0){WriteLog(args[0]);}
+	// WriteLog("typeof( hash,args,args[0] )");
+	// WriteLog(typeof(hash));
+	// WriteLog(typeof(args));
+	// if(length(args)>0){WriteLog(typeof(args[0]));}
+	
+	if(compatible(args, [hash] )){
+		args = args ~ [ hash ];
+	}else{
+		WriteLog("Failed to append hash to args");
+	}
 	
 	if(id==ID_INVALID || type==SCRIPT_ALL || ((type==SCRIPT_PACKAGE)!=(GetOwnScriptID==GetScriptID(SCRIPT_PACKAGE))) ) {
 		NotifyEventAll(event,args);

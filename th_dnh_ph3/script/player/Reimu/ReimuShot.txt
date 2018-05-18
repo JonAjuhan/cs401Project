@@ -1,0 +1,36 @@
+shot_image = "./img/Reimu.png"
+ShotData{ // Standard Shot
+	id = 1
+	rect = (2,176,16,241)
+	render = ALPHA
+	alpha = 255
+	collision = 16
+}
+ShotData{ // Persuasion Needle - Yellow
+	id = 2
+	rect = (65,177,79,233)
+	render = ALPHA
+	alpha = 255
+	collision = 16
+}
+ShotData{ // Persuasion Needle - Red
+	id = 3
+	rect = (89,177,103,233)
+	render = ALPHA
+	alpha = 255
+	collision = 16
+}
+ShotData{ // Persuasion Needle Fade - Yellow
+	id = 4
+	rect = (65,258,79,314)
+	render = ADD
+	alpha = 225
+	collision = 16
+}
+ShotData{ // Persuasion Needle Fade - Red
+	id = 5
+	rect = (89,258,103,314)
+	render = ADD
+	alpha = 225
+	collision = 16
+}

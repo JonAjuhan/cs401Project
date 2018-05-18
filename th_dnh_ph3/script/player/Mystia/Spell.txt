@@ -1,0 +1,683 @@
+//Unused code for spell 1
+
+//	loop(20){
+//		bAlpha += 12.75;
+//		ObjRender_SetColor(obj,(bAlpha/255)*r,(bAlpha/255)*g,(bAlpha/255)*b);
+//		yield;
+//	}
+
+task TShake(frequency,duration,fadeTime){
+	let CX = GetStgFrameWidth/2;
+	let CY = GetStgFrameHeight/2;
+	let initDist = frequency;
+
+	loop(duration-fadeTime){
+		Set2DCameraFocusX(CX+rand(-frequency,frequency));
+		Set2DCameraFocusY(CY+rand(-frequency,frequency));
+		yield;
+	}
+	loop(fadeTime){
+		frequency -= (initDist/fadeTime);
+		Set2DCameraFocusX(CX+rand(-frequency,frequency));
+		Set2DCameraFocusY(CY+rand(-frequency,frequency));
+		yield;
+	}
+	Reset2DCamera;
+}
+task TBarrier1(angle,xoffset,yoffset,r,g,b){	//Duration: 140 frames (Evil Sealing Circle)
+	let bAlpha = 0;
+	let obj = ObjSpell_Create;
+	ObjSpell_SetDamage(obj,7);
+	ObjSpell_Regist(obj);
+	ObjPrim_SetTexture(obj,imgSpell);
+	ObjPrim_SetPrimitiveType(obj,PRIMITIVE_TRIANGLESTRIP);
+	ObjPrim_SetVertexCount(obj,4);
+	ObjPrim_SetVertexUVT(obj,0,0,0);
+	ObjPrim_SetVertexUVT(obj,1,0,50);
+	ObjPrim_SetVertexUVT(obj,2,50,0);
+	ObjPrim_SetVertexUVT(obj,3,50,50);
+	ObjPrim_SetVertexPosition(obj,0,-25,-250,0);
+	ObjPrim_SetVertexPosition(obj,1,-25,250,0);
+	ObjPrim_SetVertexPosition(obj,2,25,-250,0);
+	ObjPrim_SetVertexPosition(obj,3,25,250,0);
+	ObjRender_SetBlendType(obj,BLEND_ADD_RGB);
+	ObjRender_SetAngleZ(obj,angle+180);
+	ObjRender_SetScaleXYZ(obj,3,3,3);
+	ObjRender_SetPosition(obj,GetPlayerX+xoffset,GetPlayerY+yoffset,0);
+	TWork;
+	TClsn;
+
+	task TWork{
+		TAlpha;
+		loop(60){yield;}
+		TMove;
+		loop(50){yield;}
+		TAlpha2;
+		loop(30){yield;}
+		Obj_Delete(obj);
+	}
+	task TAlpha{
+		let bAlpha = 0;
+		loop(30){
+			bAlpha += 8.5;
+			ObjRender_SetColor(obj,(bAlpha/255)*r,(bAlpha/255)*g,(bAlpha/255)*b);
+			yield;
+		}
+	}
+	task TAlpha2{
+		let bAlpha = 255;
+		loop(30){
+			bAlpha -= 8.5;
+			ObjRender_SetColor(obj,(bAlpha/255)*r,(bAlpha/255)*g,(bAlpha/255)*b);
+			yield;
+		}
+	}
+	task TMove{
+		let x = ObjRender_GetX(obj);
+		let y = ObjRender_GetY(obj);
+		let bSpeed = 8;
+		loop(80){
+			x += bSpeed*cos(angle);
+			y += bSpeed*sin(angle);
+			ObjRender_SetPosition(obj,x,y,0);
+			bSpeed -= 0.1;
+			yield;
+		}
+	}
+	task TClsn{
+		while(!Obj_IsDeleted(obj)){
+			let bx = ObjRender_GetX(obj);
+			let by = ObjRender_GetY(obj);
+			ObjSpell_SetIntersectionLine(obj,bx+500*cos(angle+90),by+500*sin(angle+90),bx+500*cos(angle+270),by+500*sin(angle+270),75);
+			yield;
+		}
+	}
+}
+
+task TBarrier2(bSpeed,bScale){	//Duration: 180 frames (Duplex Barrier)
+	let px = GetPlayerX;
+	let py = GetPlayerY;
+	let bAngle = 0;
+	let obj = ObjSpell_Create;
+	ObjSpell_SetDamage(obj,4);
+	ObjSpell_Regist(obj);
+	ObjPrim_SetTexture(obj,imgBarrier);
+	ObjPrim_SetPrimitiveType(obj,PRIMITIVE_TRIANGLESTRIP);
+	ObjPrim_SetVertexCount(obj,4);
+	ObjPrim_SetVertexUVT(obj,0,129,129);
+	ObjPrim_SetVertexUVT(obj,1,129,256);
+	ObjPrim_SetVertexUVT(obj,2,256,129);
+	ObjPrim_SetVertexUVT(obj,3,256,256);
+	ObjPrim_SetVertexPosition(obj,0,-64,-64,0);
+	ObjPrim_SetVertexPosition(obj,1,-64,64,0);
+	ObjPrim_SetVertexPosition(obj,2,64,-64,0);
+	ObjPrim_SetVertexPosition(obj,3,64,64,0);
+	ObjRender_SetBlendType(obj,BLEND_ADD_RGB);
+	ObjRender_SetPosition(obj,px,py,0);
+	TScale;
+	TFade;
+	TScale;
+	TRotate;
+	TRenderClsn;
+	TEnd;
+
+	task TFade{
+		let bAlpha = 0;
+		loop(30){
+			bAlpha += 2.13;
+			ascent(i in 0..4){
+				ObjPrim_SetVertexColor(obj,i,bAlpha,bAlpha,bAlpha);
+			}
+			yield;
+		}
+		loop(120){yield;}
+		loop(30){
+			bAlpha -= 2.13;
+			ascent(i in 0..4){
+				ObjPrim_SetVertexColor(obj,i,bAlpha,bAlpha,bAlpha);
+			}
+			yield;
+		}
+	}
+
+	task TScale{
+		let baseScale = bScale;
+		bScale *= 1.2;
+		loop(70){
+			bScale -= (baseScale*1.2-baseScale)/70;
+			ObjRender_SetScaleXYZ(obj,bScale,bScale,1);
+			yield;
+		}
+	}
+
+	task TRotate{
+		bAngle = 0;
+		loop(180){
+			bAngle += bSpeed;
+			ObjRender_SetAngleZ(obj,bAngle);
+
+			yield;
+		}
+	}
+
+	task TRenderClsn{
+		while(!Obj_IsDeleted(obj)){
+			let bx = ObjRender_GetX(obj);
+			let by = ObjRender_GetY(obj);
+			ObjSpell_SetIntersectionLine(obj,bx+(64*bScale*cos(bAngle+270)),by+(64*bScale*sin(bAngle+270)),bx+(64*bScale*cos(bAngle+90)),by+(64*bScale*sin(bAngle+90)),64*bScale);
+
+			yield;
+		}
+	}
+
+	task TEnd{
+		loop(210){yield;}
+		Obj_Delete(obj);
+	}
+}
+
+task CollectItems(time){
+	loop(time){
+		CollectAllItems();
+		yield;
+	}
+}
+
+
+task TSpell1{	//Dream Sign "Evil Sealing Circle"
+		//Spell Effect Duration: 140 frames
+		//Player Invincibility: 180
+		//Total Spell Duration: 140 frames
+	let spellObj = GetSpellManageObject;
+	SetPlayerInvincibilityFrame(180);
+	TCircle;
+	TBlink;
+	PlaySound(1,100);
+	PlaySound(2,100);
+	TShake(10,140,60);
+	
+	CollectItems(140);
+
+	TBarrier1(0,20,0,255,128,128);		//Left, Red
+	TBarrier1(180,-20,0,255,100,100);	//Right, Red
+	TBarrier1(270,0,-20,128,128,255);	//Up, Blue
+	TBarrier1(90,0,20,128,100,255);		//Down, Blue
+
+	loop(112){yield;}
+	PlaySound(1,90);
+	loop(28){yield;}
+	Obj_Delete(spellObj);
+}
+
+task TSpell2{	//Dream Sign "Duplex Barrier"
+		//Spell Effect Duration: 180 frames
+		//Player Invincibility: 250 frames
+		//Total Spell Duration: 200 frames
+	let spellObj = GetSpellManageObject;
+	SetPlayerInvincibilityFrame(250);
+	TCircle;
+	TBlink;
+	SetPlayerSpeed(2.25,1);
+	PlaySound(1,100);
+	PlaySound(2,100);
+	TShake(5,180,30);
+	
+	CollectItems(180);
+
+	TBarrier2(0,2);		//Normal
+	TBarrier2(6,2.5);	//Rotate right
+	TBarrier2(-2,2.2);	//Rotate left
+
+	loop(140){yield;}
+	PlaySound(1,90);
+	loop(60){yield;}
+	SetPlayerSpeed(4.5,2);
+	Obj_Delete(spellObj);
+}
+
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+
+
+task TSpellUnf{
+	let csd = GetCurrentScriptDirectory;
+	// let img_ring = csd~"img/ring.png";
+
+	let spellObj = GetSpellManageObject;
+	
+	// CollectItems(320);
+	CollectItems(120);
+
+	PlaySound(1,100);
+	SetPlayerSpeed(2.5,2);
+	// SetPlayerInvincibilityFrame(430);
+	SetPlayerInvincibilityFrame(210);
+	// loop(50){yield;}
+	TRing(5,6.8,0.06,1.6);
+	PlaySound(6,100);
+	MusUnf();
+	// loop(120){yield;}
+	loop(60){yield;}
+	TRing(5,6.8,0.06,1.6);
+	
+	PlaySound(6,100);
+	// loop(150){yield;}
+	SetPlayerSpeed(5,2.5);
+	loop(60){yield;}
+	Obj_Delete(spellObj);
+	return;
+	
+	task MusUnf{
+		// loop(20){yield;}
+		loop(30){
+			Music(220,rand(0,360));
+			// loop(5){yield;}
+			loop(2){yield;}
+		}
+	}
+	
+	
+	
+	
+}
+
+task TSpellFoc{
+	let csd = GetCurrentScriptDirectory;
+	// let img_ring = csd~"img/ring.png";
+	// let img_effect = csd~"img/effect.png";
+	let spellObj = GetSpellManageObject;
+	
+	CollectItems(290);
+	
+	TRun2();
+	PlaySound(1,100);
+	SetPlayerSpeed(2.5,2);
+	// SetPlayerInvincibilityFrame(400);
+	SetPlayerInvincibilityFrame(290);
+	// loop(20){yield;}
+	
+	TRing(2,3,0.05,3.2);
+	PlaySound(6,100);
+	loop(40){yield;}
+	TRing(2,3,0.05,3.2);
+	PlaySound(6,100);
+	loop(40){yield;}
+	TRing(2,3,0.05,3.2);
+	PlaySound(6,100);
+	loop(40){yield;}
+	TRing(2,3,0.05,3.2);
+	PlaySound(6,100);
+	SetPlayerSpeed(5,2.5);
+	loop(150){yield;}
+	Obj_Delete(spellObj);
+	return;
+	
+	task TRun2{
+		// loop(20){yield;}
+		loop(30){
+			Music(220,270);
+			loop(5){yield;}
+		}
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+task Music(alpha,dir){
+	let img_effect = csd~"img/effect.png";
+	
+	let obj_note = ObjSpell_Create();
+	
+	let coords = [0,0,32,32];
+	let speed = rand(5,5.5);
+	let scale = 0.5;
+	let angle = rand(0,355);
+	let rotate = rand(-3,3);
+	let time = 125;
+	let initspeed = speed;
+	
+	// let color = rand_int(0,7);
+	let color = round(7*rand(0,1));
+	alternative (color)
+	case(0){ coords = [0,0,32,32]; }
+	case(1){ coords = [32,0,64,32]; }
+	case(2){ coords = [64,0,96,32]; }
+	case(3){ coords = [96,0,128,32]; }
+	case(4){ coords = [128,0,160,32]; }
+	case(5){ coords = [160,0,192,32]; }
+	case(6){ coords = [192,0,224,32]; }
+	case(7){ coords = [224,0,256,32]; }
+
+	let robj = CreateSprite(img_effect,coords);
+	ObjRender_SetBlendType(robj,BLEND_ADD_ARGB);
+	
+	ObjRender_SetPosition(obj_note,GetPlayerX,GetPlayerY,0);
+	ObjRender_SetPosition(robj,GetPlayerX,GetPlayerY,0);
+	// ObjMove_SetSpeed(obj_note,speed);
+	let moveangle = dir+rand(-10,10);
+	// ObjMove_SetAngle(obj_note,dir+rand(-10,10));
+	
+	ObjSpell_Regist(obj_note);
+	
+	while(!Obj_IsDeleted(obj_note) && time>0){
+		ObjRender_SetX(obj_note,ObjRender_GetX(obj_note)+speed*cos(moveangle));
+		ObjRender_SetY(obj_note,ObjRender_GetY(obj_note)+speed*sin(moveangle));
+		ObjRender_SetScaleXYZ(robj,scale,scale,1);
+		ObjRender_SetAlpha(robj,alpha);
+		ObjRender_SetPosition(robj,ObjRender_GetX(obj_note),ObjRender_GetY(obj_note),0);
+		ObjRender_SetAngleZ(robj,angle);
+		angle += rotate;
+		
+		ObjSpell_SetIntersectionCircle(obj_note,ObjRender_GetX(obj_note),ObjRender_GetY(obj_note),scale*16);
+		ObjSpell_SetDamage(obj_note,2);
+		speed -= initspeed*0.008;
+		scale += 0.01;
+		alpha -= 1.76;
+		time--;
+		yield;
+	}
+	Obj_Delete(obj_note);
+	Obj_Delete(robj);
+}
+
+task TRing(dmg,add0,d_add,d_alpha){
+	let img_ring = csd~"img/ring.png";
+	
+	yield;
+	let obj_ring = ObjSpell_Create();
+	ObjSpell_SetDamage(obj_ring,dmg); //5
+	ObjSpell_Regist(obj_ring);
+	
+	let robj = CreateSprite(img_ring,[0,0,299,299]);
+	ObjRender_SetBlendType(robj,BLEND_ADD_RGB);
+	
+	let scale = 0;
+	let _add = add0; //3, 6.8
+	let _alpha = 180;
+	ObjRender_SetPosition(obj_ring,GetPlayerX,GetPlayerY,0);
+	ObjRender_SetPosition(robj,GetPlayerX,GetPlayerY,0);
+	ObjRender_SetColor(robj,255,128,255);
+	while(!Obj_IsDeleted(obj_ring)){
+		ObjRender_SetAlpha(robj,_alpha);
+		ObjRender_SetScaleXYZ(robj,scale/16,scale/16,1);
+		ObjSpell_SetIntersectionCircle(obj_ring,ObjRender_GetX(obj_ring),ObjRender_GetY(obj_ring),scale*0.8);
+		ObjSpell_SetDamage(obj_ring,5);
+		scale += _add;
+		_add -= d_add; //.06
+		_alpha -= d_alpha; //1.6
+		if (_alpha <= 0){
+			Obj_Delete(obj_ring);
+			Obj_Delete(robj);
+		}
+		yield;
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+// script_spell __lspell{
+	// let csd = GetCurrentScriptDirectory;
+	// let img_ring = csd~"ring.png";
+	// let snd_spell = csd~"snd_spell.wav";
+	// let snd_song = csd~"snd_song.wav";
+	// let count = 0;
+	// task Run{
+		// PlaySE(snd_spell);
+		// SetSpeed(2.5,2);
+		// SetPlayerInvincibility(400);
+		// loop(50){yield;}
+		// Ring;
+		// PlaySE(snd_song);
+		// loop(30){yield;}
+		// Ring;
+		// PlaySE(snd_song);
+		// loop(30){yield;}
+		// Ring;
+		// PlaySE(snd_song);
+		// loop(30){yield;}
+		// Ring;
+		// PlaySE(snd_song);
+		// loop(150){yield;}
+		// SetSpeed(5,2.5);
+		// End;
+	// }
+	// task Ring{
+		// yield;
+		// let obj_ring = Obj_Create(OBJ_SPELL);
+		// let scale = 0;
+		// let _add = 6.8;
+		// let _alpha = 180;
+		// Obj_SetPosition(obj_ring,GetPlayerX,GetPlayerY);
+		// ObjEffect_SetTexture(obj_ring,img_ring);
+		// ObjEffect_SetRenderState(obj_ring,ADD);
+		// ObjEffect_SetPrimitiveType(obj_ring,PRIMITIVE_TRIANGLEFAN);
+		// ObjEffect_CreateVertex(obj_ring,4);
+		// ObjEffect_SetVertexUV(obj_ring,0,0,0);
+		// ObjEffect_SetVertexUV(obj_ring,1,300,0);
+		// ObjEffect_SetVertexUV(obj_ring,2,300,300);
+		// ObjEffect_SetVertexUV(obj_ring,3,0,300);
+		// ObjEffect_SetVertexXY(obj_ring,0,0,0);
+		// ObjEffect_SetVertexXY(obj_ring,1,0,0);
+		// ObjEffect_SetVertexXY(obj_ring,2,0,0);
+		// ObjEffect_SetVertexXY(obj_ring,3,0,0);
+		// while(!Obj_BeDeleted(obj_ring)){
+			// ObjEffect_SetVertexXY(obj_ring,0,-scale,-scale);
+			// ObjEffect_SetVertexXY(obj_ring,1,scale,-scale);
+			// ObjEffect_SetVertexXY(obj_ring,2,scale,scale);
+			// ObjEffect_SetVertexXY(obj_ring,3,-scale,scale);
+			// ascent(i in 0..4){
+				// ObjEffect_SetVertexColor(obj_ring,i,_alpha,255,0,0);
+			// }
+			// ObjSpell_SetIntersecrionCircle(obj_ring,Obj_GetX(obj_ring),Obj_GetY(obj_ring),scale*0.8,3,true);
+			// scale += _add;
+			// _add -= 0.06;
+			// _alpha -= 1.6;
+			// if (_alpha <= 0){
+				// Obj_Delete(obj_ring);
+			// }
+			// yield;
+		// }
+	// }
+	// @Initialize{
+		// LoadGraphic(img_ring);
+		// LoadSE(snd_spell);
+		// LoadSE(snd_song);
+		// Run;
+	// }
+
+	// @MainLoop{
+		// CollectItems;
+		// yield;
+	// }
+
+	// @Finalize{
+	// }
+// }
+
+// script_spell _lspell{
+	// let csd = GetCurrentScriptDirectory;
+	// let img_ring = csd~"ring.png";
+	// let img_effect = csd~"effect.png";
+	// let snd_spell = csd~"snd_spell.wav";
+	// let snd_song = csd~"snd_song.wav";
+	// let count = 0;
+	// task Run{
+		// PlaySE(snd_spell);
+		// SetSpeed(2.5,2);
+		// SetPlayerInvincibility(400);
+		// loop(20){yield;}
+		// Ring;
+		// PlaySE(snd_song);
+		// loop(40){yield;}
+		// Ring;
+		// PlaySE(snd_song);
+		// loop(40){yield;}
+		// Ring;
+		// PlaySE(snd_song);
+		// loop(40){yield;}
+		// Ring;
+		// PlaySE(snd_song);
+		// loop(150){yield;}
+		// SetSpeed(5,2.5);
+		// End;
+	// }
+	// task Run2{
+		// loop(20){yield;}
+		// loop(30){
+			// Music(220);
+			// loop(5){yield;}
+		// }
+	// }
+	// task Music(alpha){
+		// let obj_note = Obj_Create(OBJ_SPELL);
+		// let coords = [0,0,32,32];
+		// let speed = rand(5,5.5);
+		// let scale = 1.5;
+		// let angle = rand(0,355);
+		// let rotate = rand(-3,3);
+		// let time = 125;
+		// let initspeed = speed;
+		// let color = rand_int(0,7);
+		// alternative (color)
+		// case(0){
+			// coords = [0,0,32,32];
+		// }
+		// case(1){
+			// coords = [32,0,64,32];
+		// }
+		// case(2){
+			// coords = [64,0,96,32];
+		// }
+		// case(3){
+			// coords = [96,0,128,32];
+		// }
+		// case(4){
+			// coords = [128,0,160,32];
+		// }
+		// case(5){
+			// coords = [160,0,192,32];
+		// }
+		// case(6){
+			// coords = [192,0,224,32];
+		// }
+		// case(7){
+			// coords = [224,0,256,32];
+		// }
+		// Obj_SetPosition(obj_note,GetPlayerX,GetPlayerY);
+		// Obj_SetSpeed(obj_note,speed);
+		// Obj_SetAngle(obj_note,270+rand(-10,10));
+		// ObjEffect_SetTexture(obj_note,img_effect);
+		// ObjEffect_SetRenderState(obj_note,ADD);
+		// ObjEffect_SetPrimitiveType(obj_note,PRIMITIVE_TRIANGLEFAN);
+		// ObjEffect_CreateVertex(obj_note,4);
+		// ObjEffect_SetVertexUV(obj_note,0,coords[0],coords[1]);
+		// ObjEffect_SetVertexUV(obj_note,1,coords[2],coords[1]);
+		// ObjEffect_SetVertexUV(obj_note,2,coords[2],coords[3]);
+		// ObjEffect_SetVertexUV(obj_note,3,coords[0],coords[3]);
+		// ObjEffect_SetVertexXY(obj_note,0,-16,-16);
+		// ObjEffect_SetVertexXY(obj_note,1,16,-16);
+		// ObjEffect_SetVertexXY(obj_note,2,16,16);
+		// ObjEffect_SetVertexXY(obj_note,3,-16,16);
+		// ascent(i in 0..4){
+			// ObjEffect_SetVertexColor(obj_note,i,alpha,255,255,255);
+		// }
+		// while(!Obj_BeDeleted(obj_note)){
+			// Obj_SetSpeed(obj_note,speed);
+			// ObjEffect_SetScale(obj_note,scale,scale);
+			// ObjEffect_SetAngle(obj_note,0,0,angle);
+			// angle += rotate;
+			// ascent(i in 0..4){
+				// ObjEffect_SetVertexColor(obj_note,i,alpha,255,255,255);
+			// }
+			
+			// if (time <= 0){
+				// Obj_Delete(obj_note);
+			// }
+			// ObjSpell_SetIntersecrionCircle(obj_note,Obj_GetX(obj_note),Obj_GetY(obj_note),scale*16,3,true);
+			// speed -= initspeed*0.008;
+			// scale += 0.01;
+			// alpha -= 1.76;
+			// time --;
+			// yield;
+		// }
+	// }
+	// task Ring{
+		// let obj_ring = Obj_Create(OBJ_SPELL);
+		// let scale = 0;
+		// let _add = 6;
+		// let _alpha = 180;
+		// Obj_SetPosition(obj_ring,GetPlayerX,GetPlayerY);
+		// ObjEffect_SetTexture(obj_ring,img_ring);
+		// ObjEffect_SetRenderState(obj_ring,ADD);
+		// ObjEffect_SetPrimitiveType(obj_ring,PRIMITIVE_TRIANGLEFAN);
+		// ObjEffect_CreateVertex(obj_ring,4);
+		// ObjEffect_SetVertexUV(obj_ring,0,0,0);
+		// ObjEffect_SetVertexUV(obj_ring,1,300,0);
+		// ObjEffect_SetVertexUV(obj_ring,2,300,300);
+		// ObjEffect_SetVertexUV(obj_ring,3,0,300);
+		// ObjEffect_SetVertexXY(obj_ring,0,0,0);
+		// ObjEffect_SetVertexXY(obj_ring,1,0,0);
+		// ObjEffect_SetVertexXY(obj_ring,2,0,0);
+		// ObjEffect_SetVertexXY(obj_ring,3,0,0);
+		// while(!Obj_BeDeleted(obj_ring)){
+			// ObjEffect_SetVertexXY(obj_ring,0,-scale,-scale);
+			// ObjEffect_SetVertexXY(obj_ring,1,scale,-scale);
+			// ObjEffect_SetVertexXY(obj_ring,2,scale,scale);
+			// ObjEffect_SetVertexXY(obj_ring,3,-scale,scale);
+			// ascent(i in 0..4){
+				// ObjEffect_SetVertexColor(obj_ring,i,_alpha,255,0,0);
+			// }
+			// ObjSpell_SetIntersecrionCircle(obj_ring,Obj_GetX(obj_ring),Obj_GetY(obj_ring),scale*0.8,2,true);
+			// scale += _add;
+			// _add -= 0.1;
+			// _alpha -= 3.2;
+			// if (_alpha <= 0){
+				// Obj_Delete(obj_ring);
+			// }
+			// yield;
+		// }
+	// }
+	// @Initialize{
+		// LoadGraphic(img_ring);
+		// LoadGraphic(img_effect);
+		// LoadSE(snd_spell);
+		// LoadSE(snd_song);
+		// Run;
+		// Run2;
+	// }
+
+	// @MainLoop{
+		// CollectItems;
+		// yield;
+	// }
+
+	// @Finalize{
+	// }
+// }

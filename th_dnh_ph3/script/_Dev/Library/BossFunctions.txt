@@ -77,6 +77,7 @@ function SetAttackPose(dur){
 
 
 function SetBossHitbox(enem,ex,ey){
+	if(length(GetEnemyBossObjectID)==0){return;}
 	let boss = GetEnemyBossObjectID[0];
 	if(Obj_GetValueD(enem,FLAG_INTERSECTION,true)){
 		let s = OR_GetScale(enem);

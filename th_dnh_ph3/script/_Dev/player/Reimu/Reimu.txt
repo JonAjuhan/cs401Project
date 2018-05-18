@@ -1,0 +1,93 @@
+#TouhouDanmakufu[Player]
+#ScriptVersion[3]
+#Title["Reimu Hakurei"]
+#Text["Reimu Hakurei[r]Speed: 4.5,2[r]Shot: Persuasion Needle[r]Spell 1: Dream Sign \"Evil Sealing Circle\"[r]Spell 2: Dream Sign \"Duplex Barrier\"[r]Version 1.0"]
+#Image["./img/ReimuCutin.png"]
+#ReplayName["Reimu"]
+
+#include "./Function.txt"
+#include "./Spell.txt"
+
+let objPlayer = GetPlayerObjectID;
+let alive = true;
+
+@Initialize{
+	SetPlayerAutoItemCollectLine(130);
+	SetPlayerSpeed(4.5,2);
+	ObjPlayer_AddIntersectionCircleA1(objPlayer,0,0,1,20);
+	Load;
+	
+	SetCommonData("BorderOfLifeAndDeathNormal",      15); // 6 //12
+	SetCommonData("BorderOfLifeAndDeathExtended",    24); //12 //18
+	SetCommonData("BorderOfLifeAndDeathVeryExtended",60); //30 //60
+	let bolad = GetCommonData("BorderOfLifeAndDeathNormal",12);
+	SetCommonData("BorderOfLifeAndDeath",bolad);
+	SetPlayerRebirthFrame(bolad);
+
+	TShoot;
+	TOption(-30,   0, -15, -18, 267, 270);
+	TOption( 30,   0,  15, -18, 270, 273);
+	TOption(-15, -32,  -8, -27, 270, 273);
+	TOption( 15, -32,   8, -27, 267, 270);
+	TDraw;
+	THitbox;
+	TCircle; //
+}
+
+@MainLoop{
+	yield;
+}
+
+@Event{
+	alternative(GetEventType)
+	case(EV_REQUEST_SPELL){
+		if (GetPlayerSpell >= 1){
+			SetScriptResult(true);
+			SetPlayerSpell(GetPlayerSpell-1);
+			if (GetVirtualKeyState(VK_SLOWMOVE) == KEY_PUSH || GetVirtualKeyState(VK_SLOWMOVE) == KEY_HOLD){
+				TSpell2;
+			}
+			else{
+				TSpell1;
+			}
+		}
+		else{
+			SetScriptResult(false);
+		}
+	}
+	case(EV_PLAYER_SHOOTDOWN){
+		alive = false;
+	}
+	case(EV_PLAYER_REBIRTH){
+		alive = true;
+		SetPlayerSpell(3);
+		SetPlayerInvincibilityFrame(180);
+		// TCircle;
+		TBlink;
+	}
+	case(EV_GRAZE){
+		PlaySound(3,80);
+		TGrazeEffect;
+	}
+	case(EV_HIT){
+		PlaySound(4,80);
+		TDeathEffect;
+	}
+	case(EV_GET_ITEM){
+		PlaySound(5,80);
+		let itemType = GetEventArgument(0);
+		alternative(itemType)
+			case(ITEM_SPELL){
+				// WriteLog("ITEM_SPELL");
+			}
+			case(ITEM_SPELL_S){
+				// WriteLog("ITEM_SPELL_S");
+			}
+			case(ITEM_POWER){
+				// WriteLog("ITEM_POWER");
+			}
+			case(ITEM_POWER_S){
+				// WriteLog("ITEM_POWER_S");
+			}
+	}
+}

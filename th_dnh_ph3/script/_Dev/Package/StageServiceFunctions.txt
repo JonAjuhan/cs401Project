@@ -1,0 +1,52 @@
+//Functions that, for one reason or another, 
+//need to be called by the package script
+//but are "used" by stages
+
+task TFreezeStage(t){
+	let targ = GetTransitionRenderTargetName();
+	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjPrim_SetTexture(obj,targ);
+	ObjSprite2D_SetSourceRect(obj, 0,0,GetScreenWidth,GetScreenHeight);
+	ObjSprite2D_SetDestRect  (obj, 0,0,GetScreenWidth,GetScreenHeight);
+	Obj_SetRenderPriorityI(obj,100);
+	loop(t){
+		PauseStageScene(false);
+		RenderToTextureA1(targ, 0, 99, true);
+		ObjPrim_SetTexture(obj,targ);
+		PauseStageScene(true);
+		yield;
+	}
+	PauseStageScene(false);
+	Obj_Delete(obj);
+}
+
+
+
+
+task TMoveObjects(argses){
+	ascent(i in 0..length(argses)){
+		TMoveObject(argses[i]);
+		task TMoveObject(args){
+			let obj = args[0];
+			let del = args[1];
+			let x1 = args[2];
+			let y1 = args[3];
+			let dur = args[4];
+			
+			if(del!=0){ loop(del){yield;} }
+			if(dur!=0){
+				let x0 = ObjRender_GetX(obj);
+				let y0 = ObjRender_GetY(obj);
+				let dx = (x1-x0)/dur;
+				let dy = (y1-y0)/dur;
+				
+				ascent(i in 0..dur){
+					ObjRender_SetX(obj,x0+dx*i);
+					ObjRender_SetY(obj,y0+dy*i);
+					yield;
+				}
+			}
+			ObjRender_SetPosition(obj,x1,y1,0);
+		}
+	}
+}

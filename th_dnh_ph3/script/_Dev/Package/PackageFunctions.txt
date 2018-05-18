@@ -638,7 +638,7 @@ function MakeChoicePaged(bx, by, select_texts, startindex, perpage, canceltype, 
 	
 	let objPageIcons = [];
 	ascent(i in 0..page_count){
-		let obj = MakeSprite(dirpack~"img/MenuSheet.png",t_priority,[577,129,591,143],[7,7]);
+		let obj = MakeSprite2(dirpack~"img/MenuSheet.png",t_priority,[577,129,591,143],[7,7]);
 		ObjRender_SetPosition(obj, bx + 24*i, by-16, 0);
 		ObjRender_SetColor(obj,128,128,128);
 		objPageIcons = objPageIcons ~ [obj];
@@ -815,7 +815,7 @@ function MakeChoiceNameEntry(maxlength,initstr, entry_row){
 	let pri = 19;
 	let str = initstr;
 	let pref = vtos( "3s", itoa(entry_row+1)~"." )~" ";
-	
+		
 	//positioning for "keyboard"
 	let dx = 20;
 	let dy = dx;
@@ -861,10 +861,13 @@ function MakeChoiceNameEntry(maxlength,initstr, entry_row){
 	//////////////////////////////////////////////////////////////////////
 	// vDoing things with them
 	
+	while(GetVirtualKeyState(VK_OK)!=KEY_FREE || GetVirtualKeyState(VK_CANCEL)!=KEY_FREE){yield;}
+	
 	let X=0;
 	let Y=0;
 	let hor = 13;
 	let ver = 7;
+	if(length(str)>0){ X=12; Y=6; }
 	
 	yield;
 	loop{
@@ -986,21 +989,272 @@ function SetTextSprites(sobjs,str){
 
 
 
-// function CreateSprite(x, y, img, source, priority){
-	// let obj = ObjPrim_Create(OBJ_SPRITE_2D);
-	// ObjPrim_SetTexture(obj, img);
-	// Obj_SetRenderPriorityI(obj, priority);
-	// ObjSprite2D_SetSourceRect(obj, source[0], source[1], source[2], source[3]);
-	// ObjSprite2D_SetDestCenter(obj);
-	// ObjRender_SetPosition(obj, x, y, 0);
-	// return obj;
-// }
+
+function MakeChoicePlayerOld(){ //WIP
+	let priority = 10;
+	
+	let X0 = GetScreenWidth/2;
+	let Y0 = GetScreenHeight/2;
+	
+	// let Dx = 100;
+	let Dx = 400;
+	let Dy = 20;
+	
+	//Running index relative to original array,
+	//rather than the array holding the sprites that keeps getting shuffled around
+	let ind = GetAreaCommonData("SCORE","PrevPlayerSelection",0);
+	
+	// let players = GetCommonData("AllPlayerPaths",player_paths); 
+	let players = GetCommonData("AllPlayerPaths",[]); //don't rely on globals being defined
+	
+	let len = length(players);
+	let mx = Dx*length(players)/2; //TODO test, with both parities
+	// let mx = GetScreenWidth/2 * 1/Dx*len ;
+	// let mx = GetScreenWidth/2;
+	
+	let objs = [];
+	// let imgs=[]; let titles=[]; let texts=[];
+	
+	ascent(i in 0..len){
+		let img   = GetScriptInfoA1(players[i],INFO_SCRIPT_IMAGE);
+		let title = GetScriptInfoA1(players[i],INFO_SCRIPT_TITLE);
+		let text  = GetScriptInfoA1(players[i],INFO_SCRIPT_TEXT);
+		LoadTexture(img);
+		
+		// let obj = MakeSprite1(img,priority, [1,1,GetTextureWidth(img)-1,GetTextureHeight(img)-1]);
+		let obj = MakeSprite1(img,priority, [0,0,449,499]);
+		ObjRender_SetScaleXYZ(obj,0.75,0.75,1);
+		ObjRender_SetY(obj,Y0);
+		// ObjRender_SetX(obj, X0+(Dx*(i-ind))%mx );
+		ObjRender_SetX(obj, X0+(Dx*(i-ind))%mx );
+		ObjRender_SetColor(obj,128,128,128);
+		
+		WriteLog(title);
+		WriteLog(text);
+		WriteLog(img);
+		WriteLog(obj);
+		
+		objs=objs~[obj]; 
+		// imgs=imgs~[img]; titles=titles~[title]; texts=texts~[text];
+	}
+	
+	//Rotate array to put desired selection at index 0
+	function Shift(change){
+		let tmp=[]; let tmp2=[];
+		ascent(i in 0..len){
+			tmp=tmp~  [ objs[    (i+len-change)%len ] ];
+			tmp2=tmp2~[ players[ (i+len-change)%len ] ];
+		}
+		objs = tmp;
+		players = tmp2;
+		ind = (ind+change)%len;
+	}
+	
+	//Move each object to the appropriate position for its index
+	sub UpdatePos{
+		ascent(i in 0..len){ MoveToPos(i); }
+		task MoveToPos(i){
+			let obj = objs[i];
+			// WriteLog("Move "~itoa(obj)~" (ind "~itoa(i)~") to position");
+			let x0 = ObjRender_GetX(obj);
+			// let x1 = X0+(Dx*i)%mx;
+			let x1 = X0+(Dx*i); if( x1 > X0+mx){x1 -= 2*mx;}
+			let dx = x1-x0;
+			// WriteLog("From "~itoa(x0)~" to "~itoa(x1)~" (dx="~itoa(dx)~")");
+			if((|dx|) > mx){ ObjRender_SetX(obj,x1); return; } //don't visibly fly across the whole screen
+			let al0 = 128; if( (|x0-X0|) < Dx/2 ){ al0=255; }
+			let al1 = 128; if(i==0){ al1=255; }
+			let dAl = al1-al0;
+			descent(j in 0..8){
+				ObjRender_SetX(obj, x1-dx*j/8);
+				ObjRender_SetColor(obj,al1-dAl*j/8,al1-dAl*j/8,al1-dAl*j/8);
+				yield;
+			}
+			ObjRender_SetX(obj,x1);
+			// WriteLog("Done moving "~itoa(obj)~" (ind "~itoa(i)~") to position");
+			// WriteLog("Final position "~itoa(ObjRender_GetX(obj)));
+		}
+	}
+	
+	
+	
+
+	Shift(-ind); //arrange array with selection at 0
+	UpdatePos;
+	
+	loop{
+		if(IsKey(VK_RIGHT)){
+			Shift(-1);
+			UpdatePos;
+			SE_Play(se_select,100);
+		}
+		if(IsKey(VK_LEFT)){
+			Shift(1);
+			UpdatePos;
+			SE_Play(se_select,100);
+		}
+		if(IsKey(VK_OK)){
+			SE_Play(se_confirm,100);
+			break;
+		}
+		if(IsKey(VK_CANCEL)){
+			SE_Play(se_cancel,100);
+			ind = -1;
+			break;
+		}
+		yield;
+	}
+	
+	ascent(i in 0..length(objs)){Obj_Delete(objs[i]);}
+	
+	return ind;
+}
+
+
+
+
+function MakeChoicePlayer(){ //WIP
+	let priority = 10;
+	
+	let X0 = GetScreenWidth/2;
+	let Y0 = GetScreenHeight/2;
+	
+	// let Dx = 350; //400
+	let Dx = 450; //400
+	let Dy = 20;
+	
+	let ind = GetAreaCommonData("SCORE","PrevPlayerSelection",0);
+	let players = GetCommonData("AllPlayerPaths",[]); //don't rely on globals being defined
+	
+	let len = length(players);
+	let mx = Dx*length(players)/2; //TODO test, with both parities
+	
+	let objs = [];
+	let imgs = [];
+	
+	function GetOffset(i){
+		let off = Dx*(i-ind);
+		// if(off > mx){ off-=2*mx; }
+		return off;
+	}
+	
+	ascent(i in 0..len){
+		let img   = GetScriptInfoA1(players[i],INFO_SCRIPT_IMAGE);
+		LoadTexture(img);
+		
+		let obj = MakeSprite1(img,priority, [0,0,449,499]);
+		// ObjRender_SetScaleXYZ(obj,0.75,0.75,1);
+		ObjRender_SetScaleXYZ(obj,0.85,0.85,1);
+		ObjRender_SetY(obj,Y0);
+		ObjRender_SetX(obj, X0+GetOffset(i) );
+		ObjRender_SetColor(obj,128,128,128);
+		
+		objs=objs~[obj]; 
+		imgs=imgs~[img];
+	}
+	
+	//Move each object to the appropriate position
+	sub UpdatePos{
+		ascent(i in 0..len){ MoveToPos(i); }
+		task MoveToPos(i){
+			let obj = objs[i];
+			let x0 = ObjRender_GetX(obj);
+			let x1 = X0+GetOffset(i);
+			let dx = x1-x0;
+			// let al0 = 128; if( (|x0-X0|) < Dx/2 ){ al0=255; }
+			let al0 = 128; if( (|x0-X0|) < Dx/2 ){ al0=255; } //if it was previously selected
+			let al1 = 128; if( i==ind ){ al1=255; }
+		
+			// if((|dx|) > mx){ 
+			// if((|dx|) > 1.5*mx){ 
+			// if(   ObjRender_GetX(obj)-GetTextureWidth(imgs[i])/2 > GetScreenWidth
+			   // || ObjRender_GetX(obj)+GetTextureWidth(imgs[i])/2 < 0 ){ 
+				// ObjRender_SetX(obj,x1); 
+				// ObjRender_SetColor(obj,al1,al1,al1); 
+				// return; 
+			// } //don't visibly fly across the whole screen
+			
+			let dAl = al1-al0;
+			descent(j in 0..8){
+				ObjRender_SetX(obj, x1-dx*j/8);
+				ObjRender_SetColor(obj,al1-dAl*j/8,al1-dAl*j/8,al1-dAl*j/8);
+				
+				if(ObjRender_GetX(obj)-GetTextureWidth(imgs[i])*ObjRender_GetScaleX(obj) > X0+mx){
+					ObjRender_SetX(obj, X0-mx);
+				}else if(ObjRender_GetX(obj)+GetTextureWidth(imgs[i])*ObjRender_GetScaleX(obj) < X0-mx){
+					ObjRender_SetX(obj, X0+mx);
+				}
+					
+				yield;
+			}
+			ObjRender_SetX(obj,x1);
+		}
+	}
+	UpdatePos;
+	
+	loop{
+		if(IsKey(VK_RIGHT)){
+			SE_Play(se_select,100);
+			ind = (ind+1)%len;
+			UpdatePos;
+			loop(8){yield;if(GetVirtualKeyState(VK_RIGHT)==KEY_PULL){break;}}
+		}
+		if(IsKey(VK_LEFT)){
+			SE_Play(se_select,100);
+			ind = (ind+len-1)%len;
+			UpdatePos;
+			loop(8){yield;if(GetVirtualKeyState(VK_LEFT)==KEY_PULL){break;}}
+		}
+		if(IsKey(VK_OK)){
+			SE_Play(se_confirm,100);
+			break;
+		}
+		if(IsKey(VK_CANCEL)){
+			SE_Play(se_cancel,100);
+			ind = -1;
+			break;
+		}
+		yield;
+	}
+	
+	ascent(i in 0..length(objs)){Obj_Delete(objs[i]);}
+	
+	return ind;
+}
 
 
 
 
 
-function MakeSprite (texture, priorityInt, source, center ) {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function MakeSprite1(img, priority, source){
+	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjPrim_SetTexture(obj, img);
+	Obj_SetRenderPriorityI(obj, priority);
+	ObjSprite2D_SetSourceRect(obj, source[0], source[1], source[2], source[3]);
+	ObjSprite2D_SetDestCenter(obj);
+	return obj;
+}
+
+
+
+
+
+function MakeSprite2 (texture, priorityInt, source, center ) {
 	let obj = ObjPrim_Create(OBJ_SPRITE_2D);
 	ObjPrim_SetTexture(obj, texture);
 	Obj_SetRenderPriorityI(obj, priorityInt);

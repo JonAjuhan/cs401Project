@@ -1,59 +1,489 @@
-///////////////////////////////////////////////
-//Primitive types
-let TYPE_INT = 9;
-let TYPE_REAL = 2; let TYPE_NUMBER = 2;
-let TYPE_BOOL = 2+10;
-let TYPE_CHAR = -1;
-let TYPE_ARRAY = 10;
-let TYPE_STRING = 3; //10+1;
+let TYPE_REAL = 0;
+let TYPE_BOOL = 1;
+let TYPE_CHAR = 2;
+let TYPE_ARRAY = 3;
+let TYPE_STRING = 4; let TYPE_ARRAY_CHAR = 4;
+let TYPE_NAN = -1;
+let TYPE_UNKNOWN = -2;
+
+let TYPE_NUMBER = 0; let TYPE_NUM = 0;
+
+//Thanks, Drake!
+function typeof(v){
+	let len = length(v);
+	let strlen = length(ToString(v));
+	let truthy = !!(length(v)==0 && max((|v|), 0));
+	if(v != v){ return TYPE_NAN; } // NaN
+	if(truthy){
+		if(strlen >= 8){       return TYPE_REAL;    } 
+		else if(strlen == 1){  return TYPE_CHAR;    } 
+		else if(strlen == 4){  return TYPE_BOOL;    } // true
+		else{                  return TYPE_UNKNOWN; }
+	}else{
+		if(len > 0){ // array
+			//v[0..0] gives empty array of same type, 
+			//and ToString on arrays of types other than char adds []s
+			let stringy = (length(ToString(v[0..0])) == 0); 
+			if(stringy){ return TYPE_STRING; }
+			else{        return TYPE_ARRAY;  }
+		}else{ // len == 0
+			if(strlen == 8){      return TYPE_REAL;    } // 0
+			else if(strlen == 5){ return TYPE_BOOL;    } // false
+			else if(strlen == 0){ return TYPE_STRING;  } // empty string
+			else if(strlen == 2){ return TYPE_ARRAY;   } // empty array
+			else{                 return TYPE_UNKNOWN; } // just a failsafe
+		}
+	}
+}
+
+
+
+
+
+
+
+
+//smarter, easier-to-remember tostring
+function tost(v){
+	alternative(typeof(v))
+	case(TYPE_REAL){
+		let str = ToString(v);
+		let arr = SplitString(v,'.');
+		if(length(arr)==2){ 
+			if( ator(arr[1])==0 ){
+				str = arr[0];
+			}
+			else if( rtoa(ator(v))==rtoa(v) ){
+				let end = min(2,length(arr[1]));
+				str = arr[0]~"."~arr[1][0..end];
+			}
+		}
+		return str;
+	}
+	case(TYPE_ARRAY){
+		let r = "[";
+		ascent(i in 0..length(v)){ r=r~" "~tost(v[i])~","; }
+		r = erase(r,length(r)-1)~" ]"; //remove last comma, add end bracket
+		return r;
+	}
+	case(TYPE_STRING){ return v; }
+	// case(TYPE_STRING){ return "\""~v~"\""; }
+	// case(TYPE_CHAR){ return "'"~[v]~"'"; }
+	others{ return ToString(v); }
+}
+
+
+
+
+//Desired behavior of casting to TYPE_REAL:
+//if it's a string representing a valid number (with no out-of-place chars), return that number
+//if it's a bool or a string representing a bool, give 0 or 1
+//if it's any other string or array, sum up the value of the elements
+//if it's a char, give its value
+
+function cast(v,type){
+	alternative(typeof(type))
+	case(TYPE_REAL){ //cast to a defined type
+		alternative(type)
+		case(TYPE_REAL){ //cast to real
+			alternative(typeof(v))
+			case(TYPE_REAL){ return v; }
+			case(TYPE_CHAR){ return v+0; }
+			case(TYPE_BOOL){ return [0,1][v]; }
+			case(TYPE_ARRAY,TYPE_ARRAY_CHAR){
+				if(typeof(v)==TYPE_STRING){
+					//Determine if string represents a valid number
+					if(length(SplitString(v,"1234567890.-"))==0){ //only valid characters
+						if(length(SplitString(v,".-"))>0){ //at least some numbers
+							if(length(SplitString(v,"-"))==1 && v[length(v)-1] != '-' ){ //only one -, which must be first char
+								if( length(SplitString(v,"."))==2 || length(SplitString(v,"."))==1  ){ //one . in middle or no .s
+									return ator(v);
+								}
+							}
+						}
+					}
+					// //Determine if string represents an array
+					// if(length(v)>0 && v[0]=='[' && v[length(v)-1]==']'){ //start and end with brackets
+						// if(length(SplitString(v,"[")) == length(SplitString(v,"]"))){ //balanced
+							// // let quotbal = ( length(SplitString(v,"\""))%2==0 );
+							// // let numcommasubs = length(SplitString(v,","));
+							// let a = StringToArray(v);
+							// return a;
+							
+						// }
+					// }
+				}
+				//Add up values of array elements
+				let r = 0;
+				ascent(i in 0..length(v)){ r += cast(v[i],TYPE_REAL); }
+				return r;
+			}
+			case(TYPE_NAN){ return NULL; }
+			others{ return ator(ToString(v)); }
+		}
+		case(TYPE_STRING){ //cast to string
+			return tost(v);
+		}
+		case(TYPE_BOOL){    return ( !!(length(v)==0 && max((|v|), 0)) || ToString(v)=="true" ); }
+		case(TYPE_CHAR){ //cast to char
+			//TODO
+			let s = ToString(v);
+			if(length(s)==0){ return ' '; }
+			return s[0];
+			// return s[0]; 
+		}
+		case(TYPE_ARRAY){   
+			if(typeof(v) >= TYPE_ARRAY){ return v; }
+			else{ return [v]; }
+		}
+		case(TYPE_NAN){     return ator(ToString(v))/0; } //todo? I'm honestly not sure why I would cast to NAN
+		others{ return cast(v,TYPE_REAL); }
+	}
+	case(TYPE_ARRAY){
+		//Gave it an array to make value compatible with
+		if(length(type)>0){
+			return [ cast(v,type[0]) ];
+		}
+		else{
+			return [v];
+			// if(typeof(v) >= TYPE_ARRAY){ return v; }
+			// else{ return [v]; }
+		}
+		// if(depth(r)!=depth(type)){ r = [v]; } //should result in recursively adding brackets until same depth?
+	}
+	others{
+		return cast(v,typeof(type));
+	}
+}
+
+
+function compatible(a,b){
+	if(typeof(a)==typeof(b)){
+		if(typeof(a)!=TYPE_ARRAY){
+			return true;
+		}
+		else{
+			if(length(a)==0 || length(b)==0){ return true; }
+			else{
+				return compatible(a[0],b[0]);
+			}
+		}
+	}
+	else{
+		return false;
+	}
+}
+
+
+
+
+function truthy(v){
+	return ( !!(length(v)==0 && max((|v|), 0)) || ToString(v)=="true" );
+}
+
+
+
+
+//Depth of an array
+function depth(a){
+	if(length(a)>0){
+		return depth(a[0]) + 1;
+	}
+	else{ return 0; }
+}
+
+
+
+
+function strcontains(s,d){ //string,delimeter
+	if(length(s)==0){return false;}
+	if(length(SplitString(s,d)[0]) != length(s)){ return true; }
+	// if(length(SplitString(s,d))==0){return true;}
+	return false;
+}
+
+//find all indices in the string matching the delimeter
+function strfind(s,d){ 
+	if(length(s)==0){return [];}
+	let ss = SplitString(s,d);
+	if(length(ss)==length(s)){return [];}
+	let a = [];
+	if(length(ss)==0){ ascent(i in 0..length(s)){a=a~[i];} return a; }
+	let pos = -1; 
+	ascent(i in 0..length(ss)){
+		while(length(SplitString(ss[i][pos+1],d))==0){pos++;a=a~[pos];}
+		pos = pos+length(ss[i]);
+		a = a~[pos];
+	}
+	return pos;
+}
+
+//Search for a substring (linear)
+function strsearch(s,ts){
+	let len = length(ts);
+	if(len==0){return 0;}
+	ascent(i in 0..length(s)-len){
+		if(s[i..i+len]==ts){return i;}
+	}
+	return -1;
+}
+
+
+
+
+
+
+
+//Debug tostring, to make sure it's clear when written to the log
+//that something is a string or char
+function dbtost(v){
+	alternative(typeof(v))
+	case(TYPE_STRING){ return "\""~v~"\""; }
+	case(TYPE_CHAR){ return "'"~[v]~"'"; }
+	case(TYPE_ARRAY){
+		let r = "[";
+		ascent(i in 0..length(v)){ r=r~" "~dbtost(v[i])~","; }
+		r = erase(r,length(r)-1)~" ]"; //remove last comma, add end bracket
+		return r;
+	}
+	others{ return tost(v); }
+}
+
+
+function TypeToString(t){
+	if(typeof(t)!=TYPE_REAL){return TypeToString(typeof(t)); }
+	alternative(t)
+	case(TYPE_REAL)   {return "TYPE_REAL";}
+	case(TYPE_ARRAY)  {return "TYPE_ARRAY";}
+	case(TYPE_STRING) {return "TYPE_STRING";}
+	case(TYPE_BOOL)   {return "TYPE_BOOL";}
+	case(TYPE_CHAR)   {return "TYPE_CHAR";}
+	case(TYPE_NAN)    {return "TYPE_NAN";}
+	case(TYPE_UNKNOWN){return "TYPE_UNKNOWN";}
+	others{ return TypeToString(typeof(t)); }
+}
+
+
+
+
+
+// function StringToArray(s){
+	// let valid = true;
+	// let brdepth = 0; 
+	// let instr = false; let inchar = false; 
+	// let charpart = -1; // "'a'"[charpart]
+	// let truepart = -1; let intrue = false;
+	// let falsepart = -1; let infalse = false;
+	// let esc = false; //whether last was an escape character
+	// let cma = false; //whether last was a comma separator
+	// let lbr = false; //whether last was an open bracket
+	// let rbr = false; //whether last was a close bracket
+	// let dqt = false; let sqt = false; //whether last was a double/single quote
+	// let spc = false; //whether last was a space (outside of a string or char)
+	// let CA = []; //structure of array
+	// let CI = []; //indices of each structure char
+	
+	// // let tmp=SplitString(s," "); s=""; ascent(i in 0..length(tmp)){s=s~tmp[i];}
+	
+	// ascent(i in 0..length(s)-1){
+		// let c = s[i];
+		// alternative(c)
+		// case('['){ if(!instr&&!inchar){ brdepth++; notepos; } }
+		// case(']'){ if(!instr&&!inchar){ brdepth--; notepos; } }
+		// case('"'){ if(!esc  &&!inchar){ instr = !instr; notepos; } }
+		// case('\''){
+			// if(!esc && !instr){
+				// if(charpart==1){ valid=false; }
+				// inchar = !inchar;
+				// if(!inchar){ charpart=-1; }
+				// a=a~[c];
+			// }
+		// }
+		// case(','){ notepos; }
+		// case("\\ "[0]){  } //handled below
+		// case("1234567890-."){}
+		// case("truefalse"){}
+		// others{ if(!instr && !inchar){ valid=false; } }
+		
+		// if(!esc && !instr && !inchar){
+			// if(lbr && c==',' || cma && c==']' || cma && c==','){
+				// valid=false;
+			// }
+			// if(dqt && c=='"' && !instr){ valid=false; }
+			// if(sqt && c=='\''&& !inchar){valid=false; }
+		// }
+		// if(brdepth<0){ valid=false; }
+		
+		// if(inchar){
+			// charpart++;
+			// if(charpart > 2){ valid=false; }
+		// }
+		
+		// esc = (c=="\\ "[0]) && !esc;
+		// cma = ( !instr && !inchar && ( c==',' || cma&&spc ) );
+		// lbr = ( !instr && !inchar && ( c=='[' || lbr&&spc ) );
+		// rbr = ( !instr && !inchar && ( c==']' || rbr&&spc ) );
+		// dqt = ( !instr && !inchar && ( c=='"' || dqt&&spc ) );
+		// sqt = ( !instr && !inchar && ( c=='\''|| sqt&&spc ) );
+		// spc = ( !instr && !inchar &&   c==' ' );
+		
+		// sub notepos{CA=CA~[c];CI=CI~[i];} //note position of array structure char
+		
+		// if(!valid){break;}
+	// }
+	// if(brdepth != 0 || instr || inchar){valid=false;}
+	
+	// let a = [];
+	// let pos = 0;
+	// let brdepth = 0;
+	// ascent(ind in 0..length(CA)){
+		// let c = CA[ind];
+		// let i = CI[ind];
+		// alternative(c)
+		// case('['){ brdepth++; pos=i+1; }
+		// case(']',','){
+			// a = a~WrapDepth(v[pos..i], brdepth); pos=i+1;			
+		// }
+		// case(']'){ brdepth--; }
+	// }
+	// return a;
+	
+	
+	// function WrapDepth(v,d){
+		// if(d==0){return v;}
+		// else{return WrapDepth(v,d-1);}
+	// }
+	
+	
+// }
+
+
+
+
+//Utterly nonfunctional version
+
 //Improved typeof function
-// -Lumps int and real together
+// -Lumps int and real together since I usually just care if it's a number
 // -Distinguishes between array and string
 // -Distinguishes between real and bool
 // -Lump enemy and boss together
-function typeof(obj){
-	alternative(Obj_GetType(obj))
-	case(TYPE_INT){return TYPE_NUMBER;}
-	case(TYPE_REAL){
-		if(ToString(obj)=="true" || ToString(obj)=="false"){return TYPE_BOOL;}
-		else{ return TYPE_NUMBER; }
-	}
-	case(TYPE_ARRAY){
-		if(length(obj) > 0){
-			let contents = typeof(obj[0]); //recursive
-			if(contents==TYPE_CHAR){return TYPE_STRING;}
-		}
-		return TYPE_ARRAY;
-	}
-	case(TYPE_CHAR){return TYPE_CHAR;}
-	// case(OBJ_ENEMY,OBJ_ENEMY_BOSS){return OBJ_ENEMY;}
-	case(103,104){return 103;}
-	others{return Obj_GetType(obj);}
-	// others{return atoi(ToString(Obj_GetType(obj)));} //alright listen up fucker
-}
+// function typeof(obj){
+	// // WriteLog(ToString(obj)~" has native type "~TypeToString(Obj_GetType(obj)));
+	// alternative(Obj_GetType(obj))
+	// case(TYPE_INT){return TYPE_REAL;}
+	// case(TYPE_REAL){
+		// if(ToString(obj)=="true" || ToString(obj)=="false"){return TYPE_BOOL;}
+		// else{ return TYPE_REAL; }
+	// }
+	// case(TYPE_ARRAY){
+		// if(length(obj) > 0){
+			// let contents = typeof(obj[0]); //recursive
+			// if(contents==TYPE_CHAR){return TYPE_STRING;}
+		// }
+		// return TYPE_ARRAY;
+	// }
+	// case(TYPE_CHAR){return TYPE_CHAR;}
+	// // case(OBJ_ENEMY,OBJ_ENEMY_BOSS){return OBJ_ENEMY;}
+	// case(103,104){return 103;} //so can use in package
+	// others{return Obj_GetType(obj);}
+	// // others{return atoi(ToString(Obj_GetType(obj)));} //alright listen up fucker
+// }
 //////////////////////////////
 
 
-function cast(v,type){
-	let r;
-	alternative(typeof(type))
-	case(TYPE_NUMBER){ 
-		let s = ToString(v); //for the sake of convenience
-		// alternative(type)
-		alternative(atoi(ToString(type))) //alright fucker you wanna play ball?
-		case(TYPE_INT){     r = atoi(s); }
-		case(TYPE_REAL){    r = ator(s); }
-		case(TYPE_STRING){  r = s; }
-		case(TYPE_BOOL){    r = (s=="true" || atoi(s)!=0); }
-		case(TYPE_CHAR){    r = s[0]; }
-		others{ r = NULL; }
-	}
-	case(TYPE_ARRAY,TYPE_STRING){
-		if(length(type)>0){ r = cast(v,typeof(type[0])); }
-		else{ r = []; }
-	}
-	others{
-		r = NULL;
-	}
-	return r;
-}
+
+//Roughly functional version - my attempt
+
+///////////////////////////////////////////////
+//Primitive types
+// let TYPE_REAL = 2; 
+// let TYPE_BOOL = 2+10;
+// let TYPE_CHAR = -1;
+// let TYPE_ARRAY = 10;
+// let TYPE_STRING = 3; //10+1;
+
+// let TYPE_UNDEFINED = 666; // 1/0, etc
+
+
+
+
+// //I don't think they actually have associated numerical values, so change them?
+
+
+// let TYPE_NUMBER = TYPE_REAL;
+// let TYPE_INT = 9; //I suspect this isn't a real thing
+
+
+
+// //Typeof for primitives
+// function typeof(v){
+	// let s = ToString(v);
+	
+	// if(s=="true" || s=="false"){return TYPE_BOOL;} //TODO can't dist true and "true"
+	
+	// //Try to distinguish TYPE_REAL
+	// if(length(SplitString(s,"1234567890.-"))==0){   //represents a valid number and nothing else
+		// if(length(SplitString(s,"-")) == 1){
+			// if(length(SplitString(s,".")) == 2){
+				// if( length(SplitString(s,".")[1]) == 6 ){ //six decimal places
+					// if( ator(s~"1") != 0 ){ //represents a valid number
+						// return TYPE_REAL;
+					// } //else{WriteLog("not a valid number");}
+				// } // else{WriteLog("wrong number of decimal places");}
+			// } // else{WriteLog("wrong number of .");}
+		// } // else{WriteLog("too many -");}
+	// } // else{WriteLog("non-numeric characters");}
+
+	
+
+	// //Try to distinguish TYPE_ARRAY
+	// if(strcontains(s,"[]")){
+		// if(s[0]=='[' && s[length(s)-1]==']'){ //same number of right and left
+			// if(length(SplitString(s,"[")) == length(SplitString(s,"]"))){ //balanced
+				// if(length(SplitString(s,"[,]"))!=0 || !strcontains(s,",") ){ //TODO more thorough checking
+					// // if(s!="[]"){ // ToString([]) is blank //yeah but ToString([[]]) isn't
+						// return TYPE_ARRAY;						
+					// // }
+				// }
+			// }
+		// }
+	// }
+	
+	// if(length(SplitString(s,"#"))==2 && length(SplitString(s,"."))==2 ){ //might be undefined
+		// if(s[0..3]=="1.#" || s[0..4]=="-1.#"){
+			// return TYPE_UNDEFINED;
+		// }
+	// }
+	
+	
+	// //Try to distinguish TYPE_CHAR
+	// if( length(s)==1 ){    //TODO: can't distinguish 'a' and "a"
+		// // if( (v+0)!=ator(v) ){ //no good, assumes type
+		// // if (s[0]+0)!=ator(s) ){ //cast to real ASCII value - still doesn't actually help atm
+			// return TYPE_CHAR; 
+		// // } 
+	// } 
+	
+	// if(length(v)==0){ return TYPE_ARRAY; } //default to array over string in the case of empty array
+	
+	// //At this point, v is guaranteed to be a non-empty array (...or a char)
+	// //Try determining contents of array
+	
+	// let contents = typeof(v[0]); //TODO: separate shallow version
+	// WriteLog(v);
+	// WriteLog(ToString(v[0])~" is a "~TypeToString(contents));
+	// if(contents == TYPE_REAL || contents == TYPE_BOOL || contents == TYPE_ARRAY){
+		// WriteLog("array");
+		// return TYPE_ARRAY;
+	// }
+	// WriteLog("string");
+	
+	
+	// //Known failure cases:
+	// //-Strings resembling ToStrings of other types are assumed to be that type
+	// //-Cannot distinguish between a char and a string of length 1 - assume string for now
+	// //-Cannot distinguish between brackets in strings and brackets delimiting arrays
+	
+	// return TYPE_STRING;
+// }
+

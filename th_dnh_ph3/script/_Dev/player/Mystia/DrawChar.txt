@@ -1,0 +1,56 @@
+let img_mystia = GetCurrentScriptDirectory~"img/Mystia.png";
+let img_hitbox = GetCurrentScriptDirectory~"img/hitbox.png";
+let drawcount = 0;
+
+task TDrawChar{
+	ObjPrim_SetTexture(objPlayer,img_mystia);
+	loop{
+		let L = ( GetVirtualKeyState(VK_LEFT) == KEY_HOLD || GetVirtualKeyState(VK_LEFT) == KEY_PUSH );
+		let R = ( GetVirtualKeyState(VK_RIGHT)== KEY_HOLD || GetVirtualKeyState(VK_RIGHT)== KEY_PUSH );
+		
+		if (GetVirtualKeyState(VK_RIGHT) == KEY_PUSH || GetVirtualKeyState(VK_RIGHT) == KEY_PULL){
+			drawcount = 0;
+		}
+		if (GetVirtualKeyState(VK_LEFT) == KEY_PUSH || GetVirtualKeyState(VK_LEFT) == KEY_PULL){
+			drawcount = 0;
+		}
+		// SetTexture(img_mystia);
+		if(R && !L){
+			if (drawcount >= 23){ drawcount = 3; }
+			if (drawcount%35 >=  0 && drawcount%35 <  1){ ObjSprite2D_SetSourceRect(objPlayer,32,96,64,144); }
+			if (drawcount%35 >=  1 && drawcount%35 <  2){ ObjSprite2D_SetSourceRect(objPlayer,64,96,96,144); }
+			if (drawcount%35 >=  2 && drawcount%35 <  3){ ObjSprite2D_SetSourceRect(objPlayer,96,96,128,144); }
+			if (drawcount%35 >=  3 && drawcount%35 <  8){ ObjSprite2D_SetSourceRect(objPlayer,128,96,160,144); }
+			if (drawcount%35 >=  8 && drawcount%35 < 13){ ObjSprite2D_SetSourceRect(objPlayer,160,96,192,144); }
+			if (drawcount%35 >= 13 && drawcount%35 < 18){ ObjSprite2D_SetSourceRect(objPlayer,192,96,224,144); }
+			if (drawcount%35 >= 18 && drawcount%35 < 23){ ObjSprite2D_SetSourceRect(objPlayer,224,96,256,144); }
+		}
+		else if(L && !R){
+			if (drawcount >= 23){ drawcount = 3; }
+			if (drawcount%35 >=  0 && drawcount%35 <  1){ ObjSprite2D_SetSourceRect(objPlayer,32,48,64,96); }
+			if (drawcount%35 >=  1 && drawcount%35 <  2){ ObjSprite2D_SetSourceRect(objPlayer,64,48,96,96); }
+			if (drawcount%35 >=  2 && drawcount%35 <  3){ ObjSprite2D_SetSourceRect(objPlayer,96,48,128,96); }
+			if (drawcount%35 >=  3 && drawcount%35 <  8){ ObjSprite2D_SetSourceRect(objPlayer,128,48,160,96); }
+			if (drawcount%35 >=  8 && drawcount%35 < 13){ ObjSprite2D_SetSourceRect(objPlayer,160,48,192,96); }
+			if (drawcount%35 >= 13 && drawcount%35 < 18){ ObjSprite2D_SetSourceRect(objPlayer,192,48,224,96); }
+			if (drawcount%35 >= 18 && drawcount%35 < 23){ ObjSprite2D_SetSourceRect(objPlayer,224,48,256,96); }
+		}
+		else{
+			if (drawcount%40 >=  0 && drawcount%40 <  5){ ObjSprite2D_SetSourceRect(objPlayer,0,0,32,48); }
+			if (drawcount%40 >=  5 && drawcount%40 < 10){ ObjSprite2D_SetSourceRect(objPlayer,32,0,64,48); }
+			if (drawcount%40 >= 10 && drawcount%40 < 15){ ObjSprite2D_SetSourceRect(objPlayer,64,0,96,48); }
+			if (drawcount%40 >= 15 && drawcount%40 < 20){ ObjSprite2D_SetSourceRect(objPlayer,96,0,128,48); }
+			if (drawcount%40 >= 20 && drawcount%40 < 25){ ObjSprite2D_SetSourceRect(objPlayer,128,0,160,48); }
+			if (drawcount%40 >= 25 && drawcount%40 < 30){ ObjSprite2D_SetSourceRect(objPlayer,160,0,192,48); }
+			if (drawcount%40 >= 30 && drawcount%40 < 35){ ObjSprite2D_SetSourceRect(objPlayer,192,0,224,48); }
+			if (drawcount%40 >= 35 && drawcount%40 < 40){ ObjSprite2D_SetSourceRect(objPlayer,224,0,256,48); }
+		}
+		
+		ObjSprite2D_SetDestCenter(objPlayer);
+		
+		// DrawGraphic(GetPlayerX,GetPlayerY);
+		drawcount++;
+		yield;
+	}
+}
+

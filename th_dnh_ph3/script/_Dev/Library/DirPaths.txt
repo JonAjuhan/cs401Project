@@ -34,3 +34,4 @@ let dirshot = root~"/shot/";
 let dirshader = root~"/Library/shader/";
 let dirscreenshot = root~"/Screenshot/";
 let dirplayer = root~"/player/";
+let dirfreeplayer = root~"./../player/";
