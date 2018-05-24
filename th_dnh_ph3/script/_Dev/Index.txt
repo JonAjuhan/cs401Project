@@ -2,7 +2,7 @@
 #include "./Library/Resources.txt"	//Basic resources used to do other things
 #include "./Library/Functions.txt"	//Larger functions with more narrow purposes
 #include "./Library/ExtendedDNF.txt" //Functions extending DNF's library
-//System/"in the background" libraries
+//Other essential libraries
 #include "./shot/AllStarShot_Const_Andi.txt"	//Rearranged version of AllStarShot
 #include "./Library/selibrary.txt"  //constants for sound effects
 #include "./Library/DirPaths.txt"	//Constants for directories and function to get root script directory
@@ -21,11 +21,10 @@
 #include "./Library/AndiEffects.txt"   //Custom effects library
 #include "./Library/Cutin/Cutin.txt"   //Spellcard cutins and history
 #include "./Library/aura_anim.txt"     //Fancy aura on the boss
-#include "./Library/OzzieEffects.txt"  //the effects library I was using before writing my own
+// #include "./Library/OzzieEffects.txt"  //the effects library I was using before writing my own
 #include "./Library/ShaderFunctions.txt" //WIP
 //Other libraries
 #include "./Library/Dialogue.dnh" //Dialogue system
-// #include "./Library/MagicCircle.txt" //kind of janky atm //replaced
 #include "./Library/LazyAlias.txt"	//shortened function names
 
 //Extra libraries

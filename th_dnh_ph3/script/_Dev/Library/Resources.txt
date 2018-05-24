@@ -4,7 +4,6 @@
 let CSD = GetCurrentScriptDirectory;
 
 
-
 let MinX=32;
 let MaxX=380;
 let MinY=0;
@@ -32,12 +31,11 @@ let sx = GetStgFrameWidth(); let sy = GetStgFrameHeight(); //(384, 448)
 let cx = sx/2; let cy = sy/2;
 let ex=0; let ey=0; let px=0; let py=0;
 
+let ps=1.00; //Pattern speed
 
 
 
-
-
-function wait(w) { loop(w){ yield; } } 
+// function wait(w) { loop(w){ yield; } } 
 
 //Andi - Interpolates extra frames with fractional part,
 //allowing wait times to be easily/accurately adjusted to, e.g.,
@@ -50,6 +48,18 @@ function waitr(w,counter){
 		yield;
 	}
 }
+
+
+let waitcounter = 0;
+function wait(w){
+	let cnt = waitcounter; waitcounter++;
+	let q = trunc(w);
+	let r = w-q;
+	loop(q){yield;}
+	if((r*cnt)%1 < r){ yield; }
+}
+
+
 
 // function Distance(x1, y1, x2, y2){return ((x1-x2)^2 + (y1-y2)^2)^0.5;}
 
@@ -231,7 +241,8 @@ function tern(cond, iftrue, iffalse){ if(cond){return iftrue;}else{return iffals
 // From Japanese documentation at http://www.geocities.co.jp/SiliconValley-Oakland/9951/pre/th_dnh_help_v3.html
 // // use array instead of ternary operator 
 // let g = [ 7 , - 5 ] [b == 10 ]; / / g is -5 if b is 10
-// //I'm guessing this works by treating false/true as 0/1 and getting the corresponding array element
+//Better way that short-circuits:
+// cond && iftrue || iffalse
 
 
 function xor(a,b){ return (a&&!b)||(b&&!a); }
@@ -499,6 +510,77 @@ function CreateSprite(x, y, img, source, priority){
 	ObjRender_SetPosition(obj, x, y, 0);
 	return obj;
 }
+
+
+
+
+
+
+//
+function DigitToArray(let digit,let count){
+	let res = [];
+	digit = truncate(digit);
+	loop{
+		let tnum = truncate(digit % 10);
+		digit /= 10;
+		res = [tnum] ~ res;
+		if(truncate(digit) == 0){break;}
+	}
+	loop(max(0, count - length(res))){
+		res = [0] ~ res;
+	}
+	return res;
+}
+
+
+
+
+
+
+
+
+
+//Fujiwara no Mokou - rotate around an arbitrary axis
+//convert x,y,z vector to usable yaw/pitch/roll
+function toEuler(x, y, z, let angle){
+	let s=sin(angle);
+	let c=cos(angle);
+	let t=1-c;
+	let yaw; let pitch; let roll;
+	//  normalize the axis
+	let magnitude = (x^2 + y^2 + z^2)^0.5;
+	if (magnitude==0){ return 0; } // error
+	x /= magnitude; y /= magnitude; z /= magnitude;
+
+	if ((x*y*t + z*s) > 0.998) {
+		// north pole singularity detected
+		yaw = 2*atan2(x*sin(angle/2), cos(angle/2));
+		roll = 90;
+		pitch = 0;
+	}else if ((x*y*t + z*s) < -0.998) {
+		// south pole singularity detected
+		yaw = -2*atan2(x*sin(angle/2), cos(angle/2));
+		roll = -90;
+		pitch = 0;
+	}else{
+		yaw = atan2(y * s- x * z * t , 1 - (y*y+ z*z ) * t);
+		roll = asin(x * y * t + z * s) ;
+		pitch = atan2(x * s - y * z * t , 1 - (x*x + z*z) * t);
+	}
+	return [ yaw, pitch, roll ];
+}
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 function SetDebugText(line, s){

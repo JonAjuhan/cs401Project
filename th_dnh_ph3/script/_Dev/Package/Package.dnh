@@ -1011,7 +1011,7 @@ function DebugMenu(){
 							}
 						}
 					}
-					SE_Play(se_pitchuun,100);
+					SE_Play(se_pichuun,100);
 					//doesn't actually save it here but whatever
 				}
 			}

@@ -216,14 +216,15 @@ function GetSongLoop(song){
 	
 	
 	alternative(song)
-	case("Song of the Night Sparrow ~ Night Bird"){         return [145.8    , 292.4   ]; }
-	case("Deaf to All But the Song"){                       return [ 70.7    , 141.38  ]; }
-	case("Last Remote@Magnum Opus"){                        return [ 88.29   , 271.67  ]; }
-	case("Hartmann's Youkai Girl@Magnum Opus"){             return [ 17.12   , 298.97  ]; }
-	case("Bhava-Agra as Seen Through a Child's Mind"){      return [ 66.91   , 115.25  ]; }
-	case("Kid's Festival ~ Innocent Treasures"){            return [153.8865 , 297.23  ]; }
-	case("Flight of the Bamboo Cutter ~ Lunatic Princess"){ return [ 55.56   , 197.72  ]; }
-	case("Flawless Clothing of the Celestials"){            return [ 36.06   , 100.05  ]; }
+	case("Song of the Night Sparrow ~ Night Bird"){         return [145.8    , 292.4     ]; }
+	case("Deaf to All But the Song"){                       return [ 70.7    , 141.38    ]; }
+	case("Last Remote@Magnum Opus"){                        return [ 88.29   , 271.67    ]; }
+	case("Hartmann's Youkai Girl@Magnum Opus"){             return [ 17.12   , 298.97    ]; }
+	case("Bhava-Agra as Seen Through a Child's Mind"){      return [ 66.91   , 115.25    ]; }
+	case("Kid's Festival ~ Innocent Treasures"){            return [153.8865 , 297.23    ]; }
+	case("Flight of the Bamboo Cutter ~ Lunatic Princess"){ return [ 55.56   , 197.72    ]; }
+	case("Flawless Clothing of the Celestials"){            return [ 36.06   , 100.05    ]; }
+	case("Eastern Youkai Beauty"){                          return [ 24.31614,  96.92277 ]; }
 	
 	others{return [0,0];}
 }

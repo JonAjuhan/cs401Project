@@ -1,0 +1,183 @@
+#TouhouDanmakufu[Single]
+#ScriptVersion[3]
+#Title["Sandbox spell 5 - original Master Spark"]
+#Text["series 8: scalable pattern speed"] 
+#System["./system/Andi_System.txt"]
+#Background["./system/Background/Satori/BG_work.txt"]
+
+#include "./Index.txt"
+
+let drate = 24; //24
+let ss=1;
+
+@Event{
+	alternative(GetEventType())
+	case(EV_REQUEST_LIFE){				SetScriptResult(2000);		}
+	case(EV_REQUEST_SPELL_SCORE){		SetScriptResult(5000000);	}
+	case(EV_REQUEST_TIMER) {			SetScriptResult(47);	}
+	case(EV_REQUEST_IS_DURABLE_SPELL) {	SetScriptResult(false);		}
+}
+@Initialize{
+	if(noPlural){	SetBGM("Eastern Youkai Beauty"); }
+	alternative(rank)
+	case(RANK_EASY){	SetCommonData("CurrentSC","Recollection \"Master Spark\"");}
+	case(RANK_NORM){	SetCommonData("CurrentSC","Recollection \"Master Spark\"");}
+	case(RANK_HARD){	SetCommonData("CurrentSC","Recollection \"Master Spark\"");}
+	case(RANK_LUNA){	SetCommonData("CurrentSC","Recollection \"Master Spark\"");}
+	
+	SetShotAutoDeleteClip(32,32,32,32);
+	
+	// boss = CreateBoss("Mystia Lorelai");
+	// renderMystiaIN(boss,1);
+	boss = CreateBossA1("Satori Komeiji",[255,128,196]);
+	renderSatoriSA(boss);
+	
+	MainTask;
+	
+
+}
+@MainLoop
+{
+
+	if(ObjEnemy_GetInfo(boss, INFO_LIFE) <= 0 && !finishing)
+	{
+		finishing = true;
+		DropItemsSpellEnd;
+		TBreakSpell([]);
+		// TBreakNonspell([BREAK_DELAY,45,NULL]);
+	}
+	else {
+		SetBossHitbox(boss,ex,ey);
+	}
+	frame++;
+	yield;
+}
+
+
+task MainTask {
+	// ObjEnemy_SetDamageRate(boss,0,0);
+	ObjEnemy_SetDamageRate(boss,drate,drate/3);
+	ObjMove_SetDestAtFrame(boss, cx, cy-100, 60); //cy-120
+	
+	// SetSpellCard;
+	SetSpellCardA1(1, [], NAZRIN, dircut~"Cutin_Satori.png");
+	// ObjEnemyBossScene_StartSpell(objScene);
+	// ObjEnemyBossScene_SetSpellTimer(objScene,timer*60); //5760
+	
+	//SetCaution;
+	// TSpellImmune;
+	// Aura(boss,255,255,255,64);
+	// SetMagicCircleAlpha(64,64);
+
+	wait(90);
+		
+	// Tmovement(cx-120,cx+120, cy-90,cy-60, 60,240, [MOVE_PLAYERBIAS,2,0,MOVE_MAXSPEED,1.5] );
+	ObjEnemy_SetDamageRate(boss,drate,drate/3);
+	frame = 0;
+	
+	
+	TShoot;
+	
+}
+
+
+
+
+task PoliteBoss{ //avoid clipdeaths
+	let ox=cx; let oy=cy-100;
+	while(!Obj_IsDeleted(boss)){
+		let a = atan2(ey-py,ex-px);
+		let d = min( 80, ((ex-px)^2+(ey-py)^2)^0.5 );
+		let t = (d/30)^0.5;
+		// ObjMove_SetY(boss, ey + (oy-d - ey)/(30*(d/30)^0.5));
+		ObjMove_SetY(boss, ( (ey+(ey-d - ey)/(30*(d/30)^0.5))*29 + oy )/30 );
+		yield;
+	}
+}
+
+
+
+
+
+task TShoot{
+	wait(60);
+	// PoliteBoss; //try to avoid clipdeaths, since player has to get close
+	
+	// let bArc = 730; //720 //750 undodgeable //730 leaves a nice window of opportunity
+	
+	let N; let J; let K; let bArc; let del; let rad1; let rad2; let sr;
+	alternative(getrank)
+	case(RANK_EASY){ ps=0.5;  ss=1.00; N=270; J=3;  K=1; bArc=710; del=330; rad1=150; rad2=150; sr=false; }
+	case(RANK_NORM){ ps=0.5;  ss=1.00; N=270; J=3;  K=3; bArc=730; del=330; rad1=100; rad2= 50; sr=true;  }
+	case(RANK_HARD){ ps=0.35; ss=1.00; N=135; J=4;  K=3; bArc=730; del=360; rad1=100; rad2=100; sr=true;  }
+	case(RANK_LUNA){ ps=0.4;  ss=1.00; N=270; J=3;  K=2; bArc=750; del=360; rad1=100; rad2=100; sr=true;  }
+
+	ss*=ps;
+	del/=ps;
+	
+
+	
+	
+	let ox = cx; let oy = cy-100;
+	
+	while(!Obj_IsDeleted(boss) && !finishing){
+		
+		let T = 420;
+	
+		let arc = 0; //5
+		// let spk = SparkA0(ex,ey,GetAngleToPlayer(boss),300,100,[255,0,255], 100,45, 0, NO_CHANGE,NO_CHANGE);
+		// let spk = SparkA1(ex,ey,GetAngleToPlayer(boss),400,45,arc, 100,45);
+		let spk = SparkA1(ex,ey,90,800,sx*0.8,arc, T,45);
+		let robj = Obj_GetValue(spk,RENDER_OBJECT);
+		// OR_SetColor(spk,255,0,255);
+		ObjRender_SetBlendType(spk,BLEND_ALPHA);
+		
+		SE_Play(se_laser,100);
+		SE_Play_Del(se_explode,100,60);
+		
+		// ManageSpark(spk);
+		ManageSparkA2(spk,sx*0.99, 420,60,30,60);
+		
+		task ManageSpark(spk){
+			// let f=0; 
+			let a = ObjStLaser_GetAngle(spk);
+			// while(!Obj_IsDeleted(spk)){
+			ascent(f in 0..T){
+				let off = T/30*sin(f*180/T);
+				ObjMove_SetPosition(spk,ex-off*cos(a),ey-off*sin(a));
+				// ObjStLaser_SetAngle(spk,a + 30*sin(f));
+				
+				// ObjLaser_SetLength(spk, 800*min(1, f/120) );
+				
+				// let wid = sx*0.8*min(1, (max(0,f-60)/30)^0.5 );
+				// let wid = sx*0.95*min(1, (max(0,f-60)/30)^0.5 );
+				let wid = sx*0.99*min(1, (max(0,f-60)/30)^0.5 );
+				if(f > T-60){
+					wid *= ((60-(f-(T-60)))/60)^2;
+				}
+				
+				OL_SetRenderWidth(spk, wid);
+				OL_SetIntersectionWidth(spk, wid*1.01);
+				
+				// Obj_SetValue(spk,SPARK_ARC, 45*min(1, f/1200) );
+				
+				yield; //f++;
+			}
+			Obj_Delete(spk);
+		}
+		
+		wait(90);
+		loop(floor((T-90)/30)-2){
+			let a0 = rand(0,360);
+			ascent(i in 0..40){
+				let shot = ShotA1(ex,ey,2.4, a0+i*360/40, DOT_WHITE, 0);
+			}
+			wait(30);
+		}
+		wait(120);
+		
+	}
+	
+	
+	
+}

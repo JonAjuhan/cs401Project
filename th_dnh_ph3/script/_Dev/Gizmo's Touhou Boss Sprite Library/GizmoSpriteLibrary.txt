@@ -1,4 +1,119 @@
-task renderTenebris(obj){
+
+function RenderBoss(obj){
+	let type = Obj_GetValueD(obj,"GizmoType",0);
+	let namestr = Obj_GetValueD(obj,"CharacterName","");
+	let namearr = SplitString(namestr," ");
+	ascent(i in 0..length(namearr)){
+		let name = namearr[i];
+		let ok=true;
+		
+		alternative(name)
+		case("Reimu"){     		renderReimuIN(obj,type); }
+		case("Marisa"){     	renderMarisaIN(obj,type); }
+		case("Sakuya"){     	renderSakuyaPoFV(obj,type); }
+		case("Youmu"){     		renderYoumuPoFV(obj); }
+		case("Cirno"){     		renderCirnoPoFV(obj,type); }
+		case("Lyrica"){     	renderLyricaPoFV(obj,type); }
+		case("Merlin"){     	renderMerlinPoFV(obj,type); }
+		case("Lunasa"){     	renderLunasaPoFV(obj,type); }
+		case("Mystia"){     	renderMystiaIN(obj,type); }
+		case("Tewi","Tei"){     renderTewiIN(obj,type); }
+		case("Yuuka","Yuka"){   renderYuukaPoFV(obj,type); }
+		case("Aya"){   			renderAyaPoFV(obj,type); }
+		case("Medicine"){   	renderMedicinePoFV(obj,type); }
+		case("Wriggle"){	   	renderWriggleIN(obj); }
+		case("Komachi"){	   	renderKomachiPoFV(obj,type); }
+		case("Eiki","Shiki","Shikieiki"){	   	renderEikiPoFV(obj,type); }
+		case("Keine"){	   		renderKeineIN(obj,type); }
+		case("Reisen"){	   		renderReisenIN(obj); }
+		case("Eirin"){	   		renderEirinIN(obj); }
+		case("Kaguya"){	   		renderKaguyaIN(obj); }
+		case("Mokou"){	   		renderMokouIN(obj); }
+		case("Shizuha"){	   	renderShizuhaMoF(obj); }
+		case("Minoriko"){	   	renderMinorikoMoF(obj); }
+		case("Hina"){	   		renderHinaMoF(obj); }
+		case("Nitori"){	   		renderNitoriDS(obj,type); }
+		case("Momiji"){	   		renderMomijiDS(obj); }
+		case("Sanae"){	   		renderSanaeMoF(obj); }
+		case("Kanako"){	   		renderKanakoMoF(obj,type); }
+		case("Suwako"){	   		renderSuwakoMoF(obj,type); }
+		case("Kisume"){	   		renderKisumeSA(obj); }
+		case("Yamame"){	   		renderYamameSA(obj); }
+		case("Parsee"){	   		renderParseeSA(obj); }
+		case("Yuugi"){	   		renderYuugiSA(obj); }
+		case("Satori"){	   		renderSatoriSA(obj); }
+		case("Orin"){	   		if(!type){ renderOrinSA(obj) }else{ renderCatSA(obj); } }
+		case("Utsuho","Okuu"){	renderUtsuhoSA(obj); }
+		case("Koishi"){	   		renderKoishiSA(obj); }
+		case("Nazrin"){			renderNazrinUFO(obj); }
+		case("Kogasa"){			renderKogasaUFO(obj); }
+		case("Ichirin"){		renderIchirinUFO(obj); }
+		case("Murasa"){			renderMurasaUFO(obj); }
+		case("Shou"){			renderShouUFO(obj); }
+		case("Byakuren"){		renderByakurenUFO(obj); }
+		case("Nue"){			renderNueUFO(obj); }
+		case("Yuyuko"){			renderYuyukoTD(obj); }
+		case("Kyouko"){			renderKyoukoTD(obj); }
+		case("Yoshika"){		renderYoshikaTD(obj); }
+		case("Seiga"){			renderSeigaTD(obj); }
+		case("Tojiko"){			renderTojikoTD(obj); }
+		case("Futo"){			renderFutoTD(obj); }
+		case("Miko"){			renderMikoTD(obj); }
+		case("Mamizou"){		renderMamizouTD(obj); }
+		case("Tenshi"){			renderTenshiDS(obj); }
+		case("Iku"){			renderIkuDS(obj); }
+		case("Hatate"){			renderHatateDS(obj); }
+		case("Luna"){			renderLunaGFW(obj); }
+		case("Sunny"){			renderSunnyGFW(obj); }
+		case("Star"){			renderStarGFW(obj); }
+		// case("Marisa"){		renderMarisaGFW(obj); }
+		case("Daiyousei"){		renderDaiyouseiGFW(obj); }
+		case("Lily"){			renderLilyGFW(obj,0); }
+		// case("Cirno"){		renderCirnoDDC(obj); }
+		case("Wakasagihime"){	renderWakasagihimeDDC(obj); }
+		case("Sekibanki"){		renderSekibankiDDC(obj); }
+		case("Kagerou"){		renderKagerouDDC(obj); }
+		// case("Aya"){			renderAyaDS(obj); }
+		case("Benben"){			renderBenbenDDC(obj); }
+		case("Yatsuhashi"){		renderYatsuhashiDDC(obj); }
+		case("Seija"){			renderSeijaDDC(obj); }
+		case("Sukuna"){			renderShinmyoumaruDDC(obj); }
+		case("Raiko"){			renderRaikoDDC(obj); }
+		case("Seiran"){			renderSeiranLoLK(obj); }
+		case("Ringo"){			renderRingoLoLK(obj); }
+		case("Doremy"){			renderDoremyLoLK(obj); }
+		case("Sagume"){			renderSagumeLoLK(obj); }
+		case("Patchouli"){		renderPatchouliStB(obj); } //first added
+		
+		//Missing:
+		//Rumia, Meiling, Koakuma, Patchouli, Remilia, Flandre
+		//Letty, Chen, Alice, Ran, Yukari
+		//
+		//Clownpiece, Junko,
+		//Etarnity, Sakata, Aunn, Narumi, Mai, Satono, Okina, EX Okina
+		
+		//Kasen, Maribel, Renko
+		
+		//DOT versions - TODO find the library designed for those
+		
+		//TODO:
+		//Patchouli
+		//Koakuma
+		
+		
+		others{ok=false;}
+		if(ok){return true;}
+	}
+	return false;
+}
+
+
+
+
+
+
+
+task renderTenebris(obj){ //Some OC
 	
 	let dir;
 	let speed;
@@ -1840,7 +1955,6 @@ task renderNitoriDS(obj,type){
 	
 }
 
-
 task renderMomijiDS(obj){
 
 	let wi = 64;
@@ -2165,6 +2279,7 @@ task renderSuwakoMoF(obj,type){
 	}
 	
 }
+
 
 task renderKisumeSA(obj){
 
@@ -2742,6 +2857,7 @@ task renderKoishiSA(obj){
 	}
 	
 }
+
 
 task renderNazrinUFO(obj){
 
@@ -4551,6 +4667,7 @@ task renderMarisaGFW(obj){
 	
 }
 
+
 task renderDaiyouseiGFW(obj){
 
 	let wi = 80;
@@ -5953,3 +6070,163 @@ task renderSagumeLoLK(obj){
 	}
 	
 }
+
+
+
+
+
+
+
+
+
+task renderPatchouliStB(obj){
+
+	let wi = 64;
+	let he = 64;
+	
+	let dir;
+	let speed;
+	let whichway = 0;
+	let moveframe = 0;
+	let idleframe = 0;
+	let castframe = 0;
+	Obj_SetValue(obj,"cast",0);
+
+	ObjPrim_SetTexture(obj,GetCurrentScriptDirectory ~ "./spriteimg/PatchouliStBSprite.png");
+	ObjSprite2D_SetSourceRect(obj,0,0,wi,he);
+	ObjSprite2D_SetDestCenter(obj);
+	ObjRender_SetScaleXYZ(obj,1,1,0);
+	
+	while(!Obj_IsDeleted(obj)){
+		
+		dir = ObjMove_GetAngle(obj);
+		speed = ObjMove_GetSpeed(obj);
+
+		if(     speed == 0 && moveframe >  0){whichway = -1;}
+		else if(speed == 0 && moveframe <  0){whichway = 1;}
+		else if(speed == 0 && moveframe == 0){whichway = 0;}
+		else if(cos(dir) < 0){whichway=-1;}
+		else if(cos(dir) > 0){whichway=1;}
+		
+		if(Obj_GetValueD(obj,"cast",0) == 0 && speed == 0 && moveframe == 0){
+			castframe = 0;
+			if(     idleframe >=  0 && idleframe < 10){ObjSprite2D_SetSourceRect(obj,   0,0,wi,he);}
+			else if(idleframe >= 10 && idleframe < 20){ObjSprite2D_SetSourceRect(obj,  wi,0,wi*2,he);}
+			else if(idleframe >= 20 && idleframe < 30){ObjSprite2D_SetSourceRect(obj,wi*2,0,wi*3,he);}
+			else if(idleframe >= 30 && idleframe < 40){ObjSprite2D_SetSourceRect(obj,wi*3,0,wi*4,he);}
+			
+			if(idleframe < 40){idleframe++;}
+			else if(idleframe == 40){idleframe=0;}
+		}
+		else if(Obj_GetValueD(obj,"cast",0) != 0 && speed == 0 && moveframe == 0){
+			idleframe=0; frame=0;
+			if(     castframe >=  0 && castframe < 30){ObjSprite2D_SetSourceRect(obj,wi*0,he*1,wi*1,he*2);}
+			else if(castframe >= 30 && castframe < 35){ObjSprite2D_SetSourceRect(obj,wi*1,he*1,wi*2,he*2);}
+			else if(castframe >= 35 && castframe < 40){ObjSprite2D_SetSourceRect(obj,wi*0,he*2,wi*1,he*3);}
+			else if(castframe >= 40 && castframe < 45){ObjSprite2D_SetSourceRect(obj,wi*1,he*2,wi*2,he*3);}
+			if(castframe <= 29 && Obj_GetValueD(obj,"cast",0) < 2){castframe++;}
+			else if(castframe <= 45 && Obj_GetValueD(obj,"cast",0) >= 2){castframe++;}
+			else if(castframe > 45 && Obj_GetValueD(obj,"cast",0)  >= 2){ castframe=35; }
+			else if(castframe > 45 && Obj_GetValueD(obj,"cast",0)  <  2){ castframe=0; }
+		}
+		else if(speed != 0 || moveframe != 0){
+			if(     (|moveframe|) > 0   && (|moveframe|) <= 5){   ObjSprite2D_SetSourceRect(obj,   0,he,  wi,he*2);}
+			else if((|moveframe|) > 5   && (|moveframe|) <= 10){  ObjSprite2D_SetSourceRect(obj,  wi,he,wi*2,he*2);}
+			else if((|moveframe|) > 10  && (|moveframe|) <= 15){  ObjSprite2D_SetSourceRect(obj,wi*2,he,wi*3,he*2);}
+			else if((|moveframe|) > 15  && (|moveframe|) <= 16){  ObjSprite2D_SetSourceRect(obj,wi*3,he,wi*4,he*2);}
+			
+			if(moveframe < 0){ ObjRender_SetAngleXYZ(obj,0,180,0); }
+			else{              ObjRender_SetAngleXYZ(obj,0,  0,0); }
+
+			idleframe=0; castframe=0;
+		}
+		
+		moveframe=moveframe+whichway;
+		if(moveframe > 16){ moveframe=16;}
+		if(moveframe < -16){moveframe=-16;}
+		yield;
+		
+	}
+	
+}
+
+
+
+
+
+// task renderPatchouliStB(obj){
+
+	// let wi = 64;
+	// let he = 64;
+	
+	// let dir;
+	// let speed;
+	// let whichway = 0;
+	// let moveframe = 0;
+	// let idleframe = 0;
+	// let castframe = 0;
+	// Obj_SetValue(obj,"cast",0);
+
+	// ObjPrim_SetTexture(obj,GetCurrentScriptDirectory ~ "./spriteimg/PatchouliStBSprite.png");
+	// ObjSprite2D_SetSourceRect(obj,0,0,wi,he);
+	// ObjSprite2D_SetDestCenter(obj);
+	// ObjRender_SetScaleXYZ(obj,1,1,0);
+	
+	// while(!Obj_IsDeleted(obj)){
+		
+		// dir = ObjMove_GetAngle(obj);
+		// speed = ObjMove_GetSpeed(obj);
+
+		// if(     speed == 0 && moveframe >  0){whichway = -1;}
+		// else if(speed == 0 && moveframe <  0){whichway = 1;}
+		// else if(speed == 0 && moveframe == 0){whichway = 0;}
+		// else if(cos(dir) < 0){whichway=-1;}
+		// else if(cos(dir) > 0){whichway=1;}
+		
+		// // if(Obj_GetValueD(obj,"cast",0) == 0 && speed == 0 && moveframe == 0){
+		// if(Obj_GetValueD(obj,"cast",0)){
+			// castframe = 0;
+			// if(     idleframe >=  0 && idleframe < 10){ObjSprite2D_SetSourceRect(obj,   0,0,wi,he);}
+			// else if(idleframe >= 10 && idleframe < 20){ObjSprite2D_SetSourceRect(obj,  wi,0,wi*2,he);}
+			// else if(idleframe >= 20 && idleframe < 30){ObjSprite2D_SetSourceRect(obj,wi*2,0,wi*3,he);}
+			// else if(idleframe >= 30 && idleframe < 40){ObjSprite2D_SetSourceRect(obj,wi*3,0,wi*4,he);}
+			
+			// if(idleframe < 40){idleframe++;}
+			// else if(idleframe == 40){idleframe=0;}
+		// }
+		// //removed else
+		// if(Obj_GetValueD(obj,"cast",0) != 0 && speed == 0 && moveframe == 0){
+			// idleframe=0; moveframe=0;
+			// // if(     castframe >=  0 && castframe < 30){ObjSprite2D_SetSourceRect(obj,wi*0,he*0,wi*1,he*1);}
+			// // else if(castframe >= 30 && castframe < 35){ObjSprite2D_SetSourceRect(obj,wi*0,he*1,wi*1,he*2);}
+			// // else if(castframe >= 35 && castframe < 40){ObjSprite2D_SetSourceRect(obj,wi*1,he*1,wi*2,he*2);}
+			// // else if(castframe >= 40 && castframe < 45){ObjSprite2D_SetSourceRect(obj,wi*0,he*2,wi*1,he*3);}
+			
+			// if(     castframe >  0  && castframe <= 30){  ObjSprite2D_SetSourceRect(obj,   0,he,  wi,he*2);}
+			// else if(castframe > 30  && castframe <= 35){  ObjSprite2D_SetSourceRect(obj,  wi,he,wi*2,he*2);}
+			// else if(castframe > 35  && castframe <= 40){  ObjSprite2D_SetSourceRect(obj,wi*2,he,wi*3,he*2);}
+			// else if(castframe > 40  && castframe <= 45){  ObjSprite2D_SetSourceRect(obj,wi*3,he,wi*4,he*2);}
+			
+			// if(castframe <= 28 && Obj_GetValueD(obj,"cast",0) < 2){castframe++;}
+			// else if(castframe <= 45 && Obj_GetValueD(obj,"cast",0) >= 2){castframe++;}
+		// }
+		// else if(speed != 0 || moveframe != 0){
+			// // if(     (|moveframe|) > 0   && (|moveframe|) <= 5){   ObjSprite2D_SetSourceRect(obj,   0,he,  wi,he*2);}
+			// // else if((|moveframe|) > 5   && (|moveframe|) <= 10){  ObjSprite2D_SetSourceRect(obj,  wi,he,wi*2,he*2);}
+			// // else if((|moveframe|) > 10  && (|moveframe|) <= 15){  ObjSprite2D_SetSourceRect(obj,wi*2,he,wi*3,he*2);}
+			// // else if((|moveframe|) > 15  && (|moveframe|) <= 16){  ObjSprite2D_SetSourceRect(obj,wi*3,he,wi*4,he*2);}
+			
+			// if(moveframe < 0){ ObjRender_SetAngleXYZ(obj,0,180,0); }
+			// else{              ObjRender_SetAngleXYZ(obj,0,  0,0); }
+
+			// // idleframe=0; castframe=0;
+		// }
+		
+		// moveframe=moveframe+whichway;
+		// if(moveframe > 16){ moveframe=16;}
+		// if(moveframe < -16){moveframe=-16;}
+		// yield;
+		
+	// }
+	
+// }

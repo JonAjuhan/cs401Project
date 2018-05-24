@@ -8,6 +8,7 @@
 #Background["./system/Background/Satori/BG_work.txt"]
 
 #include "./Index.txt"
+#include "./Library/Esoterica.txt"
 
 let timer = 47; //37 //47
 let drate = 48; //24

@@ -12,7 +12,8 @@ let FLAG_DELAYLASER = "IsDelayLaser";
 let FLAG_FREEZE = "IsFrozen";
 
 let FLAG_BOSS = "IsBoss";
-let CHARACTER_COLOR = "ThemeColor"; //the color "associated" with the character an obj represents
+let CHARACTER_NAME = "CharacterName"; //the name of the character an obj represents
+let CHARACTER_COLOR = "ThemeColor";  //the color "associated" with the character an obj represents
 let BOSS_INDEX = "BossIndex";
 
 let META_SUBTYPE = "Subtype";
@@ -68,9 +69,13 @@ let SHOT_GRAPHIC = "Graphic";
 let SHOT_DELETEFRAME = "DeleteFrame";
 let LASER_RWIDTH = "LaserRenderWidth";
 let LASER_IWIDTH = "LaserIntersectionWidth"; let LASER_CWIDTH = LASER_IWIDTH;
+let SPARK_ARC = "SparkArc";
 
 let COL_RADIUS = "CollisionRadius";
 let COL_SCALE = "CollisionScale";
+
+let RENDER_OBJECT = "RenderObject";
+let COL_OBJECT = "CollisionObject";
 
 //////////////////////////////////////////////////////////////////////////////
 //Higher-order functions for generalizing functions to operate on any property
@@ -731,18 +736,28 @@ function CurveLaserA1(x,y,s,a, len,wid,g,d){
 
 function StraightLaserA1(x,y,a,len,wid,  g,delay,delete){
 	let shot = ObjShot_Create(OBJ_STRAIGHT_LASER);
+	// let shot = CreateStraightLaserA1(x,y,a,len,wid,delete,g,0);
 	OM_SetPosition(shot,x,y);
 	ObjStLaser_SetAngle(shot,a);
 	ObjShot_SetGraphic(shot,g);
 	ObjLaser_SetLength(shot,len);
 	ObjLaser_SetRenderWidth(shot,wid); 
-	ObjLaser_SetIntersectionWidth(shot,max(3, floor((wid - 12) / 3)));
 	Obj_SetValue(shot,LASER_RWIDTH,wid);
-	Obj_SetValue(shot,LASER_IWIDTH,max(3, floor((wid - 12) / 3)));
+	ObjLaser_SetIntersectionWidth(shot,max(10, floor((wid * 2/3))));
+	Obj_SetValue(shot,LASER_IWIDTH,    max(10, floor((wid * 2/3))));
+	// ObjLaser_SetIntersectionWidth(shot,max(3, floor((wid - 12) / 3)));
+	// Obj_SetValue(shot,LASER_IWIDTH,max(3, floor((wid - 12) / 3)));
 	ObjLaser_SetGrazeInvalidFrame(shot, 9);
+	ObjStLaser_SetSource(shot,false);
 	OS_SetDeleteFrame(shot,delete);
 	if(delete <= delay){ Obj_SetValue(shot,FLAG_DELAYLASER,true); }
 	ManageStraightLaserDelay(shot,delay,delay_type,delay_arr);
+	return shot;
+}
+
+function StraightLaserA2(x,y,a,len,wid,  g,delay,extenddelay,delete){
+	let shot = StraightLaserA1(x,y,a,len,wid,  g,delay,delete);
+	Obj_SetValue(shot,"LaserExtendDelay",extenddelay);
 	return shot;
 }
 
@@ -754,19 +769,33 @@ function StraightLaserA1(x,y,a,len,wid,  g,delay,delete){
 
 
 
+let DELAY_DEFAULT     = 9990000;
 let DELAY_MANUAL      = 9000000; //Don't register the shot
+let DELAY_NONE        = 0000000; //Immediately register the shot
 let DELAY_FADE        = 9010000; //Regist immediately and fade in
 let DELAY_GLOW        = 9020000; //Simple light effect
 let DELAY_RING        = 9030000; //GLOW plus a circle effect
 let DELAY_LINE        = 9040000; //RING plus a line between it and the boss (or CD "DelayHub" obj)
 let DELAY_IMAGE       = 9050000; //Arbitrary image; put path in delay_subtype, rect in delay_arr
 let DELAY_HIDE        = 9060000; //Wait to register the shot, but don't show any effect
+let DELAY_CLOUD       = 9070000; //Actual DNF delay cloud, using a dummy shot
 
-let delay_type = DELAY_RING; //Default type, override by adding the const to the delay argument
+let delay_type = DELAY_DEFAULT; //Default type, override by adding the const to the delay argument
 let delay_subtype = "";
 let delay_arr = [];
 
 let delay_las_extend_rate = 800/60;
+
+
+//For doing delay clouds without necessarily creating a shot
+function ShotDelayA1(x,y,del,type,color){
+	let obj = ObjShot_Create(OBJ_SHOT);
+	OM_SetPosition(obj,x,y);
+	Obj_SetValue(obj,RENDER_COLOR,color);
+	ManageShotDelay(obj,del,type,[]);
+	TManage(); task TManage{ loop(del){yield;} Obj_Delete(obj); }
+	return obj;
+}
 
 
 task ManageShotDelay(shot,del,type,arr){
@@ -774,6 +803,12 @@ task ManageShotDelay(shot,del,type,arr){
 		let tmp=del;
 		del = del%10000;
 		type = tmp-del;
+	}else if(type == DELAY_DEFAULT){ //default value
+		if(del >= 16){
+			type = DELAY_RING;
+		}else{
+			type = DELAY_GLOW;
+		}
 	}
 	
 	alternative(type)
@@ -849,12 +884,13 @@ task ManageShotDelay(shot,del,type,arr){
 	}
 	case(DELAY_IMAGE){
 		let x = ObjMove_GetX(shot); let y = ObjMove_GetY(shot);
-		let path = delay_subtype;
-		let rect = GetCommonData("DelayRect",[0,0,GetTextureWidth(path)-1,GetTextureHeight(path)-1]);
+		// let path = delay_subtype;
+		let path = GetCommonData("ShotDelayImagePath","");
+		let rect = GetCommonData("ShotDelayImageRect",[0,0,GetTextureWidth(path)-1,GetTextureHeight(path)-1]);
 		let w = rect[2]-rect[0]; let h = rect[3]-rect[1];
 		
 		let obj = CreateSprite(x,y,path,rect,PRI_SHOT+1);
-		ObjRender_SetBlendType(obj,GetCommonData("DelayBlend",BLEND_ADD_RGB));
+		ObjRender_SetBlendType(obj,GetCommonData("ShotDelayImageBlend",BLEND_ADD_RGB));
 		
 		let c0 = GetShotDataInfoA1(ObjShot_GetImageID(shot),TYPE_ENEMY,INFO_DELAY_COLOR);
 		let r0 = c0[0]; let g0 = c0[1]; let b0 = c0[2];
@@ -881,7 +917,7 @@ task ManageShotDelay(shot,del,type,arr){
 	case(DELAY_LINE){
 		ManageShotDelay(shot,del,DELAY_RING,[]);
 		// ManageShotDelay(shot,del,DELAY_GLOW);
-		let cobj = GetCommonData("DelayHub",boss);
+		let cobj = GetCommonData("ShotDelayLineHub",boss);
 		let dx0=rand(-4,4); let dy0=rand(-4,4);
 		let dx1=rand(-2,2); let dy1=rand(-2,2);
 		let x0 = OM_GetX(cobj)+dx0;  let y0 = OM_GetY(cobj)+dy0;
@@ -902,7 +938,13 @@ task ManageShotDelay(shot,del,type,arr){
 			yield;
 		}
 		Obj_Delete(obj);
-	}	
+	}
+	case(DELAY_CLOUD){
+		let obj = CreateShotA1(ObjMove_GetX(shot),ObjMove_GetY(shot),0,ObjMove_GetAngle(shot),ObjShot_GetImageID(shot),del);
+		loop(del){yield;}
+		Obj_Delete(obj);
+		ObjShot_Regist(shot);
+	}
 }
 
 task ManageLooseLaserDelay(obj,del,type,arr){
@@ -937,7 +979,9 @@ task ManageStraightLaserDelay(obj,del,type,arr){
 	ObjShot_Regist(obj);
 	
 	let len = ObjLaser_GetLength(obj);
-	let extenddel = delay_las_extend_rate/len;
+	ObjLaser_SetLength(obj,0);
+	yield;
+	let extenddel = Obj_GetValueD(obj,"LaserExtendDelay",delay_las_extend_rate/len);
 	let dL = len/extenddel;
 	ManageExtend;
 	task ManageExtend{
@@ -951,9 +995,10 @@ task ManageStraightLaserDelay(obj,del,type,arr){
 	OS_SetIntersectionEnable(obj,false);
 	let rwid = Obj_GetValueD(obj,LASER_RWIDTH,30);
 	let cwid = Obj_GetValueD(obj,LASER_IWIDTH,6);
-	ObjLaser_SetRenderWidth(obj, cwid/3 );
+	// ObjLaser_SetRenderWidth(obj, cwid/3 );
+	ObjLaser_SetRenderWidth(obj, max(3,cwid/3) );
 	
-	wait(del);
+	wait(del-1);
 	
 	let expanddur;
 	if(!Obj_GetValueD(obj,FLAG_DELAYLASER,false)){
@@ -1039,9 +1084,122 @@ function CreateDummyShot(x,y){
 	ObjShot_SetSpellResist(shot,true);
 	ObjShot_SetAutoDelete(shot,false);
 	Obj_SetValue(shot,FLAG_DUMMY,true);
-	Obj_SetValue(shot,"NoInfluence",true);
 	return shot;
 }
+
+
+
+
+
+
+
+
+
+
+
+//Trickygon
+function CreateCurvyLaserA1(xpos,ypos,speed,angle,len,width,trailgraphic,delay) {
+	let obj = ShotA1(xpos,ypos,speed,angle,0,delay);
+	delay = delay%10000;
+	ObjRender_SetBlendType(obj,BLEND_ADD_ARGB);
+	ObjShot_SetIntersectionEnable(obj,false);
+	ObjShot_SetAutoDelete(obj,false);
+	ManageTrail;
+	return obj;
+	task ManageTrail {
+		let del = len; 
+		let speed = ObjMove_GetSpeed(obj); 
+		let dist = 0;
+		let a = ObjMove_GetAngle(obj); let a0 = angle; let d=0;
+		let x1 = ObjMove_GetX(obj); let y1 = ObjMove_GetY(obj); let x0=x1;let y0=y1;
+		// loop(delay+1){yield;}
+		
+		let itemgap = 10 - GetAreaCommonData("CONFIG","Effect Quality",2);
+		let cnt = randint(0,itemgap);
+		loop(round(9/(|speed|))) { yield; } //prevents initial disconnect
+		
+		while(!Obj_IsDeleted(obj)) {
+			speed = ObjMove_GetSpeed(obj); 
+			dist = min( dist+speed, len);
+			a0=a; a=ObjMove_GetAngle(obj);
+			let da = (|GetAngularDistance(a,a0)|);
+			if( da > 6 ){ dist = dist*0.75; }
+			// if( da > 0 ){ dist = dist*( 5 + 1/da )/6; }
+			
+			x0=x1; y0=y1;
+			x1 = ObjMove_GetX(obj); y1 = ObjMove_GetY(obj);
+			d = ((x1-x0)^2+(y1-y0)^2)^0.5;
+			dist = min(dist, (5+5*dist/len)*d );
+			
+			if(x1 < 0-dist || y1 < 0-dist || x1 > sx+dist || y1 > sy+dist ){Obj_Delete(obj);return;}
+
+			a = atan2(y1-y0,x1-x0);
+			
+			if(speed!=0 && dist!=0){
+				// TrailSegment(dist,d+10,width,a,del, cnt%itemgap==0);
+				TrailSegment(dist,d,width,a,del, cnt%itemgap==0);
+				
+				loop(round(9/(|speed|))-1) { 
+					yield;
+					a0=a; a=ObjMove_GetAngle(obj);
+					if( (|GetAngularDistance(a,a0)|) > 3 ){ dist*=0.75; break; }
+				}
+			}
+			yield; cnt++;
+		}
+	}
+	task TrailSegment(initlength,minlength,initwidth,angle,del,itemchange) {
+		initlength=max(initlength,minlength);
+		// let objTrail = CreateStraightLaserA1(ObjMove_GetX(obj)-initlength*cos(angle),
+		                                     // ObjMove_GetY(obj)-initlength*sin(angle),
+		                                     // angle,80,initwidth,1200,trailgraphic,0);
+		let objTrail = CreateStraightLaserA1(ObjMove_GetX(obj)-0*initlength*cos(angle),
+		                                     ObjMove_GetY(obj)-0*initlength*sin(angle),
+		                                     angle+180,initlength,initwidth,1200,trailgraphic,0);
+		ObjStLaser_SetSource(objTrail,false);
+		ObjShot_SetSpellResist(objTrail,ObjShot_IsSpellResist(obj));
+		ObjShot_SetItemChange(objTrail,itemchange); //Can be laggy otherwise
+		ObjRender_SetBlendType(objTrail,ObjRender_GetBlendType(obj));
+		let width = initwidth; let len = initlength;
+		let alpha = 0;
+		let C = OR_GetColorRGBA(obj); let R=C[0]/255; let G=C[1]/255; let B=C[2]/255; let A = C[3]/255;
+		
+		let dL = initlength/del; let dW = initwidth/del;
+		loop(del) {
+			alpha = min(200,alpha+20);
+			width -= dW; 
+			// len = max(minlength, len-initlength/del);
+			
+			len -= dL;
+			
+			if(len < minlength){
+				ObjMove_SetX(objTrail,ObjMove_GetX(objTrail)+2*dL*cos(angle));
+				ObjMove_SetY(objTrail,ObjMove_GetY(objTrail)+2*dL*sin(angle));
+			}
+			
+			len = max(len,minlength);
+			
+			ObjRender_SetColor(objTrail,alpha*R*A,alpha*G*A,alpha*B*A);
+			ObjLaser_SetRenderWidth(objTrail,width);
+			ObjLaser_SetIntersectionWidth(objTrail,width*0.9);
+			ObjLaser_SetLength(objTrail,len);
+			if(width < 4){ 
+				ObjShot_SetIntersectionEnable(objTrail,false);
+				// len*=0.75;
+			}
+			yield;
+		}
+		Obj_Delete(objTrail);
+	}
+}
+
+
+
+
+
+
+
+
 
 
 
@@ -1963,6 +2121,26 @@ function OS_SetScaleXYZ(obj,xscl,yscl,zscl){
 //////////////////////////////////////////////////////////////////
 // Laser Object Functions
 //////////////////////////////////////////////////////////////////
+
+
+function OL_SetRenderWidth(obj,v){
+	ObjLaser_SetRenderWidth(obj,v);
+	Obj_SetValue(obj,LASER_RWIDTH,v);
+}
+function OL_SetIntersectionWidth(obj,v){
+	ObjLaser_SetIntersectionWidth(obj,v);
+	Obj_SetValue(obj,LASER_IWIDTH,v);
+}
+function OL_GetRenderWidth(obj){
+	return Obj_GetValueD(obj,LASER_RWIDTH,0);
+}
+function OL_GetIntersectionWidth(obj){
+	return Obj_GetValueD(obj,LASER_RWIDTH,0);
+}
+
+
+
+
 
 task ObjStLaser_SetAngularVelocity(las,angv){
 	Obj_SetValue(las,"AngularVelocity",angv);

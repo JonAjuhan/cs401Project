@@ -17,6 +17,8 @@ let PRI_OVER = 70; //for things like flashing messages, etc //was 60
 
 let PRI_CAMERA = 69; //highest priority affected by 2D camera
 
+let PRI_GPMAX = 69;
+
 let PRI_HITBOX = 63; //projection; may lower
 
 
@@ -40,14 +42,14 @@ let PRI_ITEM = 39; //def 60
 
 
 
-let PRI_MAGICCIRCLE = 30; //TODO move this down to 23 or so
 
 
+let PRI_GPMIN = 25;
 
-
-
-
+let PRI_BGMAX = 25;
+let PRI_MAGICCIRCLE = 23;
 let PRI_BACKGROUND = 20;
+let PRI_BGMIN = 20;
 
 let PRI_MIN = 20;
 

@@ -1,0 +1,294 @@
+oei Yumimasu Drama ~ Concealed the Conclusion and made for
+We publish what we used as material with the permission of Mr. Maku.
+
+When exposing a script etc. using the image,
+"It is the secondary creation of the Touhou Project (Shanghai Alice Vision Orchestra)
+We are using the images in the Toho Dream Drama (Mr. danmaq) "
+Feeling like that, describe the origin and primary creator
+Please readme.txt etc so that you can put it.
+
+
+1 5 9 13 17 21 25 29
+2 6 10 14 18 22 26 30
+3 7 11 15 19 23 27 31
+4 8 12 16 20 24 28 32
+
+"*" Is variable depending on traveling time and deployment time.
+
+
+Å° dot_reimu.png
+Normal standing: 1 - 2 - 3 - 1 - 2 - 3 - ...
+Blink: 1- 5- 6-
+Left movement: 9 - * 10 - 9 -
+Right movement: 11 - * 12 - 11 -
+Spell Card Declare: 13 - 14 - * 15 - 14 - 13 -
+Barrier 1: 17 - 18 - * 19 - 18 - 17
+Mirror 3: 25 - [26 - 27 - 28 - 29 - 30 - 31 - 26 - 27 - 28 - 29 - 30 - 31 - ...] - 32
+
+Other character banner 2 is vacant, so it may be added later and it is on hold.
+
+
+Å• Å• Hyunma Town Å• Å•
+
+Å° dot_daiyousei.png
+
+Normal standing: 1 - 2 - 3 - 4 - 1 - 2 - 3 - 4 - ...
+Blinking: 1 - 5 - 6 - 4 -
+Left movement: 9 - * 10 - 9 -
+Right movement: 11 - * 12 - 11
+Spell Card Declare: 13 - 14 - * 15 - 14 - 13
+Barrier 1: 17 - 18 - * 19 - 18 - 17
+Barrage 2: 21 - 22 - * 23 - 22 - 21
+
+
+Å° dot_meirin.png
+
+Normal standing: 1 - 2 - 3 - 1 - 2 - 3 ...
+Blink: 1- 5- 6-
+Left movement: 9 - * 10 - 9 -
+Right movement: 11 - * 12 - 11 -
+Spell Card Declare: 13 - 14 - * 15 - 14 -
+Barrier 1: 17 - 18 - * 19 -
+Barrier 2: 21 - * 22 - 21 -
+
+Kick to the lower left: 11- * 12-11
+Kick to the lower right: 9 - * 10 - 9
+
+Kick left and right, right move and left kick are the same
+
+
+Å° dot_devil.png
+
+Normal standing: 1 - 2 - 3 - 4 - 1 - 2 - 3 - 4 ...
+Blink (old): 1- 5- 6-4-
+Blink (new): 1- 5- 6- 7-
+Left movement: 9 - * 10 - 9 -
+Right movement: 11 - * 12 - 11 -
+Spell Card Declare: 13 - * 14 - 13 -
+Barrier 1: 17 - * 18 - 17 -
+Barrier 2: 21 - * 22 - 21 -
+
+
+Å° dot_patchouli.png
+
+Normal standing: 1 - 2 - 3 - 1 - 2 - 3 - ...
+Blink: 1- 5- 6-
+Left movement: 9 - * 10 - 9 -
+Right movement: 11 - * 12 - 11 -
+Spell Card Declare: 13 - 14 - * 15 - 14 - 13 -
+Barrier 1: 17 - * 18 - 17 -
+Barrage 2: 21 - 22 - * 23 - 22 - 21 -
+
+
+Å° dot_sakuya.png
+
+Normal standing: 1 - 2 - 3 - 1 - 2 - 3 ...
+Blink: 1- 5- 6-
+Left movement: 9 - * 10 - 9 -
+Right movement: 11 - * 12 - 11 -
+Spell Card Declare: 13 - 14 - * 15 - 14 - 13 -
+Barrier 1: 17 - 18 - * 19 - 18 -
+Barrier 2: 21 - * 22 - 21 -
+
+
+Å° dot_remilia.png
+
+Normal standing: 1 - 2 - 3 - 4 - 1 - 2 - 3 - 4 ...
+Blinking: 1 - 5 - 6 - 4 -
+Left movement: 9 - * 10 - 9 -
+Right movement: 11 - * 12 - 11 -
+Spell Card Declare: 13 - 14 - * 15 - 14 - 13 -
+Barrage 1: 17 - 18 - * 19 - 18 - 17 -
+Barrier 2: 21 - * 22 - 21 -
+
+
+Å° dot_flandre.png
+
+Normal standing: 1 - 2 - 3 - 4 - 1 - 2 - 3 - 4 - ...
+Blinking: 1 - 5 - 6 - 4 -
+Left movement: 9 - * 10 - 9 -
+Right movement: 11 - * 12 - 11
+Spell Card Declare: 13 - 14 - * 15 - 14 - 13
+Barrier 1: 17 - 18 - * 19 - 18 - 17
+Barrage 2: 21 - 22 - * 23 - 22 - 21
+
+
+Å• Å• Toy Dreams Å• Å•
+
+Å° dot_alice.png
+
+Normal standing: 1 - 2 - 3 - 1 - 2 - 3 - ...
+Blink: 1- 5- 6-
+Left movement: 9 - * 10 - 9 -
+Right movement: 11 - * 12 - 11 -
+Spell Card Declare: 13 - 14 - * 15 - 14 - 13 -
+Barrier 1: 17 - 18 - * 19 - 18 -
+Barrage 2: 21 - 22 - * 23 - 22 - 21 -
+
+Shanghai dolls: 25 - 26 - 27 - ...
+
+
+Å° dot_lily.png
+
+Normal standing: 1 - 2 - 3 - 1 - 2 - 3 - ...
+Blink: 1- 5- 6-
+Left Move: None
+Right Move: None
+Spell Card Declare: 13 - * 14 - 13 -
+Barrier 1: 17 - 18 - * 19 -
+Barrier 2: 21 - * 22 - 21 -
+
+
+Å° dot_youmu.png
+
+Normal standing: 1 - 2 - 3 - 1 - 2 - 3 - ...
+Blink: 1- 5- 6-
+Left movement: 9 - * 10 - 9 -
+Right movement: 11 - * 12 - 11 -
+Spell Card Declare: 13 - 14 - * 15 - 14 - 13 -
+(Stance): 17 - 18 - * 19 -
+Ñ• Slash 1: 21 - * 22 -
+Ñ§ Slash 2: 23 - * 24 -
+Ñ§ Return: 20 - 18 - 17 -
+
+Slash 1 for lateral stepping or slash on the spot, slash 2 for stepping in the vertical direction.
+Return is slash 1, slash 2 is shared. I am somewhat complicated but sorry to trouble you but thank you ~.
+
+Å° dot_yuyuko.png
+
+Normal standing: 1 - 2 - 3 - 1 - 2 - 3 - ...
+Blink: 1- 5- 6-
+Left movement: 9 - * 10 - 9 -
+Right movement: 11 - * 12 - 11 -
+Spell Card Declare: 13 - 14 - * 15 - 14 - 13 -
+Barrier 1: 17 - 18 - * 19 - 18 - 17
+Barrage 2: 21 - 22 - * 23 - 22 - 21 -
+
+Å° dot_chen.png
+Å° dot_ran.png
+
+Normal standing: 1 - 2 - 3 - 1 - 2 - 3 - ...
+Blink: 1- 5- 6-
+Left movement: 9 - * 10 - 9 -
+Right movement: 11 - * 12 - 11 -
+Spell Card Declare: 13 - 14 - * 15 - 14 - 13 -
+Barrier 1: 17 - 18 - * 19 - 18 - 17
+Barrage 2: 21 - 22 - * 23 - 22 - 21 -
+
+Please move counterclockwise to the left, clockwise to the right.
+
+
+Å° dot_yukari.png
+
+Normal standing: 1 - 2 - 3 - 1 - 2 - 3 - ...
+Blink: 1- 5- 6-
+Left movement: 9 - * 10 - 9 -
+Right movement: 11 - * 12 - 11 -
+Spell Card Declare: 13 - 14 - 15 - * 16 - 15 -
+Barrage 1: 17 - 18 - * 19 - 18 - 17 -
+Barrier 2: 21 - 22 - * 23 - 22 -
+
+Å• Å• âi ñÈ Å• Å•
+
+Å° dot_tewi.png
+
+Normal standing: 1 - 2 - 3 - 1 - 2 - 3 - ...
+Blink: 1- 5- 6-
+Left movement: 9 - * 10 - 9 -
+Right movement: 11 - * 12 - 11 -
+Spell Card Declare: 13 - 14 - * 15 - 14 - 13 -
+Barrier 1: 17 - 18 - * 19 - 18 - 17
+Barrage 2: 21 - 22 - * 23 - 22 - 21 -
+
+Å° dot_reisen.png
+
+Normal standing: 1 - 2 - 3 - 1 - 2 - 3 - ...
+Blink: 1- 5- 6-
+Left movement: 9 - * 10 - 9 -
+Right movement: 11 - * 12 - 11 -
+Spell Card Declare: 13 - 14 - * 15 - 14 - 13 -
+Barrier 1: 17 - 18 - * 19 - 18 - 17
+Barrage 2: 21 - 22 - * 23 - 22 - 21 -
+Illusion: 21 - 22 - * 24 - 22 - 21 -
+
+
+Å° dot_eirin.png
+
+Normal standing: 1 - 2 - 3 - 1 - 2 - 3 - ...
+Blink: 1- 5- 6-
+Left movement: 9 - * 10 - 9 -
+Right movement: 11 - * 12 - 11 -
+Spell Card Declare: 13 - 14 - * 15 - 14 - 13 -
+Barrier 1: 17 - 18 - * 19 - 18 - 17
+Barrage 2: 21 - 22 - * 23 - 22 - 21 -
+
+
+Å° dot_kaguya.png
+
+Normal standing: 1 - 2 - 3 - 1 - 2 - 3 - ...
+Blink: 1- 5- 6-
+Left movement: 9 - * 10 - 9 -
+Right movement: 11 - * 12 - 11 -
+Spell Card Declare: 13 - 14 - * 15 - 14 - 13 -
+Barrier 1: 17 - * 18 - 17
+Barrage 2: 21 - 22 - * 23 - 22 - 21 -
+
+
+Å° dot_mokou.png
+
+Normal standing: 1 - 2 - 3 - 1 - 2 - 3 - ...
+Blink: 1- 5- 6-
+Left movement: 9 - * 10 - 9 -
+Right movement: 11 - * 12 - 11 -
+Spell Card Declare: 13 - 14 - * 15 - 14 - 13 -
+Barrier 1: 17 - 18 - * 19 - 18 - 17
+Barrage 2: 21 - * 22 - 23 - * 24 - 23 -
+
+22 of Barrage 2 is a sort, so it's irregular. Because it is an arrangement different from Komachi, we will try sorry.
+
+
+Å• Å• Flower Motoka Å• Å•
+
+Å° dot_aya.png
+
+Normal standing: 1 - 2 - 3 - 1 - 2 - 3 - ...
+Blink: 1- 5- 6-
+Left movement: 9 - * 10 - 9 -
+Right movement: 11 - * 12 - 11 -
+Spell Card Declare: 13 - * 14 - 13 -
+Barrier 1: 17 - * 18 - 17 -
+Barrage 2: 21 - 22 - * 23 - 22 - 21 -
+
+Kick to the lower left: 11- * 12-11
+Kick to the lower right: 9 - * 10 - 9
+
+Kick left and right, right move and left kick are the same
+
+
+Å° dot_medicine.png
+
+Normal standing: 1 - 2 - 3 - 1 - 2 - 3 - ...
+Blink: 1- 5- 6-
+Left movement: 9 - * 10 - 9 -
+Right movement: 11 - * 12 - 11 -
+Spell Card Declare: 13 - 14 - * 15 - 14 - 13 -
+Barrage 1: 17 - 18 - * 19 - 18 - 17 -
+Barrage 2: 21 - 22 - * 23 - 22 - 21 -
+
+Sue: 25 - 26 - 27 - ...
+Spell Card Declare: 29 - * 30 - 29
+
+At the time of the speck, Sue went around the medi
+It would be greatly appreciated if you let me feel like you are flying.
+Incidentally Mr. Siu is 32 * 32 yo
+
+
+Å° dot_yuka.png
+
+Normal standing: 1 - 2 - 3 - 1 - 2 - 3 - ...
+Blink: 1- 5- 6-
+Left movement: 9 - * 10 - 9 -
+Right movement: 11 - * 12 - 11 -
+Spell Card Declare: 13 - 14 - * 15 - 14 - 13 -
+Barrage 1: 17 - 18 - * 19 - 18 - 17 -
+Barrage 2: 21 - 22 - * 23 - 22 - 21

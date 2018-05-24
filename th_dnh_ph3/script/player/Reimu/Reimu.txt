@@ -13,8 +13,8 @@ let alive = true;
 
 @Initialize{
 	SetPlayerAutoItemCollectLine(130);
-	SetPlayerSpeed(4.5,2);
-	ObjPlayer_AddIntersectionCircleA1(objPlayer,0,0,1,20);
+	SetPlayerSpeed(4.5,2); SetCommonData("PlayerSpeed",[4.5,2]);
+	ObjPlayer_AddIntersectionCircleA1(objPlayer,0,0,1,20); SetCommonData("PlayerHitboxRadius",[1,20]);
 	Load;
 	
 	SetCommonData("BorderOfLifeAndDeathNormal",      15); // 6 //12
@@ -32,6 +32,7 @@ let alive = true;
 	TDraw;
 	THitbox;
 	TCircle; //
+	TBlink; //
 }
 
 @MainLoop{
@@ -63,7 +64,7 @@ let alive = true;
 		SetPlayerSpell(3);
 		SetPlayerInvincibilityFrame(180);
 		// TCircle;
-		TBlink;
+		// TBlink;
 	}
 	case(EV_GRAZE){
 		PlaySound(3,80);

@@ -28,7 +28,7 @@ let se_chime2      = sed~"chime2.wav";    //flourish chime
 let se_chime3      = sed~"chime3.wav";    //flat chime
 
 let se_flourish    = sed~"se_kira01.wav"; //
-let se_kira        = sed~"se_kira02.wav";
+let se_kira        = sed~"se_kira02_clipped.wav";
 
 let se_kira01      = sed~"se_kira01.wav";	//long flourish
 let se_kira02      = sed~"se_kira02.wav";	//short flourish
@@ -189,12 +189,12 @@ let se_time1        = sed~"se_timeout1.wav";
 let se_time2        = sed~"se_timeout2.wav";
 let se_graze        = sed~"graze.wav";
 
-let se_damage1         = sed~"se_damage00.wav";
-let se_damage2         = sed~"se_damage01.wav";
-let se_nodamage        = sed~"se_nodamage.wav";
+let se_damage1      = sed~"se_damage00.wav";
+let se_damage2      = sed~"se_damage01.wav";
+let se_nodamage     = sed~"se_nodamage.wav";
 
-let se_playershot   = sed~"playershot.wav";
-let se_pitchuun     = sed~"se_pitchuun.wav";
+let se_plshot       = sed~"playershot.wav";
+let se_pichuun      = sed~"se_pitchuun.wav";
 
 
 //////////////////////////////////////////////////////////////////////
@@ -208,11 +208,6 @@ let spellbreak=se_spellbreak;
 let defeated=se_defeated;
 let nyaa=se_nyaa;
 let awoo=se_awoo;
-let time1=se_time1;
-let time2=se_time2;
-let damage1=se_damage1; 
-let damage2=se_damage2;
-let nodamage=se_nodamage;
 //////////////////////////////////////////////////////////////////////
 
 
@@ -235,71 +230,53 @@ let nodamage=se_nodamage;
 
 
 
-function SE_Play(let path, let vl){
-	vl*=GetAreaCommonData("CONFIG","SE Volume",0.80);
-	let seobj = ObjSound_Create;
-	ObjSound_Load(seobj,path);
-	ObjSound_Play(seobj);
-	ObjSound_SetVolumeRate(seobj,vl);
-	Manage; return seobj;
-	task Manage{
-		let name = path[length(path)-9..length(path)-4];
-		SetCommonData("SoundManage_"~name,seobj);
-		
-		// loop(270){yield;} //180    //120
-		loop(120){yield;}
-		while(ObjSound_IsPlaying(seobj)){yield;}
-		
-		//If the sound has been played again since starting this task,
-		//leave it loaded. Then the last one to use it unloads it.
-		//This seems to help prevent sounds from being "cut off".
-		if(GetCommonData("SoundManage_"~name,NULL)==seobj){
-			RemoveSound(path);
-		}
-		Obj_Delete(seobj);
-	}
-}
-
-//Experimental version
-//Once working properly, this should help
-//avoid creating extraneous sound objects
-//while preventing sounds from being cut off.
-// function SE_PlayA1(let path, let vl){
+// function SE_Play(let path, let vl){
 	// vl*=GetAreaCommonData("CONFIG","SE Volume",0.80);
-	// let name = path[length(path)-9..length(path)-4];
-	// let seobj = GetCommonData("SoundObject_"~name,ObjSound_Create);
-	// if(Obj_IsDeleted(seobj)){seobj=ObjSound_Create;}
-	// SetCommonData("SoundObject_"~name,seobj);
+	// let seobj = ObjSound_Create;
 	// ObjSound_Load(seobj,path);
 	// ObjSound_Play(seobj);
 	// ObjSound_SetVolumeRate(seobj,vl);
 	// Manage; return seobj;
 	// task Manage{
-		// let hash = GetCommonData("NextHash",0);
-		// SetCommonData("NextHash",(hash+1)%256);
+		// // let name = path[length(path)-9..length(path)-4];
+		// let dirs = SplitString(path,"/"); let name = dirs[length(dirs)-1];
+		// SetCommonData("SM_"~name,seobj);
 		
-		// let numsounds = GetCommonData("NumSoundObjects",0);
-		// SetCommonData("NumSoundObjects",numsounds+1);
-		// let del = max(10,120-30*numsounds);
-		
-		// SetCommonData("SoundManage_"~name,hash);
-		// // loop(del){yield;}
+		// // loop(270){yield;} //180    //120
 		// loop(120){yield;}
-		// // if(GetCommonData("SoundManage_"~name,NULL)==hash || Obj_IsDeleted(seobj)){
-		// if(GetCommonData("SoundManage_"~name,hash)-hash < 10 || Obj_IsDeleted(seobj)){
-			// RemoveSound(path);
-			// DeleteCommonData("SoundManage_"~name);
-			// DeleteCommonData("SoundObject_"~name);
-			// Obj_Delete(seobj);
+		
+		// //If the sound has been played again since starting this task,
+		// //leave it loaded. Then the last one to use it unloads it.
+		// //This seems to help prevent sounds from being "cut off".
+		// if(GetCommonData("SM_"~name,NULL)==seobj){
+			// while(ObjSound_IsPlaying(seobj)){yield;} //Moving this into the if seems to cause problems?
+			// // RemoveSound(path);
 		// }
-		// // else{
-			// // while(GetCommonData("SoundManage_"~name,hash)-hash < 10){yield;}
-			// // Obj_Delete(seobj);
-		// // }
-		// SetCommonData("NumSoundObjects",SetCommonData("NumSoundObjects",0)-1);
-		// //TODO: Make sure objects are cleaned up when interrupted by end of script
+		// Obj_Delete(seobj);
 	// }
 // }
+
+
+
+//Maintains one ObjSound for each path, playing the sound on the same object each time
+//As such, there is no potential for excessive objects to be created
+//and objects do not need to be actively deleted.
+//TODO: Ensure that sound objects are created by system script and thus exempt from autodeletion.
+function SE_Play(let path, let vl){
+	let dirs = SplitString(path,"/"); let name = dirs[length(dirs)-1];
+	// let seobj = GetCommonData("SM_"~name,ObjSound_Create);
+	let seobj = GetCommonData("SM_"~name,NULL);
+	if(seobj==NULL){
+		if(GetOwnScriptID == GetScriptID(SCRIPT_SYSTEM)){ seobj = ObjSound_Create; }
+		else{ Notify(SCRIPT_SYSTEM,EV_PLAY_SOUND,[path,rtoa(vl)]); return ID_INVALID; }
+	}
+	SetCommonData("SM_"~name,seobj);
+	ObjSound_Load(seobj,path);
+	ObjSound_SetVolumeRate(seobj,vl*GetAreaCommonData("CONFIG","SE Volume",0.80) );
+	// ObjSound_SetPanRate(seobj,0);
+	ObjSound_Play(seobj);
+	return seobj;
+}
 
 
 
@@ -320,6 +297,12 @@ task SE_Play_Del(let path, let vl, let del) {
 	SE_Play(path,vl);
 }
 
+
+function ObjSound_PlaySE(obj,path){
+	// let vl=GetAreaCommonData("CONFIG","SE Volume",0.80);
+	ObjSound_Load(obj,path);
+	ObjSound_Play(obj);
+}
 
 
 

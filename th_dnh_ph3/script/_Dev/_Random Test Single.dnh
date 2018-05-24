@@ -50,9 +50,11 @@
 
 task MainTask {
 	// if(noStage){SetBGM("Song of the Night Sparrow ~ Night Bird");}
-	if(noStage){SetBGM("Flight of the Bamboo Cutter ~ Lunatic Princess");}
+	// if(noStage){SetBGM("Flight of the Bamboo Cutter ~ Lunatic Princess");}
+	if(noStage){SetBGM("Eastern Youkai Beauty");}
 	ObjMove_SetPosition(boss,cx+120,-120);
-	ObjMove_SetDestAtWeight(boss,cx,120,60,20);
+	ObjMove_SetDestAtWeight(boss,cx,120,60,10);
+	// ObjMove_SetDestAtWeight(boss,cx,60,60,10);
 	// SetShotAutoDeleteClip(8,8,8,8);
 	
 	// SetSpellCardA2(NAZRIN,dirlib~"Cutin/Cutin_Mystia.png");
@@ -109,7 +111,7 @@ task MainTask {
 		ObjText_SetFontBorderType(obj,BORDER_FULL);
 		ObjText_SetFontBorderColor(obj,0,0,0);
 		ObjText_SetFontBorderWidth(obj,1);
-		let x = cx+50; let y = GetScreenHeight*pri/100;
+		let x = sx-50; let y = GetScreenHeight*pri/100;
 		ObjRender_SetPosition(obj, x,y,0);
 		ObjText_SetText(obj,tost(pri));
 		Obj_SetRenderPriorityI(obj,pri);
@@ -120,6 +122,62 @@ task MainTask {
 		PriTest(i);
 	}
 	wait(30);let a = 0;let ang = 0;
+	
+	wait(60);
+	
+	loop{
+		let T = 420;
+	
+		let arc = 0; //5
+		// let spk = SparkA0(ex,ey,GetAngleToPlayer(boss),300,100,[255,0,255], 100,45, 0, NO_CHANGE,NO_CHANGE);
+		// let spk = SparkA1(ex,ey,GetAngleToPlayer(boss),400,45,arc, 100,45);
+		let spk = SparkA1(ex,ey,90,800,sx*0.8,arc, T,45);
+		// OR_SetColor(spk,255,0,255);
+		let robj = Obj_GetValue(spk,RENDER_OBJECT);
+		// ObjRender_SetBlendType(spk,BLEND_ADD_ARGB);
+		
+		SE_Play(se_laser,100);
+		SE_Play_Del(se_explode,100,60);
+		
+		ManageSpark(spk);
+		task ManageSpark(spk){
+			// let f=0; 
+			let a = ObjStLaser_GetAngle(spk);
+			// while(!Obj_IsDeleted(spk)){
+			ascent(f in 0..T){
+				let off = T/30*sin(f*180/T);
+				ObjMove_SetPosition(spk,ex-off*cos(a),ey-off*sin(a));
+				// ObjStLaser_SetAngle(spk,a + 30*sin(f));
+				
+				// ObjLaser_SetLength(spk, 800*min(1, f/120) );
+				
+				// let wid = sx*0.8*min(1, (max(0,f-60)/30)^0.5 );
+				// let wid = sx*0.95*min(1, (max(0,f-60)/30)^0.5 );
+				let wid = sx*0.99*min(1, (max(0,f-60)/30)^0.5 );
+				if(f > T-60){
+					wid *= ((60-(f-(T-60)))/60)^2;
+				}
+				
+				OL_SetRenderWidth(spk, wid);
+				OL_SetIntersectionWidth(spk, wid*1.01);
+				
+				// Obj_SetValue(spk,SPARK_ARC, 45*min(1, f/1200) );
+				
+				yield; //f++;
+			}
+			Obj_Delete(spk);
+		}
+		
+		wait(90);
+		loop(floor((T-90)/30)-2){
+			let a0 = rand(0,360);
+			ascent(i in 0..40){
+				let shot = ShotA1(ex,ey,2.4, a0+i*360/40, DOT_WHITE, 0);
+			}
+			wait(30);
+		}
+		wait(120);
+	}
 	
 	// Set2DCameraFocusX(GetStgFrameWidth/2);
 	// Reset2DCamera;

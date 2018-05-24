@@ -1,0 +1,625 @@
+#TouhouDanmakufu[Single]
+#ScriptVersion[3]
+#Title["Sandbox spell 2 - Dream Sign \"Four Winds Dreamcatcher\""]
+#Text["series 8: scalable pattern speed"] 
+#System["./system/Andi_System.txt"]
+#Background["./system/Background/Satori/BG_work.txt"]
+
+#include "./Index.txt"
+
+let drate = 24; //24
+let ss=1;
+
+@Event{
+	alternative(GetEventType())
+	case(EV_REQUEST_LIFE){				SetScriptResult(2000);		}
+	case(EV_REQUEST_SPELL_SCORE){		SetScriptResult(5000000);	}
+	case(EV_REQUEST_TIMER) {			SetScriptResult(47);	}
+	case(EV_REQUEST_IS_DURABLE_SPELL) {	SetScriptResult(false);		}
+}
+@Initialize{
+	// if(noPlural){	SetDifficultyD(HARD); SetBGM("Kid's Festival ~ Innocent Treasures"); }
+	alternative(rank)
+	case(RANK_EASY){	SetCommonData("CurrentSC","Dream Sign \"Four Winds Dreamcatcher\"");}
+	case(RANK_NORM){	SetCommonData("CurrentSC","Dream Sign \"Four Winds Dreamcatcher\"");}
+	case(RANK_HARD){	SetCommonData("CurrentSC","Dream Sign \"Four Winds Dreamcatcher\"");}
+	case(RANK_LUNA){	SetCommonData("CurrentSC","Dream Sign \"Four Winds Dreamcatcher\"");}
+	others         {	SetCommonData("CurrentSC","");}
+	
+	SetShotAutoDeleteClip(32,32,32,32);
+	
+	// boss = CreateBoss("Mystia Lorelai");
+	// renderMystiaIN(boss,1);
+	boss = CreateBoss("Satori Komeiji");
+	renderSatoriSA(boss);
+	
+	MainTask;
+	
+
+}
+@MainLoop
+{
+
+	if(ObjEnemy_GetInfo(boss, INFO_LIFE) <= 0 && !finishing){
+		finishing = true;
+		DropItemsSpellEnd;
+		TBreakSpell([]);
+		// TBreakNonspell([BREAK_DELAY,45,NULL]);
+	}
+	else {
+		SetBossHitbox(boss,ex,ey);
+	}
+	frame++;
+	yield;
+}
+
+
+task MainTask {
+	// ObjEnemy_SetDamageRate(boss,0,0);
+	ObjEnemy_SetDamageRate(boss,drate,drate/3);
+	ObjMove_SetDestAtFrame(boss, cx, cy-100, 60); //cy-120
+	
+	// SetSpellCard;
+	SetSpellCardA1(1, [], NAZRIN, dircut~"Cutin_Satori.png");
+	// ObjEnemyBossScene_StartSpell(objScene);
+	// ObjEnemyBossScene_SetSpellTimer(objScene,timer*60); //5760
+	
+	//SetCaution;
+	// TSpellImmune;
+	// Aura(boss,255,255,255,64);
+	// SetMagicCircleAlpha(64,64);
+
+	wait(90);
+		
+	// Tmovement(cx-120,cx+120, cy-90,cy-60, 60,240, [MOVE_PLAYERBIAS,2,0,MOVE_MAXSPEED,1.5] );
+	ObjEnemy_SetDamageRate(boss,drate,drate/3);
+	frame = 0;
+	
+	
+	TShoot;
+	
+}
+
+
+
+
+
+
+
+
+
+
+
+task TShoot{
+	wait(60);
+	// PoliteBoss; //try to avoid clipdeaths, since player has to get close
+	
+	let N; let K;
+	
+	alternative(getrank)
+	case(RANK_EASY){ ps=1.00; ss=0.75; N=180+120+180; K=1; }
+	case(RANK_NORM){ ps=1.00; ss=0.75; N=180+120+180; K=3; }
+	case(RANK_HARD){ ps=1.00; ss=0.75; N=180+120+180; K=5; }
+	case(RANK_LUNA){ ps=1.00; ss=0.75; N=180+120+180; K=7; }
+
+	ss*=ps;
+	
+
+	
+	
+	let ox = cx; let oy = cy-100;
+	
+	while(!Obj_IsDeleted(boss) && !finishing){
+		
+		task TWave{
+			// let ox = px; let oy = py;
+			// let ox = (px+ex*2)/3; let oy = (py+ey*2)/3;
+			let ox=cx; let oy=cy;
+			let a0 = atan2(py-oy,px-ox)-15 + 6;
+			ascent(i in 0..60){
+				let a = a0+i*360/60;
+				// let shot = CreateCurvyLaserA1(ox+50*cos(a),oy+50*sin(a),4*ss,a,50,20,ZPEL_WHITE,0);
+				let shot = CreateCurvyLaserA1(ox+10*cos(a),oy+10*sin(a),4*ss,a,50,20,ZPEL_WHITE,0);
+				ObjMove_SetAngularVelocity(shot, (-1)^i*ss);
+				TPattern(shot,a,(-1)^i);
+				TBounce(shot,a,(-1)^i);
+				// OR_SetAlpha(shot,64);
+				OR_SetColor(shot,255,64,128);
+				// ObjShot_SetGraphic(shot,BALL_O_WHITE+500);
+				// ObjRender_SetBlendType(shot,BLEND_ALPHA);
+				task TPattern(shot,a,dir){
+					wait(45/ps);
+					OM_SetAngularVelocity(shot,-90/30*ss*dir);
+					wait(30/ps);
+					OM_SetAngularVelocity(shot,0);
+					// OM_SetAngularVelocity(shot,-90/30*ss*dir);
+					// wait(120/ps);
+				}
+				task TBounce(shot0,a,dir){
+					while(!isoff(shot0)){yield;}
+					let x = OM_GetX(shot0); let y=OM_GetY(shot0);
+					let a0 = OM_GetAngle(shot0);
+					let aM = 0; if(x<0||x>sx){aM=90;}
+					
+					a = reflect(a0,aM);
+					let speed = ObjMove_GetSpeed(shot0); let extdel = 800/speed;
+					// let shot = CreateCurvyLaserA1(x,y,4*ss,a,50,20,ZPEL_WHITE,0);
+					let shot1 = LooseLaserA1(x,y,speed,a,100,20, ZPEL_MAGENTA, DELAY_NONE);
+					// OR_SetColor(shot1,255,64,128);
+					OR_SetColor(shot1,128,64,255);
+					while(isoff(shot1)){yield;}
+					while(!isoff(shot1)){yield;}
+					x = OM_GetX(shot1); y=OM_GetY(shot1);
+					
+					// let d = ((px-x)^2+(py-y)^2)^0.5 - rand(0.5,1)^0.5*60;
+					a = atan2(oy-y,ox-x);
+					let d = ((ox-x)^2+(oy-y)^2)^0.5 - rand(0.5,1)^0.5*60;
+					// let las = StraightLaserA2(x,y,a,d,15, ZPEL_BLUE, 0,25/ss,30/ss);
+					let las = StraightLaserA2(x-20*cos(a),y-20*sin(a),a,d+20,15, PEL_YELLOW, 0,25/ss,30/ss);
+					ObjRender_SetBlendType(las,BLEND_INV_DESTRGB);
+					// OR_SetColor(las,192,128,2048);
+					// OR_SetAlpha(las,196);
+					
+					ascent(i in 0..K){ //3
+						let shot = ShotA2(x,y, d/30*ss,a, (1.25-d/30)/30*ss,1.25*ss, GEM_GREEN+i+500, 3);
+						// let angv = 0.35*i;
+						let angv = 0.15+1*(i/3)^0.5;
+						OM_AddPatternA2(shot,30*ss,NO_CHANGE,NO_CHANGE,NO_CHANGE,angv,1.25*ss);
+						OM_AddPatternA2(shot,60*ss,1.25*ss,NO_CHANGE,0.005,-angv,3.25*ss);
+						OM_AddPatternA2(shot,120*ss,NO_CHANGE,NO_CHANGE,0.005*ss,-angv,3.25*ss);
+						// OM_AddPatternA2(shot,420*ss,NO_CHANGE,NO_CHANGE,0.015*ss,0,7.25*ss);
+						OM_AddPatternA2(shot,560*ss,NO_CHANGE,NO_CHANGE,0.015*ss,0,5.25*ss);
+						// OM_AddPatternA2(shot,120*ss,NO_CHANGE,NO_CHANGE,0.005*ss,-angv,5.25*ss);
+					}
+					
+					SE_Play(se_kira,60);
+					
+					// wait(30*ss);
+					// ObjMove_SetAngularVelocity(shot,rand(0,0.25));
+					
+					descent(i in 0..100/speed){
+						// ObjLaser_SetLength(shot1,speed*i);
+						ObjLaser_SetLength(shot1,0);
+						yield;
+					}
+					
+				}
+			}
+			SE_Play(se_laser,40,);
+			SE_Play(se_charge,60);
+			// if(al){ SE_Play_Del(se_charge,100,(N-15)/ps); }
+			// ascent(i in 0..N){
+				// let r = -20*(i/N)^0.5 + rad1*(i/N)^2 + rad2*(i/N)^3;
+				// ascent(j in 0..6){
+					// // let arc = [250,250,190,190,220,220][j];
+					// // let pow = [2,2,0.5,0.5,1,1][j];
+					// let pow = [0.5,1,1.5][floor(j/2)];
+					// let arc = [210,200,190][floor(j/2)];
+					// let a = 270 + arc*(-1)^j * (i/N)^(pow);
+					// ObjStLaser_SetAngle(las[j],a);
+					// // let x = ex+r/2*cos(a); let y = ey+r*sin(a);
+					// let x = ox+r*cos(a); let y = oy+r*sin(a);
+					// ObjMove_SetPosition(las[j],x,y);
+
+					// let c = rainbow( arc*(-1)^j*(i/N)^(pow^0.5) / 90 );
+					// OR_SetColor(las[j],c[0],c[1],c[2]);
+					
+					// if(i%3==0){
+						// let pt = GetLineBorderPoint(x,y,x+1600*cos(a),y+1600*sin(a));
+						// if(length(pt)>0){
+							// x=pt[0];y=pt[1];
+							
+							// ascent(k in 0..K){
+								// pow = [0.5,1,1.5,2.25][k];
+								// // let ba = 270 + bArc * (i/N) * (-1)^j;
+								// let ba = 270 + bArc * (i/N)^pow * (-1)^j;
+								// // let shot = ShotA1(x,y,ss,ba, ZPEL_RED+randint(0,2), 8+DELAY_RING);
+								// let graph = ZPEL_RED+k+randint(0,2);
+								// // let shot = ShotA1(x,y,ss,ba, graph, 8+DELAY_RING);
+								// let shot = ShotA1(x,y,1.75*ss,ba, graph, 12);
+								// ObjShot_SetSpellResist(shot,sr);
+							// }
+							// SE_Play(se_chime,40 * ( cos(i*90/N) ) );
+							// SE_Play(se_shot3,30 + 30 * ( sin(i*90/N) ) );
+							// // SE_Play(se_kira, 20 + 40 * ( sin(i*90/N) ) );
+						// }
+					// }
+					
+				// }
+				
+				// Play_SE(se_ice);
+				
+				// yield;
+				// waitr(time/(time*ps),i);
+				// wait(1/ps);
+			// }
+			// if(false){
+				// ascent(j in 0..6){
+					// let x0 = ObjMove_GetX(las[j]); let y0 = ObjMove_GetY(las[j]); let a0 = ObjStLaser_GetAngle(las[j]);
+					// //Circle of aimed ~~dots~~ lasers at base
+					// ObjStLaser_SetSource(las[j],true);
+					// ascent(i in 0..10){
+						// let a = 270+i*360/10;
+						// let x = x0+20*cos(a); let y = y0+20*sin(a);
+						// a = atan2(py-y,px-x);
+						// Laser(x,y,a);
+						// // let shot = ShotA1(x,y,3.25*ps,atan2(py-y,px-x), DOT_RED+i, 20+DELAY_GLOW);
+						// task Laser(x,y,a){
+							// let c = GetShotDataInfoA1(BALL_RED+i,TARGET_ENEMY,INFO_DELAY_COLOR);
+							// ShotDelayA1(x,y,8/ss,DELAY_RING,c);
+							// wait(8/ss);
+							// let shot = LooseLaserA1(x,y,24*ss,a, 200,12, BALL_RED+i, 8/ps);
+							// // let shot = LooseLaserA1(x,y,24*ss,a, 200,12, BALL_RED+i, DELAY_NONE);
+						// }
+					// }
+				
+				// }
+				// SE_Play(se_shot,100);
+				// SE_Play(se_chime,100);
+				// SE_Play(se_exshot,100);
+				// SE_Play(se_flourish,100);
+				// SE_Play(se_swrlaser,100);
+				// SE_Play_Del(se_laser,100,15);
+				// SE_Play_Del(se_laser2,100,15);
+				// SE_Play_Del(se_seal,100,15);
+			// }
+		}
+		
+		TWave();
+		// wait(del);
+		wait(N/ps);
+		
+		// ps = ps*1.05; ss = ss*1.05;
+		
+	}
+	
+	
+	
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+task PoliteBoss{ //avoid clipdeaths
+	let ox=cx; let oy=cy-100;
+	while(!Obj_IsDeleted(boss)){
+		let a = atan2(ey-py,ex-px);
+		let d = min( 80, ((ex-px)^2+(ey-py)^2)^0.5 );
+		let t = (d/30)^0.5;
+		// ObjMove_SetY(boss, ey + (oy-d - ey)/(30*(d/30)^0.5));
+		ObjMove_SetY(boss, ( (ey+(ey-d - ey)/(30*(d/30)^0.5))*29 + oy )/30 );
+		yield;
+	}
+}
+
+
+
+
+
+task TShootOld{
+	wait(60);
+	PoliteBoss; //try to avoid clipdeaths, since player has to get close
+	
+	// let bArc = 730; //720 //750 undodgeable //730 leaves a nice window of opportunity
+	
+	let K; let bArc; let N; let del; let rad1; let rad2; let sr; let al;
+	alternative(getrank)
+	case(RANK_EASY){ ps=0.5; ss=1.00;   K=1; bArc=710; N=270; del=330; rad1=150; rad2=150; sr=false; al=false; }
+	case(RANK_NORM){ ps=0.5; ss=1.00;   K=3; bArc=730; N=270; del=330; rad1=100; rad2= 50; sr=true;  al=false; }
+	case(RANK_HARD){ ps=0.5; ss=1.00;   K=1; bArc=750; N=270; del=285; rad1=100; rad2=100; sr=true;  al=true;  }
+	case(RANK_LUNA){ ps=0.4; ss=1.00;   K=2; bArc=750; N=270; del=285; rad1=100; rad2=100; sr=true;  al=true;  }
+	others{          ps=2.0; ss=0.23;   K=3; bArc=750; N=270; del=720; rad1=300; rad2= 50; sr=true;  al=false; }
+
+	// case(RANK_NORM){ ps=0.5; ss=1.00;   K=2; bArc=730; N=270; del=330; rad1=150; rad2= 50; sr=false; }
+	
+	// case(RANK_EASY){ ps=0.5; ss=1.00;   K=1; bArc=710; N=270; del=330; rad1=150; rad2=150; sr=false; }
+	// case(RANK_NORM){ ps=0.5; ss=1.00;   K=2; bArc=730; N=270; del=330; rad1=150; rad2= 50; sr=false; }
+	// case(RANK_HARD){ ps=0.5; ss=1.00;   K=3; bArc=730; N=270; del=330; rad1=100; rad2= 50; sr=true; }
+	// // case(RANK_LUNA){ ps=0.5; ss=1.00;   K=1; bArc=750; N=270; del=285; rad1=100; rad2=100; sr=true; }
+	// case(RANK_LUNA){ ps=0.4; ss=1.00;   K=2; bArc=750; N=270; del=285; rad1=100; rad2=100; sr=true; }
+	// others{          ps=2.0; ss=0.23;   K=3; bArc=750; N=270; del=720; rad1=300; rad2= 50; sr=true; }
+	
+	// case(RANK_LUNA){ ps=0.5; ss=1.75;   K=1; bArc=750; N=270; del=285; rad1=100; rad2=100; sr=true; }
+	// case(RANK_HARD){ ps=0.5; ss=1.75;   K=3; bArc=730; time=270; del=330; rad1=100; rad2= 50; sr=true; }
+	// case(RANK_LUNA){ ps=0.5; ss=1.75;   K=1; bArc=780; time=270; del=285; rad1=100; rad2=100; sr=true; }
+	// others{          ps=2;   ss=0.41;   K=2; bArc=750; time=270; del=720; rad1=300; rad2=100; sr=true; }
+	
+	ss*=ps;
+	del/=ps;
+	
+
+	
+	
+	let ox = cx; let oy = cy-100;
+	
+	while(!Obj_IsDeleted(boss) && !finishing){
+		
+		task TWave{
+			let las = [];
+			ascent(i in 0..6){
+				las=las~[ StraightLaserA1(ox,oy,270,400,40, LAS_C_WHITE, 45-8*floor(i/2), N/ps) ];
+				// ObjRender_SetBlendType(las[i],BLEND_INV_DESTRGB);
+				SE_Play_Del(se_laser,60,45-8*floor(i/2));
+			}
+			SE_Play(se_charge,100);
+			if(al){ SE_Play_Del(se_charge,100,(N-15)/ps); }
+			ascent(i in 0..N){
+				let r = -20*(i/N)^0.5 + rad1*(i/N)^2 + rad2*(i/N)^3;
+				ascent(j in 0..6){
+					// let arc = [250,250,190,190,220,220][j];
+					// let pow = [2,2,0.5,0.5,1,1][j];
+					let pow = [0.5,1,1.5][floor(j/2)];
+					let arc = [210,200,190][floor(j/2)];
+					let a = 270 + arc*(-1)^j * (i/N)^(pow);
+					ObjStLaser_SetAngle(las[j],a);
+					// let x = ex+r/2*cos(a); let y = ey+r*sin(a);
+					let x = ox+r*cos(a); let y = oy+r*sin(a);
+					ObjMove_SetPosition(las[j],x,y);
+
+					let c = rainbow( arc*(-1)^j*(i/N)^(pow^0.5) / 90 );
+					OR_SetColor(las[j],c[0],c[1],c[2]);
+					
+					if(i%3==0){
+						let pt = GetLineBorderPoint(x,y,x+1600*cos(a),y+1600*sin(a));
+						if(length(pt)>0){
+							x=pt[0];y=pt[1];
+							
+							ascent(k in 0..K){
+								pow = [0.5,1,1.5,2.25][k];
+								// let ba = 270 + bArc * (i/N) * (-1)^j;
+								let ba = 270 + bArc * (i/N)^pow * (-1)^j;
+								// let shot = ShotA1(x,y,ss,ba, ZPEL_RED+randint(0,2), 8+DELAY_RING);
+								let graph = ZPEL_RED+k+randint(0,2);
+								// let shot = ShotA1(x,y,ss,ba, graph, 8+DELAY_RING);
+								let shot = ShotA1(x,y,1.75*ss,ba, graph, 12);
+								ObjShot_SetSpellResist(shot,sr);
+							}
+							SE_Play(se_chime,40 * ( cos(i*90/N) ) );
+							SE_Play(se_shot3,30 + 30 * ( sin(i*90/N) ) );
+							// SE_Play(se_kira, 20 + 40 * ( sin(i*90/N) ) );
+						}
+					}
+					
+				}
+				
+				// Play_SE(se_ice);
+				
+				// yield;
+				// waitr(time/(time*ps),i);
+				wait(1/ps);
+			}
+			if(al){
+				ascent(j in 0..6){
+					let x0 = ObjMove_GetX(las[j]); let y0 = ObjMove_GetY(las[j]); let a0 = ObjStLaser_GetAngle(las[j]);
+					//Circle of aimed ~~dots~~ lasers at base
+					ObjStLaser_SetSource(las[j],true);
+					ascent(i in 0..10){
+						let a = 270+i*360/10;
+						let x = x0+20*cos(a); let y = y0+20*sin(a);
+						a = atan2(py-y,px-x);
+						Laser(x,y,a);
+						// let shot = ShotA1(x,y,3.25*ps,atan2(py-y,px-x), DOT_RED+i, 20+DELAY_GLOW);
+						task Laser(x,y,a){
+							let c = GetShotDataInfoA1(BALL_RED+i,TARGET_ENEMY,INFO_DELAY_COLOR);
+							ShotDelayA1(x,y,8/ss,DELAY_RING,c);
+							wait(8/ss);
+							let shot = LooseLaserA1(x,y,24*ss,a, 200,12, BALL_RED+i, 8/ps);
+							// let shot = LooseLaserA1(x,y,24*ss,a, 200,12, BALL_RED+i, DELAY_NONE);
+						}
+					}
+				
+				}
+				SE_Play(se_shot,100);
+				SE_Play(se_chime,100);
+				SE_Play(se_exshot,100);
+				SE_Play(se_flourish,100);
+				SE_Play(se_swrlaser,100);
+				SE_Play_Del(se_laser,100,15);
+				SE_Play_Del(se_laser2,100,15);
+				SE_Play_Del(se_seal,100,15);
+			}
+		}
+		
+		TWave();
+		wait(del);
+		
+		ps = ps*1.05; ss = ss*1.05;
+		
+	}
+	
+	
+	
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	// //Convert length of laser into shots
+				// let c = OR_GetColor(las[j]);
+				// let da = GetAngularDistance(a0,90);
+				// let dir = 15*(|da/90|)^0.5*90/45*sgn(da);
+				// ascent(i in 0..50){
+					// let r = 8*i;
+					// let x = x0+r*cos(a0); let y = y0+r*sin(a0);
+					// if(y>sy){break;}
+					// // let a = a0+90*sin(i*30);
+					// let a = a0+i*dir;
+					// let shot = ShotA2(x,y,0,a,0.05*ps,3.25*ps, ZPEL_GRAY+500, 10+DELAY_GLOW);
+					// ObjMove_SetAngularVelocity(shot,0.25*ps*sin(i*30)*dir/5);
+					// // OR_SetColor(shot,c[0]+128,c[1]+128,c[2]+128);
+					// // OR_SetColor(shot,c[0]*2,c[1]*2,c[2]*2);
+					// OR_SetColor(shot,(c[0]/255)^0.25*255,(c[1]/255)^0.25*255,(c[2]/255)^0.25*255);
+				// }
+				
+				
+				
+				
+				
+
+task TShoot2{
+	wait(60);
+
+	let shot; 
+	
+	let gap; let N; let M; let del; let famgap;
+	let diff = rank();	
+	alternative(diff)
+	case(RANK_EASY){	N = 10; M = 3;  gap=120; del = 120; famgap = 15; }
+	case(RANK_NORM){	N = 20; M = 6;  gap=90;  del = 120; famgap = 10; }
+	case(RANK_HARD){	N = 25; M = 9;  gap=70;  del = 120;  famgap = 7; }
+	case(RANK_LUNA){	N = 30; M = 12; gap=50;  del = 120;  famgap = 5; }
+	others{ N=100;M=10;gap=20;del=90;famgap = 1;}
+	let shootinterval = 30/N; //total of 30 frames, in N intervals
+
+	
+	let count=0; let a; let dir;
+	
+	while(!Obj_IsDeleted(boss) && !finishing){
+		
+		
+		
+		
+		let x; let y;
+		
+		ascent(k in 0..2){			
+			x = cx+randSign*rand(0,cx*0.75);
+			y = rand(60,cy*0.9);
+			a = getangle(ex,y,x,y+100);
+			
+			ObjMove_SetDestAtBezierF(boss,x,y, (ex+x)/2,y, gap*0.66);
+			
+			wait(gap/2);
+			if(finishing){DeleteShotAll(TYPE_ALL,TYPE_ITEM);return;}
+			dir = -altSign(k);
+			ascent(i in 0..N){
+				ascent(j in 0..M){ //12 //6 //3
+					dir = -altSign(k);
+					a = 270+(90+15+300/N*i)*dir;
+					dir = -altSign(j);
+					let isalt = frombool(altSign(j)==altSign(k));
+					
+					shot = CreateShotA2(ex,ey,5.5-0.5*trunc(j/2+altBin(i)/3),a, -0.15,0, BALL_O_GREEN+isalt*(SCALE_MAGENTA-BALL_O_GREEN-2*tobin(altBin(trunc(j/2+i)))),10);
+					
+					// OM_AddPatternA5(shot,  0, NO_CHANGE,NO_CHANGE,   0,         0,    0,   -0.005,   -1,         0,        0);
+					OM_SetMaxAcceleration(shot,-1);
+					OM_SetJerk(shot,-0.005);
+					O_AddPropertyPatternA1(shot,30,MOVE_JERK,0.001);
+					
+					let spd = 0;
+					let mspd= 5; //4
+					let acc  = 0; //0.5
+					let jerk = 0.003; //-0.0015
+					let macc = 0.15; //0.15
+					OM_AddPatternA5(shot,del, spd,NO_CHANGE,  acc, -dir*3.55,   mspd,  jerk, macc, dir*0.15, dir*1.25);
+					
+					O_SetPropertyAtDelay(shot,MOVE_ANGV,0,(1.5+0.01*j)*del);
+					
+					if(altSign(j)==altSign(k)){
+						Manage(shot);
+						task Manage(shot){
+							ObjRender_SetAlpha(shot,0);
+							wait(del);
+							ascent(i in 0..60){
+								ObjRender_SetAlpha(shot,255*(i/60)^2);
+								yield;
+							}
+						}
+					}
+					
+				}
+				SE_Play(se_shot,60);
+				DelayChime;
+				waitr(shootinterval,i);
+				if(finishing){DeleteShotAll(TYPE_ALL,TYPE_ITEM);return;}
+			}
+			wait(gap/2);
+			wait(gap*(k%2));
+			
+		}
+	
+		wait(gap*1.5); //60
+		
+		let a0 = GetAngleToPlayer(boss);
+		ascent(i in 0..10){
+			
+			let fam = SpawnFamiliarC1(ex,ey,"blue",150+50*diff);
+			// ObjMove_AddPatternA1(fam,0,3.5,a0-90+15+36*i);
+			OM_AddPatternA5(fam,  0, 2,a0-90+15+36*i,   0,0,6,   0.001,0.1,   0.05,1);
+			// ObjMove_AddPatternA2(fam,60,NO_CHANGE,NO_CHANGE, -0.15, 0.25/cos(((|i-4.5|))), 0.75);
+			SE_Play(se_fam,100);
+			TFamShoot(fam);
+			//Each familiar's shots
+			task TFamShoot(fam){
+				wait(30); let shot; let fx; let fy; let fa; let off=0;
+				if(finishing){Obj_Delete(fam);return;}
+				while(!Obj_IsDeleted(fam) && !isOffScreen(fam)){
+					fx = ObjMove_GetX(fam); fy = ObjMove_GetY(fam); fa = ObjMove_GetAngle(fam);
+					ascent(i in 0..2){
+						x=fx+rand(-20,20); y=fy+rand(-20,20);
+						shot = CreateShotA2(x,y,0,fa+180+160*i+off, 0,0, LARGE_AQUA,15); //1.5
+						ObjShot_Delete(shot);
+						shot = CreateShotA1(x,y, 2, fa+180+160*i+(i+1)*off, ZPEL_RED, 0);
+						OR_SetAlpha(shot,min(0,60-getdistance(x,y,px,py)));
+						O_SetPropertyAtAccel(shot,RENDER_ALPHA,255,45);
+						O_SetProperty(shot,FLAG_INTERSECTION,false);
+						O_SetPropertyAtDelay(shot,FLAG_INTERSECTION,true,20);
+						// CheckShot(shot,500);
+						// ObjMove_AddPatternA3(shot,del,0,NO_CHANGE,0.05,0,2.25, LARGE_AQUA);
+						// ObjMove_AddPatternA4(shot,del,0,NO_CHANGE,0.05,0,2.25, GetPlayerObjectID, LARGE_AQUA);
+						// ObjMove_AddPatternA4(shot,del,0,160*i+off*sin(off)*cos(off),0.05,0,2.25, GetPlayerObjectID, LARGE_BLUE);
+					}
+					SE_Play(se_shot1,70);
+					DelayChime;
+					wait(famgap);
+					if(finishing){Obj_Delete(fam);return;}
+					off += 15*famgap;
+				}
+				Obj_Delete(fam);
+			}//end of familiars' shots
+			wait(3);
+		}
+		
+		
+		wait(120);
+		
+		
+	}	
+	
+	
+	task DelayChime{
+		wait(del);
+		if(!finishing){SE_Play(se_chime,75);}
+	}
+}
+
+

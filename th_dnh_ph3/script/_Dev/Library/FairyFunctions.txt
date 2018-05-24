@@ -281,13 +281,15 @@ task AnimateFairyA1(objID, presetColor){
 
 task FinalizeFairy(objID,FinalX, FinalY, expcolor, expscale){
 	if(CheckOutsideScreenA2(FinalX, FinalY, 64)){return;}
-	let r = 255;
-	let g = 255;
-	let b = 255;
-	if(expcolor=="blue"){r=50;g=84;b=255}else
-	if(expcolor=="green"){r=0;g=238;b=0}else
-	if(expcolor=="red"){r=255;g=102;b=0}else
-	if(expcolor=="yellow"){r=255;g=238;b=0}
+	let r = 255; let g = 255; let b = 255;
+	if(typeof(expcolor)==TYPE_STRING){
+		if(expcolor=="blue"){  r= 50; g= 84; b=255}else
+		if(expcolor=="green"){ r=  0; g=238; b=  0}else
+		if(expcolor=="red"){   r=255; g=102; b=  0}else
+		if(expcolor=="yellow"){r=255; g=238; b=  0}
+	}else{
+		r=expcolor[0]; g=expcolor[1]; b=expcolor[2];
+	}
 	loop(max(1,quality)){FExplosionB1(GetObjX(objID),GetObjY(objID), expcolor, rand(-70, 70), rand(-70, 70), rand(-40, 40), expscale);}
 	loop(quality*2){FExplosionB2(GetObjX(objID),GetObjY(objID), r, g, b, rand(1, 3));}
 	loop(2){yield;}

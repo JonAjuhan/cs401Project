@@ -1,14 +1,20 @@
 
 let dirCurrent = GetCurrentScriptDirectory();
-#include "./../Library/selibrary.txt"
-#include "./../Library/MiscConstants.txt"
-#include "./../Library/Resources.txt"
-#include "./../Library/ExtendedDNF.txt"
-#include "./../Library/EventList.txt"
-#include "./../Library/DirPaths.txt"
-#include "./../Library/Difficulty.txt"
-#include "./ItemConst.txt"
+#include "./../Index.txt"
+// #include "./../Library/selibrary.txt"
+// #include "./../Library/MiscConstants.txt"
+// #include "./../Library/Resources.txt"
+// #include "./../Library/ExtendedDNF.txt"
+// #include "./../Library/EventList.txt"
+// #include "./../Library/DirPaths.txt"
+// #include "./../Library/Difficulty.txt"
+// #include "./ItemConst.txt"
+#include "./../Library/LoadEverything.txt"
 // #include "./../Library/Music.txt"
+
+@Loading{
+	LoadEverything();
+}
 
 @Initialize{
 	SetScriptID(SCRIPT_SYSTEM);
@@ -28,7 +34,7 @@ let dirCurrent = GetCurrentScriptDirectory();
 	InstallFonts();
 	GetConfig();
 	LoadScript(dirCurrent~"Pause.txt");
-	StartScript(LoadScriptInThread(dirlib~"LoadEverything.dnh"));
+	// StartScript(LoadScriptInThread(dirlib~"LoadEverything.dnh"));
 	
 	
 	//Set up frame/UI
@@ -84,7 +90,7 @@ let dirCurrent = GetCurrentScriptDirectory();
 	case(EV_END_BOSS_STEP){
 		let objScene = GetEnemyBossSceneObjectID();
 		if(ObjEnemyBossScene_GetInfo(objScene,INFO_IS_SPELL)){
-			SpellShatter();
+			SpellShatter([]);
 		}
 	}
 	case(EV_GAIN_SPELL){
@@ -97,11 +103,11 @@ let dirCurrent = GetCurrentScriptDirectory();
 		}else{
 			TFailSpell();
 		}
-		SpellShatter();
+		SpellShatter([]);
 	}
 	case(EV_FAIL_SPELL) {
 		TFailSpell();
-		SpellShatter();
+		SpellShatter([]);
 	}
 	case(EV_PLAYER_SHOOTDOWN){
 		if(GetCommonData("UsePlayerPower",true) && GetPlayerLife >= 0){
@@ -123,6 +129,18 @@ let dirCurrent = GetCurrentScriptDirectory();
 				  [type,GetPlayerX,GetPlayerY,GetPlayerX+200*cos(a+20*i),GetPlayerY+200*sin(a+20*i),0] );
 			}
 		}
+	}
+	case(EV_SHATTER_SCREEN){
+		let args = GetEventArgument(0);
+		SpellShatter(args);
+	}
+	case(EV_SET_FULLSCREEN){
+		let args = GetEventArgument(0);
+		SetFullScreen(args[0]=="true", atoi(args[1]) );
+	}
+	case(EV_PLAY_SOUND){
+		let args = GetEventArgument(0);
+		SE_Play(args[0],ator(args[1]));
 	}
 	
 }
@@ -760,7 +778,8 @@ task TCurrentFps(){
 	ObjText_SetFontBorderWidth(objText, 2);
 	ObjText_SetHorizontalAlignment(objText, ALIGNMENT_RIGHT);
 	ObjText_SetMaxWidth(objText, GetScreenWidth() - 8);
-	Obj_SetRenderPriority(objText, 1.0);
+	// Obj_SetRenderPriority(objText, 1.0);
+	Obj_SetRenderPriorityI(objText, 99);
 	ObjRender_SetX(objText, 0);
 	// ObjRender_SetY(objText, GetScreenHeight() - 20  -17*3);
 	ObjRender_SetY(objText, GetScreenHeight() - 20);
@@ -804,20 +823,20 @@ task TReplayFps(){
 //----------------------------------------------------
 //ユーティリティ
 //----------------------------------------------------
-function DigitToArray(let digit,let count){
-	let res = [];
-	digit = truncate(digit);
-	loop{
-		let tnum = truncate(digit % 10);
-		digit /= 10;
-		res = [tnum] ~ res;
-		if(truncate(digit) == 0){break;}
-	}
-	loop(max(0, count - length(res))){
-		res = [0] ~ res;
-	}
-	return res;
-}
+// function DigitToArray(let digit,let count){
+	// let res = [];
+	// digit = truncate(digit);
+	// loop{
+		// let tnum = truncate(digit % 10);
+		// digit /= 10;
+		// res = [tnum] ~ res;
+		// if(truncate(digit) == 0){break;}
+	// }
+	// loop(max(0, count - length(res))){
+		// res = [0] ~ res;
+	// }
+	// return res;
+// }
 
 
 
@@ -887,13 +906,13 @@ task TEnemyMarker() {
 			if(ObjEnemy_GetInfo(boss,INFO_SHOT_HIT_COUNT)>0) {
 				if(ObjEnemy_GetInfo(boss,INFO_DAMAGE_RATE_SHOT)!=0) {
 					if(ObjEnemy_GetInfo(boss,INFO_LIFE) > 0.1*ObjEnemyBossScene_GetInfo(scene,INFO_CURRENT_LIFE_MAX)) {
-						SE_Play(damage1,50);
+						SE_Play(se_damage1,50);
 					} else {
-						SE_Play(damage2,75);
+						SE_Play(se_damage2,75);
 					}
 				}
 				else {
-					SE_Play(nodamage,40); //50
+					SE_Play(se_nodamage,40); //50
 				}
 			}
 			
@@ -931,6 +950,7 @@ task TScoreExtend { //TODO: check only when score is gained
 }
 
 task TTimerTick {
+	let seobj = ObjSound_Create();
 	let objScene = ID_INVALID;
 	while(objScene==ID_INVALID){yield;objScene=GetEnemyBossSceneObjectID;}
 	while(ObjEnemyBossScene_GetInfo(objScene, INFO_TIMER)>11){wait(60);}
@@ -943,8 +963,8 @@ task TTimerTick {
 		//Timer sounds for last 10 seconds of spellcards
 		let timer = ObjEnemyBossScene_GetInfo(objScene, INFO_TIMER);
 		if(timer<=10 && timer>0 && GetCommonData("TimeFlowing",true)) { 
-			if(timer>3) { SE_Play(time1,100); }
-			else {       SE_Play(time2,100); }
+			if(timer>3) { SE_PlayA2(se_time1,100,seobj,45); }
+			else {        SE_PlayA2(se_time2,100,seobj,45); }
 		}
 	}
 }
@@ -1105,7 +1125,6 @@ task TProjection{
 		
 	}
 	
-	//Some of this should maybe be done in the player script
 	task TGhost{
 		//Main render object
 		let ghost = ObjPrim_Create(OBJ_SPRITE_2D);
@@ -1340,13 +1359,43 @@ function DeflectShots(r){
 
 /////////////////////////////////////////////////////
 //Conarnar
-task SpellShatter {
+task SpellShatter(args){
 	//offset
 	let xO = -GetStgFrameLeft;
 	let yO = -GetStgFrameTop;
 	
 	let s_pri = [20,69]; //[20,69]
-	let d_pri = PRI_EFFECT; //20
+	let d_pri = PRI_EFFECT; //41, prev 20
+	
+	
+	
+	let T = 60; let T2 = 120; let T3 = 180;
+	
+	let spinX=1; let spinY=1; let spinZ=1;
+	let Dx = 3; let Dy = 3;
+	
+	//point which shards move away from
+	let cx = GetStgFrameWidth/2; let cy = GetStgFrameHeight/2; 
+	
+	if(length(args)>0){
+		ascent(i in 0..length(args)){
+			let arg = SplitString(args[i],":");
+			let k = arg[0]; let v; if(length(arg)>1){ v = arg[1]; }
+			alternative(k)
+			case("cx"){cx=ator(v);}
+			case("cy"){cy=ator(v);}
+			case("time"){T2=atoi(v); T=T2/2; T3=3*T; }
+			case("spin"){ spinX=ator(v); spinY=spinX; spinZ=spinX; }
+			case("spinX"){spinX=ator(v);}
+			case("spinY"){spinY=ator(v);}
+			case("spinZ"){spinZ=ator(v);}
+			case("dx"){Dx=ator(v);}
+			case("dy"){Dy=ator(v);}
+			case("pri"){ let arr = SplitString(v,"[,]"); s_pri = [ ator(arr[0]), ator(arr[1]) ]; }
+			case("destpri"){d_pri=ator(v);}
+			
+		}
+	}
 	
 	// let s_pri = [0,100];
 	// let d_pri = 100;
@@ -1435,12 +1484,12 @@ task SpellShatter {
 
 
 		
-		let dax = rand(-2, 2) * 1; //*3
-		let day = rand(-2, 2) * 1;
-		let daz = rand(-2, 2) * 1;
+		let dax = rand(-2, 2) * spinX; //*3
+		let day = rand(-2, 2) * spinY;
+		let daz = rand(-2, 2) * spinZ;
 		
-		let dx = (x - GetStgFrameWidth /2)/320 * 3; //*3
-		let dy = (y - GetStgFrameHeight/2)/240 * 3;
+		let dx = (x - cx)/320 * 3; //*3
+		let dy = (y - cy)/240 * 3;
 		// let s = ( (dx)^2+(dy)^2 )^0.5;
 		let ang = atan2(dy,dx);
 		let s = rand(1,6);
@@ -1454,18 +1503,19 @@ task SpellShatter {
 		
 		
 
-		ascent(i in 0..60) {
-			let t = (i/60)^0.75 * 60;
+		ascent(i in 0..T) {
+			let t = (i/T)^0.75 * T;
 			ObjRender_SetPosition(obj, x+dx*t, y+dy*t, 0);
 			ObjRender_SetAngleXYZ(obj, dax * t, day * t, daz * t);
-			ObjRender_SetScaleXYZ(obj, (180 - i)/180, (180 - i)/180, 0);
+			ObjRender_SetScaleXYZ(obj, (T3 - i)/T3, (T3 - i)/T3, 0);
 			yield;
 		}
-		ascent(i in 61..120) {
-			let t = (i/60)^0.75 * 60;
+		// ascent(i in 61..120) {
+		ascent(i in T..T2) {
+			let t = (i/T)^0.75 * T;
 			ObjRender_SetPosition(obj, x+dx*t, y+dy*t, 0);
 			ObjRender_SetAngleXYZ(obj, dax * t, day * t, daz * t);
-			ObjRender_SetAlpha(obj, (120 - i)/60 * 255);
+			ObjRender_SetAlpha(obj, (T2 - i)/T * 255);
 			yield;
 		}
 
@@ -1487,6 +1537,17 @@ task SpellShatter {
 
 
 
+
+
+
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////  DEBUG TASKS ////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////
 
 
 
@@ -1537,18 +1598,24 @@ task PlaytestInvincibility {
 
 
 task TMiscCheatKeys{
-	// if(!GetCommonData("CheatEnable",false)){return;}
 	if(!GetAreaCommonData("CONFIG","CheatEnable",false)){return;}
+	
+	let slow=false;
 	loop{
 		let objScene = GetEnemyBossSceneObjectID;
-		if(objScene!=ID_INVALID){
-			// let Space = (GetVirtualKeyState(VK_CHEAT)==KEY_HOLD);
-			
-			if(GetKeyState(KEY_O)==KEY_PUSH && GetVirtualKeyState(VK_CHEAT)==KEY_HOLD) {
-				SetCommonData("Cheat_OverdriveShot",!GetCommonData("Cheat_OverdriveShot",false));
-				let p = GetPlayerPower;SetPlayerPower(1000);yield;SetPlayerPower(p);
+		if(GetKeyState(KEY_O)==KEY_PUSH && GetVirtualKeyState(VK_CHEAT)==KEY_HOLD) {
+			SetCommonData("Cheat_OverdriveShot",!GetCommonData("Cheat_OverdriveShot",false));
+			let p = GetPlayerPower;SetPlayerPower(1000);yield;SetPlayerPower(p);
+		}
+		if(GetKeyState(KEY_W)==KEY_PUSH){
+			if(!slow){
+				StartSlow(TARGET_ALL, 12);
+			}else{
+				StopSlow(TARGET_ALL);
 			}
-			
+			slow=!slow;
+		}
+		if(objScene!=ID_INVALID){
 			if(GetKeyState(KEY_T)==KEY_HOLD){
 				let timer = ObjEnemyBossScene_GetInfo(objScene,INFO_TIMERF);
 				if(GetVirtualKeyState(VK_SLOWMOVE)!=KEY_HOLD){
@@ -1567,7 +1634,6 @@ task TMiscCheatKeys{
 					ObjEnemy_SetLife(boss, min(mlife, clife + mlife/100) );
 				}
 			}
-			
 		}
 		yield;
 	}

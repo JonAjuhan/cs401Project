@@ -2,11 +2,12 @@
 #ScriptVersion[3]
 #Title["(Mystia 1) Vocal Sign \"Midnight Sparrow's Song\""]
 #Text["series 7: scales with difficulty"] 
-#BGM["./bgm/bgm - Deaf to All but the Song.ogg"]//"./bgm/bgm - Kid's Festival ~ Innocent Treasures.ogg"] // CC-CGR-loop.ogg"]
+// #BGM["./bgm/bgm - Deaf to All but the Song.ogg"]
 #System["./system/Andi_System.txt"]
 #Background["./system/Background/Mystia/BG_work.txt"]
 
 #include "./Index.txt"
+#include "./Library/Esoterica.txt"
 
 let timer = 37; //37 //47
 let drate = 24; //24
@@ -22,7 +23,7 @@ let mlife = 2000; //2000
 }
 @Initialize
 {
-	if(noPlural){	SetDifficultyD(HARD); }
+	if(noPlural){	SetDifficultyD(HARD); SetBGM("Deaf to All but the Song"); }
 	alternative(rank)
 	case(RANK_EASY){	SetCommonData("CurrentSC","Bird Sign \"Tune of Insufficient Light\"");}
 	case(RANK_NORM){	SetCommonData("CurrentSC","Vocal Sign \"Twilight Sparrow\"");}

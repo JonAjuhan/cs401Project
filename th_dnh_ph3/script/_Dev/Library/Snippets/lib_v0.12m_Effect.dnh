@@ -1,0 +1,303 @@
+let ALPHA = BLEND_ALPHA;
+let ADD = BLEND_ADD_ARGB;
+let MULTIPLY = BLEND_MULTIPLY;
+let SUBTRACT = BLEND_SUBTRACT;
+let DESTRGB = BLEND_INV_DESTRGB;
+let VK_SKIP = VK_USER2;
+
+//色の設定
+
+let Ercl_red	 = [255, 32, 32];
+let Ercl_orange	 = [255,128, 32];
+let Ercl_yellow	 = [255,255, 32];
+let Ercl_green	 = [ 32,255, 32];
+let Ercl_cyan	 = [ 32,255,255];
+let Ercl_blue	 = [ 64, 64,255];
+let Ercl_purple	 = [255,  8,255];
+let Ercl_white	 = [255,255,255];
+
+let Ercl_dred	 = [150,  8,  8];
+let Ercl_dorange = [200,100,  8];
+let Ercl_dyellow = [150,200,  8];
+let Ercl_jade	 = [105,255, 64];
+let Ercl_dgreen	 = [  8,155, 70];
+let Ercl_dcyan	 = [  8,200,235];
+let Ercl_dblue	 = [  8,  8,235];
+let Ercl_dpurple = [100, 48,105];
+
+let Ercl_gray	 = [175,175,175];
+
+let Color_Pattern04 = [
+Ercl_red,
+Ercl_blue,
+Ercl_green,
+Ercl_yellow
+];
+
+let Color_Pattern05 = [
+Ercl_red,
+Ercl_purple,
+Ercl_blue,
+Ercl_green,
+Ercl_yellow
+];
+
+let Color_Pattern06 = [
+Ercl_blue,
+Ercl_red,
+Ercl_green,
+Ercl_red,
+Ercl_cyan,
+Ercl_cyan,
+];
+
+let Color_Pattern08 = [
+Ercl_white,
+Ercl_red,
+Ercl_purple,
+Ercl_blue,
+Ercl_cyan,
+Ercl_green,
+Ercl_yellow,
+Ercl_orange
+];
+let Color_Pattern07 = [
+Ercl_red,
+Ercl_orange,
+Ercl_yellow,
+Ercl_green,
+Ercl_cyan,
+Ercl_blue,
+Ercl_purple
+];
+let Color_Pattern16 = [
+Ercl_gray,
+Ercl_dred,
+Ercl_red,
+Ercl_dpurple,
+Ercl_purple,
+Ercl_dblue,
+Ercl_blue,
+Ercl_dcyan,
+Ercl_cyan,
+Ercl_dgreen,
+Ercl_green,
+Ercl_jade,
+Ercl_dyellow,
+Ercl_yellow,
+Ercl_orange,
+Ercl_white,
+];
+
+function Uneven_Rand( r, p){
+r = 180 - r;
+let angle = rand(r,-r)+p;
+return angle;
+}
+function AddCommonData(Name,Value){
+SetCommonData(Name,GetCommonData(Name,0)+Value);
+}
+function AddAreaCommonData(data,Name,Value){
+SetAreaCommonData(data,Name,GetAreaCommonData(data,Name,0)+Value);
+}
+
+//------------------------------------------------------------------------------
+//　　イージング関数
+//------------------------------------------------------------------------------
+//　エフェクトの移動やスケールの調整などに役に立つ(かも)
+//------------------------------------------------------------------------------
+//■引数
+//?t : 今の時間(進行度) 0~1 
+//?b : 初期値(開始時の座標やスケールなど)
+//?c : 開始と終了の値の差分値
+//?d : アニメーションさせる合計時間
+//------------------------------------------------------------------------------
+
+//　　　【Cubic】　　　
+//●IN
+function easeC_in(t, b, c, d){
+	t /= d;
+	return c*t*t*t + b;
+}
+//●OUT
+function easeC_out(t, b, c, d){
+	t /= d;
+	t = t - 1;
+	return c*(t*t*t + 1) + b;
+}
+//●IN OUT
+function easeC_in_out(t, b, c, d){
+	t /= d/2;
+	if(t < 1){
+		return c/2*t*t*t + b;
+	}else{
+		t = t - 2;
+		return c/2 * (t*t*t + 2) + b;
+	}
+}
+//------------------------------------------------------------------------------
+//　　ステージ背景
+//------------------------------------------------------------------------------
+//SPRITE_2Dにバグがあるので、PRIMITIVEで代用
+function SetGraphic2D_STRIP(id,x,y,x2,y2){
+	ObjPrim_SetPrimitiveType(id, PRIMITIVE_TRIANGLESTRIP);
+	ObjPrim_SetVertexCount(id, 4);
+	
+	
+	ObjPrim_SetVertexPosition(id, 0,-(x2-x)/2,-(y2-y)/2, 0);
+	ObjPrim_SetVertexPosition(id, 1,-(x2-x)/2, (y2-y)/2, 0);
+	ObjPrim_SetVertexPosition(id, 2, (x2-x)/2,-(y2-y)/2, 0);
+	ObjPrim_SetVertexPosition(id, 3, (x2-x)/2, (y2-y)/2, 0);
+	
+	ObjPrim_SetVertexUVT(id, 0,  x,  y);
+	ObjPrim_SetVertexUVT(id, 1,  x, y2);
+	ObjPrim_SetVertexUVT(id, 2, x2,  y);
+	ObjPrim_SetVertexUVT(id, 3, x2, y2);
+}
+function SetGraphic2D_FAN(id,x,y,x2,y2){
+	ObjPrim_SetPrimitiveType(id, PRIMITIVE_TRIANGLEFAN);
+	ObjPrim_SetVertexCount(id, 4);
+	
+	ObjPrim_SetVertexPosition(id, 0,-(x2-x)/2,-(y2-y)/2, 0);
+	ObjPrim_SetVertexPosition(id, 1, (x2-x)/2,-(y2-y)/2, 0);
+	ObjPrim_SetVertexPosition(id, 2, (x2-x)/2, (y2-y)/2, 0);
+	ObjPrim_SetVertexPosition(id, 3,-(x2-x)/2, (y2-y)/2, 0);
+	
+	ObjPrim_SetVertexUVT(id, 0,  x,  y);
+	ObjPrim_SetVertexUVT(id, 1, x2,  y);
+	ObjPrim_SetVertexUVT(id, 2, x2, y2);
+	ObjPrim_SetVertexUVT(id, 3,  x, y2);
+}
+function SetGraphicUV2D_STRIP(id,x,y,x2,y2){
+	ObjPrim_SetPrimitiveType(id, PRIMITIVE_TRIANGLESTRIP);
+	ObjPrim_SetVertexCount(id, 4);
+	
+	ObjPrim_SetVertexUVT(id, 0,  x,  y);
+	ObjPrim_SetVertexUVT(id, 1,  x, y2);
+	ObjPrim_SetVertexUVT(id, 2, x2,  y);
+	ObjPrim_SetVertexUVT(id, 3, x2, y2);
+}
+function SetGraphicUV2D_STRIP2(id,x,y,x2,y2){
+	ObjPrim_SetVertexUVT(id, 0,  x,  y);
+	ObjPrim_SetVertexUVT(id, 1,  x, y2);
+	ObjPrim_SetVertexUVT(id, 2, x2,  y);
+	ObjPrim_SetVertexUVT(id, 3, x2, y2);
+}
+function SetGraphicXY2D_STRIP(id,x,y,x2,y2){
+	ObjPrim_SetVertexPosition(id, 0,  x,  y, 0);
+	ObjPrim_SetVertexPosition(id, 1,  x, y2, 0);
+	ObjPrim_SetVertexPosition(id, 2, x2,  y, 0);
+	ObjPrim_SetVertexPosition(id, 3, x2, y2, 0);
+}
+function SetGraphicRect2D_XY(id,x,y,x2,y2,xx,yy,xx2,yy2){
+ObjSprite2D_SetDestRect(id, xx,yy, xx2, yy2);
+ObjSprite2D_SetSourceRect(id, x, y, x2, y2);
+}
+function SetGraphicTextureRect_2D(id,img){
+let x = 0;
+let y = 0;
+let x2 = GetTextureWidth(img);
+let y2 = GetTextureHeight(img);
+ObjPrim_SetTexture(id,img);
+ObjSprite2D_SetSourceRect(id, x, y, x2, y2);
+ObjSprite2D_SetDestCenter(id);
+}
+function SetColorH(id,rgb_h){
+ObjText_SetFontColorTop(id,rgb_h[0],rgb_h[1],rgb_h[2]);
+ObjText_SetFontColorBottom(id,rgb_h[0],rgb_h[1],rgb_h[2]);
+}
+function Obj_Alp(id){
+ObjRender_SetBlendType(id,BLEND_ALPHA);
+return id;
+}
+function Obj_Add(id){
+ObjRender_SetBlendType(id,BLEND_ADD_ARGB);
+return id;
+}
+function rectsize(rect,i){
+	return [rect[2]-rect[0],rect[3]-rect[1]][i];
+}
+function rand_int(min, max)
+{
+	return(trunc(rand(min, max+1)));
+}
+function int(n)
+{
+	return(trunc(n));
+}
+//エフェクト用乱数
+function rand_e(min, max)
+{
+	let tmp = GetCommonData("rand", 0);
+	tmp = (tmp*214013+2531011)%4294967296;
+	SetCommonData("rand",tmp);
+	if (max==min) { return(min); }
+	else { return(min+trunc(tmp/256)/16777216*(max-min)); }
+}
+function rand_int_e(min, max)
+{
+	return(trunc(rand_e(min, max+1)));
+}
+
+function GetDigitComma(V){//桁数を取得する関数
+	if(V == 0){ return 1; }
+	let count = 0;
+	while(V >= 10){
+		V /= 10;
+		count++;
+	}
+	return count + 1;
+}
+//------------------------------------------------------------------------------
+//　　画像/効果音/BGM
+//------------------------------------------------------------------------------
+function GetSoundRate(volume){
+	if(volume>0){
+		return volume;
+	}else{
+		return 0;
+	}
+}
+function SetVolumeRate(obj,now_volume){
+	if(now_volume>0){
+		ObjSound_SetVolumeRate(obj,now_volume);
+		ObjSound_Play(obj);
+	}else{
+		ObjSound_SetVolumeRate(obj,0);
+		ObjSound_Stop(obj);
+	}
+}
+//配列変数を入れると自動でIDと比較して範囲条件を返す関数
+//返り値は「条件(true/false)」です。
+function ShotScope(let a,let sid){
+	return (a>= sid[0] && a<= sid[1]);
+}
+function ShotScope_a(let a,let sid,let p){
+	return (a> (sid - p) && a <= sid);
+}
+//存在しないのでオブジェクトが消えたかどうかの判定を返す
+//というかこれ自弾用の判定のような気がする
+function Obj_IsIntersected(id){
+return Obj_IsDeleted(id);
+}
+function OBJECT_MOVE(ID,set_x,set_y,speed,angle){
+ObjRender_SetPosition(ID,set_x+speed*cos(angle),set_y+speed*sin(angle),0);
+}
+function GetCenterSTGX{
+	return (320);
+}
+function GetCenterSTGY{
+	return (240);
+}
+function GetClipMinSTGX{
+	return (128);
+}
+function GetClipMaxSTGX{
+	return (512);
+}
+function GetClipMinSTGY{
+	return (16);
+}
+function GetClipMaxSTGY{
+	return (464);
+}

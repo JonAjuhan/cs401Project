@@ -1,0 +1,530 @@
+#TouhouDanmakufu[Single]
+#ScriptVersion[3]
+#Title["Sandbox spell 3 - Anomaly \"Red Reality\""]
+#Text["series 8: scalable pattern speed"] 
+#System["./system/Andi_System.txt"]
+#Background["./system/Background/Satori/BG_work.txt"]
+
+#include "./Index.txt"
+
+let drate = 0; //24
+let ss=1;
+
+@Event{
+	alternative(GetEventType())
+	case(EV_REQUEST_LIFE){				SetScriptResult(2000);		}
+	case(EV_REQUEST_SPELL_SCORE){		SetScriptResult(5000000);	}
+	case(EV_REQUEST_TIMER) {			SetScriptResult(99999);		} //47
+	case(EV_REQUEST_IS_DURABLE_SPELL) {	SetScriptResult(true);		}
+}
+@Initialize{
+	if(noPlural){	SetDifficultyD(HARD); SetBGM("Kid's Festival ~ Innocent Treasures"); }
+	alternative(rank)
+	case(RANK_EASY){	SetCommonData("CurrentSC","Anomaly \"Red Reality\"");}
+	case(RANK_NORM){	SetCommonData("CurrentSC","Anomaly \"Red Reality\"");}
+	case(RANK_HARD){	SetCommonData("CurrentSC","Anomaly \"Red Reality\"");}
+	case(RANK_LUNA){	SetCommonData("CurrentSC","Anomaly \"Red Reality\"");}
+	others         {	SetCommonData("CurrentSC","");}
+	
+	SetShotAutoDeleteClip(32,32,32,32);
+	
+	boss = CreateBoss("Satori Komeiji");
+	renderSatoriSA(boss);
+	
+	MainTask;
+	
+
+}
+@MainLoop{
+
+	if(ObjEnemy_GetInfo(boss, INFO_LIFE) <= 0 && !finishing){
+		// finishing = true;
+		// DropItemsSpellEnd;
+		// TBreakSpell([]);
+		// ObjSound_Play(GetCommonData("MusicObject",ObjSound_Create));
+	}
+	else{
+		SetBossHitbox(boss,ex,ey);
+	}
+	frame++;
+	yield;
+}
+
+
+task MainTask {
+	ObjEnemy_SetDamageRate(boss,drate,drate/3);
+	ObjMove_SetDestAtFrame(boss, cx, cy-100, 60); //cy-120
+	
+	SetSpellCardA1(1, [], NAZRIN, dircut~"Cutin_Satori.png");
+	
+	//SetCaution;
+	// TSpellImmune;
+	// Aura(boss,255,255,255,64);
+	// SetMagicCircleAlpha(64,64);
+
+	wait(90);
+		
+	// Tmovement(cx-120,cx+120, cy-90,cy-60, 60,240, [MOVE_PLAYERBIAS,2,0,MOVE_MAXSPEED,1.5] );
+	frame = 0;
+	
+	
+	// TShoot;
+	TBrokenEntry();
+	
+}
+
+
+
+	
+	
+	
+	
+let red;
+
+task TBrokenEntry{
+	let rx;  let ry; //Where are these being declared as globals???
+	
+	alternative(getrank)
+	case(RANK_EASY){ ps=0.50; ss=1.00; }
+	case(RANK_NORM){ ps=0.50; ss=1.00; }
+	case(RANK_HARD){ ps=0.50; ss=1.00; }
+	case(RANK_LUNA){ ps=0.50; ss=1.00; }
+	ss*=ps;
+	
+	
+	
+	wait(60);
+	
+	function CreateDarkLayer(pri){
+		let obj = ObjPrim_Create(OBJ_SPRITE_2D);
+		ObjPrim_SetTexture(obj,dirimg~"white.png");
+		ObjSprite2D_SetSourceRect(obj,0,0,1,1);
+		ObjSprite2D_SetDestRect(obj,-30,-30,GetScreenWidth+30,GetScreenHeight+30);
+		ObjRender_SetBlendType(obj,BLEND_SHADOW);
+		Obj_SetRenderPriorityI(obj,pri);
+		return obj;
+	}
+	
+	
+	SetFullScreen(true,0);
+	Notify(SCRIPT_SYSTEM,EV_SHATTER_SCREEN,["time:300","dx:0.5","dy:0.5","destpri:50"]);
+	SE_Play(se_defeated,100);
+	SE_Play(se_pichuun,100);
+	ObjSound_Stop(GetCommonData("MusicObject",ObjSound_Create));
+	yield;
+	
+	Obj_SetVisible(boss,false); OC_SetIntersectionEnable(boss,false);
+	ObjRender_SetPosition(GetPlayerObjectID,sx*0.5,sy*0.75,0);
+	SetForbidPlayerShot(true); SetForbidPlayerSpell(true);
+	DeleteShotAll(TARGET_ALL,TYPE_IMMEDIATE);
+	let shots=GetShotIdInCircleA2(cx,cy,1600,TARGET_PLAYER);
+	ascent(i in 0..length(shots)){Obj_Delete(shots[i]);}
+
+	
+	
+	
+	SetInvalidRenderPriorityA1(51,99);
+	let dark          = CreateDarkLayer(49);
+	let dk_stgframe   = CreateDarkLayer(19);
+	let dk_background = CreateDarkLayer(25);
+	let objfog        = CreateDarkLayer(68);
+	let objsub        = CreateDarkLayer(68);
+	
+	ObjPrim_SetTexture(objfog,dirimg~"white.png");
+	ObjRender_SetBlendType(objfog,BLEND_ADD_RGB);
+	ObjRender_SetColor(objfog,0,0,0);
+	
+	ObjPrim_SetTexture(objsub,dirimg~"white.png");
+	ObjRender_SetBlendType(objsub,BLEND_SUBTRACT);
+
+	wait(300);
+	
+	StartSlow(TARGET_ALL,30);
+	let dt = 30/60;
+	
+	// Shader_WarpHorizontal( 0.001,1, [PRI_SHOT,PRI_SHOT], -1);
+	// Shader_WarpHorizontal( 0.001,1, [20,69], -1);
+	
+	task TFadeIn{
+		SetInvalidRenderPriorityA1(70,99);
+		Obj_SetRenderPriorityI(dark,69);
+		ascent(t in 0..300*dt){
+			OR_SetAlpha(dark,255-16*(t/(300*dt))^0.5 );
+			yield;
+		}
+		ascent(t in 0..300*dt){
+			OR_SetAlpha(dark,255-16-48*(t/(300*dt))^2 );
+			yield;
+		}
+		MoveDarkDown();
+		ascent(t in 0..300){
+			StopSlow(TARGET_ALL);
+			StartSlow(TARGET_ALL,30+30*t/300);
+			dt = (30+30*t/300)/60;
+			yield;
+		}
+		StopSlow(TARGET_ALL);
+		
+		task MoveDarkDown{
+			Obj_SetRenderPriorityI(dark,49);
+			let tmp = CreateDarkLayer(68); 
+			OR_SetAlpha(tmp,192); OR_SetAlpha(dark,0);
+			ascent(i in 0..180){
+				let t=i/180;
+				OR_SetAlpha(tmp,192-192*t); OR_SetAlpha(dark,0+192*t);
+				yield;
+			}
+		}
+		
+	}
+	TFadeIn;
+	// if(!noPlural||!GetAreaCommonData("CONFIG","CheatEnable",false)){wait(150);}
+	// wait(300*dt);
+	red = boss; //reusing the same object
+	
+	ObjMove_SetPosition(red,cx,cy);
+	
+	//this is a bit pointless since I never actully move it lol
+	task UpdateRed{ while(!Obj_IsDeleted(red)){rx=ObjMove_GetX(red);ry=ObjMove_GetY(red);yield;} }
+	UpdateRed;
+	AnimateRed();
+	// Noisemaker();
+	// let fograte=0.02 * ps; 
+	
+	let seobj1 = ObjSound_Create(); ObjSound_Load(seobj1,se_time1);
+	let seobj2 = ObjSound_Create(); ObjSound_Load(seobj2,se_time2);
+	
+	let fog=0;
+	let fograte = 255/(13*360) * ps; 
+	let f=0;
+	TFog;
+	
+	task TFog{
+		while(!Obj_IsDeleted(red) && !finishing){
+			fog = f*fograte * (f/(13*360))^2;
+			
+			ObjRender_SetColor(objfog, fog,0,0);
+			ObjRender_SetColor(objsub, 0,fog,fog);
+			yield; f+=ps;    
+		}
+	}
+	
+	wait(300);
+	
+	let N = [15,20,30,45,60][rank-1];
+	let wavecnt=0;
+	
+	
+	loop(14){
+	// loop(1){
+	
+		Wave1(N,wavecnt/10);
+		task Wave1(N,o){ //off
+			ascent(i in 0..N){
+				let x; let y;
+				
+				ascent(j in 0..4){
+					ascent(k in 0..4){
+						let t = ((i/N)^2 + o + k/4)%1;
+						alternative((j+k)%4)
+						case(0){ x=0;         y=sy*t;    }
+						case(1){ x=sx*t;      y=0;       }
+						case(2){ x=sx;        y=sy-sy*t; }
+						case(3){ x=sx-sx*t;   y=sy;      }
+						let a = atan2(cy-y,cx-x);
+						let shot;
+						if(k>0){
+							
+							a = a + 15*(1-o);
+							let av = 0.05*ss*(1-t - (1-o)/5);
+							
+							shot = CreateShotA2(x,y, 4*ss, a,  (1.5-4)/15*ss, 1.5*ss,  DOT_RED, 0);
+							
+							// ObjMove_SetAngularVelocity(shot, 0.05*ss);
+							// ObjMove_SetAngularVelocity(shot, 0.05*ss*t);
+							// ObjMove_SetAngularVelocity(shot, 0.05*ss*(1-t+0.05));
+							ObjMove_SetAngularVelocity(shot, av);
+
+							// OR_SetColor(shot,128,0,0);
+							// ObjRender_SetBlendType(shot,BLEND_SUBTRACT);
+							// Obj_SetRenderPriorityI(shot,69);
+							
+							// OR_SetColor(shot,64,16,16);
+							// OR_SetColor(shot,255,128,128);
+							// OR_SetColor(shot,255,16,16);
+							OR_SetColor(shot,16,16,16);
+							ObjRender_SetBlendType(shot,BLEND_INV_DESTRGB);
+							
+							// shot = CreateShotA2(sx-x,sy-y, 4*ss, a+15*(1-o),  (1.5-4)/15*ss, 1.5*ss,  DOT_RED, 0);
+							// OR_SetColor(shot,128,0,0);
+							// ObjMove_SetAngularVelocity(shot, -0.05*ss);
+						}else{
+							let ms = rand(0.5,1.5);
+							shot = CreateShotA2(x,y, 4*ss, a+rand(-45,45),  (ms-4)/15*ss, ms*ss,  DOT_RED, 0);
+							OR_SetColor(shot,128,0,0);
+						}
+					}
+				}
+				wait(1/ps);
+			}
+		}
+		
+		// SE_Play(se_time1,100*wavecnt/13);
+		ObjSound_SetVolumeRate(seobj1,100*wavecnt/13);
+		ObjSound_SetPanRate(seobj1,rand(-100,100));
+		ObjSound_SetFade(seobj1,rand(-30,30));
+		ObjSound_Play(seobj1);
+		
+		if(wavecnt>10){
+			// SE_Play(se_time2,100*wavecnt/13);
+			
+			ObjSound_SetVolumeRate(seobj2,100*wavecnt/13);
+			ObjSound_SetPanRate(seobj2,rand(-100,100));
+			ObjSound_SetFade(seobj2,rand(-30,30));
+			ObjSound_Play(seobj2);
+			
+		}
+		
+		wait(N/ps);
+		wavecnt++;
+		wait(360/ps);
+		
+		
+	}
+	
+	wait(180);
+	
+	
+	finishing=true;
+	// let al = OR_GetColor(objfog)[0];
+	// let dal = 255-al;
+	
+	
+	let redlayer = CreateDarkLayer(69);
+	ObjPrim_SetTexture(redlayer,dirimg~"white.png");
+	ObjRender_SetBlendType(redlayer,BLEND_ALPHA);
+	OR_SetColor(redlayer, 255,0,0);
+	
+	ascent(i in 0..180){
+		// OR_SetColor(objfog,al+dal*i/180, 0,0);
+		// OR_SetColor(objsub, 0, 255*i/180, 255*i/180);
+		
+		OR_SetAlpha(dark,192-192*i/180);
+		OR_SetAlpha(redlayer, 255*i/180);
+		
+		yield;
+	}
+	
+	
+	DeleteShotAll(TYPE_ALL,TYPE_FADE); //shouldn't be able to see them at this point anyway
+	wait(90);
+	
+	
+	
+	
+	
+	
+	
+	
+	// // Obj_SetRenderPriorityI(objfog,68);
+	// // Notify(SCRIPT_SYSTEM,EV_SHATTER_SCREEN,["time:300","dx:0.5","dy:0.5","pri:[20,69]","destpri:69"]);
+	
+	// yield;
+	// // SetInvalidRenderPriorityA1(70,99);
+	// yield;
+	// // wait(180);
+	// Obj_Delete(objfog);
+	// // Obj_SetRenderPriorityI(dark,68);
+	// Obj_SetRenderPriorityI(dark,25);
+	// OR_SetAlpha(dark,255);
+	
+	// ClearInvalidRenderPriority();
+	// Obj_Delete(dark);
+	// Obj_Delete(dk_background);
+	// Obj_Delete(dk_stgframe);
+	
+	// wait(300);
+	
+	
+	TFinalize();
+	
+	
+	
+	
+	task TFinalize{
+		
+		SE_PlayN(se_pichuun,100);
+		SE_PlayN(se_defeated,100);
+		SE_PlayN(se_time1,100);
+		SE_PlayN(se_time2,100);
+		
+		Notify(SCRIPT_SYSTEM,EV_SHATTER_SCREEN,["time:300","dx:0.5","dy:0.5","pri:20,69","destpri:69"]);
+		ObjSound_Play(GetCommonData("MusicObject",ObjSound_Create));
+		// yield;
+		
+		let px = GetPlayerX; let py = GetPlayerY;
+		
+		SetFullScreen(false,0); //set it back to normal for the spell bonus message
+		// SetFullScreen_Notify(true,0); //but then next frame put it back to fullscreen
+		// SetFullScreen_Notify(false,45); //and then put it back more slowly
+		// yield;
+		// TBreakSpell([]);
+		
+		yield;
+		ClearInvalidRenderPriority();
+		Obj_Delete(dark);
+		Obj_Delete(objfog);
+		Obj_Delete(objsub);
+		Obj_Delete(redlayer);
+		Obj_Delete(dk_background);
+		// Obj_Delete(dk_stgframe);
+		
+		
+		SetFullScreen(true,0);
+		ObjRender_SetPosition(GetPlayerObjectID,px,py,0);
+		SetFullScreen(false,45);
+		
+		wait(45);
+		
+		
+		
+		// SE_PlayN(se_pichuun,100);
+		SE_PlayN(se_defeated,100);
+		Notify(SCRIPT_SYSTEM,EV_SHATTER_SCREEN,["time:300","dx:0.5","dy:0.5","pri:20,69","destpri:69"]);
+		yield;
+		Obj_Delete(dk_stgframe);
+		
+		finishing=true; ObjEnemy_SetLife(boss,0);
+		Obj_Delete(red);
+		CloseScript(GetOwnScriptID);
+	}
+
+
+	
+	
+	
+	
+	
+	
+	
+}
+
+//Third one after the beep is when it goes all red, I think
+
+
+
+
+
+
+
+
+task AnimateRed{
+	while(!Obj_IsDeleted(red) && !finishing){
+		ShiningLine(rand(0,360), rand(0,1)^2*rand(-15,15) );
+		yield;
+	}
+	
+	task ShiningLine(a,da){	
+			let alpha=0;
+			let scale0 = 2; //3
+			let scale=scale0; //3
+			
+			let obj = ObjPrim_Create(OBJ_PRIMITIVE_2D);
+			ObjPrim_SetVertexCount(obj, 3);
+			ObjPrim_SetPrimitiveType(obj, PRIMITIVE_TRIANGLELIST);
+			ObjRender_SetBlendType(obj, BLEND_ADD_RGB);
+			
+			Obj_SetRenderPriorityI(obj, 51); //60 //maybe change
+			ObjPrim_SetTexture(obj, dirimg~"RedSpell.png");
+			ObjRender_SetAngleZ(obj, a);
+			
+			ObjPrim_SetVertexPosition(obj, 0,  0,  10, 0);
+			ObjPrim_SetVertexPosition(obj, 1, -10, 50, 0);
+			ObjPrim_SetVertexPosition(obj, 2, 10,  50, 0);
+			
+			ObjPrim_SetVertexUVT(obj, 0, 10,  10);
+			ObjPrim_SetVertexUVT(obj, 1,  0,  50);
+			ObjPrim_SetVertexUVT(obj, 2, 20,  50);
+			
+			ObjPrim_SetVertexColor(obj, 0,  alpha, 0, 0);
+			ObjPrim_SetVertexColor(obj, 1,  0, 0, 0);
+			ObjPrim_SetVertexColor(obj, 2,  0, 0, 0);
+			
+			loop(60){
+				scale-=scale0/60;
+				alpha+=5;
+				a+=da;
+				let x = ObjRender_GetX(red); let y = ObjRender_GetY(red);
+				ObjPrim_SetVertexColor(obj, 0,  alpha, 0, 0);
+				ObjRender_SetScaleXYZ(obj, scale, scale*3, 1);	
+				ObjRender_SetPosition(obj, x, y, 0);	
+				ObjRender_SetAngleZ(obj, a);
+				yield;	
+			}
+			Obj_Delete(obj);
+		}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//Dumb task, don't use
+task Noisemaker{
+	let seobjs = [];
+	// let sounds=[se_shot,se_chime,se_shot1,se_shot2,se_shot3,se_shot4,se_shot5,se_shot6,
+	            // se_shot7,se_shot8,se_ice,se_slash,se_pichuun,se_charge,se_charge2,se_charge3,
+				// se_chime2,se_chime3,se_kira,se_flourish,se_horn,se_hornshort,se_splash,se_anchor,
+				// se_fam,se_paf,se_plshot,se_damage1,se_damage2,se_nodamage,se_spellcard,se_nyaa,se_awoo,se_laugh];
+	// let sounds=[se_slash,se_splash,se_shot2,se_horn,se_hornshort,se_paf,se_laugh,se_plshot,se_caution];
+	let sounds=[se_slash,se_shot2,se_horn,se_hornshort,se_paf,se_laugh,se_plshot,se_caution];
+	ascent(i in 0..6){
+		seobjs=seobjs~[ObjSound_Create];
+	}
+	let cnt=0; let f=0;
+	yield;
+	while(!Obj_IsDeleted(red) && !finishing){
+		let seobj=seobjs[cnt%6];
+		
+		Obj_Delete(seobj); seobj=ObjSound_Create; seobjs[cnt%6]=seobj;
+		// ObjSound_Stop(seobj);
+		
+		ObjSound_Load(seobj,randsound);
+		
+		// ObjSound_SetVolumeRate(seobj,100 * rand(0,0.25)^2 );
+		ObjSound_SetVolumeRate(seobj, 100*(f/(13*360))^2 );
+		ObjSound_SetPanRate(seobj,rand(-100,100));
+		ObjSound_Play(seobj);
+		
+		yield; cnt++; f+=ps;
+	}
+	
+
+	function randsound{
+		let i = min(length(sounds)-1, floor( rand( 0, length(sounds) ) ) );
+		return sounds[i];
+	}
+	
+}

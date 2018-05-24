@@ -745,3 +745,59 @@ task CreateEnemy_Onmyou_Texture(id,life,color,del){
 	Obj_Delete(opt[0]);
 	Obj_Delete(opt[1]);
 }
+
+
+
+
+
+
+
+
+
+
+
+//---------------------------
+//Animation of Magic Circle enemies
+//---------------------------
+task AnimateFamCircle(obj,c){
+	let R=c[0]; let G=c[1]; let B=c[2];
+	ObjPrim_SetTexture(obj,csd~"./enemy/familiar.png");
+	ObjSprite2D_SetSourceRect(obj,0,0,63,63);
+	ObjSprite2D_SetDestCenter(obj);
+	ObjRender_SetScaleXYZ(obj,0.75,0.75,1);
+	OR_SetColor(obj,R,G,B);
+	
+	let back = ObjPrim_Create(OBJ_SPRITE_2D);
+	ObjPrim_SetTexture(back,csd~"./enemy/familiar.png");
+	ObjSprite2D_SetSourceRect(back,64,0,127,63);
+	ObjSprite2D_SetDestCenter(back);
+	ObjRender_SetBlendType(back,BLEND_ADD_RGB);
+	ObjRender_SetScaleXYZ(back,0.75,0.75,1);
+	OR_SetColor(back,R/3,G/3,B/3);
+	Obj_SetRenderPriorityI(back,Obj_GetRenderPriorityI(obj)-1);
+	
+	AnimIn;
+	let count = 0; ObjRender_SetAngleZ(obj,rand(0,360));
+	while(!Obj_IsDeleted(obj)){
+		// ObjRender_SetAngleZ(obj,-5*count);
+		// loop(3){yield;}
+		
+		// ObjRender_SetAngleZ(obj,a0 + -5/3*count);
+		let a = ObjRender_GetAngleZ(obj) + Obj_GetValueD(obj,"spin",-5/3);
+		ObjRender_SetAngleZ(obj,a);
+		ObjRender_SetPosition(back,ObjRender_GetX(obj),ObjRender_GetY(obj),0);
+		yield;
+		count++;
+	}
+	Obj_Delete(back);
+	return;
+	
+	task AnimIn{
+		descent(i in 0..8){
+			ObjRender_SetAngleY(obj,90*i/8); 
+			ObjRender_SetAngleY(back,90*i/8); 
+			yield;
+		}
+	}	
+	
+}

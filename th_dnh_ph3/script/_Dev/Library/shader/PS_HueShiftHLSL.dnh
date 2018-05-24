@@ -1,0 +1,133 @@
+//Hue Shift Shader function by Miransu
+
+//================================================================
+//Texture
+sampler sampler0_ : register(s0);
+
+//================================================================
+//--------------------------------
+struct PS_INPUT
+{
+	float4 diffuse : COLOR0;  //?f?B?t?Åc?[?Y?F
+	float2 texCoord : TEXCOORD0; //?e?N?X?`???A?W
+	float2 vPos : VPOS; //?`ÅÒa?a?A?W
+};
+
+//--------------------------------
+struct PS_OUTPUT
+{
+    float4 color : COLOR0; //?o?I?F
+};
+
+float1 paramHue;
+float1 paramSat;
+
+//================================================================
+// ?V?F?[?_
+//--------------------------------
+//?s?N?Z???V?F?[?_
+PS_OUTPUT PsHueShift( PS_INPUT In ) : COLOR0
+{
+	// Setup ////////////////////////////////////////////////////////////////
+	
+		PS_OUTPUT Out;
+		float4 colorTexture = tex2D(sampler0_, In.texCoord);
+		float4 colorDiffuse = In.diffuse;
+		float4 colorIn = colorTexture * colorDiffuse;
+	
+	// RGB to HSV ////////////////////////////////////////////////////////////////
+	
+		float1 chanMax = max(max(colorIn.r, colorIn.g), colorIn.b);
+		float1 chanMin = min(min(colorIn.r, colorIn.g), colorIn.b);
+		float1 chanDel = chanMax - chanMin;
+		float4 colorInHSV = {0, 0, chanMax, colorIn.a};
+		
+		// Hue
+			if(chanMax == 0) {
+				colorInHSV.x = 0;
+			} else if(chanMax == colorIn.r) {
+				colorInHSV.x = 60 * (((colorIn.g - colorIn.b)/chanDel) % 6);
+			} else if(chanMax == colorIn.g) {
+				colorInHSV.x = 60 * (((colorIn.b - colorIn.r)/chanDel) + 2);
+			} else if(chanMax == colorIn.b) {
+				colorInHSV.x = 60 * (((colorIn.r - colorIn.g)/chanDel) + 4);
+			} else { colorInHSV.x = 0; }
+		
+		// Shift hues
+			colorInHSV.x = ( colorInHSV.x + paramHue ) % 360;
+			while(colorInHSV.x < 0) {
+				colorInHSV.x += 360;
+			}
+		
+		// Saturation
+			if(chanMax == 0) {
+				colorInHSV.y = 0;
+			} else {
+				colorInHSV.y = chanDel / chanMax;
+			}
+	
+	// HSV to RGB ////////////////////////////////////////////////////////////////
+		
+		float4 colorOutRGB = {0, 0, 0, colorIn.a};
+		float1 logicC = colorInHSV.z * colorInHSV.y;
+		float1 logicX = logicC * ( 1 - abs(((colorInHSV.x/60)%2)-1) );
+		
+		if(colorInHSV.x < 60) {
+			colorOutRGB.r = logicC;
+			colorOutRGB.g = logicX;
+			colorOutRGB.b = 0;
+		}
+		else if(colorInHSV.x >= 60 && colorInHSV.x < 120) {
+			colorOutRGB.r = logicX;
+			colorOutRGB.g = logicC;
+			colorOutRGB.b = 0;
+		}
+		else if(colorInHSV.x >= 120 && colorInHSV.x < 180) {
+			colorOutRGB.r = 0;
+			colorOutRGB.g = logicC;
+			colorOutRGB.b = logicX;
+		}
+		else if(colorInHSV.x >= 180 && colorInHSV.x < 240) {
+			colorOutRGB.r = 0;
+			colorOutRGB.g = logicX;
+			colorOutRGB.b = logicC;
+		}
+		else if(colorInHSV.x >= 240 && colorInHSV.x < 300) {
+			colorOutRGB.r = logicX;
+			colorOutRGB.g = 0;
+			colorOutRGB.b = logicC;
+		}
+		else {
+			colorOutRGB.r = logicC;
+			colorOutRGB.g = 0;
+			colorOutRGB.b = logicX;
+		}
+		
+		colorOutRGB.r += colorInHSV.z - logicC;
+		colorOutRGB.g += colorInHSV.z - logicC;
+		colorOutRGB.b += colorInHSV.z - logicC;
+	
+	// Handle Output ////////////////////////////////////////////////////////////////
+	
+		//Out.color.rgb = ( colorIn.r + colorIn.g + colorIn.b ) * 0.3333f;
+		colorOutRGB.r = 1-(1-colorOutRGB.r)*(paramSat/100);
+		colorOutRGB.g = 1-(1-colorOutRGB.g)*(paramSat/100);
+		colorOutRGB.b = 1-(1-colorOutRGB.b)*(paramSat/100);
+		Out.color = colorOutRGB;
+		Out.color.a = colorIn.a;
+		return Out;
+}
+
+
+//================================================================
+//--------------------------------
+//Technique
+
+technique TecShift
+{
+	pass P0
+	{
+		PixelShader = compile ps_3_0 PsHueShift();
+	}
+}
+

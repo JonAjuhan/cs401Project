@@ -1,0 +1,249 @@
+//Bullet Effect Script
+
+let CSD = GetCurrentScriptDirectory;
+let MD = GetModuleDirectory;
+
+#include"System/LIB/Event_Const.dnh"
+
+@Initialize {
+	SetShotDeleteEventEnable(EV_DELETE_SHOT_IMMEDIATE,true);
+	SetShotDeleteEventEnable(EV_DELETE_SHOT_TO_ITEM,true);
+}
+
+@MainLoop {
+	yield;
+}
+	
+@Event {
+	alternative(GetEventType)
+	case(EV_DELETE_SHOT) {
+		let eventParam = GetEventArgument(0);
+		BulletDeleteEffect(eventParam[0],eventParam[1],eventParam[2],eventParam[3]);
+	}
+	case(EV_DELETE_LASER) {
+		let eventParam = GetEventArgument(0);
+		LaserDelete(eventParam[0],eventParam[1]);
+	}
+	case(EV_DELETE_ST_LASER) {
+		let eventParam = GetEventArgument(0);
+		StLaserDelete(eventParam[0],eventParam[1]);
+	}
+	case(EV_DELETE_WAVE) {
+		let eventParam = GetEventArgument(0);
+		DeleteShotWave(eventParam[0],eventParam[1],eventParam[2],eventParam[3]);
+	}
+	case(EV_DELETE_SHOT_IMMEDIATE) {
+		let objShot = GetEventArgument(0);
+		let objPos = GetEventArgument(1);
+		BulletDeleteEffect(objPos[0],objPos[1],ObjShot_GetImageID(objShot),objShot);
+	}
+	case(EV_DELETE_SHOT_TO_ITEM) {
+		let objShot = GetEventArgument(0);
+		let objPos = GetEventArgument(1);
+		BulletDeleteEffect(objPos[0],objPos[1],ObjShot_GetImageID(objShot),objShot);
+	}
+}
+task DeleteShotWave(type,x,y,speed) {
+	let r = 0;
+	if(type==1) {
+		while(r<=400) {
+			DeleteShotInCircle(TYPE_ALL,TYPE_ITEM,x,y,r);
+			r+=speed;
+			yield;
+		}
+	}
+	if(type==2) {
+		while(r<=400) {
+			DeleteShotInCircle(TYPE_ALL,TYPE_IMMEDIATE,x,y,r);
+			r+=speed;
+			yield;
+		}
+	}
+	if(type==3) {
+		while(r<=400) {
+			let ShotAll = GetShotIdInCircleA2(GetStgFrameWidth/2,GetStgFrameHeight/2,r,TARGET_ENEMY);
+			ascent(i in 0..length(ShotAll)) {
+				if(!ObjShot_IsSpellResist(ShotAll[i])) {
+					BulletDeleteEffect(ObjMove_GetX(ShotAll[i]),ObjMove_GetY(ShotAll[i]),ObjShot_GetImageID(ShotAll[i]),ShotAll[i]);
+					Obj_Delete(ShotAll[i]);
+					// DeleteShotInCircle(TYPE_ALL,TYPE_IMMEDIATE,ObjMove_GetX(ShotAll[i]),ObjMove_GetY(ShotAll[i]),0.6);
+				}
+			}
+			r+=speed;
+			yield;
+		}
+	}
+}
+task LaserDelete(obj,width) {
+	let xpos = 0;
+	let ypos = 0;
+	let angle = 0;
+	let length = 0;
+	let graphic = 0;
+	while(!Obj_IsDeleted(obj)) {
+		xpos = ObjRender_GetX(obj);
+		ypos = ObjRender_GetY(obj);
+		angle = ObjMove_GetAngle(obj);
+		length = ObjLaser_GetLength(obj);
+		graphic = ObjShot_GetImageID(obj);
+		yield;
+	}
+	if(xpos>GetStgFrameWidth+length*0.7 || ypos>GetStgFrameHeight+length*0.7 || xpos<0-length*0.7 || ypos<0-length*0.7) { return; }
+	let deletelength = length/20;
+	let deletewidth = width/40;
+	let DelayColor = [0,0,0];
+	if(graphic>0) { DelayColor = GetShotDataInfoA1(graphic,TARGET_ENEMY,INFO_DELAY_COLOR); }
+	ascent(i in 3..deletelength+3) {
+		loop(deletewidth) {
+			if(xpos-deletelength*i*cos(angle)+rand(-width/2+16,width/2-16)<GetStgFrameWidth+20 && xpos-deletelength*i*cos(angle)+rand(-width/2+16,width/2-16)>-20 && ypos-deletelength*i*sin(angle)+rand(-width/2+16,width/2-16)<GetStgFrameHeight+20 && ypos-deletelength*i*sin(angle)+rand(-width/2+16,width/2-16)>-20) {
+				let randnumber1 = rand(-width/2+16,width/2-16);
+				let randnumber2 = rand(-width/2+16,width/2-16);
+				BulletBreak(xpos-deletelength*i*cos(angle)+randnumber1,ypos-deletelength*i*sin(angle)+randnumber2,1.0,DelayColor[0],DelayColor[1],DelayColor[2]);
+				NotifyEventAll(EV_DELETE_ITEM,[xpos-deletelength*i*cos(angle)+randnumber1,ypos-deletelength*i*sin(angle)+randnumber2]);
+			}
+		}
+	}
+}
+task StLaserDelete(obj,width) {
+	let xpos = 0;
+	let ypos = 0;
+	let angle = 0;
+	let length = 0;
+	let graphic = 0;
+	let effect = true;
+	while(!Obj_IsDeleted(obj)) {
+		xpos = ObjMove_GetX(obj);
+		ypos = ObjMove_GetY(obj);
+		angle = ObjStLaser_GetAngle(obj);
+		length = ObjLaser_GetLength(obj);
+		graphic = ObjShot_GetImageID(obj);
+		effect = Obj_GetValueD(obj,"Effect",true);
+		yield;
+	}
+	let deletelength = length/20;
+	let deletewidth = width/40;
+	let DelayColor = [0,0,0];
+	if(graphic>0) { DelayColor = GetShotDataInfoA1(graphic,TARGET_ENEMY,INFO_DELAY_COLOR); }
+	if(effect) {
+		ascent(i in 3..deletelength+3) {
+			loop(deletewidth) {
+				if(xpos-deletelength*i*cos(angle+180)+rand(-width/2+16,width/2-16)<GetStgFrameWidth+20 && xpos-deletelength*i*cos(angle+180)+rand(-width/2+16,width/2-16)>-20 && ypos-deletelength*i*sin(angle+180)+rand(-width/2+16,width/2-16)<GetStgFrameHeight+20 && ypos-deletelength*i*sin(angle+180)+rand(-width/2+16,width/2-16)>-20) {
+					let randnumber1 = rand(-width/2+16,width/2-16);
+					let randnumber2 = rand(-width/2+16,width/2-16);
+					//BulletBreak(xpos-deletelength*i*cos(angle+180)+randnumber1,ypos-deletelength*i*sin(angle+180)+randnumber2,1.0,DelayColor[0],DelayColor[1],DelayColor[2]);
+					//NotifyEventAll(EV_DELETE_ITEM,[xpos-deletelength*i*cos(angle+180)+randnumber1,ypos-deletelength*i*sin(angle+180)+randnumber2]);
+				}
+			}
+		}
+	}
+}
+function BulletDeleteEffect(xpos,ypos,graphic,objShot) {
+	let DelayColor = GetShotDataInfoA1(graphic,TARGET_ENEMY,INFO_DELAY_COLOR);
+	let Collision = GetShotDataInfoA1(graphic,TARGET_ENEMY,INFO_COLLISION);
+	let Scale = ObjRender_GetScaleX(objShot);
+	if(Obj_IsValueExists(objShot,"Hue")) {
+		let Hue = Obj_GetValue(objShot,"Hue");
+		DelayColor = HSVToRGB(Hue,62,100);
+	}
+	if(xpos<GetStgFrameWidth+20 && xpos>-20 && ypos<GetStgFrameHeight+20 && ypos>-20) {
+		if(Obj_GetType(objShot) == OBJ_STRAIGHT_LASER) {
+			Collision = 1;
+			Scale = Obj_GetValueD(objShot,"Width",0)/(64*0.6)*2.5;
+		}
+		if(Collision<=3) {
+			BulletBreak(xpos,ypos,1.0*Scale,DelayColor[0],DelayColor[1],DelayColor[2]);
+		}
+		if(Collision>3 && Collision<=10) {
+			BulletBreak(xpos,ypos,1.3*Scale,DelayColor[0],DelayColor[1],DelayColor[2]);
+		}
+		if(Collision>10 && Collision<=18) {
+			BulletBreak(xpos,ypos,2.0*Scale,DelayColor[0],DelayColor[1],DelayColor[2]);
+		}
+	}
+}
+task BulletBreak(xpos,ypos,scale,RED,GREEN,BLUE) {
+	let objbreak = ObjPrim_Create(OBJ_SPRITE_2D);
+	let w = 3;
+	let count = 0;
+	let speed = rand(1.3,2);
+	let dir = rand(0,360);
+	let maxscale = scale;
+	
+	Obj_SetRenderPriorityI(objbreak,49);
+	ObjPrim_SetTexture(objbreak, MD ~ "System/IMG/Effect/BulletBreak.png");
+	if(!GetCommonData("Discord",false)) { ObjRender_SetBlendType(objbreak,BLEND_ADD_ARGB); }
+	else { ObjRender_SetBlendType(objbreak,BLEND_ALPHA); }
+	ObjRender_SetPosition(objbreak,xpos,ypos,0);
+	ObjRender_SetAngleXYZ(objbreak,0,0,rand(0,360));
+	ObjRender_SetColor(objbreak,RED,GREEN,BLUE);
+	
+	loop(24) {
+		if(count>=w*0) { ObjSprite2D_SetSourceRect(objbreak,0,0,64,64); }
+		if(count>=w*1) { ObjSprite2D_SetSourceRect(objbreak,64,0,128,64); }
+		if(count>=w*2) { ObjSprite2D_SetSourceRect(objbreak,128,0,192,64); }
+		if(count>=w*3) { ObjSprite2D_SetSourceRect(objbreak,192,0,256,64); }
+		if(count>=w*4) { ObjSprite2D_SetSourceRect(objbreak,256,0,320,64); }
+		if(count>=w*5) { ObjSprite2D_SetSourceRect(objbreak,320,0,384,64); }
+		if(count>=w*6) { ObjSprite2D_SetSourceRect(objbreak,384,0,448,64); }
+		if(count>=w*7) { ObjSprite2D_SetSourceRect(objbreak,448,0,512,64); }
+		ObjSprite2D_SetDestCenter(objbreak);
+		ObjRender_SetScaleXYZ(objbreak,scale*0.6,scale*0.6,scale*0.6);
+	
+		// ObjRender_SetPosition(objbreak,xpos,ypos,0);
+		// ObjRender_SetAlpha(objbreak,255-count*3);
+		if(speed>0) { speed-=0.10; }
+		xpos+=speed*cos(dir);
+		ypos+=speed*sin(dir);
+		// scale-=0.02*maxscale;
+		count++;
+		yield;
+	}
+	Obj_Delete(objbreak);
+}
+function HSVToRGB(hue,saturation,value) {
+	let R = 0;
+	let G = 0;
+	let B = 0;
+	if(hue<60) {
+		R = 255;
+		G = 255*(hue-0)/60;
+		B = 0;
+	}
+	if(hue>=60 && hue<120) {
+		R = 255-255*(hue-60)/60;
+		G = 255;
+		B = 0;
+	}
+	if(hue>=120 && hue<180) {
+		R = 0;
+		G = 255;
+		B = 255*(hue-120)/60;
+	}
+	if(hue>=180 && hue<240) {
+		R = 0;
+		G = 255-255*(hue-180)/60;
+		B = 255;
+	}
+	if(hue>=240 && hue<300) {
+		R = 255*(hue-240)/60;
+		G = 0;
+		B = 255;
+	}
+	if(hue>=300 && hue<360) {
+		R = 255;
+		G = 0;
+		B = 255-255*(hue-300)/60;
+	}
+	
+	R = R*(value/100);
+	G = G*(value/100);
+	B = B*(value/100);
+	
+	let high = R;
+	if(G>high) { high = G; }
+	if(B>high) { high = B; }
+	R = floor(high-(high-R)*(saturation/100));
+	G = floor(high-(high-G)*(saturation/100));
+	B = floor(high-(high-B)*(saturation/100));
+	return [R,G,B];
+}

@@ -1,0 +1,70 @@
+#include "./DirPaths.txt"
+#include "./selibrary.txt"
+
+//Loads various things at the start
+//Run as a script to hopefully reduce delay
+
+// @Initialize{
+// @Loading{
+	// LoadEverything;
+// }
+
+// @Initialize{
+	// CloseScript(GetOwnScriptID);
+// }
+
+
+sub LoadEverything{
+	// yield;
+	
+	WriteLog("Loading sounds");
+	
+	LoadSound(se_shot);
+	LoadSound(se_shot1);
+	LoadSound(se_shot2);
+	LoadSound(se_shot3);
+	LoadSound(se_shot4);
+	LoadSound(se_shot5);
+	LoadSound(se_shot6);
+	LoadSound(se_shot7);
+	LoadSound(se_shot8);
+	
+	LoadSound(se_chime);
+	LoadSound(se_chime2);
+	LoadSound(se_kira01);
+	LoadSound(se_kira02);
+	
+	LoadSound(se_fam);
+	LoadSound(se_fam2);
+	LoadSound(se_paf);
+	LoadSound(se_item);
+	
+	WriteLog("Doen loading sounds");
+	
+	WriteLog("Loading enemy textures");
+	
+	LoadTexture(dirlib~"enemy/INenemy1.png");
+	LoadTexture(dirlib~"enemy/INenemy2.png");
+	LoadTexture(dirlib~"enemy/INenemy.png");
+	LoadTexture(dirlib~"enemy/fairy.png");
+	LoadTexture(dirlib~"enemy/fairy2.png");
+	LoadTexture(dirlib~"enemy/FairyB.png");
+	LoadTexture(dirlib~"enemy/fairy3.png");
+	LoadTexture(dirlib~"enemy/fairy4.png");
+	LoadTexture(dirlib~"enemy/fairy5.png");
+	LoadTexture(dirlib~"enemy/enemy.png");
+	LoadTexture(dirlib~"enemy/hitodama.png");
+	LoadTexture(dirlib~"enemy/effect.png");
+	LoadTexture(dirlib~"enemy/effect2.png");
+	LoadTexture(dirlib~"enemy/effect3.png");
+	LoadTexture(dirlib~"enemy/familiar.png");
+	LoadTexture(dirlib~"enemy/orreries.png");
+	
+	WriteLog("Loading effect textures");
+	
+	LoadTexture(direffect~"Ring.png"); //used for shot delay
+
+	WriteLog("Doen loading textures");
+	
+	// CloseScript(GetOwnScriptID);
+}

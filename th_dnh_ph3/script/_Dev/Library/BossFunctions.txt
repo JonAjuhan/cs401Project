@@ -4,16 +4,16 @@
 ///////////////////////////////////////////////////////////////
 function CreateBoss(name){
 	let color = GetCommonData("BossNameColor",[255,180,255]);
-	return CreateBossA0(name,color);
+	return CreateBossA0(name,color,GetCommonData("AutoAnimateBoss",true));
 }
 function CreateBossA1(name,color){
-	return CreateBossA0(name,color);
+	return CreateBossA0(name,color,GetCommonData("AutoAnimateBoss",true));
 }
 
 
 //"Real" function used by the others, 
 //to allow for more easily adding features without breaking existing calls
-function CreateBossA0(name,color){
+function CreateBossA0(name,c,startrender){
 	let boss;
 	let num = length(GetAllBossID);
 	if(num==0){
@@ -36,9 +36,27 @@ function CreateBossA0(name,color){
 	Obj_SetValue(boss,META_SUBTYPE,OBJ_ENEMY_BOSS);
 	ObjEnemy_Regist(boss);
 	Obj_SetValue(boss,"IsUseCustAnimLib",false);
-	let c = color;
+	
+	if(length(c)==0){
+		c=Obj_GetValueD(boss,CHARACTER_COLOR,c);
+		if(length(c)==0){c=GetCommonData("SpellcardDeclareColor",[]);}
+		if(length(c)==0){c=GetCharacterInfoA1(name,INFO_COLOR);}
+		if(length(c)==0){c=[255,128,128];}
+	}
 	EnemyName(boss, name, c[0], c[1], c[2]);
+	Obj_SetValue(boss,CHARACTER_NAME,name);
 	Obj_SetValue(boss,CHARACTER_COLOR,c);
+	
+	if(startrender){ RenderBoss(boss); }
+	
+	//Rectangular hitbox to player, which can also be grazed
+	let hb = ObjShot_Create(OBJ_STRAIGHT_LASER); ObjShot_Regist(hb); 
+	ObjShot_SetAutoDelete(hb,false); ObjShot_SetSpellResist(hb,true); 
+	Obj_SetVisible(hb,false); ObjShot_SetItemChange(hb,false);
+	OR_SetColor(hb,c[0],c[1],c[2]); //graze particles in boss' theme color
+	ObjLaser_SetGrazeInvalidFrame(hb,20); //default 20
+	Obj_SetValue(boss,"HitboxObject",hb);
+	
 	return boss;
 }
 
@@ -51,29 +69,24 @@ function spawnBossBlank(name){return CreateBoss(name);}
 
 let POSE_SET = -1; let POSE_END = 0;
 function SetPose(enem,dur){
-	if(Obj_GetValueD(enem,"IsUseCustAnimLib",true)){
+	if(Obj_GetValueD(enem,"IsUseCustAnimLib",false)){
 		if(dur>0){ObjAnim_SetAttackA2(enem, dur);}
 		else {ObjAnim_SetAttackA1(enem, dur==POSE_SET);}
 	}else{
-		if(dur==POSE_SET){Obj_SetValue(enem,"cast",1);}
+		if(dur==POSE_SET){Obj_SetValue(enem,"cast",2);}
 		else if(dur==POSE_END){Obj_SetValue(enem,"cast",0);}
 		else{
-			Obj_SetValue(enem,"cast",1);
+			Obj_SetValue(enem,"cast",2);
+			Manage;
 			task Manage{
 				loop(dur){yield;}
 				Obj_SetValue(enem,"cast",0);
 			}
-			Manage;
 		}
 	}
 }
 
-
-
-
-function SetAttackPose(dur){
-	SetPose(boss,dur);
-}
+function SetAttackPose(dur){SetPose(boss,dur);} //compatibility
 
 
 function SetBossHitbox(enem,ex,ey){
@@ -82,9 +95,23 @@ function SetBossHitbox(enem,ex,ey){
 	if(Obj_GetValueD(enem,FLAG_INTERSECTION,true)){
 		let s = OR_GetScale(enem);
 		let r = Obj_GetValueD(enem,COL_RADIUS,16*s);
-		ObjEnemy_SetIntersectionCircleToShot(  boss, ex, ey, r*1.5); //24*s  //32
-		ObjEnemy_SetIntersectionCircleToPlayer(boss, ex, ey, r    ); //16*s  //24
-		Obj_SetValue(enem,COL_RADIUS,20*s); //average it out
+		// ObjEnemy_SetIntersectionCircleToShot(  boss, ex, ey, r*1.5); //24*s  //32
+		// ObjEnemy_SetIntersectionCircleToPlayer(boss, ex, ey, r    ); //16*s  //24
+		
+		ObjEnemy_SetIntersectionCircleToShot(  boss, ex, ey,     r*1.5  );
+		// ObjEnemy_SetIntersectionCircleToPlayer(boss, ex, ey+r/3, r/2    );
+		// ObjEnemy_SetIntersectionCircleToPlayer(boss, ex, ey,     r/2    );
+		// ObjEnemy_SetIntersectionCircleToPlayer(boss, ex, ey-r/3, r/2    );
+		
+		let shot = Obj_GetValueD(boss,"HitboxObject",CreateStraightLaserA1(0,0,0,0,0, 1,NULL,0));
+		ObjShot_SetIntersectionLine(shot, ex,ey-r/2, ex,ey+r/2, r/2);
+		
+		
+		// SetShotIntersectionLine( ex, ey-r/2, ex, ey+r/2, r/2 );
+		// let las = CreateStraightLaserA1(ex,ey-r/2, 90, r, r*2/3, 1, NULL, 0);
+		// let las = CreateStraightLaserA1(px,py-r/2, 90, r, r*2/3, 10, NULL, 0);
+		
+		// Obj_SetValue(enem,COL_RADIUS,20*s); //average it out
 	}
 }
 
@@ -313,9 +340,9 @@ task LifeCircle(renderObj, enemyObj){
 //////////////////////////////////////////////////////////////////////////
 //Task to handle boss movement with a large amount of flexibility - Andi//
 //////////////////////////////////////////////////////////////////////////
-let MOVE_DEFAULT	= 999900;	//Extra arguments (mutually exclusive):
-let MOVE_BIAS 		= 999901;	//	[MOVE_BIAS,xBiasPos,yBiasPos,xbias,ybias]
-let MOVE_PLAYERBIAS	= 999902;	//	[MOVE_PLAYERBIAS,xbias,ybias]
+	//Extra arguments (mutually exclusive):
+	//	[MOVE_BIAS,xBiasPos,yBiasPos,xbias,ybias]
+	//	[MOVE_PLAYERBIAS,xbias,ybias]
 								//Extra arguments (compatible):
 let MOVE_NEAR		= 999910;	//  [MOVE_NEAR,maxrad]
 let MOVE_FAR		= 999911;	//	[MOVE_FAR, minrad]
@@ -332,115 +359,157 @@ let MOVE_WEIGHT		= 999916;	//TODO
 		//After setting it once, it will be checked each frame; otherwise it will be checked after moving
 		//Set to -1 to wait indefinitely, 0 to move immediately
 
-task Tmovement(x1,x2, y1,y2, time,del0, exargs) {
+task Tmovement(obj, x1,x2, y1,y2, time,del, exargs) {
+	let movetype = "default"; 
+	let isBias=false; let xBiasPos=(x1+x2)/2; let yBiasPos=(y1+y2)/2; let xbias=0; let ybias=0; 
+	let isPlayer=false; let isPnlSpace=false; let personalspace=0; 
+	let isNear=false; let maxrad=999; let isFar=false; let minrad=0; 
+	let isSpd=false; let spd=0; let isMaxSpd=false; let mspd=0;
+	let isWeight=false; let weight=0;
+	let biasobj;
 	
-	let movetype = MOVE_DEFAULT; 
-	let isBias; let xBiasPos; let yBiasPos; let xbias; let ybias; let isPlayer; let isNear; let maxrad; let isFar; let minrad; let isPnlSpace; let personalspace; let isSpd; let spd; let isMaxSpd; let mspd; let isSmooth; let smoothness;
-	let x; let y;
-	let del = del0; let checkdel = false;
+	if(del<1){ RaiseError("Delay needs to be positive or the program will freeze, baka"); }
 	
-	let numexargs = length(exargs);
-	if(numexargs>0){
-		isBias = checkarr(exargs,MOVE_BIAS);
-		if(isBias!=-1) {
-			xBiasPos = exargs[isBias+1];
-			yBiasPos = exargs[isBias+2];
-			xbias = exargs[isBias+3];
-			ybias = exargs[isBias+4];
-			movetype = MOVE_BIAS;
+	if(length(exargs)>0){
+		ascent(i in 0..length(exargs)){
+			let arg = SplitString(exargs[i],":");
+			let k = arg[0]; let v; if(length(arg)>1){ v = arg[1]; }
+			alternative(k)
+			case("playerbias"){
+				movetype="playerbias"; isPlayer=true; 
+				if(length(arg)>1){ xbias=ator(v); }
+				if(length(arg)>2){ ybias=ator(arg[2]); }
+			}
+			case("bias"){
+				movetype="bias"; 
+				if(length(arg)>1){ xBiasPos=ator(v); }
+				if(length(arg)>2){ yBiasPos=ator(arg[2]);}
+			}
+			case("selfbias"){
+				movetype="selfbias"; isPlayer=true; 
+				if(length(arg)>1){ xbias=ator(v); }
+				if(length(arg)>2){ ybias=ator(arg[2]); }
+			}
+			case("objbias"){
+				movetype="objbias";
+				if(length(arg)>1){ biasobj=atoi(v); } //object id
+			}
+			case("xbias"){         xbias=ator(v); isBias=true; }
+			case("ybias"){         ybias=ator(v); isBias=true; }
+			case("xbiaspos"){      xBiasPos=ator(v); isBias=true; }
+			case("ybiaspos"){      yBiasPos=ator(v); isBias=true; }
+			case("mindist"){       minrad=ator(v); isFar=true; }
+			case("maxdist"){       maxrad=ator(v); isNear=true; }
+			case("speed"){         spd=ator(v);  isSpd=true; }
+			case("maxspeed"){      mspd=ator(v); isMaxSpd=true; }
+			case("personalspace"){ personalspace=ator(v); isPnlSpace=true; }
+			case("weight"){        weight=ator(v); isWeight=true; }
 		}
-		isPlayer = checkarr(exargs,MOVE_PLAYERBIAS);
-		if(isPlayer!=-1) {
-			movetype = MOVE_PLAYERBIAS;
-			xbias = exargs[isPlayer+1];
-			ybias = exargs[isPlayer+2];
-		}
-		isNear = checkarr(exargs,MOVE_NEAR);
-		if(isNear!=-1) {
-			maxrad = exargs[isNear+1];
-		}
-		isFar = checkarr(exargs,MOVE_FAR);
-		if(isFar!=-1) {
-			minrad = exargs[isFar+1];
-		}
-		isPnlSpace = checkarr(exargs,MOVE_PNLSPACE);
-		if(isPnlSpace!=-1){
-			personalspace = exargs[isPnlSpace+1];
-		}
-		isSpd = checkarr(exargs,MOVE_SPEED);
-		if(isSpd!=-1){
-			spd = exargs[isSpd+1];
-		}
-		isMaxSpd = checkarr(exargs,MOVE_MAXSPEED);
-		if(isMaxSpd!=-1){
-			spd = exargs[isMaxSpd+1];
-		}
-		isSmooth = checkarr(exargs,MOVE_SMOOTH);
-		if(isSmooth!=-1){
-			smoothness = exargs[isSmooth+1];
-		}
-	}else{isBias=-1;isPlayer=-1;isNear=-1;isSpd=-1;isMaxSpd=-1;isSmooth=-1;}
+	}
+	
+	let isoverriding = Obj_IsValueExists(obj,"MovementManager");
+	let hash = GetNextHash();
+	Obj_SetValue(obj,"MovementManager",hash);
+	if(!isoverriding){wait(del);}
 
-	if(del0<1) { RaiseError("Delay needs to be positive or the program will freeze, baka"); }
+	while(!Obj_IsDeleted(obj)) {
+		while(Obj_GetValueD(obj,"move",1)==0 || Obj_GetValueD(obj,"cast",0)!=0){yield;}
+		if(Obj_GetValueD(obj,"MovementManager",hash)!=hash){return;}
+		
+		let d=0;
+		let x0 = ObjMove_GetX(obj); let y0 = ObjMove_GetY(obj);
+		let x; let y;
 
-	let ok = false; let tries = 0;
-	while(!Obj_IsDeleted(boss)) {
-		while(!ok){
-			ok=true;
+		let ok=false; let tries=0;
+		while(!ok && tries<100){
 			
 			alternative(movetype)
-			//Normal
-			case(MOVE_DEFAULT) {
-				x=rand(x1,x2); y=rand(y1,y2);
-			}
-			//Bias
-			case(MOVE_BIAS) {
-				x=(xBiasPos*xbias+rand(x1,x2))/(xbias+1);
-				y=(yBiasPos*ybias+rand(y1,y2))/(ybias+1);
-			}
-			//Above player
-			case(MOVE_PLAYERBIAS) {
-				x=(px*xbias+rand(x1,x2))/(xbias+1);
-				y=(py*ybias+rand(y1,y2))/(ybias+1);
-			}
+			case("playerbias"){ xBiasPos=px; yBiasPos=py; }
+			case("selfbias"){   xBiasPos=x0; yBiasPos=y0; }
+			case("objbias"){ xBiasPos=ObjRender_GetX(biasobj); yBiasPos=ObjRender_GetY(biasobj); }
 			
-			//Don't move farther than a certain distance each time
-			if(isNear!=-1 && getdist(ex,ey,x,y)>maxrad) {
-				ok=false;
-			}
-			//Move at least a certain distance each time
-			if(isFar!=-1  && getdist(ex,ey,x,y)<minrad) {
-				ok=false;
-			}
+			x=(xBiasPos*xbias+rand(x1,x2))/(xbias+1);
+			y=(yBiasPos*ybias+rand(y1,y2))/(ybias+1);
+			
+			d = ((x-x0)^2+(y-y0)^2)^0.5;
+			ok=true;
+			if(isNear && d > maxrad){ ok=false; }
+			if(isFar  && d < minrad){ ok=false; }
 			//Don't move too close to the player
-			if(isPnlSpace!=-1 && getdist(ex,ey,x,y)<personalspace && tries < 100) {
-				ok=false; tries++;
-			}
-		}
-		ok=false; tries=0;
-			
-		
-		//Speed/max speed
-		if(isSpd!=-1 || (isMaxSpd!=-1 && getdist(ex,ey,x,y)/time>spd)){
-			ObjMove_SetDestAtSpeed(boss, x, y, spd);
-		}else{ //Default (frames)
-			ObjMove_SetDestAtFrame(boss, x, y, time);
+			if(isPnlSpace && ((px-x)^2+(py-y)^2)^0.5 < personalspace){ ok=false; }
+			tries++;
 		}
 		
-		//Smooth movement at start and end
-		if(isSmooth!=-1){ 
-			smooth(boss,time,smoothness);
+		let t = time;
+		let s = d/t;
+		
+		if(isSpd || (isMaxSpd && s > mspd) ){
+			s = max(spd,mspd);
+			t = d/s;
 		}
 		
-		if(!checkdel && !Obj_IsValueExists(boss,"MoveDelay")){
-			wait(del);
-		}else{
-			checkdel = true;
-			while(del!=0){
-				del = Obj_GetValueD(boss,"MoveDelay",del-1);
-				yield;
-			}
-			del = del0;	Obj_SetValue(boss,"MoveDelay",del0);
-		}
+		if(!isWeight){ ObjMove_SetDestAtFrame(obj, x, y, t); }
+		else{          ObjMove_SetDestAtWeight(obj, x, y, t, weight); }
+		
+		wait(del);
+		
 	}		
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+let INFO_COLOR = 0;
+let INFO_THEME = 1;
+let INFO_STAGE = 2;
+let INFO_GAME  = 3;
+
+function GetCharacterInfoA1(character,info){
+	let C=[];
+	let T=[]; // [primary theme, stage theme, other themes]
+	let S=0;  //highest stage fought as the main boss of, or midboss if has never been main boss
+	let G=""; //game most associated with
+	
+	let namearr = SplitString(character," ");
+	let ok;
+	ascent(i in 0..length(namearr)){
+		let name = namearr[i];
+		ok=true;
+		
+		alternative(name)
+		case("Mystia")  	{ C=[196,128,255]; S=2; G="IN";   T=["Deaf to All but the Song", "Song of the Night Sparrow ~ Night Bird"]; }
+		case("Reimu")   	{ C=[255,128,128]; S=4; G="IN";   T=["Maiden's Capriccio ~ Dream Battle"]; }
+		case("Marisa")  	{ C=[128,128,255]; S=4; G="IN";   T=["Love-Colored Master Spark"]; }
+		
+		case("Minoriko")  	{ C=[196,255,128]; S=1; G="MoF";  T=["Because Princess Inada is Scolding Me","A God that Loves People ~ Romantic Fall"]; }
+		case("Shizuha")  	{ C=[196,255,128]; S=1; G="MoF";  T=["Because Princess Inada is Scolding Me","A God that Loves People ~ Romantic Fall"]; }
+		
+		case("Satori")  	{ C=[255,128,196]; S=4; G="SA";   T=["Satori Maiden ~ Third Eye"]; }
+		case("Koishi")  	{ C=[128,255,128]; S=7; G="SA";   T=["Hartmann's Youkai Girl", "Last Remote"]; }
+		
+		others{ok=false;}
+		if(ok){break;}
+	}
+	
+	alternative(info)
+	case(INFO_COLOR){return C;}
+	case(INFO_THEME){return T;}
+	case(INFO_STAGE){return S;}
+	case(INFO_GAME ){return G;}
+	
+}
+
+
+
+
+
+

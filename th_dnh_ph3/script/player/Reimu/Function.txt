@@ -1,5 +1,6 @@
 let csd = GetCurrentScriptDirectory;
-let imgCircle = csd~"img/Circle.png";
+// let imgCircle = csd~"img/Circle.png";
+let imgCircle = csd~"img/Default_Player_MagicCircle.png";
 let imgReimu = csd~"img/Reimu.png";
 let imgSpell = csd~"img/Spell.png";
 let imgBarrier = csd~"img/player00.png";
@@ -270,88 +271,175 @@ task TOption(x1,y1,x2,y2,dir1,dir2){
 }
 
 task TBlink{
-	let duration = GetPlayerInvincibilityFrame;
-	let frame = GetPlayerInvincibilityFrame;
+	// let duration = GetPlayerInvincibilityFrame;
+	// let frame = GetPlayerInvincibilityFrame;
 	let blinkFrame = 0;
-	loop(duration){
-		if (frame != GetPlayerInvincibilityFrame){break;}
-		frame --;
-		alternative(blinkFrame)
-		case(0,1){
-			ObjRender_SetColor(objPlayer,0,0,255);
-		}
-		case(2,3){
+	// loop(duration){
+	loop{
+		// if (frame != GetPlayerInvincibilityFrame){break;}
+		if (GetPlayerInvincibilityFrame > 0){
+			// frame --;
+			alternative(blinkFrame)
+			case(0,1){
+				ObjRender_SetColor(objPlayer,0,0,255);
+			}
+			case(2,3){
+				ObjRender_SetColor(objPlayer,255,255,255);
+			}
+			blinkFrame ++;
+			blinkFrame %= 4;
+		}else{
 			ObjRender_SetColor(objPlayer,255,255,255);
 		}
-		blinkFrame ++;
-		blinkFrame %= 4;
 		yield;
 	}
-	ObjRender_SetColor(objPlayer,255,255,255);
 }
+
+// task TCircle{
+	// let radius = 1;
+	// let red = 255;
+	// let green = 128;
+	// let blue = 128;
+	// let duration = GetPlayerInvincibilityFrame;
+	// let obj = ObjPrim_Create(OBJ_PRIMITIVE_2D);
+
+	// // ascent(i in 0..length(circleID)){
+		// // Obj_Delete(circleID[i]);
+	// // }
+	// circleID = circleID ~ [obj];
+
+	// Obj_SetRenderPriority(obj,0.6);
+	// ObjRender_SetBlendType(obj,BLEND_ADD_RGB);
+	// ObjPrim_SetPrimitiveType(obj,PRIMITIVE_TRIANGLESTRIP);
+	// ObjPrim_SetVertexCount(obj,130);
+	// ObjPrim_SetTexture(obj,imgCircle);
+	// ascent(i in 0..65){
+		// ObjPrim_SetVertexUVT(obj,(i*2),i*4*(403/64),0);
+		// ObjPrim_SetVertexUVT(obj,(i*2)+1,i*4*(403/64),65);
+	// }
+	// TAlpha;
+	// TRotate;
+	// // while(GetPlayerInvincibilityFrame()>0){
+	// while(!Obj_IsDeleted(obj)){
+		// Obj_SetVisible(obj,GetPlayerInvincibilityFrame()>0);
+		// if(GetPlayerInvincibilityFrame()>0){
+			// ascent(i in 0..65){
+				// ObjPrim_SetVertexPosition(obj,(i*2),   radius*150*cos(i*360/64), radius*150*sin(i*360/64),0);
+				// ObjPrim_SetVertexPosition(obj,(i*2)+1, radius*110*cos(i*360/64), radius*110*sin(i*360/64),0);
+			// }
+		// }
+		// ObjRender_SetPosition(obj,GetPlayerX,GetPlayerY,0);
+		// // radius = 1-(duration-GetPlayerInvincibilityFrame)/duration;
+		// let rad1 = 1-(duration-GetPlayerInvincibilityFrame)/duration;
+		// let drad = rad1-radius;
+		// radius = radius + drad/10;
+		// yield;
+	// }
+	// Obj_Delete(obj);
+
+	// task TAlpha{ //TODO: make sure it isn't important for this to happen every time
+		// let cAlpha = 0;
+		// loop(80){
+			// cAlpha += 2.8;
+			// ascent(i in 0..130){
+				// ObjPrim_SetVertexColor(obj,i,(cAlpha/255)*red,(cAlpha/255)*green,(cAlpha/255)*blue);
+			// }
+			// yield;
+		// }
+	// }
+	// task TRotate{
+		// let cAngle = 0;
+		// while(!Obj_IsDeleted(obj)){
+			// ObjRender_SetAngleZ(obj,cAngle);
+			// cAngle -= 2;
+			// if (cAngle < 0){cAngle += 360;}
+			// yield;
+		// }
+	// }
+// }
+
+
+
 
 task TCircle{
-	let radius = 1;
-	let red = 255;
-	let green = 128;
-	let blue = 128;
-	let duration = GetPlayerInvincibilityFrame;
+	let countVertex = 64;
+	let listRadius = [];
+	loop(countVertex){ listRadius = listRadius ~ [0]; }
+	let path = imgCircle;
 	let obj = ObjPrim_Create(OBJ_PRIMITIVE_2D);
-
-	ascent(i in 0..length(circleID)){
-		Obj_Delete(circleID[i]);
+	ObjPrim_SetPrimitiveType(obj, PRIMITIVE_TRIANGLESTRIP);
+	ObjPrim_SetVertexCount(obj, countVertex);
+	ObjRender_SetBlendType(obj, BLEND_ADD_RGB);
+	Obj_SetRenderPriorityI(obj, 60);
+	ObjPrim_SetTexture(obj, path);
+	ascent(iVert in 0..countVertex/2){
+		let left = iVert * 128; let indexVert = iVert * 2;
+		ObjPrim_SetVertexUVT(obj, indexVert + 0, left, 0);
+		ObjPrim_SetVertexUVT(obj, indexVert + 1, left, 64);		
 	}
-	circleID = circleID ~ [obj];
+	let cx = 0; let cy = 0; let maxRadius = 128;
+	let alpha = 0; let frame = 0;
+	let angleRender = 0; let frameInvOld = 0;
 
-	Obj_SetRenderPriority(obj,0.6);
-	ObjRender_SetBlendType(obj,BLEND_ADD_RGB);
-	ObjPrim_SetPrimitiveType(obj,PRIMITIVE_TRIANGLESTRIP);
-	ObjPrim_SetVertexCount(obj,130);
-	ObjPrim_SetTexture(obj,imgCircle);
-	ascent(i in 0..65){
-		ObjPrim_SetVertexUVT(obj,(i*2),i*4*(403/64),0);
-		ObjPrim_SetVertexUVT(obj,(i*2)+1,i*4*(403/64),65);
-	}
-	TAlpha;
-	TRotate;
-	// while(GetPlayerInvincibilityFrame()>0){
-	while(!Obj_IsDeleted(obj)){
-		Obj_SetVisible(obj,GetPlayerInvincibilityFrame()>0);
-		if(GetPlayerInvincibilityFrame()>0){
-			ascent(i in 0..65){
-				ObjPrim_SetVertexPosition(obj,(i*2),   radius*150*cos(i*360/64), radius*150*sin(i*360/64),0);
-				ObjPrim_SetVertexPosition(obj,(i*2)+1, radius*110*cos(i*360/64), radius*110*sin(i*360/64),0);
-			}
+	loop{
+		let frameInv = GetPlayerInvincibilityFrame();
+		if(frameInv <= 0){
+			Obj_SetVisible(obj, false);
+			frameInvOld = 0;
 		}
-		ObjRender_SetPosition(obj,GetPlayerX,GetPlayerY,0);
-		// radius = 1-(duration-GetPlayerInvincibilityFrame)/duration;
-		let rad1 = 1-(duration-GetPlayerInvincibilityFrame)/duration;
-		let drad = rad1-radius;
-		radius = radius + drad/10;
+		else{
+			Obj_SetVisible(obj, true);
+			if(frameInvOld == 0){
+				ascent(iVert in 0..countVertex){ listRadius[iVert] = 0; }
+				alpha = 0; frame = 0;
+			}
+			frameInv = min(100, frameInv);
+			frameInvOld = frameInv;
+			let px = GetPlayerX(); let py = GetPlayerY();
+			alpha = min(alpha+1/120, 1);
+			angleRender += 360 / countVertex / 2;
+			let rRate = frameInv / 100;
+			ascent(iVert in 0..countVertex / 2){
+				let indexVert = iVert * 2;
+				let angle = 360 / (countVertex / 2 - 1) * iVert;
+
+				let vx1 = listRadius[indexVert] * cos(angle);
+				let vy1 = listRadius[indexVert] * sin(angle);
+				ObjPrim_SetVertexPosition(obj, indexVert + 0, vx1, vy1, 0);
+
+				let vx2 = listRadius[indexVert+1] * cos(angle);
+				let vy2 = listRadius[indexVert+1] * sin(angle);
+				ObjPrim_SetVertexPosition(obj, indexVert + 1, vx2, vy2, 0);
+				if(frame >= 0){
+					let dr = (maxRadius * rRate - listRadius[indexVert]) / 8;
+					listRadius[indexVert] = listRadius[indexVert] + dr;
+				}
+				if(frame > 10){
+					let rRateIn = rRate - 0.12;
+					if(rRateIn < 0){rRateIn=0;}
+					let dr= (maxRadius * rRateIn - listRadius[indexVert + 1]) / 16;
+					listRadius[indexVert + 1] = listRadius[indexVert + 1] + dr;
+				}
+			}
+			ObjRender_SetColor(obj, 192 * alpha, 192 * alpha, 255 * alpha);
+			ObjRender_SetPosition(obj, px, py, 0);
+			ObjRender_SetAngleZ(obj, angleRender);
+			frame++;
+		}
 		yield;
 	}
-	Obj_Delete(obj);
-
-	task TAlpha{ //TODO: make sure it isn't important for this to happen every time
-		let cAlpha = 0;
-		loop(80){
-			cAlpha += 2.8;
-			ascent(i in 0..130){
-				ObjPrim_SetVertexColor(obj,i,(cAlpha/255)*red,(cAlpha/255)*green,(cAlpha/255)*blue);
-			}
-			yield;
-		}
-	}
-	task TRotate{
-		let cAngle = 0;
-		while(!Obj_IsDeleted(obj)){
-			ObjRender_SetAngleZ(obj,cAngle);
-			cAngle -= 2;
-			if (cAngle < 0){cAngle += 360;}
-			yield;
-		}
-	}
 }
+
+
+
+
+
+
+
+
+
+
+
 
 task TDraw{
 	let phase = 0;

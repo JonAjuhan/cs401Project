@@ -224,40 +224,6 @@ function lengthmarr(arr){return getvald(arr,"MArrSize",0);}
 
 
 
-/////////////////////////////////////////////////////////////////
-//Trickysticks functions - what do these do again?
-/////////////////////////////////////////////////////////////////
-
-
-//TODO experiment with this
-function GetLineBorderPoint(px, py, tx, ty){ //Trickysticks is such a nice person :D
-
-	let ta = atan2(ty-py, tx-px);
-
-	if( ta>= atan2(0 - py, 0 - px) && ta<=  atan2(0 - py, sx - px)){
-		return [px - (0-py)*tan(ta+90), 0];
-	}
-	if( ta>= atan2(0 - py, sx - px) && ta<=  atan2(sy - py, sx - px)){
-		return [sx, py + (sx-px)*tan(ta)];
-	}
-	if( ta>= atan2(sy - py, sx - px) && ta<=  atan2(sy - py, 0 - px)){
-		return [px - (sx-py)*tan(ta-90), sx];
-	}
-	if( ta> atan2(sx - py, 0 - px) || ta<  atan2(0 - py, 0 - px)){
-		return [0, py + (0-px)*tan(ta+180)];
-	}
-}
-
-function GetLineWallIntersection(px, py, tx, ty){ //Trickysticks is such a nice person :D
-    let ta = atan2(ty-py, tx-px);
- 
-    if( ta>= atan2(0 - py, sx - px) && ta<=  atan2(sy - py, sx - px)){
-        return true;
-    }
-    if( ta> atan2(sy - py, 0 - px) || ta<  atan2(0 - py, 0 - px)){
-        return true;
-    }
-}
 
 
 

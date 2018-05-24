@@ -124,6 +124,38 @@ function SpawnKedama(x,y,cstring,life){
 
 
 
+function SpawnCircle(x,y,color,life){
+	let isdamage = (life > 0); life=(|life|);
+	let isintersect = (life!=0); if(!isintersect){life=1;}
+	let mc = CreateFairyObject(life);
+	ObjMove_SetPosition(mc,x,y);
+	Obj_SetRenderPriorityI(mc,PRI_ENEMY); //40
+	if(isdamage){ ObjEnemy_SetDamageRate(mc,100,100); }
+	else{ ObjEnemy_SetDamageRate(mc,0,0); }
+	AnimateFamCircle(mc,color);
+	ManageFamCircle;
+	return mc;
+	
+	task ManageFamCircle{
+		while(!Obj_IsDeleted(mc) && ObjEnemy_GetInfo(mc,INFO_LIFE)>0){
+			if(isintersect){
+				ObjEnemy_SetIntersectionCircleToShot(mc,ObjMove_GetX(mc),ObjMove_GetY(mc),10);
+				ObjEnemy_SetIntersectionCircleToPlayer(mc,ObjMove_GetX(mc),ObjMove_GetY(mc),10);
+				if(!isdamage && ObjCol_GetIntersectedCount(mc)>1){ //>1 in case being grazed
+					SE_Play(se_nodamage,50); //40
+				}
+			}
+			yield;
+			if(CheckOutsideScreen(mc,64)){ Obj_Delete(mc); }
+		}
+		if(!Obj_IsDeleted(mc)){
+			FinalizeFairy(mc,ObjMove_GetX(mc), ObjMove_GetY(mc), color, 0.75);
+		}
+	}
+}
+
+
+
 
 
 

@@ -1,4 +1,6 @@
 //Interpolation function and interpolated movement library by Dark Kitsune / Ran / Darkwalker
+//Used by cutin, I think
+//TODO phase this out
 
 function linear(a,b,x) {
 	return a + x * (b-a);

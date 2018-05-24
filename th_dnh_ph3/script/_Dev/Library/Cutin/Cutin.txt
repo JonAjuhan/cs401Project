@@ -17,13 +17,147 @@ let LENEN    = "LENEN";     //funky Z thing from rgt to left
 
 let YABUSAME = "LENEN";
 
-let isSurvival = false;			 // GetScriptResult(NotifyEventAll(EV_REQUEST_IS_DURABLE_SPELL,""));
+let isSurvival = false;
 
 let slots = [];
 ascent(i in 0..20){slots = slots ~ [0] };
 
 //If you have any questions or requests, send them to gtbot/TheGtbot (I go by either on different places)
 //Version 1.3
+
+
+
+
+
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////
+///// Andi - Shortcut functions ///////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+//Basic spellcard declaration, no cutin image
+function SetSpellCard() {
+	// SE_Play(se_spellcard,100);
+	// let c = GetCommonData("SpellcardDeclareColor",[255,128,128]);
+	// ObjCutin_SetSpellcardS3(GetCommonData("CurrentSC",""), c[0],c[1],c[2]);
+	// if(length(Obj_GetValueD(GetEnemyBossObjectID[0], "Spellcards", [])) < 2){
+		// let diff = GetCommonData("Difficulty","Normal");
+		// ObjCutin_LaunchS3("AYA", "", diff);
+	// }
+	// NotifyEventAll(EV_REQUEST_SPELL_SCORE,[]);
+	SetSpellCardA0(0,[],NAZRIN,"");
+}
+
+sub StartSpell{
+	let objScene = GetEnemyBossSceneObjectID();
+	ObjEnemyBossScene_StartSpell(objScene);
+	ObjEnemyBossScene_SetSpellTimer(objScene,ObjEnemyBossScene_GetInfo(objScene,INFO_ORGTIMERF));
+}
+
+//Spellcard declaration with image, name, color
+//Shouldn't this be name/index only?
+function SetSpellCardA1(NameOrIndex,c,style,img) {
+	SetSpellCardA0(NameOrIndex,c,style,img);
+}
+
+//Spellcard declaration with image, name, color
+function SetSpellCardA0(NameOrIndex,c,style,img) {
+	SE_Play(se_spellcard,100);
+	let name="";
+	if(length(NameOrIndex)==0){
+		name= GetCommonData("CurrentSC"~itoa(NameOrIndex),GetCommonData("CurrentSC",""));
+	}else{ name = NameOrIndex; }
+	
+	if(length(c)==0){
+		let bosses = GetAllBossID(); let boss;
+		if(typeof(NameOrIndex)==TYPE_NUMBER){ boss = bosses[NameOrIndex%length(bosses)]; }
+		else{
+			boss = bosses[  length(Obj_GetValueD(bosses[0],"Spellcards",[]))%length(bosses)  ]; 
+		}
+		c=Obj_GetValueD(boss,CHARACTER_COLOR,c);
+		if(length(c)==0){c=GetCommonData("SpellcardDeclareColor",[255,128,128]);}
+	}
+	
+	if(length(img)==0){
+		let bosses = GetAllBossID(); let boss;
+		if(typeof(NameOrIndex)==TYPE_NUMBER){ boss = bosses[NameOrIndex%length(bosses)]; }
+		else{ boss = bosses[  length(Obj_GetValueD(bosses[0],"Spellcards",[]))%length(bosses)  ]; }
+		img = Obj_GetValueD(boss,"Cutin",img);
+		if(length(img)==0 && style!=MOKOU){ style=AYA; }
+	}
+	
+
+	let objScene = GetEnemyBossSceneObjectID();
+	let issurvival = ( ObjEnemyBossScene_GetInfo(objScene,INFO_IS_DURABLE_SPELL)
+	                && ObjEnemy_GetInfo(boss,INFO_DAMAGE_RATE_SHOT) <= 0 );
+	ObjCutin_SetSpellcardS5(name,img,style, c[0],c[1],c[2], issurvival);
+	if(length(Obj_GetValueD(GetEnemyBossObjectID[0], "Spellcards", [])) < 2){
+		let diff = GetCommonData("Difficulty","Normal");
+		ObjCutin_LaunchS3(style, img, diff);
+		StartSpell;
+	}else{SE_Play(se_spellcard,100);}
+	NotifyEventAll(EV_REQUEST_SPELL_SCORE,[]);
+	// ObjEnemyBossScene_StartSpell(objScene);
+}
+
+
+
+
+
+//Spellcard declaration with cutin image
+//Why do I even have one with this combination of arguments?
+function SetSpellCardA2(style,img) {
+	SetSpellCardA0(0,[],style,img);
+}
+
+
+// //
+// function SetSurvivalCard() {
+	// SE_Play(se_spellcard,100);
+	// let c = GetCommonData("SpellcardDeclareColor",[255,128,128]);
+	// ObjCutin_SetSpellcardS5(GetCommonData("CurrentSC",""),"","", c[0],c[1],c[2], true);
+	// if(length(Obj_GetValueD(GetEnemyBossObjectID[0], "Spellcards", [])) < 2){
+		// let diff = GetCommonData("Difficulty","Normal");
+		// ObjCutin_LaunchS3("AYA", "", diff);
+	// }
+	// NotifyEventAll(EV_REQUEST_SPELL_SCORE,[]);
+// }
+// //
+// function SetSurvivalCardA2(style,img) {
+	// SE_Play(se_spellcard,100);
+	// let c = GetCommonData("SpellcardDeclareColor",[255,128,128]);
+	// ObjCutin_SetSpellcardS5(GetCommonData("CurrentSC",""),img,style, c[0],c[1],c[2], true);
+	// if(length(Obj_GetValueD(GetEnemyBossObjectID[0], "Spellcards", [])) < 2){
+		// let diff = GetCommonData("Difficulty","Normal");
+		// ObjCutin_LaunchS3(style, img, diff);
+	// }
+	// NotifyEventAll(EV_REQUEST_SPELL_SCORE,[]);
+// }
+
+// Hey, this should go with the sun stuff, not here
+function SetCaution() {
+	CautionCutin(51, 255,  cy-30, dirimg~"caution.png"   , []);
+	CautionCutin(50, 128,  cy-30, dirimg~"caution_bg.png", [0,0,255,255]);
+	SE_Play(se_caution,120);
+}
+
+
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -674,23 +808,20 @@ function CreateSimple2DImageA2(pri, image, x1, y1, x2, y2){
 }
 
 
-function DigitToArray(digit, count){
-	let res = [];
-	digit = truncate(digit);
-
-	loop{
-		let tnum = truncate(digit % 10);
-		digit /= 10;
-		res = [tnum] ~ res;
-		if(truncate(digit) == 0){break;}
-	}
-
-	loop(max(0, count - length(res))){
-		res = [0] ~ res;
-	}
-
-	return res;
-}
+// function DigitToArray(digit, count){
+	// let res = [];
+	// digit = truncate(digit);
+	// loop{
+		// let tnum = truncate(digit % 10);
+		// digit /= 10;
+		// res = [tnum] ~ res;
+		// if(truncate(digit) == 0){break;}
+	// }
+	// loop(max(0, count - length(res))){
+		// res = [0] ~ res;
+	// }
+	// return res;
+// }
 
 function GetNumSize(value){
 	if(value<=1){return 1;}
